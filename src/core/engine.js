@@ -509,16 +509,16 @@ function tickHeadshotFx(dt){
 const combatImpactFx=[];
 function spawnCombatImpact(pos,type='bullet'){
   const asset=GAME_ASSETS.impact[type]||GAME_ASSETS.impact.bullet;
-  const size=type==='rocket'?1.65:type==='plasma'?1.12:type==='critical'?1.20:type==='wall'?.72:.82;
+  const size=type==='rocket'?1.65:type==='sniper'?1.48:type==='plasma'?1.12:type==='critical'?1.20:type==='wall'?.72:.82;
   const sprite=makeAssetSprite(asset,size,size,{depthTest:false,renderOrder:24});
   sprite.position.copy(pos);scene.add(sprite);
-  const col=type==='plasma'?0xc76cff:type==='critical'?0xffe34f:type==='rocket'?0xff6930:type==='wall'?0xdce6eb:0xffb650;
+  const col=type==='sniper'?0xa7efff:type==='plasma'?0xc76cff:type==='critical'?0xffe34f:type==='rocket'?0xff6930:type==='wall'?0xdce6eb:0xffb650;
   const ring=new THREE.Mesh(
     new THREE.RingGeometry(.08,.14,28),
     new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.74,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending})
   );
   ring.position.copy(pos);ring.lookAt(camera.position);scene.add(ring);
-  combatImpactFx.push({sprite,ring,t:0,dur:type==='rocket'?.52:.28,max:type==='rocket'?2.8:type==='plasma'?1.8:1.35});
+  combatImpactFx.push({sprite,ring,t:0,dur:type==='rocket'?.52:type==='sniper'?.34:.28,max:type==='rocket'?2.8:type==='sniper'?2.15:type==='plasma'?1.8:1.35});
 }
 function tickCombatImpactFx(dt){
   for(let i=combatImpactFx.length-1;i>=0;i--){

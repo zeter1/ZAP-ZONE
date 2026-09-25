@@ -381,7 +381,7 @@ class Enemy{
       this.sT=.18;
       return;
     }
-    trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.key==='shotgun'?1.2:1);
+    trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.isSniper?1.38:wp.key==='shotgun'?1.2:1);
     if(wp.key!=='rocket'&&wp.key!=='plasma'){
       const q=new THREE.Quaternion().setFromAxisAngle(_UP,this.group.rotation.y);
       ejectCasing(from.clone().add(new THREE.Vector3(0,.08,0)),q,wp.key==='shotgun');
@@ -394,6 +394,7 @@ class Enemy{
     }
 
     const pellets=wp.pellets||1;
+    const distanceDamageScale=weaponDamageScaleAtDistance(wp,dist);
     let totalDmg=0;
     let tracerDir=dir.clone();
     for(let i=0;i<pellets;i++){
@@ -412,7 +413,7 @@ class Enemy{
       if(this.targetEn&&this.targetEn.alive){
         if(Math.random()<hitChance){
           const crit=Math.random()<.10?1.35:1;
-          totalDmg+=wp.dmg*BOT_DAMAGE_BOOST*this.baseDmgMul*(pellets>1?.58:1)*crit;
+          totalDmg+=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul*(pellets>1?.58:1)*crit;
         }
       }else if(this.team==='enemy'){
         const toPlr=new THREE.Vector3(camera.position.x-from.x,camera.position.y-from.y,camera.position.z-from.z).normalize();
@@ -420,7 +421,7 @@ class Enemy{
         hitChance*=0.72;
         const requiredAlign=pellets>1?.905:.958;
         if(Math.random()<hitChance&&align>requiredAlign){
-          totalDmg+=wp.dmg*BOT_DAMAGE_BOOST*this.baseDmgMul*(pellets>1?.46:.88);
+          totalDmg+=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul*(pellets>1?.46:.88);
         }
       }
     }
@@ -654,11 +655,11 @@ class Enemy{
             if(this.burstLeft<=0){
               const attackingPlayer=this.team==='enemy'&&this.targetIsPlayer;
               const base=attackingPlayer
-                ? (this.weapon.isRocket||this.weapon.key==='shotgun'?1:2)
-                : (this.weapon.key==='rifle'||this.weapon.key==='plasma'?4:this.weapon.key==='pistol'?3:1);
-              const extra=attackingPlayer?2:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?5:3);
+                ? (this.weapon.isRocket||this.weapon.key==='shotgun'||this.weapon.isSniper?1:2)
+                : (this.weapon.isSniper?1:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?4:this.weapon.key==='pistol'?3:1));
+              const extra=this.weapon.isSniper?1:(attackingPlayer?2:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?5:3));
               this.burstLeft=base+Math.floor(Math.random()*extra);
-              const normalPause=(this.weapon.isRocket?.58:this.weapon.key==='shotgun'?.34:.16)+Math.random()*(.18+(1-this.aimSkill)*.22);
+              const normalPause=(this.weapon.isSniper?.72:this.weapon.isRocket?.58:this.weapon.key==='shotgun'?.34:.16)+Math.random()*(.18+(1-this.aimSkill)*.22);
               this.burstPauseT=attackingPlayer?(.42+Math.random()*.42):normalPause;
             }
             this.sT=Math.max((this.team==='enemy'&&this.targetIsPlayer)?0.095:0.055,this.weapon.rate*this.fireRateMul*(.96+Math.random()*.24));

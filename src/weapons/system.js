@@ -7,14 +7,15 @@ function weaponDef(key,label,icon,config){
   return {key,label,icon,name:`${icon} ${label}`,asset:`${WEAPON_ASSET_DIR}/${key}.svg`,...config};
 }
 const WEAPONS=[
-  weaponDef('pistol','ПИСТОЛЕТ','🔫',{clip:20,reload:1.5,rate:.12,dmg:18,spread:.02,bCol:0xffffaa,gCol:0xf5c800,brlCol:0xcccccc,pellets:1,recoilX:.012,recoilY:.025,startingAmmo:20,tracerColor:0xffd27a,tracerSpeed:20,viewPos:[.28,-.25,-.48],bot:{range:42,opt:22,hitBias:.92}}),
-  weaponDef('shotgun','ДРОБОВИК','💥',{clip:10,reload:2.0,rate:.70,dmg:22,spread:.08,bCol:0xff8844,gCol:0x884422,brlCol:0x665533,pellets:7,recoilX:.03,recoilY:.06,startingAmmo:10,tracerColor:0xffb06a,tracerSpeed:17,viewPos:[.30,-.27,-.54],bot:{range:18,opt:10,hitBias:.86}}),
-  weaponDef('rifle','ВИНТОВКА','🎯',{clip:35,reload:1.8,rate:.08,dmg:45,spread:.005,bCol:0x44ffaa,gCol:0x336644,brlCol:0x224433,pellets:1,recoilX:.008,recoilY:.018,startingAmmo:35,tracerColor:0xffe0a0,tracerSpeed:24,viewPos:[.30,-.27,-.55],bot:{range:62,opt:34,hitBias:.96}}),
-  weaponDef('rocket','РАКЕТНИЦА','🚀',{clip:6,reload:2.5,rate:1.0,dmg:110,spread:.01,bCol:0xff4400,gCol:0x553300,brlCol:0x442200,pellets:1,isRocket:true,recoilX:.04,recoilY:.08,startingAmmo:6,viewPos:[.31,-.28,-.58],bot:{range:52,opt:30,hitBias:.90,dmg:100}}),
-  weaponDef('plasma','ПЛАЗМА','⚡',{clip:25,reload:1.2,rate:.09,dmg:28,spread:.03,bCol:0xcc44ff,gCol:0x6622cc,brlCol:0x9944ff,pellets:1,recoilX:.01,recoilY:.02,startingAmmo:25,tracerColor:0xc47cff,tracerSpeed:14,viewPos:[.30,-.26,-.54],bot:{range:36,opt:20,hitBias:.90}}),
-  weaponDef('mine','МИНА','💣',{clip:5,reload:3.0,rate:.80,dmg:125,spread:0,bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0,startingAmmo:5,tracerColor:0xff8800,viewPos:[.29,-.27,-.52]}),
-  weaponDef('bomb','БОМБА','🧨',{clip:3,reload:0,rate:1.2,dmg:240,spread:0,bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0,startingAmmo:0,viewPos:[.29,-.27,-.52]}),
-  weaponDef('smoke','ДЫМОВУХА','🌫️',{clip:1,reload:0,rate:.55,dmg:0,spread:0,bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025,startingAmmo:1,tracerColor:0xcbd4d8,viewPos:[.30,-.27,-.56]}),
+  weaponDef('pistol','ПИСТОЛЕТ','🔫',{clip:15,reload:1.25,rate:.22,dmg:26,spread:.012,adsSpread:.006,moveSpread:.010,airSpread:.035,falloffStart:20,falloffEnd:55,minDamageM:.62,bCol:0xffffaa,gCol:0xf5c800,brlCol:0xcccccc,pellets:1,recoilX:.016,recoilY:.032,recoilReturn:14,recoilDelay:.12,automatic:false,fireMode:'semi',zoomFov:52,startingAmmo:15,tracerColor:0xffd27a,tracerSpeed:78,range:55,viewPos:[.28,-.25,-.48],bot:{range:44,opt:20,hitBias:.90}}),
+  weaponDef('shotgun','ДРОБОВИК','💥',{clip:6,reload:2.35,rate:.82,dmg:19,spread:.10,adsSpread:.075,moveSpread:.025,airSpread:.055,falloffStart:8,falloffEnd:24,minDamageM:.28,bCol:0xff8844,gCol:0x884422,brlCol:0x665533,pellets:8,recoilX:.045,recoilY:.085,recoilReturn:8.5,recoilDelay:.22,automatic:false,fireMode:'pump',zoomFov:58,startingAmmo:6,tracerColor:0xffb06a,tracerSpeed:58,range:24,viewPos:[.30,-.27,-.54],bot:{range:20,opt:10,hitBias:.85}}),
+  weaponDef('rifle','ШТУРМОВАЯ ВИНТОВКА','🎯',{clip:30,reload:2.15,rate:.10,dmg:31,spread:.008,adsSpread:.0035,moveSpread:.014,airSpread:.035,falloffStart:30,falloffEnd:75,minDamageM:.72,bCol:0x44ffaa,gCol:0x336644,brlCol:0x224433,pellets:1,recoilX:.011,recoilY:.026,recoilReturn:11,recoilDelay:.16,automatic:true,fireMode:'auto',zoomFov:42,startingAmmo:30,tracerColor:0xffe0a0,tracerSpeed:100,range:75,viewPos:[.30,-.27,-.55],bot:{range:68,opt:36,hitBias:.94}}),
+  weaponDef('rocket','РАКЕТНИЦА','🚀',{clip:1,reload:2.85,rate:1.10,dmg:155,spread:.006,adsSpread:.002,moveSpread:.012,airSpread:.025,bCol:0xff4400,gCol:0x553300,brlCol:0x442200,pellets:1,isRocket:true,recoilX:.05,recoilY:.105,recoilReturn:7.5,recoilDelay:.30,automatic:false,fireMode:'launcher',zoomFov:50,startingAmmo:1,viewPos:[.31,-.28,-.58],bot:{range:55,opt:30,hitBias:.88,dmg:140}}),
+  weaponDef('plasma','ПЛАЗМА','⚡',{clip:40,reload:1.65,rate:.07,dmg:20,spread:.019,adsSpread:.010,moveSpread:.017,airSpread:.035,falloffStart:20,falloffEnd:58,minDamageM:.58,bCol:0xcc44ff,gCol:0x6622cc,brlCol:0x9944ff,pellets:1,recoilX:.009,recoilY:.015,recoilReturn:15,recoilDelay:.08,automatic:true,fireMode:'auto',zoomFov:46,startingAmmo:40,tracerColor:0xc47cff,tracerSpeed:52,range:58,viewPos:[.30,-.26,-.54],bot:{range:44,opt:23,hitBias:.89}}),
+  weaponDef('mine','МИНА','💣',{clip:4,reload:3.2,rate:.90,dmg:130,spread:0,bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0,automatic:false,fireMode:'deploy',startingAmmo:4,tracerColor:0xff8800,viewPos:[.29,-.27,-.52]}),
+  weaponDef('bomb','БОМБА','🧨',{clip:2,reload:0,rate:1.2,dmg:240,spread:0,bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0,automatic:false,fireMode:'deploy',startingAmmo:0,viewPos:[.29,-.27,-.52]}),
+  weaponDef('smoke','ДЫМОВУХА','🌫️',{clip:1,reload:0,rate:.55,dmg:0,spread:0,bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025,automatic:false,fireMode:'throw',startingAmmo:1,tracerColor:0xcbd4d8,viewPos:[.30,-.27,-.56]}),
+  weaponDef('sniper','СНАЙПЕРСКАЯ ВИНТОВКА','🔭',{clip:5,reload:3.4,rate:1.30,dmg:118,spread:.040,adsSpread:.00045,moveSpread:.060,airSpread:.12,falloffStart:55,falloffEnd:110,minDamageM:.82,bCol:0x8fe8ff,gCol:0x17365b,brlCol:0xb8d5e8,pellets:1,isSniper:true,headshotMult:2.55,recoilX:.028,recoilY:.115,recoilReturn:6.8,recoilDelay:.34,automatic:false,fireMode:'bolt',zoomFov:12,startingAmmo:5,tracerColor:0xcff8ff,tracerSpeed:220,range:110,viewPos:[.31,-.29,-.62],bot:{range:108,opt:74,hitBias:.982}})
 ];
 const WEAPON_BY_KEY=Object.fromEntries(WEAPONS.map(w=>[w.key,w]));
 const SMOKE_WEAPON_INDEX=WEAPONS.findIndex(w=>w.key==='smoke');
@@ -28,9 +29,16 @@ const PLR_TCOL=Object.fromEntries(WEAPONS.filter(w=>w.tracerColor!==undefined).m
 const TRACER_SPEED={...Object.fromEntries(WEAPONS.filter(w=>w.tracerSpeed!==undefined).map(w=>[w.key,w.tracerSpeed])),default:18};
 const BOT_PRIMARY_POOL=WEAPONS.flatMap((w,idx)=>w.bot?[{...w,...w.bot,idx,dmg:w.bot.dmg??w.dmg}]:[]);
 
-const PLAYER_ROCKET_SPEED=27.0;
-const BOT_ROCKET_SPEED=18.5;
-const BASE_FOV=75,ZOOM_FOV=24;
+const PLAYER_ROCKET_SPEED=31.0;
+const BOT_ROCKET_SPEED=20.0;
+const BASE_FOV=75,ZOOM_FOV=42;
+function weaponDamageScaleAtDistance(w,dist){
+  const start=Number.isFinite(w.falloffStart)?w.falloffStart:Infinity;
+  const end=Number.isFinite(w.falloffEnd)?Math.max(start+.001,w.falloffEnd):Infinity;
+  if(dist<=start||!Number.isFinite(end))return 1;
+  const t=Math.max(0,Math.min(1,(dist-start)/(end-start)));
+  return 1-(1-(w.minDamageM??1))*t;
+}
 const PLAYER_BULLET_DAMAGE_SCALE=0.30;
 const PLAYER_ROCKET_DAMAGE_SCALE=0.24;
 const PLAYER_MINE_DAMAGE_SCALE=0.27;
@@ -71,11 +79,18 @@ function chooseBotWeaponByDistance(dist,prevIdx=-1,force=false,role='assault'){
     if(dist<8&&w.isRocket)score*=0.18;
     if(dist>24&&w.key==='shotgun')score*=0.24;
     if(dist<10&&w.key==='rifle')score*=0.62;
+    if(w.key==='sniper'){
+      if(dist<24)score*=0.06;
+      else if(dist<42)score*=0.42;
+      if(dist>60)score*=1.42;
+    }
     if(role==='anchor'){
-      if(w.key==='rifle')score*=1.42;
-      if(w.key==='plasma')score*=1.18;
+      if(w.key==='sniper')score*=1.72;
+      if(w.key==='rifle')score*=1.34;
+      if(w.key==='plasma')score*=1.12;
       if(w.key==='shotgun')score*=0.34;
     }else if(role==='assault'){
+      if(w.key==='sniper')score*=0.34;
       if(w.key==='shotgun')score*=1.45;
       if(w.key==='plasma')score*=1.15;
       if(w.key==='rocket'&&dist<14)score*=0.32;
@@ -227,6 +242,19 @@ function createWeaponModel(key,options={}){
     if(detail>0){box(0,.213,-.15,.12,.042,.12,glass);box(0,.055,-.58,.20,.10,.22,dark);for(let i=0;i<4;i++)box(-.09+i*.06,.11,-.53,.035,.03,.16,steel);}
     if(detail>1){box(0,-.03,.28,.19,.07,.08,silver);rail(0,.105,.18,.09,.018,.12);}
     muzzleZ=-1.38;
+  }else if(w.key==='sniper'){
+    box(0,.015,-.12,.24,.17,.92,dark2);box(0,.055,-.24,.20,.065,.62,accentSoft);
+    cyl(0,.035,-.92,.026,.026,1.52,steel);cyl(0,.035,-1.63,.045,.038,.20,dark);
+    box(0,-.02,.48,.20,.16,.54,polymer);box(0,-.18,.08,.12,.31,.20,grip,.12);box(0,-.11,-.34,.11,.22,.20,dark,.05);
+    rail(0,.135,-.18,.10,.022,.62);cyl(0,.235,-.22,.055,.055,.46,dark,Math.PI/2);
+    cyl(0,.235,-.22,.043,.043,.48,glass,Math.PI/2);
+    torus(0,.235,-.44,.060,.014,accent,Math.PI/2);torus(0,.235,.00,.060,.014,accent,Math.PI/2);
+    if(detail>0){
+      box(-.12,-.10,-.72,.025,.42,.025,steel,0,0,-.32);box(.12,-.10,-.72,.025,.42,.025,steel,0,0,.32);
+      box(0,.035,-.70,.19,.09,.30,dark);box(.115,.02,-.50,.018,.12,.42,accentSoft);box(-.115,.02,-.50,.018,.12,.42,accentSoft);
+    }
+    if(detail>1){box(0,.18,-.22,.14,.035,.30,silver);sphere(0,.235,-.45,.042,glass,10);}
+    muzzleZ=-1.76;
   }else if(w.key==='rocket'){
     cyl(0,.015,-.28,.13,.145,1.24,dark2);cyl(0,.015,-.84,.145,.145,.16,steel);
     torus(0,.015,-.85,.147,.022,accent);torus(0,.015,.22,.135,.018,steel);
@@ -277,7 +305,7 @@ function addFirstPersonHands(target){
 function createWorldWeaponModel(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0];
   const model=createWeaponModel(w.key,{mode:'world',detail:MOBILE_LOW?0:1});
-  const scale=w.key==='rocket' ? .72 : w.key==='mine' ? .82 : w.key==='bomb' ? .86 : w.key==='smoke' ? .92 : .82;
+  const scale=w.key==='rocket' ? .72 : w.key==='sniper' ? .74 : w.key==='mine' ? .82 : w.key==='bomb' ? .86 : w.key==='smoke' ? .92 : .82;
   model.scale.setScalar(scale);
   model.rotation.x=w.key==='mine'||w.key==='bomb'?0:-.12;
   model.rotation.z=w.key==='mine'||w.key==='bomb'?0:-.08;

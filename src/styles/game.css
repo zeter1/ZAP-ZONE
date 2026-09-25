@@ -142,7 +142,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #ally-panel{position:absolute;bottom:65px;left:18px;display:flex;gap:6px;}
 .ally-icon{background:rgba(0,60,120,.7);border:1px solid rgba(68,170,255,.5);border-radius:8px;padding:3px 8px;font-size:11px;color:#88ccff;}
 
-#weapon-bar{pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:min(94vw,760px);}
+#weapon-bar{pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:min(96vw,920px);}
 #weapon-bar .wb-slot{touch-action:manipulation;}
 #ally-panel{flex-wrap:wrap;max-width:min(58vw,520px);}
 #mobile-controls{position:fixed;inset:0;z-index:120;display:none;pointer-events:none;}
@@ -458,3 +458,25 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #settings-box .btn{display:block;margin:18px auto 0;}
 #canvas{transform-origin:50% 50%;will-change:transform;}
 @media(max-width:700px){#damage-direction span{top:-105px;}#settings-box{padding:18px;}.setting-row{align-items:flex-start;flex-direction:column;gap:7px;}.setting-control{width:100%;min-width:0;}.setting-control input[type=range]{width:100%;}}
+
+
+/* v22.0 — sniper optic and weapon-handling HUD */
+#sniper-scope{
+  position:fixed;inset:0;z-index:16;pointer-events:none;
+  opacity:0;visibility:hidden;transition:opacity .10s ease;
+}
+#sniper-scope.on{opacity:1;visibility:visible;}
+#sniper-scope img{display:block;width:100%;height:100%;object-fit:cover;}
+#sniper-scope.kick img{animation:sniperScopeKick .26s cubic-bezier(.15,.72,.22,1);}
+#xhair.scope-hidden{opacity:0!important;}
+@keyframes sniperScopeKick{
+  0%{transform:scale(1) translateY(0)}
+  18%{transform:scale(1.035) translateY(9px)}
+  48%{transform:scale(.995) translateY(-3px)}
+  100%{transform:scale(1) translateY(0)}
+}
+@media(max-width:950px){
+  .wb-slot{min-width:68px;padding-left:5px;padding-right:5px;}
+  .wb-asset{width:52px;}
+  .wb-name{font-size:8px;}
+}

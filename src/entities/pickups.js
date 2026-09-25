@@ -64,7 +64,7 @@ function mkBombPickupMesh(){
 }
 const WORLD_WEAPON_PICKUPS=[
   ['pistol',-18,24],['shotgun',18,-24],['rifle',-33,7],['rocket',33,-7],
-  ['plasma',7,33],['mine',-7,-33],['smoke',28,28]
+  ['plasma',7,33],['mine',-7,-33],['smoke',28,28],['sniper',0,-52]
 ];
 function mkWeaponPickupMesh(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0],g=new THREE.Group();

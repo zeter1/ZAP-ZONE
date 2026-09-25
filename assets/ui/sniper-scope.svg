@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <mask id="m"><rect width="1600" height="900" fill="#fff"/><circle cx="800" cy="450" r="360" fill="#000"/></mask>
+  <filter id="g"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1600" height="900" fill="#000" fill-opacity=".94" mask="url(#m)"/>
+<circle cx="800" cy="450" r="362" fill="none" stroke="#0b1820" stroke-width="34"/>
+<circle cx="800" cy="450" r="348" fill="none" stroke="#89e9ff" stroke-width="3" opacity=".66"/>
+<circle cx="800" cy="450" r="278" fill="none" stroke="#73dfff" stroke-width="2" stroke-dasharray="10 18" opacity=".34"/>
+<g stroke="#bff8ff" fill="none" filter="url(#g)">
+  <path d="M440 450h272M888 450h272M800 90v280M800 530v280" stroke-width="3"/>
+  <path d="M760 450h80M800 410v80" stroke-width="5"/>
+</g>
+<g stroke="#65d8ff" stroke-width="3" opacity=".8">
+  <path d="M670 438v24M710 442v16M750 438v24M850 438v24M890 442v16M930 438v24"/>
+  <path d="M788 320h24M792 360h16M788 400h24M788 500h24M792 540h16M788 580h24"/>
+</g>
+<circle cx="800" cy="450" r="7" fill="#fff"/>
+<g fill="#9ceeff" font-family="Consolas,monospace" font-size="22" opacity=".72">
+  <text x="495" y="760">SR-9 OPTIC // 8X</text>
+  <text x="980" y="760">WIND 0.0</text>
+  <text x="980" y="790">RANGE AUTO</text>
+</g>
+</svg>

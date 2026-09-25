@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── PLAYER STATE ────────────────────────
-let curW=0,ammo=20,uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
+let curW=0,ammo=STARTING_AMMO[0],uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
 const weaponAmmo=STARTING_AMMO.slice();
 let yaw=0,pitch=0,onGnd=true,jumpV=0;
 let hp=100,score=0,kills=0,xp=0,level=1,armor=0;
@@ -393,6 +393,7 @@ function applyRuntimeSave(data){
 function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;
   syncCurrentAmmo();
+  if(typeof zooming!=='undefined')zooming=false;
   curW=idx;
   const w=getW();
   ammo=weaponAmmoValue(idx);

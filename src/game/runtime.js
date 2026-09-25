@@ -34,16 +34,18 @@ function loop(ts){
 
   const dt=Math.min(rawDt,.033);lastT=ts;
 
-  // Camera recoil recovery
+  // Camera recoil recovery follows the current weapon mass/handling profile.
+  const activeW=getW();
+  const recoilReturn=activeW.recoilReturn||12;
   if(recoilRecovery>0){
     recoilRecovery-=dt;
-    const recRate=8*dt;
+    const recRate=recoilReturn*.62*dt;
     recoilPitch=recoilPitch>0?Math.max(0,recoilPitch-recRate):Math.min(0,recoilPitch+recRate);
-    recoilYaw=recoilYaw>0?Math.max(0,recoilYaw-recRate*.5):Math.min(0,recoilYaw+recRate*.5);
+    recoilYaw=recoilYaw>0?Math.max(0,recoilYaw-recRate*.48):Math.min(0,recoilYaw+recRate*.48);
   } else {
-    const recRate=12*dt;
+    const recRate=recoilReturn*dt;
     recoilPitch=recoilPitch>0?Math.max(0,recoilPitch-recRate):Math.min(0,recoilPitch+recRate);
-    recoilYaw=recoilYaw>0?Math.max(0,recoilYaw-recRate*.6):Math.min(0,recoilYaw+recRate*.6);
+    recoilYaw=recoilYaw>0?Math.max(0,recoilYaw-recRate*.60):Math.min(0,recoilYaw+recRate*.60);
   }
 
   // Apply recoil to actual aim
@@ -52,11 +54,18 @@ function loop(ts){
 
   _euler.x=effPitch;_euler.y=effYaw;camera.quaternion.setFromEuler(_euler);
 
-  const targetFov=!IS_TOUCH&&zooming?ZOOM_FOV:BASE_FOV;
+  const scopeActive=!IS_TOUCH&&zooming&&activeW.isSniper;
+  const targetFov=!IS_TOUCH&&zooming?(activeW.zoomFov||ZOOM_FOV):BASE_FOV;
   if(Math.abs(camera.fov-targetFov)>.05){
-    camera.fov+=(targetFov-camera.fov)*Math.min(1,dt*10);
+    const fovSpeed=activeW.isSniper?8:10;
+    camera.fov+=(targetFov-camera.fov)*Math.min(1,dt*fovSpeed);
     camera.updateProjectionMatrix();
   }
+  const sniperScope=G('sniper-scope');
+  if(sniperScope)sniperScope.classList.toggle('on',scopeActive);
+  const crosshair=G('xhair');
+  if(crosshair)crosshair.classList.toggle('scope-hidden',scopeActive);
+  gunGrp.visible=!scopeActive;
 
   // Movement
   const lowHpActive=hp<plr.maxHp*.35;
@@ -86,10 +95,11 @@ function loop(ts){
   if(dt>0.001){plrVx=(camera.position.x-prevPX)/dt;plrVz=(camera.position.z-prevPZ)/dt;}
   prevPX=camera.position.x;prevPZ=camera.position.z;
 
-  // Auto-fire when holding mouse / mobile fire
-  if((mouseDown||mobileInput.fire)&&!reloading&&sCD<=0){
+  // Only true automatic weapons repeat while fire is held.
+  const fireW=getW();
+  if((mouseDown||mobileInput.fire)&&fireW.automatic&&!reloading&&sCD<=0){
     autoFireT-=dt;
-    if(autoFireT<=0){shoot();autoFireT=getW().rate;}
+    if(autoFireT<=0){shoot();autoFireT=fireW.rate;}
   } else {autoFireT=0;}
 
   // Gun

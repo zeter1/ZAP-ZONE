@@ -24,7 +24,11 @@ const gameSettings=loadGameSettings();
 let settingsOpen=false;
 function byId(id){return document.getElementById(id);}
 function saveGameSettings(){try{localStorage.setItem(GAME_SETTINGS_KEY,JSON.stringify(gameSettings));}catch(e){}applyGameSettings();}
-function lookSensitivityMultiplier(zoomed=false){return gameSettings.sensitivity*(zoomed?.55:1);}
+function lookSensitivityMultiplier(zoomed=false){
+  const w=typeof getW==='function'?getW():null;
+  const zoomMultiplier=zoomed?(w&&w.isSniper?.22:.55):1;
+  return gameSettings.sensitivity*zoomMultiplier;
+}
 
 let gameAudioCtx=null,gameAudioMaster=null,gameNoiseBuffer=null;
 function ensureGameAudio(){
@@ -64,10 +68,11 @@ function playSfx(name,intensity=1,weaponKey=''){
   if(gameSettings.sfx<=0)return;const k=Math.max(.12,Math.min(1.25,Number(intensity)||1));
   switch(name){
     case 'shoot':{
-      const f=weaponKey==='shotgun'?82:weaponKey==='rocket'?62:weaponKey==='rifle'?170:weaponKey==='plasma'?430:155;
-      const dur=weaponKey==='rocket'?.16:weaponKey==='shotgun'?.13:.075;
+      const f=weaponKey==='sniper'?58:weaponKey==='shotgun'?82:weaponKey==='rocket'?62:weaponKey==='rifle'?170:weaponKey==='plasma'?430:155;
+      const dur=weaponKey==='sniper'?.22:weaponKey==='rocket'?.16:weaponKey==='shotgun'?.13:.075;
       synthTone(f,dur,.075*k,weaponKey==='plasma'?'sine':'square',Math.max(35,f*.55));
-      synthNoise(dur*.75,.055*k,weaponKey==='plasma'?2500:1100);
+      synthNoise(dur*.75,weaponKey==='sniper'?.095*k:.055*k,weaponKey==='plasma'?2500:weaponKey==='sniper'?1500:1100);
+      if(weaponKey==='sniper'){synthTone(1220,.07,.034*k,'triangle',760,.018);synthNoise(.12,.038*k,3200,.035);}
       if(weaponKey==='plasma')synthTone(760,.055,.035*k,'sine',420,.018);break;
     }
     case 'hit':synthTone(760,.045,.032*k,'square',620);break;
