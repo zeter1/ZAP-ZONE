@@ -184,7 +184,7 @@ for(const token of [
   "squadPlan.doctrine==='retake'",
   "case 'objective'",
   'plan.aliveDelta=aliveDelta',
-  "squadPlan.doctrine==='hold'&&mapObjective"
+  "objectivePull>0&&mapObjective"
 ]){
   if(!bots.includes(token))fail('Combat AI 2.1 map tactics missing: '+token);
 }
