@@ -157,7 +157,7 @@ function loop(ts){
 
   flushHUD();
   tickProjectiles(dt);tickMines(dt);tickSmoke(dt);tickPickups(dt);
-  tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);
+  tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickEnvironment(dt);
 
   // Update ally panel
   updateAllyPanel(dt);
@@ -172,7 +172,7 @@ function updateAllyPanel(dt){
   const leaders=enemies.filter(e=>e.alive).sort((a,b)=>(b.kills||0)-(a.kills||0)).slice(0,3);
   panel.innerHTML=leaders.map((e,i)=>{
     const pct=Math.round(e.hp/e.maxHp*100);
-    return `<div class="ally-icon" style="border-color:rgba(255,80,80,.5);background:rgba(90,0,0,.62);color:#ffaaaa;">🔴 Бот ${i+1}: ${e.kills||0} ☠ · ${pct}%</div>`;
+    return `<div class="ally-icon" style="border-color:rgba(255,80,80,.5);background:rgba(90,0,0,.62);color:#ffaaaa;"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.enemy}" alt=""> Бот ${i+1}: ${e.kills||0} ☠ · ${pct}%</div>`;
   }).join('');
 }
 

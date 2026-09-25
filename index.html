@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v21.6</title><link rel="stylesheet" href="src/styles/game.css">
+<title>⚡ ZAP ZONE v21.7</title><link rel="stylesheet" href="src/styles/game.css">
 
 </head>
 <body>
@@ -52,7 +52,9 @@
   <div id="score-pop"></div><div id="ann"></div><div id="pmsg"></div>
   <div id="rmsg">🔄 ПЕРЕЗАРЯДКА (R)</div>
   <div id="rwarn">🚀 РАКЕТА!</div>
-  <div id="combo"></div><div id="hs-pop">🎯 HEADSHOT!</div>
+  <div id="combo"></div>
+  <div id="hs-pop"><img id="hs-pop-icon" src="assets/fx/headshot.svg" alt=""><span id="hs-pop-text">HEADSHOT</span></div>
+  <div id="hs-kill-flash"></div>
   <div id="ally-panel"></div>
 </div>
 
@@ -85,7 +87,7 @@
 
 <div id="lvl-ann">
   <div id="lvl-ann-inner">
-    <div id="lvl-ann-title">⬆ УРОВЕНЬ!</div>
+    <div id="lvl-ann-title"><img src="assets/fx/levelup.svg" alt=""><span>УРОВЕНЬ!</span></div>
     <div id="lvl-ann-num">2</div>
     <div id="lvl-ann-sub">выбор улучшения...</div>
     <div id="lvl-ann-bar-bg"><div id="lvl-ann-bar"></div></div>
@@ -126,7 +128,7 @@
   <div class="pause-note">Новая игра удалит автосохранение, уровень, улучшения, счёт и текущее снаряжение.</div>
 </div>
 <div id="death-flash"></div>
-<div id="death-msg">☠ ВЫ ПОГИБЛИ</div>
+<div id="death-msg"><img src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="src/assets/catalog.js"></script>

@@ -22,21 +22,74 @@ function lvlSpdMult(){ return 1 + level * 0.02; }
 
 function mkHuman(et,team){
   const g=new THREE.Group();const pts=[];
-  const clothCol=team==='ally'?0x2244aa:et.cloth;
-  const armCol=team==='ally'?0x3366cc:et.arm;
-  const A=(geo,col,x,y,z,rx=0,ry=0,rz=0)=>{const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:col}));m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;g.add(m);pts.push(m);return m;};
-  A(new THREE.SphereGeometry(.22,7,5),et.skin,0,1.82,0);
-  const helm=new THREE.Mesh(new THREE.SphereGeometry(.245,7,4,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({color:armCol}));helm.position.set(0,1.88,0);g.add(helm);pts.push(helm);
-  A(new THREE.BoxGeometry(.52,.70,.28),clothCol,0,1.25,0);A(new THREE.BoxGeometry(.44,.22,.24),clothCol,0,.88,0);
-  A(new THREE.BoxGeometry(.14,.52,.14),clothCol,-.35,1.22,0,0,0,.18);A(new THREE.BoxGeometry(.14,.52,.14),clothCol,.35,1.22,0,0,0,-.18);
-  A(new THREE.BoxGeometry(.11,.42,.11),et.skin,-.36,.88,0);A(new THREE.BoxGeometry(.11,.42,.11),et.skin,.36,.88,0);
-  A(new THREE.BoxGeometry(.18,.54,.20),clothCol,-.15,.52,0);A(new THREE.BoxGeometry(.18,.54,.20),clothCol,.15,.52,0);
-  A(new THREE.BoxGeometry(.14,.50,.16),0x222244,-.15,.14,0);A(new THREE.BoxGeometry(.14,.50,.16),0x222244,.15,.14,0);
-  A(new THREE.BoxGeometry(.15,.10,.26),0x111111,-.15,-.05,.05);A(new THREE.BoxGeometry(.15,.10,.26),0x111111,.15,-.05,.05);
-  const ringCol=team==='ally'?0x4aa3ff:0xff3355;
-  const ringOpacity=team==='ally'?.62:.92;
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(.38,.05,4,12),new THREE.MeshBasicMaterial({color:ringCol,transparent:true,opacity:ringOpacity}));
+  const ally=team==='ally';
+  const clothCol=ally?0x173f86:et.cloth;
+  const armCol=ally?0x2f73c9:et.arm;
+  const suitDark=ally?0x0b1c32:0x281016;
+  const glowCol=ally?0x43c9ff:0xff3c58;
+
+  // Gameplay hit meshes. Their order is intentionally unchanged.
+  const A=(geo,col,x,y,z,rx=0,ry=0,rz=0)=>{
+    const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:col,roughness:.62,metalness:.10}));
+    m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;g.add(m);pts.push(m);return m;
+  };
+  A(new THREE.SphereGeometry(.22,8,6),et.skin,0,1.82,0);
+  const helm=new THREE.Mesh(
+    new THREE.SphereGeometry(.245,8,5,0,Math.PI*2,0,Math.PI/2),
+    new THREE.MeshStandardMaterial({color:armCol,roughness:.30,metalness:.62})
+  );
+  helm.position.set(0,1.88,0);helm.castShadow=true;g.add(helm);pts.push(helm);
+  A(new THREE.BoxGeometry(.52,.70,.28),clothCol,0,1.25,0);
+  A(new THREE.BoxGeometry(.44,.22,.24),clothCol,0,.88,0);
+  A(new THREE.BoxGeometry(.14,.52,.14),clothCol,-.35,1.22,0,0,0,.18);
+  A(new THREE.BoxGeometry(.14,.52,.14),clothCol,.35,1.22,0,0,0,-.18);
+  A(new THREE.BoxGeometry(.11,.42,.11),et.skin,-.36,.88,0);
+  A(new THREE.BoxGeometry(.11,.42,.11),et.skin,.36,.88,0);
+  A(new THREE.BoxGeometry(.18,.54,.20),clothCol,-.15,.52,0);
+  A(new THREE.BoxGeometry(.18,.54,.20),clothCol,.15,.52,0);
+  A(new THREE.BoxGeometry(.14,.50,.16),0x22262d,-.15,.14,0);
+  A(new THREE.BoxGeometry(.14,.50,.16),0x22262d,.15,.14,0);
+  A(new THREE.BoxGeometry(.15,.10,.26),0x0d1116,-.15,-.05,.05);
+  A(new THREE.BoxGeometry(.15,.10,.26),0x0d1116,.15,-.05,.05);
+
+  // Decorative armor is excluded from pts[] so gameplay hitboxes do not change.
+  const armorMat=new THREE.MeshStandardMaterial({color:armCol,roughness:.26,metalness:.72});
+  const darkMat=new THREE.MeshStandardMaterial({color:suitDark,roughness:.48,metalness:.42});
+  const glowMat=new THREE.MeshStandardMaterial({color:glowCol,roughness:.18,metalness:.48,emissive:glowCol,emissiveIntensity:.88});
+  const V=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{
+    const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=!MOBILE_LOW;g.add(m);return m;
+  };
+
+  V(new THREE.BoxGeometry(.30,.085,.26),glowMat,0,1.875,-.18,.04);
+  V(new THREE.BoxGeometry(.28,.085,.08),darkMat,0,1.73,-.205,-.16);
+  V(new THREE.BoxGeometry(.08,.18,.10),armorMat,-.245,1.84,-.02,0,0,.18);
+  V(new THREE.BoxGeometry(.08,.18,.10),armorMat,.245,1.84,-.02,0,0,-.18);
+  V(new THREE.BoxGeometry(.46,.38,.075),armorMat,0,1.33,-.178,-.03);
+  V(new THREE.BoxGeometry(.25,.09,.12),darkMat,0,1.57,-.11);
+  V(new THREE.BoxGeometry(.21,.14,.32),armorMat,-.36,1.43,0,0,0,.20);
+  V(new THREE.BoxGeometry(.21,.14,.32),armorMat,.36,1.43,0,0,0,-.20);
+  V(new THREE.BoxGeometry(.34,.09,.08),glowMat,0,1.13,-.19);
+  V(new THREE.BoxGeometry(.35,.42,.15),darkMat,0,1.27,.20);
+  V(new THREE.BoxGeometry(.48,.10,.30),darkMat,0,.89,0);
+  V(new THREE.BoxGeometry(.18,.16,.23),armorMat,-.15,.44,-.06,.05);
+  V(new THREE.BoxGeometry(.18,.16,.23),armorMat,.15,.44,-.06,.05);
+  V(new THREE.BoxGeometry(.15,.10,.27),armorMat,-.15,.10,-.02);
+  V(new THREE.BoxGeometry(.15,.10,.27),armorMat,.15,.10,-.02);
+
+  const emblem=makeAssetPlane(
+    ally?GAME_ASSETS.characters.ally:GAME_ASSETS.characters.enemy,
+    .25,.25,{opacity:.98,depthTest:true,renderOrder:8}
+  );
+  emblem.position.set(0,1.36,-.219);g.add(emblem);
+
+  const ringCol=ally?0x4aa3ff:0xff3355;
+  const ringOpacity=ally?.62:.92;
+  const ring=new THREE.Mesh(
+    new THREE.TorusGeometry(.40,.045,5,16),
+    new THREE.MeshBasicMaterial({color:ringCol,transparent:true,opacity:ringOpacity})
+  );
   ring.rotation.x=Math.PI/2;ring.position.y=.02;g.add(ring);
+
   const weaponPivot=new THREE.Group();
   weaponPivot.position.set(.42,1.20,-.02);
   weaponPivot.rotation.set(.10,.12,-.42);
@@ -132,7 +185,8 @@ class Enemy{
 
   updateBadge(){
     const icon=this.weapon?.icon||'🔫';
-    this.wEl.textContent=(this.team==='ally'?'🔵':'🔴')+' '+icon;
+    const badge=this.team==='ally'?GAME_ASSETS.characters.ally:GAME_ASSETS.characters.enemy;
+    this.wEl.innerHTML='<img class="bot-badge-icon" src="'+badge+'" alt=""><span>'+icon+'</span>';
   }
 
   syncScale(force=false){

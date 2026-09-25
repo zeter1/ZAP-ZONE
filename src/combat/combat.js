@@ -412,16 +412,33 @@ function shoot(){
         const lowTarget=en.hp/en.maxHp<.35;
         const rangeBonus=dist<12?1+plr.closeDamage:(dist>28?1+plr.longRangeDamage:1);
         const dmg=w.dmg*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*rangeBonus*(hd?2.10*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+        const hitFx=camera.position.clone().addScaledVector(d,dist);
         en.hurt(dmg,d.clone(),'ally');
+        const lethalHeadshot=hd&&!en.alive;
         if(isCrit&&plr.critHeal>0){hp=Math.min(plr.maxHp,hp+plr.critHeal);markHUD();}
         if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
-        if(p===0||w.key==='plasma'){const hitFx=camera.position.clone().addScaledVector(d,dist);spawnSpark(hitFx,tc);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
-        if(hd){G('hs-pop').style.opacity='1';clearTimeout(shoot._ht);shoot._ht=setTimeout(()=>G('hs-pop').style.opacity='0',600);}
+        if(p===0||w.key==='plasma'){spawnSpark(hitFx,tc);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
+        if(hd){
+          spawnHeadshotFx(hitFx,lethalHeadshot);
+          const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
+          hs.classList.remove('on','kill');void hs.offsetWidth;
+          if(lethalHeadshot){
+            hs.classList.add('kill');
+            hsIcon.src=GAME_ASSETS.fx.headshotKill;hsText.textContent='HEADSHOT KILL';
+            const flash=G('hs-kill-flash');flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');
+            clearTimeout(shoot._kft);shoot._kft=setTimeout(()=>flash.classList.remove('on'),520);
+          }else{
+            hsIcon.src=GAME_ASSETS.fx.headshot;hsText.textContent='HEADSHOT';
+          }
+          hs.classList.add('on');
+          clearTimeout(shoot._ht);shoot._ht=setTimeout(()=>hs.classList.remove('on','kill'),lethalHeadshot?940:620);
+        }
         if(plr.lifeSteal>0)hp=Math.min(hp+dmg*plr.lifeSteal,plr.maxHp);
         if(!en.alive){
           addXP((en.type+1)*25+level*3);score+=(en.type+1)*100;kills++;grantPlayerKillRewards();
           combo++;comboT=3;if(combo>2)showCombo();
-          markHUD();scorePop('+'+(en.type+1)*100+(hd?' 🎯':'')+(isCrit?' КРИТ!':''));
+          markHUD();
+          scorePop(lethalHeadshot?'HEADSHOT KILL · +'+(en.type+1)*100:'+'+(en.type+1)*100+(hd?' 🎯':'')+(isCrit?' КРИТ!':''));
           allyKills++;updateTeamScore();
         }
         if(plr.explode){

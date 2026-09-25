@@ -36,7 +36,7 @@ function renderPerkChoices(lvl){
     const rarity=PERK_RARITIES[p.rarity]||PERK_RARITIES.common;
     const d=document.createElement('div');
     d.className='pcard rarity-'+p.rarity;
-    d.innerHTML=`<div class="pcard-ic">${p.ic}</div><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm">${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
+    d.innerHTML=`<img class="pcard-ic" src="${perkAsset(p.path)}" alt=""><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
     d.addEventListener('click',()=>pickPerk(p));
     cards.appendChild(d);
   });
@@ -89,7 +89,7 @@ function updatePerkPanel(){
     shown.push(perk.id);
     const d=document.createElement('div');d.className='ptag';
     const cnt=counts.get(perk.id)||1;
-    d.textContent=perk.ic+' '+perk.nm+' '+cnt+'/'+(perk.maxRank||1);
+    d.innerHTML='<img class="ptag-ic" src="'+perkAsset(perk.path)+'" alt=""><span>'+perk.ic+' '+perk.nm+' '+cnt+'/'+(perk.maxRank||1)+'</span>';
     p.appendChild(d);
     if(shown.length>=8)break;
   }

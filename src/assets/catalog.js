@@ -1,6 +1,6 @@
 'use strict';
 
-// Centralized visual asset catalog. Paths are intentionally root-relative to the game URL.
+// Centralized visual asset catalog. Paths are root-relative to the game URL.
 const GAME_ASSETS=Object.freeze({
   pickups:Object.freeze({
     ammo:'assets/pickups/ammo.svg',
@@ -9,7 +9,26 @@ const GAME_ASSETS=Object.freeze({
   environment:Object.freeze({
     crate:'assets/environment/crate.svg',
     hazard:'assets/environment/hazard.svg',
-    terminal:'assets/environment/terminal.svg'
+    terminal:'assets/environment/terminal.svg',
+    foliage:'assets/environment/foliage.svg',
+    water:'assets/environment/water.svg'
+  }),
+  characters:Object.freeze({
+    ally:'assets/characters/ally-emblem.svg',
+    enemy:'assets/characters/enemy-emblem.svg'
+  }),
+  perks:Object.freeze({
+    assault:'assets/perks/assault.svg',
+    precision:'assets/perks/precision.svg',
+    survival:'assets/perks/survival.svg',
+    mobility:'assets/perks/mobility.svg',
+    demolition:'assets/perks/demolition.svg'
+  }),
+  fx:Object.freeze({
+    headshot:'assets/fx/headshot.svg',
+    headshotKill:'assets/fx/headshot-kill.svg',
+    levelup:'assets/fx/levelup.svg',
+    skull:'assets/fx/skull.svg'
   }),
   ui:Object.freeze({
     logo:'assets/ui/logo.svg',
@@ -23,6 +42,9 @@ const GAME_ASSETS=Object.freeze({
 const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.pickups),
   ...Object.values(GAME_ASSETS.environment),
+  ...Object.values(GAME_ASSETS.characters),
+  ...Object.values(GAME_ASSETS.perks),
+  ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.ui)
 ]);
 
@@ -80,4 +102,8 @@ function makeAssetSprite(path,width,height,options={}){
   sprite.scale.set(width,height,1);
   sprite.renderOrder=options.renderOrder??12;
   return sprite;
+}
+
+function perkAsset(path){
+  return GAME_ASSETS.perks[path]||GAME_ASSETS.perks.assault;
 }
