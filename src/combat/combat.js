@@ -23,7 +23,7 @@ document.addEventListener('mousedown',e=>{
   if(e.button===2){
     e.preventDefault();
     const w=getW();
-    if(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying&&!reloading&&w.aimMode==='scope')zooming=true;
+    zooming=!!(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying&&!reloading&&w.aimMode==='scope');
     return;
   }
   if(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying&&e.button===0){mouseDown=true;shoot();}
@@ -32,6 +32,8 @@ document.addEventListener('mouseup',e=>{
   if(e.button===0)mouseDown=false;
   if(e.button===2)zooming=false;
 });
+window.addEventListener('blur',()=>{mouseDown=false;zooming=false;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){mouseDown=false;zooming=false;}});
 document.addEventListener('contextmenu',e=>{if(!IS_TOUCH)e.preventDefault();});
 
 function bindMobileControls(){ if(!IS_TOUCH) return; }
