@@ -1,4 +1,4 @@
-# ⚡ ZAP ZONE
+#  ZAP ZONE
 
 **ZAP ZONE** — браузерный 3D FPS на **Three.js/WebGL**: один игрок против 9 адаптивных ботов в режиме free-for-all.
 
