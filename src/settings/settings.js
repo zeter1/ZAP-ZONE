@@ -62,6 +62,7 @@ const GAME_AUDIO_ASSETS=Object.freeze({
   footstepWater:'assets/audio/footstep-water.wav'
 });
 const gameAudioBuffers=new Map(),gameAudioLoads=new Map(),gameAudioRetryAfter=new Map();
+const GAME_AUDIO_FILE_ASSETS_ENABLED=location.protocol!=='file:';
 const acousticProfileCache=new Map(),acousticTailCooldowns=new Map();
 let gameAudioWarmupScheduled=false;
 let playerFootstepDistance=0,battlefieldAmbienceSource=null,battlefieldAmbienceGain=null,battlefieldAmbiencePending=false;
@@ -104,6 +105,7 @@ function combatAcousticProfile(source){
   return profile;
 }
 function loadGameAudioAsset(key){
+  if(!GAME_AUDIO_FILE_ASSETS_ENABLED)return Promise.resolve(null);
   if(gameAudioBuffers.has(key))return Promise.resolve(gameAudioBuffers.get(key));
   if(gameAudioLoads.has(key))return gameAudioLoads.get(key);
   const retryAt=gameAudioRetryAfter.get(key)||0;
@@ -116,18 +118,18 @@ function loadGameAudioAsset(key){
     .then(buffer=>{gameAudioBuffers.set(key,buffer);gameAudioLoads.delete(key);gameAudioRetryAfter.delete(key);return buffer;})
     .catch(err=>{
       gameAudioLoads.delete(key);
-      gameAudioRetryAfter.set(key,performance.now()+(location.protocol==='file:'?60000:12000));
+      gameAudioRetryAfter.set(key,performance.now()+12000);
       console.warn('Не удалось загрузить аудио asset:',path,err);
       return null;
     });
   gameAudioLoads.set(key,load);return load;
 }
 function preloadGameAudio(){
-  if(!gameAudioCtx||gameSettings.sfx<=0)return;
+  if(!GAME_AUDIO_FILE_ASSETS_ENABLED||!gameAudioCtx||gameSettings.sfx<=0)return;
   for(const key of Object.keys(GAME_AUDIO_ASSETS))loadGameAudioAsset(key);
 }
 function scheduleGameAudioWarmup(){
-  if(gameAudioWarmupScheduled||gameSettings.sfx<=0)return;
+  if(!GAME_AUDIO_FILE_ASSETS_ENABLED||gameAudioWarmupScheduled||gameSettings.sfx<=0)return;
   gameAudioWarmupScheduled=true;
   const run=()=>{gameAudioWarmupScheduled=false;preloadGameAudio();startBattlefieldAmbience();};
   if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:700});
@@ -136,7 +138,7 @@ function scheduleGameAudioWarmup(){
 function playBufferSfx(key,intensity=1,source=null,maxDistance=82,rate=1,delay=0){
   const ctx=ensureGameAudio();if(!ctx||!gameAudioMaster)return false;
   const buffer=gameAudioBuffers.get(key);
-  if(!buffer){loadGameAudioAsset(key);return false;}
+  if(!buffer){if(GAME_AUDIO_FILE_ASSETS_ENABLED)loadGameAudioAsset(key);return false;}
   const mix=spatialAudioMix(source,maxDistance);
   if(mix.gain<=.015)return true;
   const src=ctx.createBufferSource(),gain=ctx.createGain();
@@ -245,12 +247,15 @@ function playWeaponMechanicSound(name,intensity=1,weaponKey='',source=null){
   playSfx(name,intensity,weaponKey);
 }
 function startBattlefieldAmbience(){
-  if(battlefieldAmbienceSource||battlefieldAmbiencePending||gameSettings.sfx<=0)return;
+  if(!GAME_AUDIO_FILE_ASSETS_ENABLED||battlefieldAmbienceSource||battlefieldAmbiencePending||gameSettings.sfx<=0)return;
   const ctx=ensureGameAudio();if(!ctx||!gameAudioMaster)return;
   const buffer=gameAudioBuffers.get('battlefield');
   if(!buffer){
     battlefieldAmbiencePending=true;
-    loadGameAudioAsset('battlefield').then(()=>{battlefieldAmbiencePending=false;startBattlefieldAmbience();});
+    loadGameAudioAsset('battlefield').then(loaded=>{
+      battlefieldAmbiencePending=false;
+      if(loaded)startBattlefieldAmbience();
+    });
     return;
   }
   const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
