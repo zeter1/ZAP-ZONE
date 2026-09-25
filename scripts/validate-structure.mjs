@@ -8,7 +8,7 @@ const requiredScripts=[
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
   .map(name=>'assets/weapons/'+name);
-const audioAssets=['pistol.wav','rifle.wav','shotgun.wav','sniper.wav','rocket-launch.wav','plasma.wav','explosion.wav','ricochet.wav','whiz.wav','objective-capture.wav']
+const audioAssets=['pistol.wav','rifle.wav','shotgun.wav','sniper.wav','rocket-launch.wav','plasma.wav','explosion.wav','ricochet.wav','whiz.wav','objective-capture.wav','tail-open.wav','tail-tight.wav','sniper-crack.wav','footstep-walk.wav','footstep-run.wav','hit-body.wav','hit-armor.wav','hit-head.wav']
   .map(name=>'assets/audio/'+name);
 
 const state=readFileSync('src/player/state.js','utf8');
@@ -67,7 +67,7 @@ if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
 const progression=readFileSync('src/progression/progression.js','utf8');
-for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'"]){
+for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
   if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
 
@@ -109,7 +109,7 @@ if(shotgunDef.includes("aimMode:'scope'"))fail('shotgun must not use rifle/snipe
 
 
 const settings=readFileSync('src/settings/settings.js','utf8');
-for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferSfx','function playWeaponShotSound','function playExplosionSound','function playWhizSound','function showHitMarker','function showDamageDirection','function showThreatDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
+for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferSfx','function combatAcousticProfile','function playWeaponTail','function playSniperCrack','function playFootstepSound','function tickPlayerFootsteps','function playHitImpactSound','function playWeaponShotSound','function playExplosionSound','function playWhizSound','function showHitMarker','function showDamageDirection','function showThreatDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
   if(!settings.includes(token))fail('settings/presentation integration missing: '+token);
 }
 
@@ -121,7 +121,7 @@ if(pickups.includes("type:'ammo'"))fail('standalone ammo pickups must not spawn'
 if(pickups.includes("type:'bomb'"))fail('bomb must use the same weapon pickup/reserve economy');
 
 const combat=readFileSync('src/combat/combat.js','utf8');
-for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible','playWeaponShotSound(w.key','playExplosionSound(pos','playRicochetSound(_hitPos']){
+for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible','playWeaponShotSound(w.key','playExplosionSound(pos','playRicochetSound(_hitPos',"zone='body'","playHitImpactSound(hd?'head':hitZone"]){
   if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
 if(!combat.includes("document.addEventListener('wheel'")||!combat.includes('cycleOwnedWeapon(e.deltaY>0?1:-1)'))fail('mouse wheel must cycle owned weapons only');
@@ -205,8 +205,8 @@ for(const token of [
 }
 if(bots.includes('this.dodgeSpd=this.speed*(2.35+this.aimSkill*.65)'))fail('legacy teleport-like dodge multiplier returned');
 if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.triggerDodge()'))fail('stuck recovery must not trigger high-speed dodge');
-for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','playObjectiveCaptureSound(team)']){
-  if(!bots.includes(token))fail('combat readability/frontline cover integration missing: '+token);
+for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','playObjectiveCaptureSound(team)','function botRoutePenalty','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat','playSniperCrack(null']){
+  if(!bots.includes(token))fail('combat presence/frontline navigation integration missing: '+token);
 }
 for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineBias=s=>','allyControlScore','enemyControlScore']){
   if(!bots.includes(token))fail('Frontline objective integration missing: '+token);
@@ -223,6 +223,7 @@ for(const token of ["botDoctrineLabel(plan.doctrine)","plan.zone?.label","ПРИ
 }
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 if(!runtime.includes('tickFrontlineObjective(dt,ts)'))fail('Frontline objective runtime tick missing');
+if(!runtime.includes('tickPlayerFootsteps(playerMoved,sprintingNow,onGnd)'))fail('distance-driven player footsteps missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('activeW.scopeAsset||GAME_ASSETS.ui.sniperScope'))fail('per-weapon scope asset switching missing');
 if(runtime.includes('setWeaponAmmo(SMOKE_WEAPON_INDEX,1)'))fail('smoke cooldown must not generate free ammo');
@@ -246,5 +247,5 @@ for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weapon
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v22.8'))fail('index version is not v22.8');
-if(!process.exitCode)console.log('ZAP ZONE v22.8 spatial combat audio and threat readability validation passed.');
+if(!html.includes('ZAP ZONE v22.9'))fail('index version is not v22.9');
+if(!process.exitCode)console.log('ZAP ZONE v22.9 Combat Presence 1.1 validation passed.');

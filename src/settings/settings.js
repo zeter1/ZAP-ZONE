@@ -41,9 +41,19 @@ const GAME_AUDIO_ASSETS=Object.freeze({
   explosion:'assets/audio/explosion.wav',
   ricochet:'assets/audio/ricochet.wav',
   whiz:'assets/audio/whiz.wav',
-  objectiveCapture:'assets/audio/objective-capture.wav'
+  objectiveCapture:'assets/audio/objective-capture.wav',
+  tailOpen:'assets/audio/tail-open.wav',
+  tailTight:'assets/audio/tail-tight.wav',
+  sniperCrack:'assets/audio/sniper-crack.wav',
+  footstepWalk:'assets/audio/footstep-walk.wav',
+  footstepRun:'assets/audio/footstep-run.wav',
+  hitBody:'assets/audio/hit-body.wav',
+  hitArmor:'assets/audio/hit-armor.wav',
+  hitHead:'assets/audio/hit-head.wav'
 });
 const gameAudioBuffers=new Map(),gameAudioLoads=new Map();
+const acousticProfileCache=new Map(),acousticTailCooldowns=new Map();
+let playerFootstepDistance=0;
 function combatSourcePosition(source){
   return source&&(source.group?.position||source.m?.position||source.position||source);
 }
@@ -65,6 +75,22 @@ function spatialAudioMix(source,maxDistance=82){
   const side=dist>.001?(dx*Math.cos(yaw)-dz*Math.sin(yaw))/dist:0;
   return{gain,pan:Math.max(-.92,Math.min(.92,side*.92)),distance:dist};
 }
+function combatAcousticProfile(source){
+  const src=combatSourcePosition(source)||(typeof camera!=='undefined'?camera.position:null);
+  if(!src||typeof THREE==='undefined'||typeof wallBetween!=='function'||typeof wallMeshes==='undefined')return'open';
+  const cellX=Math.round(src.x/6),cellZ=Math.round(src.z/6),key=cellX+':'+cellZ,now=performance.now();
+  const cached=acousticProfileCache.get(key);if(cached&&now-cached.time<900)return cached.profile;
+  const origin=new THREE.Vector3(src.x,Math.max(.85,Math.min(1.75,Number(src.y)||1.2)),src.z);
+  let blocked=0;
+  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){
+    const to=new THREE.Vector3(origin.x+dx*12,origin.y,origin.z+dz*12);
+    if(wallBetween(origin,to,wallMeshes))blocked++;
+  }
+  const profile=blocked>=2?'tight':'open';
+  acousticProfileCache.set(key,{profile,time:now});
+  if(acousticProfileCache.size>72)acousticProfileCache.delete(acousticProfileCache.keys().next().value);
+  return profile;
+}
 function loadGameAudioAsset(key){
   if(gameAudioBuffers.has(key))return Promise.resolve(gameAudioBuffers.get(key));
   if(gameAudioLoads.has(key))return gameAudioLoads.get(key);
@@ -81,7 +107,7 @@ function preloadGameAudio(){
   if(!gameAudioCtx||gameSettings.sfx<=0)return;
   for(const key of Object.keys(GAME_AUDIO_ASSETS))loadGameAudioAsset(key);
 }
-function playBufferSfx(key,intensity=1,source=null,maxDistance=82,rate=1){
+function playBufferSfx(key,intensity=1,source=null,maxDistance=82,rate=1,delay=0){
   const ctx=ensureGameAudio();if(!ctx||!gameAudioMaster)return false;
   const buffer=gameAudioBuffers.get(key);
   if(!buffer){loadGameAudioAsset(key);return false;}
@@ -94,17 +120,34 @@ function playBufferSfx(key,intensity=1,source=null,maxDistance=82,rate=1){
   if(typeof ctx.createStereoPanner==='function'){
     const pan=ctx.createStereoPanner();pan.pan.value=mix.pan;gain.connect(pan);pan.connect(gameAudioMaster);
   }else gain.connect(gameAudioMaster);
-  src.start();return true;
+  src.start(ctx.currentTime+Math.max(0,Number(delay)||0));return true;
 }
 function weaponAudioAsset(weaponKey){
   return weaponKey==='sniper'?'sniper':weaponKey==='shotgun'?'shotgun':weaponKey==='rifle'?'rifle':
     weaponKey==='rocket'?'rocket':weaponKey==='plasma'?'plasma':'pistol';
 }
+function playWeaponTail(weaponKey,intensity=1,source=null){
+  const pos=combatSourcePosition(source),tailKey=pos?(Math.round(pos.x/6)+':'+Math.round(pos.z/6)):'player';
+  const now=performance.now(),last=acousticTailCooldowns.get(tailKey)||-999;
+  if(now-last<72)return;
+  acousticTailCooldowns.set(tailKey,now);
+  if(acousticTailCooldowns.size>48)acousticTailCooldowns.delete(acousticTailCooldowns.keys().next().value);
+  const profile=combatAcousticProfile(source);
+  const power=weaponKey==='sniper'?.66:weaponKey==='shotgun'?.52:weaponKey==='rocket'?.48:weaponKey==='rifle'?.34:weaponKey==='plasma'?.24:.27;
+  playBufferSfx(profile==='tight'?'tailTight':'tailOpen',power*intensity,source,profile==='tight'?72:125,.96+Math.random()*.08,profile==='tight'?.026:.055);
+}
+function playSniperCrack(source=null,intensity=1,listenerCrack=false){
+  return playBufferSfx('sniperCrack',Math.min(1.2,.78*intensity),listenerCrack?null:source,listenerCrack?90:140,.96+Math.random()*.07,listenerCrack?.006:.014);
+}
 function playWeaponShotSound(weaponKey,intensity=1,source=null){
-  const asset=weaponAudioAsset(weaponKey),rate=source?.group?.position?(.96+Math.random()*.08):1;
-  if(playBufferSfx(asset,intensity,source,weaponKey==='sniper'?125:92,rate))return;
-  const mix=spatialAudioMix(source,weaponKey==='sniper'?125:92);
-  if(mix.gain>.02)playSfx('shoot',intensity*mix.gain,weaponKey);
+  const asset=weaponAudioAsset(weaponKey),rate=source?(.96+Math.random()*.08):1;
+  const played=playBufferSfx(asset,intensity,source,weaponKey==='sniper'?125:92,rate);
+  if(!played){
+    const mix=spatialAudioMix(source,weaponKey==='sniper'?125:92);
+    if(mix.gain>.02)playSfx('shoot',intensity*mix.gain,weaponKey);
+  }
+  playWeaponTail(weaponKey,intensity,source);
+  if(weaponKey==='sniper')playSniperCrack(source,intensity,false);
 }
 function playExplosionSound(source,intensity=1){
   if(playBufferSfx('explosion',intensity,source,105,.94+Math.random()*.08))return;
@@ -121,6 +164,28 @@ function playWhizSound(source,intensity=1){
 function playObjectiveCaptureSound(team='ally'){
   if(playBufferSfx('objectiveCapture',.82,null,90,team==='enemy'?.86:1))return;
   playSfx(team==='enemy'?'hurt':'level',.72);
+}
+function playFootstepSound(source=null,running=false,isBot=false){
+  const key=running?'footstepRun':'footstepWalk';
+  const intensity=(running?.34:.25)*(isBot?.80:1);
+  const played=playBufferSfx(key,intensity,source,isBot?42:18,.92+Math.random()*.16);
+  if(!played&&!isBot)synthNoise(running?.055:.045,running?.018:.012,520);
+}
+function tickPlayerFootsteps(distance,running,onGround){
+  const d=Math.max(0,Math.min(.65,Number(distance)||0));
+  if(!onGround||d<.0005)return;
+  playerFootstepDistance+=d;
+  const stride=running?1.62:2.12;
+  if(playerFootstepDistance>=stride){
+    playerFootstepDistance%=stride;
+    playFootstepSound(null,running,false);
+  }
+}
+function playHitImpactSound(zone='body',source=null,intensity=1){
+  const key=zone==='head'?'hitHead':zone==='armor'?'hitArmor':'hitBody';
+  const power=zone==='head'?.72:zone==='armor'?.58:.50;
+  if(playBufferSfx(key,power*intensity,source,86,.94+Math.random()*.12))return;
+  playSfx(zone==='head'?'crit':'hit',Math.min(1,power*intensity));
 }
 function ensureGameAudio(){
   if(gameSettings.sfx<=0)return null;

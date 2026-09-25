@@ -58,18 +58,18 @@ function rSphere(o,d,c,r){
 }
 const _ht=new THREE.Vector3();
 function hitEnemy(o,d,team,exclude=null,maxRange=120){
-  let best=Infinity,en=null,hd=false;
+  let best=Infinity,en=null,hd=false,zone='body';
   const maxD2=maxRange*maxRange;
   for(const e of enemies){
     if(!e.alive||e===exclude||e.team===team)continue;
     const p=e.group.position;
     const dx=p.x-o.x,dz=p.z-o.z;if(dx*dx+dz*dz>maxD2)continue;
     _ht.set(p.x,p.y+1.0,p.z);if(rSphere(o,d,_ht,.85)===Infinity)continue;
-    _ht.set(p.x,p.y+.55,p.z);let t=rSphere(o,d,_ht,.36);if(t<best){best=t;en=e;hd=false;}
-    _ht.set(p.x,p.y+1.25,p.z);t=rSphere(o,d,_ht,.46);if(t<best){best=t;en=e;hd=false;}
-    _ht.set(p.x,p.y+1.82,p.z);t=rSphere(o,d,_ht,.28);if(t<best){best=t;en=e;hd=true;}
+    _ht.set(p.x,p.y+.55,p.z);let t=rSphere(o,d,_ht,.36);if(t<best){best=t;en=e;hd=false;zone='body';}
+    _ht.set(p.x,p.y+1.25,p.z);t=rSphere(o,d,_ht,.46);if(t<best){best=t;en=e;hd=false;zone='armor';}
+    _ht.set(p.x,p.y+1.82,p.z);t=rSphere(o,d,_ht,.28);if(t<best){best=t;en=e;hd=true;zone='head';}
   }
-  return{en,dist:best,hd};
+  return{en,dist:best,hd,zone};
 }
 
 // ─── ROCKET MESH ────────────────────────
@@ -407,7 +407,7 @@ function destroyPlayerBullet(index){
   if(b.m)destroySceneObject(b.m);
   pBullets.splice(index,1);
 }
-function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
+function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
   const w=WEAPON_BY_KEY[b.wKey]||WEAPONS[0];
   const isCrit=Math.random()<plr.critChance;
   const lowTarget=en.hp/en.maxHp<.35;
@@ -417,6 +417,7 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
   const calculatedDamage=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
   const dmg=w.oneShot&&b.oneShotEligible?Math.max(calculatedDamage,en.hp+1):calculatedDamage;
   en.hurt(dmg,dir.clone(),'ally');
+  if(b.markerEligible)playHitImpactSound(hd?'head':hitZone,hitFx,hd?1.05:.86);
   const lethalHeadshot=hd&&!en.alive;
   if(b.markerEligible||!en.alive){
     const hitKind=!en.alive?'kill':isCrit?'crit':hd?'head':'hit';
@@ -478,7 +479,7 @@ function fireInstantSniper(from,dir,w,meta={}){
   if(first.en&&first.dist<wallDist){
     const hitFx=from.clone().addScaledVector(dir,first.dist);
     const fake={wKey:w.key,color,markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),oneShotEligible:true};
-    resolvePlayerBulletHit(fake,first.en,first.hd,hitFx,dir,first.dist);
+    resolvePlayerBulletHit(fake,first.en,first.hd,hitFx,dir,first.dist,first.zone);
     traceDist=first.dist;
     let pen=(w.basePenetration||0)+(plr.piercing?1:0);
     if(pen>0){
@@ -486,7 +487,7 @@ function fireInstantSniper(from,dir,w,meta={}){
       if(second.en&&second.dist>first.dist+.05&&second.dist<wallDist){
         fake.markerEligible=false;fake.damageScale=w.isSniper?.72:.64;fake.oneShotEligible=false;
         const hit2=from.clone().addScaledVector(dir,second.dist);
-        resolvePlayerBulletHit(fake,second.en,second.hd,hit2,dir,second.dist);
+        resolvePlayerBulletHit(fake,second.en,second.hd,hit2,dir,second.dist,second.zone);
         traceDist=second.dist;
       }
     }
@@ -874,7 +875,7 @@ function tickProjectiles(dt){
     if(hit.en&&enemyDist<=stepDist&&enemyDist<wallDist){
       _hitPos.copy(_prev).addScaledVector(_stepDir,enemyDist);
       const travelDist=b.travel+enemyDist;
-      resolvePlayerBulletHit(b,hit.en,hit.hd,_hitPos.clone(),_stepDir,travelDist);
+      resolvePlayerBulletHit(b,hit.en,hit.hd,_hitPos.clone(),_stepDir,travelDist,hit.zone);
       if(b.penetrationLeft>0){
         b.penetrationLeft--;b.damageScale*=w.isSniper?.72:.64;b.ignoreEnemy=hit.en;
         b.pos.copy(_hitPos).addScaledVector(_stepDir,.14);b.travel=travelDist+.14;

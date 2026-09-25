@@ -143,10 +143,12 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
     armor-=absorb;
     dmg-=absorb;
   }
+  const armorImpact=armorBefore>armor;
   if(armorBefore>0&&armor<=0)showArmorBreakFx();
   if(dmg<=0)return 0;
   hp-=dmg;
   if(hp<0)hp=0;
+  if(kind==='bullet')playHitImpactSound(armorImpact?'armor':'body',null,Math.min(1.12,.72+dmg/90));
   showDamageDirection(attacker,kind,dmg);playSfx('hurt',Math.min(1,.35+dmg/48));
   triggerScreenShake(Math.min(1.15,.24+dmg/55),kind==='rocket'||kind==='bomb'?.24:.13);
   deathReason=damageLabel(kind);

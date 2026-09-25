@@ -125,8 +125,10 @@ function loop(ts){
   camera.position.x=coll.x;
   camera.position.z=coll.z;
 
-  // Track velocity
+  // Track velocity and drive footsteps from real travelled distance.
+  const playerMoved=Math.hypot(camera.position.x-prevPX,camera.position.z-prevPZ);
   if(dt>0.001){plrVx=(camera.position.x-prevPX)/dt;plrVz=(camera.position.z-prevPZ)/dt;}
+  tickPlayerFootsteps(playerMoved,sprintingNow,onGnd);
   prevPX=camera.position.x;prevPZ=camera.position.z;
 
   // Only true automatic weapons repeat while fire is held.
