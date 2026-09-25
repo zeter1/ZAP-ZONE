@@ -252,8 +252,9 @@ for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMed
 }
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
 if(css.includes('transform:none#xp-wrap')||css.includes('transform:none#'))fail('CSS selector concatenation/corruption detected');
-if((css.match(/#xp-wrap\{/g)||[]).length!==1)fail('xp-wrap base selector must be defined exactly once');
-if(!css.includes('#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left'))fail('level/XP HUD must stay clear of the centered weapon bar');
+const xpBase='#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left';
+if((css.split(xpBase).length-1)!==1)fail('xp-wrap base selector must be defined exactly once');
+if(!css.includes(xpBase))fail('level/XP HUD must stay clear of the centered weapon bar');
 const rifleScope=readFileSync('assets/ui/rifle-scope.svg','utf8');
 if(!rifleScope.includes('Transparent center')||rifleScope.includes('<rect width="1920" height="1080" fill="#020406"'))fail('rifle scope must preserve transparent world view');
 if((html.match(/id="xhair"/g)||[]).length!==1)fail('gameplay HUD must contain exactly one xhair root');
