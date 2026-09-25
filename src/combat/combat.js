@@ -5,6 +5,7 @@ window.addEventListener('keydown',e=>{
   K[e.code]=true;
   if(!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
   if(e.code==='KeyR')doReload();
+  if(e.code==='KeyQ')quickSwitchWeapon();
   if(e.code==='KeyF')throwMine();
   if(e.code==='KeyG')placeBomb();
   const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
