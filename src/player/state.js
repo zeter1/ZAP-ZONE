@@ -226,11 +226,12 @@ function setWeaponAmmo(idx,value){
   if(idx===curW)ammo=val;
 }
 
-const SAVE_KEY='zap_zone_autosave_v24';
-const LEGACY_SAVE_KEY='zap_zone_autosave_v23';
-const OLDER_SAVE_KEY='zap_zone_autosave_v22';
-const OLDEST_SAVE_KEY='zap_zone_autosave_v21';
-const ANCIENT_SAVE_KEY='zap_zone_autosave_v20';
+const SAVE_KEY='zap_zone_autosave_v25';
+const LEGACY_SAVE_KEY='zap_zone_autosave_v24';
+const OLDER_SAVE_KEY='zap_zone_autosave_v23';
+const OLDEST_SAVE_KEY='zap_zone_autosave_v22';
+const ANCIENT_SAVE_KEY='zap_zone_autosave_v21';
+const PREHISTORIC_SAVE_KEY='zap_zone_autosave_v20';
 let pendingResumeSave=null;
 let saveTick=8;
 let preloadStarted=false,preloadDone=false,gameSessionActivated=false,preparedSaveLoaded=false;
@@ -266,7 +267,7 @@ function applySavedPerk(id){
 function captureSave(){
   const mags=weaponAmmo.map((value,i)=>Math.max(0,Math.min(WEAPONS[i].clip,i===curW?ammo:value)));
   return {
-    v:24,t:Date.now(),
+    v:25,t:Date.now(),
     level,xp,score,kills,allyKills,enemyKills,
     hp,armor,uAmmo,curW,ammo,weaponAmmo:mags,playerMineCD,playerBombCD,playerSmokeCD,
     perks:perksGot.map(p=>p.id),
@@ -283,10 +284,10 @@ function saveProgress(force=false){
 }
 function loadProgress(){
   try{
-    const raw=localStorage.getItem(SAVE_KEY)||sessionStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_SAVE_KEY)||sessionStorage.getItem(LEGACY_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||sessionStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||sessionStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem(ANCIENT_SAVE_KEY)||sessionStorage.getItem(ANCIENT_SAVE_KEY);
+    const raw=localStorage.getItem(SAVE_KEY)||sessionStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_SAVE_KEY)||sessionStorage.getItem(LEGACY_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||sessionStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||sessionStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem(ANCIENT_SAVE_KEY)||sessionStorage.getItem(ANCIENT_SAVE_KEY)||localStorage.getItem(PREHISTORIC_SAVE_KEY)||sessionStorage.getItem(PREHISTORIC_SAVE_KEY);
     if(!raw)return null;
     const data=JSON.parse(raw);
-    if(!data||(data.v<20||data.v>24))return null;
+    if(!data||(data.v<20||data.v>25))return null;
     return data;
   }catch(e){return null;}
 }
@@ -363,8 +364,9 @@ function applyRuntimeSave(data){
   xp=Math.max(xpFor(level),data.xp||0);
   score=Math.max(0,data.score||0);
   kills=Math.max(0,data.kills||0);
-  allyKills=data.v>=21?Math.max(0,data.allyKills||0):0;
-  enemyKills=data.v>=21?Math.max(0,data.enemyKills||0):0;
+  // v25 changes these counters from FFA bookkeeping to actual blue/red team score.
+  allyKills=data.v>=25?Math.max(0,data.allyKills||0):0;
+  enemyKills=data.v>=25?Math.max(0,data.enemyKills||0):0;
   armor=Math.max(0,Math.min(plr.maxArmor,data.armor||0));
   hp=Math.max(1,Math.min(data.hp==null?plr.maxHp:data.hp,plr.maxHp));
   uAmmo=Math.max(0,Math.min(9999,data.uAmmo==null?uAmmo:data.uAmmo));
