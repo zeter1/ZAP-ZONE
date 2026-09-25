@@ -195,7 +195,7 @@ function wHUD(){
   const w=getW();G('wname').textContent=w.name;
   const mode=G('wmode');
   if(mode){
-    const velocity=w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
+    const velocity=w.hitscan?'МГНОВЕННО':w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
     mode.textContent=weaponModeLabel(w)+(velocity?' · '+velocity:'');
   }
   if(w.isSmoke){
