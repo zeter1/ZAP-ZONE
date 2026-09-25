@@ -142,7 +142,7 @@ for(const token of [
   'const localForward=this.velX*fwdX+this.velZ*fwdZ',
   'if(this.pts[10])',
   'if(this.pts[12])',
-  "const combatPose=(this.aiState==='engage'||this.aiState==='flank'||this.aiState==='support')&&this.canSeeTarget"
+  "const combatPose=(this.aiState==='engage'||this.aiState==='flank'||this.aiState==='support'||this.aiState==='objective')&&this.canSeeTarget"
 ]){
   if(!bots.includes(token))fail('bot locomotion integration missing: '+token);
 }
@@ -171,6 +171,17 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 integration missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
+for(const token of [
+  'BOT_MAP_ZONES',
+  'function refreshBotMapOrder',
+  'function botObjectivePoint',
+  "squadPlan.doctrine==='retake'",
+  "case 'objective'",
+  'plan.aliveDelta=aliveDelta',
+  "squadPlan.doctrine==='hold'&&mapObjective"
+]){
+  if(!bots.includes(token))fail('Combat AI 2.1 map tactics missing: '+token);
+}
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
@@ -178,6 +189,9 @@ for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
+for(const token of ["botDoctrineLabel(plan.doctrine)","plan.zone?.label","ПРИКАЗ:"]){
+  if(!runtime.includes(token))fail('ally map-order HUD missing: '+token);
+}
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('activeW.scopeAsset||GAME_ASSETS.ui.sniperScope'))fail('per-weapon scope asset switching missing');
@@ -202,5 +216,5 @@ for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weapon
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v22.4'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE v22.4 Tactical AI 2.0 and continuous battle validation passed.');
+if(!html.includes('ZAP ZONE v22.5'))fail('index version is not v22.2');
+if(!process.exitCode)console.log('ZAP ZONE v22.5 Combat AI 2.1 map tactics validation passed.');

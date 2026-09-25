@@ -239,12 +239,104 @@ function syncPlayerCombatNoise(){
   }
 }
 
+const BOT_MAP_ZONES=[
+  {id:'mid',label:'ЦЕНТР',x:0,z:0,r:21,weight:1.34},
+  {id:'north',label:'СЕВЕР',x:0,z:34,r:20,weight:1.08},
+  {id:'south',label:'ЮГ',x:0,z:-34,r:20,weight:1.08},
+  {id:'west',label:'ЗАПАД',x:-34,z:0,r:19,weight:.94},
+  {id:'east',label:'ВОСТОК',x:34,z:0,r:19,weight:.94}
+];
 const BOT_TEAM_TACTICS={
-  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null},
-  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null}
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999}
 };
 function botRoleLabel(role){
   return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
+}
+function botDoctrineLabel(doctrine){
+  return doctrine==='push'?'ШТУРМ':doctrine==='retake'?'ВОЗВРАТ':doctrine==='hold'?'УДЕРЖАНИЕ':'МАНЁВР';
+}
+function botTeamAliveCount(team){
+  let n=enemies.reduce((sum,b)=>sum+(b.alive&&b.team===team?1:0),0);
+  if(team==='ally'&&!dying)n++;
+  return n;
+}
+function botZonePresence(zone,team){
+  const r2=zone.r*zone.r;let score=0;
+  for(const bot of enemies){
+    if(!bot.alive||bot.team!==team)continue;
+    const dx=bot.group.position.x-zone.x,dz=bot.group.position.z-zone.z;
+    const d2=dx*dx+dz*dz;
+    if(d2>r2)continue;
+    const proximity=1-Math.sqrt(d2)/zone.r;
+    const roleM=bot.role==='anchor'?1.12:bot.role==='engineer'?1.06:1;
+    score+=(.72+proximity*.48)*roleM;
+  }
+  if(team==='ally'&&!dying){
+    const dx=camera.position.x-zone.x,dz=camera.position.z-zone.z,d2=dx*dx+dz*dz;
+    if(d2<=r2)score+=.88+(1-Math.sqrt(d2)/zone.r)*.52;
+  }
+  return score;
+}
+function refreshBotMapOrder(team,plan,now){
+  const enemyTeam=team==='ally'?'enemy':'ally';
+  const direction=team==='ally'?1:-1;
+  const aliveDelta=botTeamAliveCount(team)-botTeamAliveCount(enemyTeam);
+  const samples=BOT_MAP_ZONES.map(zone=>{
+    const friendly=botZonePresence(zone,team),hostile=botZonePresence(zone,enemyTeam);
+    return{zone,friendly,hostile,control:friendly-hostile,depth:zone.x*direction};
+  });
+  const ownIncursion=samples
+    .filter(s=>s.depth<=4&&s.control<-.45)
+    .sort((a,b)=>a.control-b.control||a.depth-b.depth)[0]||null;
+  let doctrine=aliveDelta>=2?'push':aliveDelta<=-2?'hold':ownIncursion?'retake':(plan.focus||plan.focusIsPlayer)?'push':'hold';
+  let ranked;
+  if(doctrine==='retake'){
+    ranked=samples.map(s=>({s,score:(-s.control)*4.4+s.zone.weight*2.2-Math.max(0,s.depth)*.08-Math.abs(s.depth)*.012}));
+  }else if(doctrine==='push'){
+    ranked=samples.map(s=>({s,score:s.zone.weight*2.2+s.depth*.055+s.hostile*1.45-s.friendly*.42+(Math.abs(s.zone.z)>1?.22:0)}));
+  }else{
+    ranked=samples.map(s=>({
+      s,
+      score:s.zone.weight*2.0+s.friendly*1.15-s.hostile*.72-Math.abs(s.depth)*.020+(s.depth<=5?.42:0)
+    }));
+  }
+  ranked.sort((a,b)=>b.score-a.score);
+  const chosen=ranked[0]?.s||samples[0];
+  const current=plan.zone?samples.find(s=>s.zone.id===plan.zone.id):null;
+  const emergency=aliveDelta<=-2||!!ownIncursion;
+  const canSwitch=now>=plan.orderUntil||!current||emergency&&plan.doctrine!==doctrine;
+  if(canSwitch){
+    plan.doctrine=doctrine;
+    plan.zone=chosen.zone;
+    plan.zonePos.set(chosen.zone.x,0,chosen.zone.z);
+    plan.zoneRadius=chosen.zone.r;
+    plan.zoneControl=chosen.control;
+    plan.orderUntil=now+(doctrine==='push'?2800:doctrine==='retake'?2400:3200);
+  }else if(current){
+    plan.zoneControl=current.control;
+  }
+  plan.aliveDelta=aliveDelta;
+}
+function botObjectivePoint(bot,plan){
+  if(!plan?.zone)return null;
+  const dir=bot.team==='ally'?1:-1;
+  const roleOffset={
+    assault:[3.8*dir,0],
+    flankL:[.8*dir,-6.0],
+    flankR:[.8*dir,6.0],
+    anchor:[-4.4*dir,0],
+    engineer:[-2.6*dir,4.0*bot.sideBias]
+  }[bot.role]||[0,0];
+  let x=plan.zonePos.x+roleOffset[0],z=plan.zonePos.z+roleOffset[1];
+  if(plan.doctrine==='hold'&&bot.role==='anchor')x-=2.0*dir;
+  const coll=collideWalls(Math.max(-90,Math.min(90,x)),Math.max(-90,Math.min(90,z)),BOT_R);
+  if(Math.hypot(coll.x-x,coll.z-z)>2.4){
+    x=plan.zonePos.x;z=plan.zonePos.z;
+    const fallback=collideWalls(x,z,BOT_R);
+    return new THREE.Vector3(fallback.x,0,fallback.z);
+  }
+  return new THREE.Vector3(coll.x,0,coll.z);
 }
 function botMatchesSquadFocus(bot,plan){
   if(!plan)return false;
@@ -296,6 +388,7 @@ function refreshBotTeamTactics(team){
   const wounded=mates.filter(m=>m.hp/m.maxHp<.58);
   wounded.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp));
   plan.wounded=wounded[0]||null;
+  refreshBotMapOrder(team,plan,now);
   return plan;
 }
 
@@ -957,12 +1050,19 @@ class Enemy{
     const localThreats=this.nearbyThreatCount(18);
     const opponentWeapon=this.currentTargetWeapon();
     const squadPlan=refreshBotTeamTactics(this.team);
+    const mapObjective=botObjectivePoint(this,squadPlan);
+    const objectiveDist=mapObjective?this.group.position.distanceTo(mapObjective):999;
     const focusMatches=botMatchesSquadFocus(this,squadPlan);
     const roleFlanker=this.role==='flankL'||this.role==='flankR';
     const supportMate=squadPlan.wounded&&squadPlan.wounded!==this&&squadPlan.wounded.alive?squadPlan.wounded:null;
     const supportDist=supportMate?this.group.position.distanceTo(supportMate.group.position):999;
     const supportReady=!!supportMate&&(this.role==='engineer'||this.role==='anchor')&&supportDist<34&&hpPct>.42&&!(this.canSeeTarget&&dist<12);
     const coordinatedFlank=roleFlanker&&focusMatches&&!!squadPlan.suppressor&&hpPct>.38&&!this.reloadT&&targetPos&&dist>10;
+    const mapOrderWanted=!!mapObjective&&(
+      !targetPos||
+      (squadPlan.doctrine==='hold'&&objectiveDist>squadPlan.zoneRadius*.62&&(!this.canSeeTarget||dist>24))||
+      ((squadPlan.doctrine==='push'||squadPlan.doctrine==='retake')&&!this.canSeeTarget&&this.lastSeenT>2.2&&objectiveDist>4.2)
+    );
     if(this.flankEvalT<=0&&coordinatedFlank){
       const sign=this.role==='flankL'?-1:1;
       const nextFlank=this.findFlankPoint(squadPlan.focusPos,sign);
@@ -987,16 +1087,17 @@ class Enemy{
     }
 
     this.aiT+=dt;this.stateCD-=dt;
-    if(this.stateCD<=0&&targetPos){
+    if(this.stateCD<=0){
       if(this.pickupTarget&&this.pickupTarget.m.visible&&hpPct<.48)this.aiState='resupply';
-      else if((hpPct<0.25&&dist<20)||(localThreats>=3&&hpPct<.58))this.aiState='retreat';
-      else if(supportReady&&this.tacticalMode==='support')this.aiState='support';
-      else if(this.coverPoint&&(!this.canSeeTarget||this.role==='anchor'||this.reloadT>0||(localThreats>=3&&hpPct<.72)||this.suppressedT>0))this.aiState='cover';
-      else if(this.flankPoint&&this.flankCommitT>0&&this.tacticalMode==='flank')this.aiState='flank';
-      else if(this.canSeeTarget&&dist<=this.weapon.range*(this.team==='ally'?1.14:1.08))this.aiState='engage';
-      else if(this.lastSeenT<8.5)this.aiState='hunt';
-      else if(this.lastSeenT<14.5)this.aiState='search';
-      else this.aiState='patrol';
+      else if(targetPos&&((hpPct<0.25&&dist<20)||(localThreats>=3&&hpPct<.58)))this.aiState='retreat';
+      else if(targetPos&&supportReady&&this.tacticalMode==='support')this.aiState='support';
+      else if(targetPos&&this.coverPoint&&(!this.canSeeTarget||this.role==='anchor'||this.reloadT>0||(localThreats>=3&&hpPct<.72)||this.suppressedT>0))this.aiState='cover';
+      else if(targetPos&&this.flankPoint&&this.flankCommitT>0&&this.tacticalMode==='flank')this.aiState='flank';
+      else if(mapOrderWanted)this.aiState='objective';
+      else if(targetPos&&this.canSeeTarget&&dist<=this.weapon.range*(this.team==='ally'?1.14:1.08))this.aiState='engage';
+      else if(targetPos&&this.lastSeenT<8.5)this.aiState='hunt';
+      else if(targetPos&&this.lastSeenT<14.5)this.aiState='search';
+      else this.aiState=mapObjective?'objective':'patrol';
       this.stateCD=.22+Math.random()*.30;
     }
 
@@ -1015,6 +1116,26 @@ class Enemy{
       mx=px*this.dodgeDir*this.dodgeSpd;mz=pz*this.dodgeDir*this.dodgeSpd;
       this.desiredYaw=Math.atan2(dx,dz);
     }else switch(this.aiState){
+      case 'objective':{
+        if(mapObjective){
+          const ox=mapObjective.x-myX,oz=mapObjective.z-myZ,od=Math.hypot(ox,oz)+.001;
+          const stopR=squadPlan.doctrine==='hold'?(this.role==='anchor'?3.8:4.8):3.2;
+          const speedM=squadPlan.doctrine==='push'?(this.role==='assault'?1.12:1.02):squadPlan.doctrine==='retake'?1.08:.82;
+          if(targetPos&&this.canSeeTarget)this.desiredYaw=Math.atan2(dx,dz);
+          else this.desiredYaw=Math.atan2(ox||((this.team==='ally'?1:-1)*.01),oz);
+          if(od>stopR){
+            mx=(ox/od)*spd*speedM;mz=(oz/od)*spd*speedM;
+          }else if(targetPos){
+            const px=-dz/dist,pz=dx/dist;
+            const orbit=this.role==='anchor'?.16:.28;
+            mx=px*this.sideBias*spd*orbit;mz=pz*this.sideBias*spd*orbit;
+          }else{
+            const enemyDir=this.team==='ally'?1:-1;
+            this.desiredYaw=Math.atan2(enemyDir,0);
+          }
+        }else this.aiState='patrol';
+        break;
+      }
       case 'patrol':{
         const wx=this.ptgt.x-myX,wz=this.ptgt.z-myZ,wd=Math.sqrt(wx*wx+wz*wz);
         if(wd<3){
@@ -1130,6 +1251,10 @@ class Enemy{
           }
         }
         mx=px*this.strafeDir*spd*strafeM;mz=pz*this.strafeDir*spd*strafeM;
+        if(squadPlan.doctrine==='hold'&&mapObjective&&objectiveDist>squadPlan.zoneRadius*.68){
+          const ox=mapObjective.x-myX,oz=mapObjective.z-myZ,od=Math.max(.001,Math.hypot(ox,oz));
+          mx+=(ox/od)*spd*.46;mz+=(oz/od)*spd*.46;
+        }
         if(this.role==='flankL'||this.role==='flankR'){
           const sign=this.role==='flankL'?-1:1;
           mx+=px*sign*spd*.24;mz+=pz*sign*spd*.24;
@@ -1220,7 +1345,7 @@ class Enemy{
     const strafeRoll=sideRatio*.060*gaitNorm;
     const forwardRatio=this.gaitSpeed>.15?Math.max(-1,Math.min(1,localForward/this.gaitSpeed)):0;
     const bodyLean=forwardRatio*.036*gaitNorm;
-    const combatPose=(this.aiState==='engage'||this.aiState==='flank'||this.aiState==='support')&&this.canSeeTarget;
+    const combatPose=(this.aiState==='engage'||this.aiState==='flank'||this.aiState==='support'||this.aiState==='objective')&&this.canSeeTarget;
     const armScale=combatPose?.18:.56;
 
     if(this.pts[8]){

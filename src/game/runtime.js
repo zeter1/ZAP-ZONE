@@ -246,7 +246,11 @@ function updateAllyPanel(dt){
   allyPanelCd-=dt;if(allyPanelCd>0)return;allyPanelCd=.20;
   const panel=G('ally-panel');
   const squad=enemies.filter(e=>e.alive&&e.team==='ally').sort((a,b)=>(b.kills||0)-(a.kills||0));
-  panel.innerHTML=squad.map((e,i)=>{
+  const plan=refreshBotTeamTactics('ally');
+  const zoneName=plan.zone?.label||'ЦЕНТР';
+  const advantage=plan.aliveDelta>0?'+'+plan.aliveDelta:String(plan.aliveDelta||0);
+  const order=`<div class="ally-icon" style="border-color:rgba(255,215,80,.58);background:rgba(38,30,4,.78);color:#ffe880;box-shadow:0 0 9px rgba(255,190,45,.18);">⌖ ПРИКАЗ: ${botDoctrineLabel(plan.doctrine)} · ${zoneName} · Δ ${advantage}</div>`;
+  panel.innerHTML=order+squad.map((e,i)=>{
     const pct=Math.round(e.hp/e.maxHp*100);
     return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.ally}" alt=""> СВОЙ ${i+1} · ${botRoleLabel(e.role)}: ${e.kills||0} ☠ · ${pct}%</div>`;
   }).join('');
