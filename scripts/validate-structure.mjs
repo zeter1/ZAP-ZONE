@@ -29,7 +29,10 @@ const visualAssets=[
   'assets/ui/logo.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg','assets/ui/sniper-scope.svg','assets/ui/rifle-scope.svg',
   'assets/weapons/fp/pistol-tech.svg','assets/weapons/fp/shotgun-tech.svg','assets/weapons/fp/rifle-tech.svg',
   'assets/weapons/fp/rocket-tech.svg','assets/weapons/fp/plasma-tech.svg','assets/weapons/fp/mine-tech.svg',
-  'assets/weapons/fp/bomb-tech.svg','assets/weapons/fp/smoke-tech.svg','assets/weapons/fp/sniper-tech.svg'
+  'assets/weapons/fp/bomb-tech.svg','assets/weapons/fp/smoke-tech.svg','assets/weapons/fp/sniper-tech.svg',
+  'assets/weapons/fp/pistol-skin.svg','assets/weapons/fp/shotgun-skin.svg','assets/weapons/fp/rifle-skin.svg',
+  'assets/weapons/fp/rocket-skin.svg','assets/weapons/fp/plasma-skin.svg','assets/weapons/fp/mine-skin.svg',
+  'assets/weapons/fp/bomb-skin.svg','assets/weapons/fp/smoke-skin.svg','assets/weapons/fp/sniper-skin.svg'
 ];
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
@@ -53,6 +56,7 @@ const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');
+if(!catalog.includes('firstPersonSkins:Object.freeze'))fail('first-person weapon skin catalog missing');
 if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must not be catalogued');
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
@@ -84,7 +88,7 @@ for(const token of ['STARTING_RESERVE','STARTING_OWNED','BOT_WEAPON_POSES','grip
   if(!weapons.includes(token))fail('pickup/ownership or bot weapon presentation missing: '+token);
 }
 if(weapons.includes('function addBotWeaponGrip'))fail('bot weapon model must not carry fake detached hands');
-for(const token of ['FP_HAND_POSES','function addFirstPersonWeaponDecal','GAME_ASSETS.firstPersonWeapons','addFirstPersonHands(gunGrp,w.key)']){
+for(const token of ['FP_HAND_POSES','FP_DECAL_TUNING','FP_MODEL_TUNING','function addFirstPersonWeaponDecal','GAME_ASSETS.firstPersonWeapons','GAME_ASSETS.firstPersonSkins','addFirstPersonHands(gunGrp,w.key)','if(mode===\'firstPerson\'&&detail>1)','model.add(flashM)']){
   if(!weapons.includes(token))fail('premium first-person weapon presentation missing: '+token);
 }
 if(!weapons.includes("el.style.display=owned&&!selectable?'none':''"))fail('empty owned weapons must disappear from the weapon bar');
@@ -174,4 +178,4 @@ if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must n
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
 if(!html.includes('ZAP ZONE v22.2'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE premium FP assets, transparent rifle optic, refined bot gait and depleted-weapon retirement validation passed.');
+if(!process.exitCode)console.log('ZAP ZONE premium all-weapon first-person visual pass and gameplay validation passed.');

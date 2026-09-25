@@ -304,6 +304,72 @@ function createWeaponModel(key,options={}){
     muzzleZ=-.62;
   }
 
+  if(mode==='firstPerson'&&detail>1){
+    const carbon=weaponMaterial(0x090d12,.58,.52);
+    const edge=weaponMaterial(0xdde8ef,.18,.82);
+    const glow=weaponMaterial(accentColor,.16,.44,accentColor,1.05);
+    const amber=weaponMaterial(0xffc247,.24,.52,0xffa000,.68);
+    const red=weaponMaterial(0xff4b3e,.24,.42,0xff321f,.66);
+    const addVentRow=(x,y,z,count=4,step=.055)=>{
+      for(let i=0;i<count;i++)box(x+(i-(count-1)/2)*step,y,z,.022,.022,.12,edge);
+    };
+    if(w.key==='pistol'){
+      box(0,.145,-.24,.18,.035,.32,carbon);
+      for(const x of [-.072,-.024,.024,.072])box(x,.164,-.28,.018,.022,.12,edge,0,0,.18);
+      torus(0,.02,-.705,.060,.013,glow,Math.PI/2);
+      box(0,.205,-.06,.12,.045,.11,carbon);box(0,.232,-.07,.072,.032,.038,glass);
+      box(.112,-.18,.06,.018,.18,.11,glow,0,0,-.035);
+    }else if(w.key==='shotgun'){
+      box(0,.10,-.47,.26,.055,.54,carbon);
+      for(let i=0;i<6;i++)box(-.105+i*.042,.126,-.53,.024,.024,.16,edge);
+      torus(0,.045,-1.12,.070,.014,glow,Math.PI/2);
+      box(.145,-.015,-.28,.038,.14,.36,amber);
+      for(let i=0;i<4;i++)cyl(.168,-.01,-.12-i*.105,.024,.024,.082,amber,Math.PI/2,0,0,8);
+      box(0,.18,-.20,.09,.04,.12,carbon);box(0,.207,-.22,.048,.026,.035,glass);
+    }else if(w.key==='rifle'){
+      box(0,-.06,.44,.28,.075,.48,carbon);
+      box(-.12,-.02,.45,.038,.16,.42,edge,0,0,-.28);box(.12,-.02,.45,.038,.16,.42,edge,0,0,.28);
+      box(0,-.255,-.43,.085,.24,.12,carbon,.20);box(0,-.19,-.45,.045,.16,.085,glow,.20);
+      for(let z=-.76;z<=-.42;z+=.085){box(-.125,.09,z,.026,.035,.12,edge);box(.125,.09,z,.026,.035,.12,edge);}
+      torus(0,.035,-1.33,.058,.015,glow,Math.PI/2);torus(0,.035,-1.40,.050,.012,edge,Math.PI/2);
+      box(0,.252,-.15,.14,.035,.18,carbon);box(0,.275,-.15,.082,.026,.095,glass);
+      sphere(.145,.06,-.08,.024,glow,9);
+    }else if(w.key==='sniper'){
+      box(0,-.03,.50,.28,.055,.48,carbon);box(0,.06,.54,.18,.06,.34,edge);
+      for(const z of [-.52,-.68,-.84,-1.00])box(-.105,.07,z,.022,.03,.16,edge);
+      torus(0,.235,-.46,.068,.015,glow,Math.PI/2);torus(0,.235,.02,.068,.015,glow,Math.PI/2);
+      box(.155,.02,-.10,.035,.045,.18,edge,0,0,-.30);sphere(.205,.00,-.04,.042,glow,9);
+      torus(0,.035,-1.70,.060,.015,edge,Math.PI/2);torus(0,.035,-1.77,.050,.012,glow,Math.PI/2);
+      box(0,.12,.30,.17,.035,.20,carbon);
+    }else if(w.key==='rocket'){
+      torus(0,.015,-.95,.162,.022,red);torus(0,.015,.28,.148,.018,edge);
+      for(let a=0;a<6;a++){const ang=a*Math.PI/3;box(Math.cos(ang)*.145,Math.sin(ang)*.145,-.92,.035,.035,.20,carbon,0,-ang,0);}
+      box(0,.235,-.16,.19,.055,.22,carbon);box(0,.27,-.17,.11,.035,.10,glass);
+      box(-.205,-.03,.12,.15,.16,.34,carbon);box(-.23,-.03,.08,.035,.11,.24,amber);
+      box(0,-.12,.42,.24,.08,.24,polymer);
+    }else if(w.key==='plasma'){
+      for(const z of [-.48,-.62,-.76,-.90]){torus(0,.02,z,.095,.017,glow);torus(0,.02,z+.025,.070,.008,edge);}
+      sphere(0,.03,-.98,.125,glass,16);sphere(0,.03,-.98,.055,glow,12);
+      box(-.15,.04,-.24,.030,.15,.52,carbon);box(.15,.04,-.24,.030,.15,.52,carbon);
+      addVentRow(0,.16,-.36,5,.05);
+      box(0,-.03,.33,.24,.07,.22,carbon);sphere(.11,.08,-.10,.026,glow,8);sphere(-.11,.08,-.10,.026,glow,8);
+    }else if(w.key==='mine'){
+      for(let i=0;i<8;i++){const a=i*Math.PI/4;const x=Math.cos(a)*.30,z=-.22+Math.sin(a)*.30;box(x,.07,z,.09,.045,.18,carbon,0,-a,0);}
+      torus(0,.10,-.22,.24,.018,glow,Math.PI/2);sphere(0,.19,-.22,.055,red,10);
+      for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5])sphere(Math.cos(a)*.19,.13,-.22+Math.sin(a)*.19,.022,amber,8);
+    }else if(w.key==='bomb'){
+      torus(0,-.005,-.33,.235,.022,amber,Math.PI/2);
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;box(Math.cos(a)*.19,.0,-.33+Math.sin(a)*.19,.07,.08,.13,carbon,0,-a,0);}
+      box(0,.28,-.33,.16,.07,.16,carbon);sphere(.12,.36,-.33,.032,red,8);sphere(-.12,.36,-.33,.032,glow,8);
+      box(0,-.21,-.33,.20,.045,.18,edge);
+    }else if(w.key==='smoke'){
+      for(const z of [-.48,-.37,-.26,-.15])torus(0,.00,z,.154,.012,edge,Math.PI/2);
+      box(0,.00,-.31,.19,.045,.34,carbon);box(0,.00,-.31,.17,.025,.30,glow);
+      torus(.20,.31,-.31,.065,.012,edge,0,0,0);sphere(.20,.31,-.31,.024,glow,8);
+      for(let i=0;i<5;i++)box(-.08+i*.04,.16,-.32,.018,.025,.08,edge);
+    }
+  }
+
   group.userData.weaponKey=w.key;group.userData.muzzleZ=muzzleZ;
   return group;
 }
@@ -318,10 +384,29 @@ const FP_HAND_POSES={
   smoke:{l:[-.11,-.17,-.30,.02,-.06],r:[.12,-.16,-.12,.06,.08]},
   sniper:{l:[-.12,-.22,-.46,.05,-.10],r:[.17,-.18,.03,.10,.13]}
 };
+const FP_DECAL_TUNING={
+  pistol:{skin:[.31,.11,[0,.075,-.22]],tech:[.25,.085,[.10,.10,-.08]]},
+  shotgun:{skin:[.38,.12,[0,.08,-.35]],tech:[.28,.09,[.12,.12,-.15]]},
+  rifle:{skin:[.40,.13,[0,.075,-.28]],tech:[.29,.09,[.13,.12,-.09]]},
+  rocket:{skin:[.38,.13,[0,.08,-.34]],tech:[.27,.09,[.14,.16,-.18]]},
+  plasma:{skin:[.40,.13,[0,.08,-.31]],tech:[.28,.09,[.13,.13,-.12]]},
+  mine:{skin:[.30,.10,[0,.16,-.22]],tech:[.22,.075,[.10,.20,-.22]]},
+  bomb:{skin:[.30,.10,[0,.16,-.33]],tech:[.22,.075,[.10,.23,-.33]]},
+  smoke:{skin:[.30,.10,[0,.12,-.31]],tech:[.22,.075,[.10,.20,-.31]]},
+  sniper:{skin:[.42,.13,[0,.08,-.40]],tech:[.29,.09,[.13,.14,-.12]]}
+};
 function addFirstPersonWeaponDecal(target,w){
+  const tune=FP_DECAL_TUNING[w.key]||FP_DECAL_TUNING.rifle;
+  const skinPath=GAME_ASSETS.firstPersonSkins?.[w.key];
+  if(skinPath){
+    const [sw,sh,pos]=tune.skin;
+    const skin=makeAssetPlane(skinPath,sw,sh,{opacity:.90,depthTest:true,renderOrder:4});
+    skin.position.set(...pos);skin.rotation.set(-.06,.02,0);target.add(skin);
+  }
   const path=GAME_ASSETS.firstPersonWeapons?.[w.key];if(!path)return;
-  const p=makeAssetPlane(path,.34,.12,{opacity:.96,depthTest:true,renderOrder:5});
-  p.position.set(.135,.075,-.14);p.rotation.set(-.08,.12,0);target.add(p);
+  const [tw,th,tpos]=tune.tech;
+  const p=makeAssetPlane(path,tw,th,{opacity:.97,depthTest:true,renderOrder:5});
+  p.position.set(...tpos);p.rotation.set(-.08,.10,0);target.add(p);
 }
 function addFirstPersonHands(target,key){
   const pose=FP_HAND_POSES[key]||FP_HAND_POSES.rifle;
@@ -352,17 +437,30 @@ const gunGrp=new THREE.Group();camera.add(gunGrp);
 const gunBasePos=new THREE.Vector3(.28,-.25,-.48);
 let gunSwayX=0,gunSwayY=0;
 let flashM=null,beamM=null,beamT=0;
+const FP_MODEL_TUNING={
+  pistol:{scale:1.02,pos:[.00,.01,.01],rot:[-.02,.00,.00]},
+  shotgun:{scale:.96,pos:[.00,.00,.02],rot:[-.015,.00,.00]},
+  rifle:{scale:.91,pos:[.00,-.01,.035],rot:[-.018,.00,.00]},
+  rocket:{scale:.89,pos:[.00,-.015,.05],rot:[-.02,.00,.00]},
+  plasma:{scale:.95,pos:[.00,-.005,.03],rot:[-.018,.00,.00]},
+  mine:{scale:.94,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
+  bomb:{scale:.94,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
+  smoke:{scale:.95,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
+  sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]}
+};
 function buildGun(w){
   clearGroupChildren(gunGrp);flashM=null;beamM=null;
-  const model=createWeaponModel(w.key,{mode:'firstPerson',detail:2});model.scale.setScalar(1.07);gunGrp.add(model);
+  const tune=FP_MODEL_TUNING[w.key]||FP_MODEL_TUNING.rifle;
+  const model=createWeaponModel(w.key,{mode:'firstPerson',detail:2});
+  model.scale.setScalar(tune.scale);model.position.set(...tune.pos);model.rotation.set(...tune.rot);gunGrp.add(model);
   addFirstPersonWeaponDecal(model,w);
   addFirstPersonHands(gunGrp,w.key);
   const muzzleZ=model.userData.muzzleZ??-.90;
   flashM=new THREE.Mesh(new THREE.SphereGeometry(w.isRocket?.11:.065,8,6),new THREE.MeshBasicMaterial({color:0xfff1b0,transparent:true,opacity:0,depthWrite:false}));
-  flashM.position.set(0,.02,muzzleZ);gunGrp.add(flashM);
+  flashM.position.set(0,.02,muzzleZ);model.add(flashM);
   beamM=new THREE.Mesh(new THREE.ConeGeometry(w.isRocket?.10:.065,w.isRocket?.34:.24,8,1,true),new THREE.MeshBasicMaterial({color:0xffa43a,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));
-  beamM.rotation.x=-Math.PI/2;beamM.position.set(0,.02,muzzleZ-.12);gunGrp.add(beamM);
-  gunGrp.userData.muzzleZ=muzzleZ;
+  beamM.rotation.x=-Math.PI/2;beamM.position.set(0,.02,muzzleZ-.12);model.add(beamM);
+  gunGrp.userData.muzzleZ=muzzleZ*tune.scale;
   const p=w.viewPos||WEAPONS[0].viewPos;gunBasePos.set(p[0],p[1],p[2]);gunGrp.position.copy(gunBasePos);
 }
 const BOT_WEAPON_POSES={

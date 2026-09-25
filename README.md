@@ -21,7 +21,7 @@
 - Когда у найденного оружия одновременно заканчиваются магазин и резерв, оно временно исчезает из weapon-bar и из колесика/Q; следующий pickup этого же типа возвращает слот.
 - Отдельных ящиков с универсальными патронами больше нет; weapon pickups после подбора появляются заново в другой части карты.
 - Единый factory 3D-моделей оружия для игрока, AI и world pickups.
-- First-person оружие получило отдельные детализированные руки, улучшенные hard-surface элементы и индивидуальные SVG tech-панели в `assets/weapons/fp/`.
+- Все 9 first-person моделей получили отдельный premium-pass: более сложные силуэты, rails/optic/muzzle/vent детали, улучшенные руки и индивидуальные SVG tech + skin панели в `assets/weapons/fp/`.
 - Реальные SVG assets оружия в `assets/weapons/`.
 - Новый asset catalog: `src/assets/catalog.js`.
 - Красивые world pickups оружия с 3D-моделью и соответствующей SVG-иконкой; аптечки остаются отдельными pickups.
@@ -108,7 +108,8 @@ index.html
 - `assets/ui/logo.svg` — главное меню;
 - `health.svg`, `armor.svg`, `xp.svg` — HUD;
 - `assets/ui/rifle-scope.svg` — прозрачная оптика штурмовой винтовки, не закрывающая сцену внутри линзы;
-- `assets/weapons/fp/*-tech.svg` — отдельные sci-fi tech decals для first-person моделей каждого типа оружия;
+- `assets/weapons/fp/*-tech.svg` — sci-fi tech decals для first-person моделей;
+- `assets/weapons/fp/*-skin.svg` — дополнительные weapon-specific skin/armor панели для всех 9 типов оружия;
 - `assets/characters/*-armor-mark.svg` — новые командные маркировки брони ботов; динамический gameplay-reticle обычного оружия не зависит от отдельного SVG.
 
 ## Проверка

@@ -125,6 +125,17 @@ const GAME_ASSETS=Object.freeze({
     smoke:'assets/weapons/fp/smoke-tech.svg',
     sniper:'assets/weapons/fp/sniper-tech.svg'
   }),
+  firstPersonSkins:Object.freeze({
+    pistol:'assets/weapons/fp/pistol-skin.svg',
+    shotgun:'assets/weapons/fp/shotgun-skin.svg',
+    rifle:'assets/weapons/fp/rifle-skin.svg',
+    rocket:'assets/weapons/fp/rocket-skin.svg',
+    plasma:'assets/weapons/fp/plasma-skin.svg',
+    mine:'assets/weapons/fp/mine-skin.svg',
+    bomb:'assets/weapons/fp/bomb-skin.svg',
+    smoke:'assets/weapons/fp/smoke-skin.svg',
+    sniper:'assets/weapons/fp/sniper-skin.svg'
+  }),
   ui:Object.freeze({
     logo:'assets/ui/logo.svg',
     health:'assets/ui/health.svg',
@@ -146,6 +157,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
+  ...Object.values(GAME_ASSETS.firstPersonSkins),
   ...Object.values(GAME_ASSETS.ui)
 ]);
 

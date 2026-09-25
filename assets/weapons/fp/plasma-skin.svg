@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220">
+<defs>
+ <linearGradient id="p" x1="0" y1="0" x2="1" y2="1">
+  <stop stop-color="#C879FF" stop-opacity=".92"/><stop offset=".55" stop-color="#69E9FF" stop-opacity=".48"/><stop offset="1" stop-color="#0a1018" stop-opacity=".15"/>
+ </linearGradient>
+ <filter id="g"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<path d="M24 38h410l72 24h102v96H506l-72 24H24L8 160V60z" fill="#071019" fill-opacity=".94" stroke="#C879FF" stroke-width="4"/>
+<path d="M34 54h382l72 25h98" fill="none" stroke="url(#p)" stroke-width="8" filter="url(#g)"/>
+<path d="M34 164h244l45-25h190" fill="none" stroke="#69E9FF" stroke-width="5" opacity=".72"/>
+<path d="M79 75h190l-28 70H51z" fill="url(#p)" opacity=".28"/>
+<path d="M314 68h78l18 18-18 18h-78l-18-18z" fill="none" stroke="#69E9FF" stroke-width="3" opacity=".8"/>
+<g fill="#C879FF" opacity=".9">
+ <circle cx="452" cy="109" r="10"/><circle cx="482" cy="109" r="5"/><circle cx="504" cy="109" r="5"/>
+</g>
+<g stroke="#69E9FF" stroke-width="3" opacity=".7">
+ <path d="M84 154h120M222 154h22M535 91l26 18-26 18"/>
+</g>
+<text x="542" y="146" fill="#C879FF" font-family="Consolas,monospace" font-size="26" font-weight="700">VX</text>
+</svg>
