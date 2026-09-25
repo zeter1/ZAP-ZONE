@@ -515,6 +515,7 @@ function spawnTracer(from,dir,dist,col,key='default'){
 function doReload(){
   const w=getW();if(w.isBomb||w.isSmoke)return;
   if(reloading||ammo===w.clip||uAmmo===0)return;
+  if(w.isSniper&&zooming)zooming=false;
   reloading=true;reloadT=w.reload;reloadTot=w.reload;
   playSfx('reload');
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';
