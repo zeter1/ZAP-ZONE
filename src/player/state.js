@@ -215,6 +215,11 @@ function rollPerkChoices(count=4){
 function getW(){return WEAPONS[curW];}
 
 function ownsWeapon(idx){return Number.isInteger(idx)&&idx>=0&&idx<WEAPONS.length&&!!weaponOwned[idx];}
+function weaponTotalAmmo(idx){
+  if(!ownsWeapon(idx))return 0;
+  return Math.max(0,weaponAmmoValue(idx))+Math.max(0,weaponReserveValue(idx));
+}
+function weaponSelectable(idx){return ownsWeapon(idx)&&weaponTotalAmmo(idx)>0;}
 function weaponReserveValue(idx){
   if(idx===curW)return uAmmo;
   const w=WEAPONS[idx],val=weaponReserve[idx];
@@ -455,6 +460,7 @@ function applyRuntimeSave(data){
 function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;
   if(!ownsWeapon(idx)){showMsg('🔒 '+WEAPONS[idx].label+' ещё не найдено — подберите его на карте');return;}
+  if(!weaponSelectable(idx)){updateWeaponBar();showMsg('Пусто: '+WEAPONS[idx].label+' — подберите такой же ствол для пополнения');return;}
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
@@ -473,17 +479,27 @@ function switchW(idx){
   updateMineHUD();
 }
 function quickSwitchWeapon(){
-  if(lastW!==curW&&ownsWeapon(lastW)){switchW(lastW);return;}
-  const idx=weaponOwned.findIndex((owned,i)=>owned&&i!==curW);
+  if(lastW!==curW&&weaponSelectable(lastW)){switchW(lastW);return;}
+  const idx=weaponOwned.findIndex((owned,i)=>owned&&i!==curW&&weaponSelectable(i));
   if(idx>=0)switchW(idx);
 }
 function cycleOwnedWeapon(direction){
   const step=direction>=0?1:-1;
   for(let offset=1;offset<=WEAPONS.length;offset++){
     const idx=(curW+step*offset+WEAPONS.length*4)%WEAPONS.length;
-    if(ownsWeapon(idx)){switchW(idx);return idx;}
+    if(weaponSelectable(idx)){switchW(idx);return idx;}
   }
   return curW;
+}
+function ensureCurrentWeaponUsable(){
+  syncCurrentAmmo();
+  if(weaponSelectable(curW))return curW;
+  updateWeaponBar();
+  for(let offset=1;offset<=WEAPONS.length;offset++){
+    const idx=(curW+offset)%WEAPONS.length;
+    if(weaponSelectable(idx)){switchW(idx);return idx;}
+  }
+  return -1;
 }
 
 

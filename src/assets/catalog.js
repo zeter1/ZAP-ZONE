@@ -114,6 +114,17 @@ const GAME_ASSETS=Object.freeze({
     levelup:'assets/fx/levelup.svg',
     skull:'assets/fx/skull.svg'
   }),
+  firstPersonWeapons:Object.freeze({
+    pistol:'assets/weapons/fp/pistol-tech.svg',
+    shotgun:'assets/weapons/fp/shotgun-tech.svg',
+    rifle:'assets/weapons/fp/rifle-tech.svg',
+    rocket:'assets/weapons/fp/rocket-tech.svg',
+    plasma:'assets/weapons/fp/plasma-tech.svg',
+    mine:'assets/weapons/fp/mine-tech.svg',
+    bomb:'assets/weapons/fp/bomb-tech.svg',
+    smoke:'assets/weapons/fp/smoke-tech.svg',
+    sniper:'assets/weapons/fp/sniper-tech.svg'
+  }),
   ui:Object.freeze({
     logo:'assets/ui/logo.svg',
     health:'assets/ui/health.svg',
@@ -134,6 +145,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.status),
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
+  ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.ui)
 ]);
 

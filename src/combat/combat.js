@@ -557,7 +557,9 @@ function shoot(){
     noAmmoT=1.5;G('no-ammo').style.opacity='1';return;
   }
   if(Math.random()>=plr.ammoSaveChance)ammo--;
-  syncCurrentAmmo();sCD=w.rate;recoil=1;wHUD();
+  syncCurrentAmmo();
+  if(ammo<=0&&uAmmo<=0)updateWeaponBar();
+  sCD=w.rate;recoil=1;wHUD();
   playSfx('shoot',1,w.key);pulseCrosshair('fire');
   const shakePower=w.isRocket?1.15:w.isSniper?.98:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22;
   const shakeDuration=w.isRocket?.22:w.isSniper?.20:.11;
@@ -658,6 +660,7 @@ function throwMine(){
     return;
   }
   setWeaponAmmo(mineIdx,mineAmmo-1);
+  if(mineAmmo-1<=0&&weaponReserveValue(mineIdx)<=0)updateWeaponBar();
   sCD=mineW.rate;
   if(curW===mineIdx)wHUD();
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
@@ -681,6 +684,7 @@ function placeBomb(){
   }
   if(mines.length>=MAX_MINES){showMsg('Лимит активной взрывчатки достигнут');return;}
   setWeaponAmmo(bombIdx,bombAmmo-1);
+  if(bombAmmo-1<=0&&weaponReserveValue(bombIdx)<=0)updateWeaponBar();
   sCD=bombW.rate;
   if(curW===bombIdx)wHUD();
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
@@ -717,6 +721,7 @@ function throwSmokeGrenade(){
   const v=dir.clone().multiplyScalar(12.5);v.y+=5.2;
   smokeGrenades.push({m,vx:v.x,vy:v.y,vz:v.z,rx:7+Math.random()*5,rz:6+Math.random()*5,age:0,life:3,grounded:false,trailT:.02});
   setWeaponAmmo(smokeIdx,smokeAmmo-1);
+  if(smokeAmmo-1<=0&&weaponReserveValue(smokeIdx)<=0)updateWeaponBar();
   sCD=smokeW.rate;recoil=.45;
   recoilPitch+=(smokeW.recoilY||.02)*plr.recoilM;
   trigMuzzle(camera.position.clone().addScaledVector(dir,.62),0xcbd4d8,.72);

@@ -146,7 +146,7 @@ function setBotLimbBetween(mesh,a,b,baseLength){
   mesh.quaternion.setFromUnitVectors(_BOT_ARM_UP,_BOT_ARM_DIR);
   mesh.scale.set(1,Math.max(.70,Math.min(1.32,len/baseLength)),1);
 }
-function solveBotTwoBoneArm(upper,fore,hand,shoulder,target,side,weaponQuat){
+function solveBotTwoBoneArm(upper,fore,hand,shoulder,target,side,weaponQuat,bendHint){
   const upperLen=.50,foreLen=.43;
   _BOT_ARM_DIR.subVectors(target,shoulder);
   const rawDist=Math.max(.001,_BOT_ARM_DIR.length());
@@ -154,9 +154,9 @@ function solveBotTwoBoneArm(upper,fore,hand,shoulder,target,side,weaponQuat){
   const dist=Math.max(Math.abs(upperLen-foreLen)+.035,Math.min(rawDist,upperLen+foreLen-.025));
   const along=(upperLen*upperLen-foreLen*foreLen+dist*dist)/(2*dist);
   const bend=Math.sqrt(Math.max(0,upperLen*upperLen-along*along));
-  _BOT_ARM_BEND.set(side*.92,-.16,.52);
+  if(bendHint)_BOT_ARM_BEND.set(...bendHint);else _BOT_ARM_BEND.set(side*.72,-.54,.22);
   _BOT_ARM_BEND.addScaledVector(_BOT_ARM_DIR,-_BOT_ARM_BEND.dot(_BOT_ARM_DIR));
-  if(_BOT_ARM_BEND.lengthSq()<.001)_BOT_ARM_BEND.set(side,0,.25);
+  if(_BOT_ARM_BEND.lengthSq()<.001)_BOT_ARM_BEND.set(side,-.5,.2);
   _BOT_ARM_BEND.normalize();
   _BOT_ARM_ELBOW.copy(shoulder).addScaledVector(_BOT_ARM_DIR,along).addScaledVector(_BOT_ARM_BEND,bend);
   setBotLimbBetween(upper,shoulder,_BOT_ARM_ELBOW,.52);
@@ -175,8 +175,8 @@ function updateBotWeaponHands(bot){
   mesh.localToWorld(_BOT_GRIP_R);bot.group.worldToLocal(_BOT_GRIP_R);
   _BOT_GRIP_L.set(...pose.gripL);
   mesh.localToWorld(_BOT_GRIP_L);bot.group.worldToLocal(_BOT_GRIP_L);
-  solveBotTwoBoneArm(rig.rightUpper,rig.rightFore,rig.rightHand,_BOT_SHOULDER_R,_BOT_GRIP_R,1,bot.weaponPivot.quaternion);
-  solveBotTwoBoneArm(rig.leftUpper,rig.leftFore,rig.leftHand,_BOT_SHOULDER_L,_BOT_GRIP_L,-1,bot.weaponPivot.quaternion);
+  solveBotTwoBoneArm(rig.rightUpper,rig.rightFore,rig.rightHand,_BOT_SHOULDER_R,_BOT_GRIP_R,1,bot.weaponPivot.quaternion,pose.elbowR);
+  solveBotTwoBoneArm(rig.leftUpper,rig.leftFore,rig.leftHand,_BOT_SHOULDER_L,_BOT_GRIP_L,-1,bot.weaponPivot.quaternion,pose.elbowL);
   return true;
 }
 const WPTS=[
@@ -1036,14 +1036,16 @@ class Enemy{
     const localSide=this.velX*rightX+this.velZ*rightZ;
     const reverseStride=(Math.abs(localForward)>Math.abs(localSide)*.72&&localForward<-.12)?-1:1;
     const sideRatio=this.gaitSpeed>.15?Math.max(-1,Math.min(1,localSide/this.gaitSpeed)):0;
-    const strideAmp=Math.min(.48,gaitNorm*.44);
+    const strideAmp=Math.min(.52,gaitNorm*.47);
     const strideWave=Math.sin(this.gaitPhase)*reverseStride;
     const leftSwing=strideWave*strideAmp,rightSwing=-leftSwing;
     const leftLift=Math.max(0,Math.sin(this.gaitPhase+.42))*gaitNorm;
     const rightLift=Math.max(0,Math.sin(this.gaitPhase+Math.PI+.42))*gaitNorm;
-    const strafeRoll=sideRatio*.055*gaitNorm;
+    const strideBob=Math.cos(this.gaitPhase*2)*.018*gaitNorm;
+    const hipSway=Math.sin(this.gaitPhase)*.018*gaitNorm;
+    const strafeRoll=sideRatio*.060*gaitNorm;
     const forwardRatio=this.gaitSpeed>.15?Math.max(-1,Math.min(1,localForward/this.gaitSpeed)):0;
-    const bodyLean=forwardRatio*.028*gaitNorm;
+    const bodyLean=forwardRatio*.036*gaitNorm;
     const combatPose=this.aiState==='engage'&&this.canSeeTarget;
     const armScale=combatPose?.18:.56;
 
@@ -1071,16 +1073,26 @@ class Enemy{
       this.pts[13].rotation.x=-rightSwing*.18-rightLift*.16;
       this.pts[13].rotation.z=strafeRoll*.30;
     }
+    if(this.pts[0])this.pts[0].position.y=1.82+strideBob*.55;
+    if(this.pts[1])this.pts[1].position.y=1.88+strideBob*.55;
     if(this.pts[2]){
+      this.pts[2].position.y=1.25+strideBob;
+      this.pts[2].position.x=hipSway*.28;
       this.pts[2].rotation.x=-bodyLean;
-      this.pts[2].rotation.y=-Math.sin(this.gaitPhase)*.035*gaitNorm;
+      this.pts[2].rotation.y=-Math.sin(this.gaitPhase)*.040*gaitNorm;
       this.pts[2].rotation.z=-strafeRoll*.55;
     }
     if(this.pts[3]){
+      this.pts[3].position.y=.88+strideBob*.78;
+      this.pts[3].position.x=hipSway*.20;
       this.pts[3].rotation.x=-bodyLean*.65;
-      this.pts[3].rotation.y=Math.sin(this.gaitPhase)*.024*gaitNorm;
+      this.pts[3].rotation.y=Math.sin(this.gaitPhase)*.030*gaitNorm;
       this.pts[3].rotation.z=-strafeRoll*.72;
     }
+    if(this.pts[8]){this.pts[8].position.y=.52+leftLift*.018;this.pts[8].position.z=-leftSwing*.035;}
+    if(this.pts[9]){this.pts[9].position.y=.52+rightLift*.018;this.pts[9].position.z=-rightSwing*.035;}
+    if(this.pts[12])this.pts[12].position.z=.05-leftSwing*.060;
+    if(this.pts[13])this.pts[13].position.z=.05-rightSwing*.060;
     if(this.weaponPivot){
       const idleBreath=Math.sin(this.ph*.55)*(1-Math.min(1,gaitNorm))*.008;
       const stepBob=Math.sin(this.gaitPhase*2)*.012*gaitNorm;

@@ -185,6 +185,7 @@ function loop(ts){
   if(sCD>0)sCD-=dt;
   if(reloading){reloadT-=dt;if(reloadT<=0)completePlayerReloadStep();}
   updateWeaponStateHUD();
+  ensureCurrentWeaponUsable();
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}

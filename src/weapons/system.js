@@ -250,7 +250,12 @@ function createWeaponModel(key,options={}){
     box(0,.145,-.14,.11,.065,.34,polymer);cyl(0,.205,-.15,.038,.038,.27,dark,Math.PI/2);
     rail(-.116,.085,-.20,.018,.022,.48);rail(.116,.085,-.20,.018,.022,.48);
     if(detail>0){box(0,.213,-.15,.12,.042,.12,glass);box(0,.055,-.58,.20,.10,.22,dark);for(let i=0;i<4;i++)box(-.09+i*.06,.11,-.53,.035,.03,.16,steel);}
-    if(detail>1){box(0,-.03,.28,.19,.07,.08,silver);rail(0,.105,.18,.09,.018,.12);}
+    if(detail>1){
+      box(0,-.03,.28,.19,.07,.08,silver);rail(0,.105,.18,.09,.018,.12);
+      box(-.145,.015,-.16,.025,.12,.52,accentSoft);box(.145,.015,-.16,.025,.12,.52,accentSoft);
+      for(let i=0;i<5;i++)box(-.09+i*.045,.095,-.62,.025,.025,.15,steel);
+      torus(0,.205,-.15,.052,.010,accent,Math.PI/2);
+    }
     muzzleZ=-1.38;
   }else if(w.key==='sniper'){
     box(0,.015,-.12,.24,.17,.92,dark2);box(0,.055,-.24,.20,.065,.62,accentSoft);
@@ -302,16 +307,37 @@ function createWeaponModel(key,options={}){
   group.userData.weaponKey=w.key;group.userData.muzzleZ=muzzleZ;
   return group;
 }
-function addFirstPersonHands(target){
-  const sleeve=weaponMaterial(0x263746,.76,.08),glove=weaponMaterial(0x111820,.92,.04),skin=weaponMaterial(0xc49370,.88,.01);
-  const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);target.add(m);return m;};
-  add(new THREE.BoxGeometry(.15,.18,.30),sleeve,-.17,-.29,.14,.12,0,-.18);
-  add(new THREE.BoxGeometry(.12,.15,.18),glove,-.13,-.20,-.055,.15,0,-.20);
-  add(new THREE.BoxGeometry(.16,.18,.32),sleeve,.18,-.28,.19,.09,0,.18);
-  add(new THREE.BoxGeometry(.12,.15,.18),glove,.14,-.19,-.02,.12,0,.16);
-  add(new THREE.BoxGeometry(.10,.045,.12),skin,-.13,-.14,-.105,.12,0,-.20);
-  add(new THREE.BoxGeometry(.10,.045,.12),skin,.14,-.13,-.07,.10,0,.16);
+const FP_HAND_POSES={
+  pistol:{l:[-.13,-.22,-.02,-.05,-.16],r:[.16,-.18,.02,.10,.12]},
+  shotgun:{l:[-.12,-.22,-.40,.06,-.12],r:[.17,-.18,.03,.10,.13]},
+  rifle:{l:[-.12,-.22,-.34,.05,-.10],r:[.17,-.18,.03,.10,.13]},
+  rocket:{l:[-.13,-.19,-.35,.02,-.08],r:[.17,-.18,.08,.08,.12]},
+  plasma:{l:[-.12,-.22,-.34,.05,-.10],r:[.17,-.18,.03,.10,.13]},
+  mine:{l:[-.11,-.17,-.28,.02,-.06],r:[.12,-.16,-.10,.06,.08]},
+  bomb:{l:[-.12,-.17,-.36,.02,-.06],r:[.13,-.16,-.15,.06,.08]},
+  smoke:{l:[-.11,-.17,-.30,.02,-.06],r:[.12,-.16,-.12,.06,.08]},
+  sniper:{l:[-.12,-.22,-.46,.05,-.10],r:[.17,-.18,.03,.10,.13]}
+};
+function addFirstPersonWeaponDecal(target,w){
+  const path=GAME_ASSETS.firstPersonWeapons?.[w.key];if(!path)return;
+  const p=makeAssetPlane(path,.34,.12,{opacity:.96,depthTest:true,renderOrder:5});
+  p.position.set(.135,.075,-.14);p.rotation.set(-.08,.12,0);target.add(p);
 }
+function addFirstPersonHands(target,key){
+  const pose=FP_HAND_POSES[key]||FP_HAND_POSES.rifle;
+  const sleeve=weaponMaterial(0x20384e,.62,.24),glove=weaponMaterial(0x0b1118,.78,.12);
+  const guard=weaponMaterial(0x2e9ad0,.30,.56,0x2e9ad0,.22);
+  const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);target.add(m);return m;};
+  const arm=(d,side)=>{
+    const [x,y,z,rx,rz]=d;
+    add(new THREE.CylinderGeometry(.085,.105,.34,8),sleeve,x,y+.13,z+.16,Math.PI/2+rx,0,rz);
+    add(new THREE.BoxGeometry(.16,.11,.15),guard,x,y+.03,z+.02,rx,0,rz);
+    add(new THREE.BoxGeometry(.14,.15,.19),glove,x,y,z,rx,0,rz);
+    for(let i=0;i<3;i++)add(new THREE.BoxGeometry(.035,.04,.13),glove,x+(i-1)*.042*side,y+.015,z-.105,rx,0,rz);
+  };
+  arm(pose.l,-1);arm(pose.r,1);
+}
+
 function createWorldWeaponModel(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0];
   const model=createWeaponModel(w.key,{mode:'world',detail:MOBILE_LOW?0:1});
@@ -328,8 +354,9 @@ let gunSwayX=0,gunSwayY=0;
 let flashM=null,beamM=null,beamT=0;
 function buildGun(w){
   clearGroupChildren(gunGrp);flashM=null;beamM=null;
-  const model=createWeaponModel(w.key,{mode:'firstPerson',detail:2});model.scale.setScalar(1.04);gunGrp.add(model);
-  addFirstPersonHands(gunGrp);
+  const model=createWeaponModel(w.key,{mode:'firstPerson',detail:2});model.scale.setScalar(1.07);gunGrp.add(model);
+  addFirstPersonWeaponDecal(model,w);
+  addFirstPersonHands(gunGrp,w.key);
   const muzzleZ=model.userData.muzzleZ??-.90;
   flashM=new THREE.Mesh(new THREE.SphereGeometry(w.isRocket?.11:.065,8,6),new THREE.MeshBasicMaterial({color:0xfff1b0,transparent:true,opacity:0,depthWrite:false}));
   flashM.position.set(0,.02,muzzleZ);gunGrp.add(flashM);
@@ -339,17 +366,16 @@ function buildGun(w){
   const p=w.viewPos||WEAPONS[0].viewPos;gunBasePos.set(p[0],p[1],p[2]);gunGrp.position.copy(gunBasePos);
 }
 const BOT_WEAPON_POSES={
-  // gripR/gripL are real hand targets in weapon-model local space.
-  pistol:{p:[.30,1.28,-.10],r:[.04,.03,-.22],s:.72,gripR:[.105,-.105,.075],gripL:[-.015,-.085,-.015]},
-  shotgun:{p:[.34,1.29,-.11],r:[.035,.055,-.25],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.40]},
-  rifle:{p:[.34,1.30,-.12],r:[.025,.045,-.24],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34]},
-  rocket:{p:[.31,1.37,-.06],r:[.00,.07,-.20],s:.62,gripR:[.105,-.105,.08],gripL:[-.10,-.07,-.36]},
-  plasma:{p:[.34,1.30,-.11],r:[.03,.05,-.24],s:.67,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34]},
-  mine:{p:[.22,1.27,-.10],r:[.10,.02,-.16],s:.68,gripR:[.12,-.07,-.12],gripL:[-.12,-.06,-.31]},
-  bomb:{p:[.22,1.27,-.10],r:[.10,.02,-.16],s:.68,gripR:[.13,-.06,-.16],gripL:[-.13,-.05,-.40]},
-  smoke:{p:[.23,1.28,-.10],r:[.09,.02,-.17],s:.68,gripR:[.11,-.07,-.12],gripL:[-.11,-.06,-.34]},
-  sniper:{p:[.33,1.32,-.13],r:[.02,.04,-.22],s:.65,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.46]}
-};
+  pistol:{p:[.19,1.34,-.16],r:[.03,.02,-.14],s:.72,gripR:[.105,-.105,.075],gripL:[-.015,-.085,-.015],elbowR:[.62,-.58,.18],elbowL:[-.56,-.52,.20]},
+  shotgun:{p:[.14,1.36,-.20],r:[.02,.025,-.13],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.40],elbowR:[.64,-.58,.15],elbowL:[-.78,-.50,.26]},
+  rifle:{p:[.14,1.37,-.21],r:[.015,.02,-.12],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34],elbowR:[.62,-.58,.14],elbowL:[-.72,-.52,.24]},
+  rocket:{p:[.10,1.42,-.16],r:[0,.035,-.10],s:.62,gripR:[.105,-.105,.08],gripL:[-.10,-.07,-.36],elbowR:[.62,-.62,.12],elbowL:[-.82,-.50,.30]},
+  plasma:{p:[.14,1.37,-.20],r:[.02,.025,-.12],s:.67,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34],elbowR:[.62,-.58,.14],elbowL:[-.72,-.52,.24]},
+  mine:{p:[.13,1.31,-.16],r:[.08,.02,-.10],s:.68,gripR:[.12,-.07,-.12],gripL:[-.12,-.06,-.31],elbowR:[.58,-.62,.16],elbowL:[-.62,-.60,.20]},
+  bomb:{p:[.13,1.31,-.16],r:[.08,.02,-.10],s:.68,gripR:[.13,-.06,-.16],gripL:[-.13,-.05,-.40],elbowR:[.58,-.62,.16],elbowL:[-.66,-.58,.22]},
+  smoke:{p:[.14,1.32,-.16],r:[.07,.02,-.11],s:.68,gripR:[.11,-.07,-.12],gripL:[-.11,-.06,-.34],elbowR:[.58,-.62,.16],elbowL:[-.64,-.58,.22]},
+  sniper:{p:[.12,1.39,-.23],r:[.012,.018,-.11],s:.65,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.46],elbowR:[.62,-.58,.14],elbowL:[-.82,-.48,.28]}
+}
 function makeBotWeaponMesh(key,team){
   return createWeaponModel(key,{mode:'bot',team,detail:MOBILE_LOW?0:2});
 }
@@ -370,9 +396,11 @@ function buildWeaponBar(){
   const bar=G('weapon-bar');bar.replaceChildren();
   WEAPONS.forEach((w,i)=>{
     const owned=typeof ownsWeapon==='function'?ownsWeapon(i):i===0;
+    const selectable=typeof weaponSelectable==='function'?weaponSelectable(i):owned;
     const slot=document.createElement('div');
     slot.className='wb-slot'+(owned?(i===curW?' active':''):' locked');
     slot.id='wb-'+i;
+    slot.style.display=owned&&!selectable?'none':'';
     slot.title=owned?w.name:'Найдите '+w.label+' на карте';
 
     const asset=document.createElement('img');
@@ -391,7 +419,8 @@ function buildWeaponBar(){
 function updateWeaponBar(){
   WEAPONS.forEach((_,i)=>{
     const el=G('wb-'+i);if(!el)return;
-    const owned=ownsWeapon(i);
+    const owned=ownsWeapon(i),selectable=weaponSelectable(i);
+    el.style.display=owned&&!selectable?'none':'';
     el.className='wb-slot'+(owned?(i===curW?' active':''):' locked');
     const key=el.querySelector('.wb-key'),name=el.querySelector('.wb-name'),reserve=el.querySelector('.wb-reserve');
     if(key)key.textContent=owned?String(i+1):'🔒';

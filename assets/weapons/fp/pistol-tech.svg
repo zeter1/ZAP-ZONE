@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 180">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#55dfff" stop-opacity=".92"/><stop offset="1" stop-color="#ffd45a" stop-opacity=".30"/></linearGradient>
+ <filter id="b"><feGaussianBlur stdDeviation="3" result="x"/><feMerge><feMergeNode in="x"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<path d="M20 26h358l44 28h70v72h-70l-44 28H20z" fill="#071018" fill-opacity=".93" stroke="#55dfff" stroke-width="5"/>
+<path d="M40 47h305l31 19h73" fill="none" stroke="url(#g)" stroke-width="6" filter="url(#b)"/>
+<path d="M40 132h220l28-17h154" fill="none" stroke="#ffd45a" stroke-width="4" opacity=".72"/>
+<path d="M418 73h42v35h-42z" fill="#55dfff" opacity=".20" stroke="#55dfff" stroke-width="3"/>
+<circle cx="439" cy="90.5" r="8" fill="#ffd45a" filter="url(#b)"/>
+<g fill="#55dfff" font-family="Consolas,monospace">
+ <text x="45" y="88" font-size="28" font-weight="700">PISTOL // PX-4</text>
+ <text x="46" y="118" font-size="17" opacity=".72">SIDEARM // ZAP SYSTEMS</text>
+</g>
+<g stroke="#ffd45a" stroke-width="3" opacity=".75">
+ <path d="M300 100h65M315 111h50M377 80l18 10-18 10"/>
+</g>
+</svg>

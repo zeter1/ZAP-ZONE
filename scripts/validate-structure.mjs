@@ -26,7 +26,10 @@ const visualAssets=[
   'assets/fx/bullet-hit.svg','assets/fx/wall-impact.svg','assets/fx/plasma-impact.svg','assets/fx/sniper-shot.svg','assets/fx/rocket-impact.svg','assets/fx/critical-hit.svg','assets/fx/armor-break.svg',
   'assets/medals/first-blood.svg','assets/medals/double-kill.svg','assets/medals/triple-kill.svg','assets/medals/multikill.svg','assets/medals/killing-spree.svg','assets/medals/longshot.svg','assets/medals/critical-kill.svg','assets/medals/explosive-kill.svg',
   'assets/status/second-wind.svg','assets/status/lifesteal.svg','assets/status/armor-regen.svg','assets/status/low-health.svg','assets/status/smoke-guard.svg','assets/status/crit-ready.svg',
-  'assets/ui/logo.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg','assets/ui/sniper-scope.svg','assets/ui/rifle-scope.svg'
+  'assets/ui/logo.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg','assets/ui/sniper-scope.svg','assets/ui/rifle-scope.svg',
+  'assets/weapons/fp/pistol-tech.svg','assets/weapons/fp/shotgun-tech.svg','assets/weapons/fp/rifle-tech.svg',
+  'assets/weapons/fp/rocket-tech.svg','assets/weapons/fp/plasma-tech.svg','assets/weapons/fp/mine-tech.svg',
+  'assets/weapons/fp/bomb-tech.svg','assets/weapons/fp/smoke-tech.svg','assets/weapons/fp/sniper-tech.svg'
 ];
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
@@ -49,6 +52,7 @@ for(const file of requiredAssets){
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
+if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');
 if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must not be catalogued');
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
@@ -80,6 +84,10 @@ for(const token of ['STARTING_RESERVE','STARTING_OWNED','BOT_WEAPON_POSES','grip
   if(!weapons.includes(token))fail('pickup/ownership or bot weapon presentation missing: '+token);
 }
 if(weapons.includes('function addBotWeaponGrip'))fail('bot weapon model must not carry fake detached hands');
+for(const token of ['FP_HAND_POSES','function addFirstPersonWeaponDecal','GAME_ASSETS.firstPersonWeapons','addFirstPersonHands(gunGrp,w.key)']){
+  if(!weapons.includes(token))fail('premium first-person weapon presentation missing: '+token);
+}
+if(!weapons.includes("el.style.display=owned&&!selectable?'none':''"))fail('empty owned weapons must disappear from the weapon bar');
 const rifleStart=weapons.indexOf("weaponDef('rifle'");
 const rifleEnd=weapons.indexOf('})',rifleStart);
 const rifleDef=rifleStart>=0&&rifleEnd>rifleStart?weapons.slice(rifleStart,rifleEnd):'';
@@ -107,6 +115,9 @@ for(const token of ['function spawnPlayerBullet','function fireInstantSniper','c
   if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
 if(!combat.includes("document.addEventListener('wheel'")||!combat.includes('cycleOwnedWeapon(e.deltaY>0?1:-1)'))fail('mouse wheel must cycle owned weapons only');
+for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValue(mineIdx)<=0)updateWeaponBar();','weaponReserveValue(bombIdx)<=0)updateWeaponBar();','weaponReserveValue(smokeIdx)<=0)updateWeaponBar();']){
+  if(!combat.includes(token))fail('depleted weapon bar retirement missing: '+token);
+}
 
 
 const bots=readFileSync('src/entities/bots.js','utf8');
@@ -116,6 +127,9 @@ if(!bots.includes('GAME_ASSETS.characters.allyMark')||!bots.includes('Extra read
 if(!bots.includes('this.weaponPivot.userData.pose||'))fail('locomotion must preserve per-weapon bot pose');
 for(const token of ['this.armRig=built.armRig','function solveBotTwoBoneArm','function updateBotWeaponHands','mesh.localToWorld(_BOT_GRIP_R)','updateBotWeaponHands(this);']){
   if(!bots.includes(token))fail('realistic two-hand bot weapon hold missing: '+token);
+}
+for(const token of ['pose.elbowR','const strideBob','const hipSway','this.pts[0].position.y=1.82+strideBob*.55']){
+  if(!bots.includes(token))fail('advanced bot walk/weapon pose refinement missing: '+token);
 }
 for(const token of [
   'this.motionX=0;this.motionZ=0',
@@ -139,6 +153,7 @@ if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick 
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('activeW.scopeAsset||GAME_ASSETS.ui.sniperScope'))fail('per-weapon scope asset switching missing');
 if(runtime.includes('setWeaponAmmo(SMOKE_WEAPON_INDEX,1)'))fail('smoke cooldown must not generate free ammo');
+if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-switch away from depleted current weapon');
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
@@ -147,13 +162,16 @@ for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMed
 }
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
 if(!css.includes('#xp-wrap{position:absolute;top:18px;left:18px;transform:none'))fail('level/XP HUD must stay clear of the centered weapon bar');
+const rifleScope=readFileSync('assets/ui/rifle-scope.svg','utf8');
+if(!rifleScope.includes('Transparent center')||rifleScope.includes('<rect width="1920" height="1080" fill="#020406"'))fail('rifle scope must preserve transparent world view');
 if((html.match(/id="xhair"/g)||[]).length!==1)fail('gameplay HUD must contain exactly one xhair root');
 
 for(const token of ['let curW=0,lastW=0','function quickSwitchWeapon()','playSfx(\'equip\')','w.cycleTime=Math.max'] ){if(!state.includes(token))fail('player weapon lifecycle missing: '+token);}
-for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function cycleOwnedWeapon(direction)','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:26']){
+for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function weaponTotalAmmo','function weaponSelectable','function cycleOwnedWeapon(direction)','function ensureCurrentWeaponUsable','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:26']){
   if(!state.includes(token))fail('per-weapon ownership/reserve save model missing: '+token);
 }
+if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
 if(!html.includes('ZAP ZONE v22.2'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE bot arm IK, owned-weapon wheel cycling and HUD layout validation passed.');
+if(!process.exitCode)console.log('ZAP ZONE premium FP assets, transparent rifle optic, refined bot gait and depleted-weapon retirement validation passed.');
