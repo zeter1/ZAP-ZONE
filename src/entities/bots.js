@@ -239,6 +239,66 @@ function syncPlayerCombatNoise(){
   }
 }
 
+const BOT_TEAM_TACTICS={
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null}
+};
+function botRoleLabel(role){
+  return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
+}
+function botMatchesSquadFocus(bot,plan){
+  if(!plan)return false;
+  if(plan.focusIsPlayer)return bot.targetIsPlayer&&bot.team==='enemy'&&!dying;
+  return !!plan.focus&&bot.targetEn===plan.focus&&plan.focus.alive;
+}
+function refreshBotTeamTactics(team){
+  const plan=BOT_TEAM_TACTICS[team];
+  const now=performance.now();
+  if(now-plan.time<180)return plan;
+  plan.time=now;plan.focus=null;plan.focusIsPlayer=false;plan.suppressor=null;plan.flankerCount=0;plan.wounded=null;
+  const mates=enemies.filter(b=>b.alive&&b.team===team);
+  const votes=new Map();
+  const addVote=(target,isPlayer,weight,pos)=>{
+    if(!target&&!isPlayer)return;
+    const key=isPlayer?'player':target;
+    const prev=votes.get(key)||{target,isPlayer,weight:0,pos:new THREE.Vector3()};
+    prev.weight+=weight;prev.pos.copy(pos);votes.set(key,prev);
+  };
+  for(const mate of mates){
+    if(mate.targetIsPlayer&&team==='enemy'&&!dying){
+      addVote(null,true,mate.canSeeTarget?3.4:mate.lastSeenT<2.4?2.0:.8,camera.position);
+    }else if(mate.targetEn&&mate.targetEn.alive&&mate.targetEn.team!==team){
+      addVote(mate.targetEn,false,mate.canSeeTarget?3.2:mate.lastSeenT<2.4?1.9:.8,mate.targetEn.group.position);
+    }
+  }
+  const intel=TEAM_INTEL[team];
+  if(intel&&now-intel.time<4200){
+    if(intel.target==='player'&&team==='enemy'&&!dying)addVote(null,true,2.2,intel.pos);
+    else if(intel.target&&intel.target.alive&&intel.target.team!==team)addVote(intel.target,false,2.2,intel.pos);
+  }
+  let best=null;
+  for(const item of votes.values())if(!best||item.weight>best.weight)best=item;
+  if(best){
+    plan.focus=best.target;plan.focusIsPlayer=best.isPlayer;plan.focusPos.copy(best.pos);
+    if(best.isPlayer&&!dying)plan.focusPos.copy(camera.position);
+    else if(best.target?.alive)plan.focusPos.copy(best.target.group.position);
+  }
+  const focusMates=mates.filter(m=>botMatchesSquadFocus(m,plan));
+  const flankers=focusMates.filter(m=>(m.role==='flankL'||m.role==='flankR')&&m.hp/m.maxHp>.38);
+  plan.flankerCount=flankers.length;
+  const suppressors=focusMates.filter(m=>m.canSeeTarget&&m.reloadT<=0&&m.mag>0&&m.hp/m.maxHp>.30&&m.role!=='flankL'&&m.role!=='flankR');
+  suppressors.sort((a,b)=>{
+    const roleScore=x=>x.role==='anchor'?5:x.role==='assault'?4:x.role==='engineer'?3:1;
+    const da=a.group.position.distanceToSquared(plan.focusPos),db=b.group.position.distanceToSquared(plan.focusPos);
+    return roleScore(b)-roleScore(a)+(da-db)*.0015;
+  });
+  plan.suppressor=suppressors[0]||null;
+  const wounded=mates.filter(m=>m.hp/m.maxHp<.58);
+  wounded.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp));
+  plan.wounded=wounded[0]||null;
+  return plan;
+}
+
 
 class Enemy{
   constructor(x,z,type,team){
@@ -277,6 +337,9 @@ class Enemy{
     this.weaponSwitchT=2.2+Math.random()*2.0;
     this.coverEvalT=.38+Math.random()*.22;
     this.coverPoint=null;
+    this.suppressedT=0;this.suppressionSource=null;
+    this.flankPoint=null;this.flankEvalT=.25+Math.random()*.35;this.flankCommitT=0;
+    this.tacticalMode='normal';
     this.levelSync=-1;
     this.lastDamageT=0;
     this.lastTargetSeenAt=0;
@@ -330,7 +393,7 @@ class Enemy{
     const icon=this.weapon?.icon||'🔫';
     const ally=this.team==='ally';
     const badge=ally?GAME_ASSETS.characters.ally:GAME_ASSETS.characters.enemy;
-    this.wEl.innerHTML='<img class="bot-badge-icon" src="'+badge+'" alt=""><strong>'+(ally?'СВОЙ':'ВРАГ')+'</strong><span>'+icon+'</span>';
+    this.wEl.innerHTML='<img class="bot-badge-icon" src="'+badge+'" alt=""><strong>'+(ally?'СВОЙ':'ВРАГ')+' · '+botRoleLabel(this.role)+'</strong><span>'+icon+'</span>';
   }
 
   syncScale(force=false){
@@ -421,6 +484,41 @@ class Enemy{
       if(score<bestScore){bestScore=score;best=p;}
     }
     return best?best.clone():null;
+  }
+
+  findFlankPoint(target,sideSign){
+    const from=this.group.position;
+    const dx=target.x-from.x,dz=target.z-from.z,dist=Math.max(1,Math.hypot(dx,dz));
+    const dirX=dx/dist,dirZ=dz/dist,perpX=-dirZ,perpZ=dirX;
+    let best=null,bestScore=Infinity;
+    for(const cp of COVER_POINTS){
+      const p=new THREE.Vector3(cp[0],0,cp[1]);
+      const dFrom=p.distanceTo(from),dTarget=p.distanceTo(target);
+      if(dFrom<6||dFrom>44||dTarget<10||dTarget>29)continue;
+      const side=((p.x-target.x)*perpX+(p.z-target.z)*perpZ)*sideSign;
+      if(side<4.5)continue;
+      const eye=p.clone();eye.y=1.35;
+      const tgt=target.clone();tgt.y=1.35;
+      const firingLane=!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt);
+      const routeFrom=from.clone();routeFrom.y=.55;
+      const routeTo=p.clone();routeTo.y=.55;
+      const routeBlocked=wallBetween(routeFrom,routeTo,losMeshes);
+      let crowd=0;
+      for(const mate of enemies){
+        if(!mate.alive||mate===this||mate.team!==this.team)continue;
+        const md=mate.group.position.distanceTo(p);
+        if(md<5)crowd+=(5-md)*1.5;
+      }
+      const score=dFrom*.46+Math.abs(dTarget-17)*.70-side*.20+crowd+(routeBlocked?7.5:0)+(firingLane?-5.0:3.8);
+      if(score<bestScore){bestScore=score;best=p;}
+    }
+    if(best)return best.clone();
+    const radius=Math.max(12,Math.min(22,dist*.48));
+    const cx=target.x+perpX*sideSign*radius-dirX*3.5;
+    const cz=target.z+perpZ*sideSign*radius-dirZ*3.5;
+    const coll=collideWalls(Math.max(-90,Math.min(90,cx)),Math.max(-90,Math.min(90,cz)),BOT_R);
+    if(Math.hypot(coll.x-cx,coll.z-cz)<2.6)return new THREE.Vector3(coll.x,0,coll.z);
+    return null;
   }
 
   canSeePoint(pos,yOffset=1.25){
@@ -651,6 +749,18 @@ class Enemy{
     return true;
   }
 
+  registerSuppression(source,intensity=.6){
+    if(!this.alive||!source||source===this||source.team===this.team)return;
+    const pressure=Math.max(.3,Math.min(1.4,intensity));
+    this.suppressedT=Math.max(this.suppressedT,.62+pressure*.78);
+    this.suppressionSource=source;
+    this.coverCooldownT=Math.min(this.coverCooldownT,.12);
+    if(this.hp/this.maxHp<.72||pressure>.9){
+      this.coverEvalT=Math.min(this.coverEvalT,.05);
+      this.stateCD=Math.min(this.stateCD,.08);
+    }
+  }
+
   dealDamageToCurrentTarget(amount,dir){
     if(amount<=0)return;
     if(this.targetEn&&this.targetEn.alive&&this.targetEn.team!==this.team){
@@ -689,7 +799,10 @@ class Enemy{
     }
 
     let dir=aim.clone().sub(from).normalize();
-    const acc=wp.isRocket?(this.curAcc*.50+wp.spread*.45):(this.curAcc*.40+wp.spread*.78);
+    const suppressing=this.tacticalMode==='suppress';
+    const incomingPressure=this.suppressedT>0?1+Math.min(.48,this.suppressedT*.20):1;
+    const volumePenalty=suppressing?1.14:1;
+    const acc=(wp.isRocket?(this.curAcc*.50+wp.spread*.45):(this.curAcc*.40+wp.spread*.78))*incomingPressure*volumePenalty;
     dir.x+=(Math.random()-.5)*acc;
     dir.y+=(Math.random()-.5)*acc*.28;
     dir.z+=(Math.random()-.5)*acc;
@@ -737,6 +850,8 @@ class Enemy{
       const targetVz=this.targetEn&&this.targetEn.alive?(this.targetEn.velZ||0):plrVz;
       const movingPenalty=(Math.abs(targetVx)+Math.abs(targetVz))*0.01;
       let hitChance=Math.max(.10,Math.min(.982,wp.hitBias-rangePenalty-Math.random()*this.curAcc-movingPenalty));
+      if(suppressing)hitChance*=.80;
+      if(this.suppressedT>0)hitChance*=Math.max(.72,1-Math.min(.24,this.suppressedT*.10));
       if(this.targetEn&&this.targetEn.alive){
         if(Math.random()<hitChance){
           const crit=Math.random()<.10?1.35:1;
@@ -753,7 +868,10 @@ class Enemy{
       }
     }
 
-    if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>7&&(this.nearMissCd||0)<=0&&Math.random()<.34){
+    if(this.targetEn&&this.targetEn.alive&&totalDmg<=0&&Math.random()<(suppressing?.74:.28)){
+      this.targetEn.registerSuppression(this,suppressing?1.10:.55);
+    }
+    if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>7&&(this.nearMissCd||0)<=0&&Math.random()<(suppressing?.56:.34)){
       playSfx('whiz',Math.max(.28,Math.min(1,1-dist/120)));
       this.nearMissCd=.32+Math.random()*.28;
     }
@@ -768,6 +886,9 @@ class Enemy{
     this.syncScale();
     this.ph+=dt*3;
     if(this.lastDamageT>0)this.lastDamageT-=dt;
+    if(this.suppressedT>0){this.suppressedT=Math.max(0,this.suppressedT-dt);if(this.suppressedT<=0)this.suppressionSource=null;}
+    if(this.flankEvalT>0)this.flankEvalT-=dt;
+    if(this.flankCommitT>0)this.flankCommitT-=dt;
     if(this.nearMissCd>0)this.nearMissCd-=dt;
 
     if(this.flashT>0){this.flashT-=dt;if(this.flashT<=0)this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(0,0,0);});}
@@ -835,6 +956,22 @@ class Enemy{
     const hpPct=this.hp/this.maxHp;
     const localThreats=this.nearbyThreatCount(18);
     const opponentWeapon=this.currentTargetWeapon();
+    const squadPlan=refreshBotTeamTactics(this.team);
+    const focusMatches=botMatchesSquadFocus(this,squadPlan);
+    const roleFlanker=this.role==='flankL'||this.role==='flankR';
+    const supportMate=squadPlan.wounded&&squadPlan.wounded!==this&&squadPlan.wounded.alive?squadPlan.wounded:null;
+    const supportDist=supportMate?this.group.position.distanceTo(supportMate.group.position):999;
+    const supportReady=!!supportMate&&(this.role==='engineer'||this.role==='anchor')&&supportDist<34&&hpPct>.42&&!(this.canSeeTarget&&dist<12);
+    const coordinatedFlank=roleFlanker&&focusMatches&&!!squadPlan.suppressor&&hpPct>.38&&!this.reloadT&&targetPos&&dist>10;
+    if(this.flankEvalT<=0&&coordinatedFlank){
+      const sign=this.role==='flankL'?-1:1;
+      const nextFlank=this.findFlankPoint(squadPlan.focusPos,sign);
+      if(nextFlank){this.flankPoint=nextFlank;this.flankCommitT=2.6+Math.random()*1.2;}
+      this.flankEvalT=.82+Math.random()*.42;
+    }
+    if(!coordinatedFlank&&this.flankCommitT<=0)this.flankPoint=null;
+    this.tacticalMode=squadPlan.suppressor===this&&focusMatches&&squadPlan.flankerCount>0?'suppress':
+      this.flankPoint&&this.flankCommitT>0?'flank':supportReady?'support':'normal';
     if(this.mag<=Math.max(1,Math.ceil(this.weapon.clip*.22))&&!this.reloadT&&(!this.canSeeTarget||dist>this.weapon.opt*1.15))this.startReload();
     if((hpPct<.38||(hpPct<.56&&this.reloadT>0))&&(!this.pickupTarget||!this.pickupTarget.m.visible)){
       this.pickupTarget=this.findReachableHealthPickup(30);
@@ -842,7 +979,7 @@ class Enemy{
 
     this.coverEvalT-=dt;
     if(this.coverEvalT<=0&&targetPos&&this.coverCooldownT<=0){
-      const needCover=(!this.canSeeTarget&&dist>10)||(hpPct<0.52)||(this.reloadT>0)||(this.role==='anchor'&&dist>12)||(this.lastDamageT>0&&dist>8);
+      const needCover=(!this.canSeeTarget&&dist>10)||(hpPct<0.52)||(this.reloadT>0)||(this.role==='anchor'&&dist>12)||(this.lastDamageT>0&&dist>8)||(this.suppressedT>0);
       const nextCover=needCover?this.findTacticalCover(targetPos):null;
       if(nextCover&&(!this.coverPoint||this.coverPoint.distanceToSquared(nextCover)>.64))this.coverHoldT=.28+Math.random()*.42;
       this.coverPoint=nextCover;
@@ -853,7 +990,9 @@ class Enemy{
     if(this.stateCD<=0&&targetPos){
       if(this.pickupTarget&&this.pickupTarget.m.visible&&hpPct<.48)this.aiState='resupply';
       else if((hpPct<0.25&&dist<20)||(localThreats>=3&&hpPct<.58))this.aiState='retreat';
-      else if(this.coverPoint&&(!this.canSeeTarget||this.role==='anchor'||this.reloadT>0||(localThreats>=3&&hpPct<.72)))this.aiState='cover';
+      else if(supportReady&&this.tacticalMode==='support')this.aiState='support';
+      else if(this.coverPoint&&(!this.canSeeTarget||this.role==='anchor'||this.reloadT>0||(localThreats>=3&&hpPct<.72)||this.suppressedT>0))this.aiState='cover';
+      else if(this.flankPoint&&this.flankCommitT>0&&this.tacticalMode==='flank')this.aiState='flank';
       else if(this.canSeeTarget&&dist<=this.weapon.range*(this.team==='ally'?1.14:1.08))this.aiState='engage';
       else if(this.lastSeenT<8.5)this.aiState='hunt';
       else if(this.lastSeenT<14.5)this.aiState='search';
@@ -922,6 +1061,31 @@ class Enemy{
         if(hd>2){mx=(hx/hd)*spd*1.06;mz=(hz/hd)*spd*1.06;this.desiredYaw=Math.atan2(hx,hz);} 
         break;
       }
+      case 'flank':{
+        if(this.flankPoint&&targetPos){
+          const fx=this.flankPoint.x-myX,fz=this.flankPoint.z-myZ,fd=Math.hypot(fx,fz)+.001;
+          this.desiredYaw=this.canSeeTarget?Math.atan2(dx,dz):Math.atan2(fx,fz);
+          if(fd>2.2){mx=(fx/fd)*spd*1.12;mz=(fz/fd)*spd*1.12;}
+          if(fd<=2.2||(this.canSeeTarget&&this.flankCommitT<.72)){
+            this.flankPoint=null;this.flankCommitT=0;this.aiState='engage';this.stateCD=.36;
+          }
+        }else{this.flankPoint=null;this.aiState=targetPos?'hunt':'patrol';}
+        break;
+      }
+      case 'support':{
+        const mate=supportMate;
+        if(mate&&mate.alive){
+          const sx=mate.group.position.x-myX,sz=mate.group.position.z-myZ,sd=Math.hypot(sx,sz)+.001;
+          if(targetPos)this.desiredYaw=Math.atan2(dx,dz);else this.desiredYaw=Math.atan2(sx,sz);
+          if(sd>7.2){mx=(sx/sd)*spd*.94;mz=(sz/sd)*spd*.94;}
+          else if(sd<3.6){mx=-(sx/sd)*spd*.36;mz=-(sz/sd)*spd*.36;}
+          else if(targetPos){
+            const px=-dz/dist,pz=dx/dist;
+            mx=px*this.sideBias*spd*.34;mz=pz*this.sideBias*spd*.34;
+          }
+        }else{this.aiState=targetPos?'hunt':'patrol';this.stateCD=.32;}
+        break;
+      }
       case 'search':{
         if(!this.searchPoint||this.searchPoint.distanceToSquared(this.group.position)<3.2){
           this.searchStep++;
@@ -953,7 +1117,8 @@ class Enemy{
         const px=-dz/dist,pz=dx/dist;
         let optRange=this.weapon.opt*(this.role==='anchor'?1.24:this.role==='assault'?0.78:1.0);
         if(this.role==='engineer')optRange*=0.92;
-        let strafeM=.82;
+        let strafeM=this.tacticalMode==='suppress'?.48:.82;
+        if(this.tacticalMode==='suppress')optRange*=1.08;
         if(opponentWeapon){
           if(opponentWeapon.key==='shotgun')optRange=Math.max(optRange,18);
           else if(opponentWeapon.isRocket){optRange=Math.max(optRange,17);strafeM=1.02;}
@@ -1055,7 +1220,7 @@ class Enemy{
     const strafeRoll=sideRatio*.060*gaitNorm;
     const forwardRatio=this.gaitSpeed>.15?Math.max(-1,Math.min(1,localForward/this.gaitSpeed)):0;
     const bodyLean=forwardRatio*.036*gaitNorm;
-    const combatPose=this.aiState==='engage'&&this.canSeeTarget;
+    const combatPose=(this.aiState==='engage'||this.aiState==='flank'||this.aiState==='support')&&this.canSeeTarget;
     const armScale=combatPose?.18:.56;
 
     if(this.pts[8]){
@@ -1133,13 +1298,15 @@ class Enemy{
             this.burstLeft--;
             if(this.burstLeft<=0){
               const attackingPlayer=this.team==='enemy'&&this.targetIsPlayer;
-              const base=attackingPlayer
+              let base=attackingPlayer
                 ? (this.weapon.isRocket||this.weapon.key==='shotgun'||this.weapon.isSniper?1:2)
                 : (this.weapon.isSniper?1:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?4:this.weapon.key==='pistol'?3:1));
-              const extra=this.weapon.isSniper?1:(attackingPlayer?2:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?5:3));
+              let extra=this.weapon.isSniper?1:(attackingPlayer?2:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?5:3));
+              const suppressing=this.tacticalMode==='suppress'&&!this.weapon.isRocket&&!this.weapon.isSniper;
+              if(suppressing){base+=2;extra+=2;}
               this.burstLeft=base+Math.floor(Math.random()*extra);
-              const normalPause=(this.weapon.isSniper?.72:this.weapon.isRocket?.58:this.weapon.key==='shotgun'?.34:.16)+Math.random()*(.18+(1-this.aimSkill)*.22);
-              this.burstPauseT=attackingPlayer?(.42+Math.random()*.42):normalPause;
+              const normalPause=((this.weapon.isSniper?.72:this.weapon.isRocket?.58:this.weapon.key==='shotgun'?.34:.16)+Math.random()*(.18+(1-this.aimSkill)*.22))*(suppressing?.48:1);
+              this.burstPauseT=attackingPlayer?(suppressing?.24+Math.random()*.22:.42+Math.random()*.42):normalPause;
             }
             this.sT=Math.max((this.team==='enemy'&&this.targetIsPlayer)?0.095:0.055,this.weapon.rate*this.fireRateMul*(.96+Math.random()*.24));
             if(this.mag<=0)this.startReload();

@@ -1021,7 +1021,11 @@ function canPressurePlayer(bot){
     const maxPressure=level<4?2:level<10?3:level<18?4:5;
     const candidates=enemies
       .filter(b=>b.alive&&b.team==='enemy'&&b.targetIsPlayer&&b.canSeeTarget)
-      .sort((a,b)=>a.group.position.distanceToSquared(camera.position)-b.group.position.distanceToSquared(camera.position));
+      .sort((a,b)=>{
+        const tacticalBias=bot=>bot.tacticalMode==='suppress'?-26:(bot.role==='flankL'||bot.role==='flankR'?8:0);
+        return tacticalBias(a)-tacticalBias(b)+
+          (a.group.position.distanceToSquared(camera.position)-b.group.position.distanceToSquared(camera.position));
+      });
     for(let j=0;j<Math.min(maxPressure,candidates.length);j++)playerPressureSet.add(candidates[j]);
   }
   return playerPressureSet.has(bot);

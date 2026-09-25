@@ -248,7 +248,7 @@ function updateAllyPanel(dt){
   const squad=enemies.filter(e=>e.alive&&e.team==='ally').sort((a,b)=>(b.kills||0)-(a.kills||0));
   panel.innerHTML=squad.map((e,i)=>{
     const pct=Math.round(e.hp/e.maxHp*100);
-    return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.ally}" alt=""> СВОЙ ${i+1}: ${e.kills||0} ☠ · ${pct}%</div>`;
+    return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.ally}" alt=""> СВОЙ ${i+1} · ${botRoleLabel(e.role)}: ${e.kills||0} ☠ · ${pct}%</div>`;
   }).join('');
 }
 

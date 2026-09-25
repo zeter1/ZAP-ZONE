@@ -126,3 +126,16 @@ SR-9 имеет `oneShot:true`, но guaranteed lethal применяется т
 Gameplay-reticle имеет один источник истины: DOM-элементы `.xh-arm` + `.xh-dot`. Старый `assets/ui/crosshair.svg` удалён. Это исключает одновременный static + dynamic overlay.
 
 SR-9 не использует gameplay-reticle: runtime скрывает `#xhair` для любого `aimMode:'scope'`, а sniper optic рендерится отдельно через `#sniper-scope`.
+
+
+## Tactical AI 2.0 v22.4
+
+Поверх индивидуального state machine введён командный слой `BOT_TEAM_TACTICS`. Он не заменяет perception/target selection, а агрегирует уже полученную информацию: текущие цели ботов, LOS, память и `TEAM_INTEL`. План пересчитывается с небольшим cache-window и выбирает общий focus, suppressor, число доступных flankers и наиболее раненого союзника.
+
+`flankL` и `flankR` сохраняют разные стороны обхода. `findFlankPoint()` сначала оценивает существующие `COVER_POINTS` по стороне относительно цели, длине маршрута, crowding и будущей линии огня; procedural fallback используется только если подходящей cover-точки нет. Flank-state имеет commit timer, поэтому бот не меняет решение каждый кадр.
+
+Suppressor — это не бонус к урону. Для suppress-mode увеличивается длина очереди и уменьшается accuracy. Промах по AI-цели может вызвать `registerSuppression()`: pressure временно ухудшает ответную точность и ускоряет reevaluation укрытия. Для игрока сохранён прежний fairness-контракт: suppression выражается объёмом огня и near-miss/whiz feedback, без скрытого замедления или debuff.
+
+Support-state доступен `anchor` и `engineer`: при сильно раненом союзнике они могут сблизиться и удерживать боевую позицию рядом с ним. Это прикрытие, а не бесплатное лечение, поэтому существующая экономика HP и pickups не меняется.
+
+`canPressurePlayer()` по-прежнему ограничивает число одновременно стреляющих по игроку врагов, но сортировка внутри этого лимита теперь предпочитает назначенного suppressor и понижает приоритет flankers. Так координация не превращается в неконтролируемый рост входящего DPS.

@@ -158,6 +158,21 @@ for(const token of ["pushKillFeed('ally','ВЫ'","victim.team"]){
 }
 if(!html.includes('id="kill-feed"'))fail('kill feed HUD root missing');
 
+for(const token of [
+  'BOT_TEAM_TACTICS',
+  'function refreshBotTeamTactics',
+  'findFlankPoint(target',
+  'registerSuppression(source',
+  "case 'flank'",
+  "case 'support'",
+  "this.tacticalMode==='suppress'",
+  'botRoleLabel(this.role)'
+]){
+  if(!bots.includes(token))fail('Tactical AI 2.0 integration missing: '+token);
+}
+if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
+if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
+
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
@@ -188,5 +203,5 @@ for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weapon
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v22.3'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE v22.3 continuous battlefield respawn and kill-feed validation passed.');
+if(!html.includes('ZAP ZONE v22.4'))fail('index version is not v22.2');
+if(!process.exitCode)console.log('ZAP ZONE v22.4 Tactical AI 2.0 and continuous battle validation passed.');
