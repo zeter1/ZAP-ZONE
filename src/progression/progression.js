@@ -12,7 +12,7 @@ function addXP(amt){
   saveTick=Math.min(saveTick,1.5);
 }
 function openLvlAnn(lvl){
-  lvlAnnOpen=true;refreshMobileHUD();
+  lvlAnnOpen=true;refreshMobileHUD();playSfx('level');
   G('lvl-ann-num').textContent=lvl;
   G('lvl-ann-bar').style.width='100%';
   G('lvl-ann').classList.add('on');
@@ -145,6 +145,8 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
   if(dmg<=0)return 0;
   hp-=dmg;
   if(hp<0)hp=0;
+  showDamageDirection(attacker,kind,dmg);playSfx('hurt',Math.min(1,.35+dmg/48));
+  triggerScreenShake(Math.min(1.15,.24+dmg/55),kind==='rocket'||kind==='bomb'?.24:.13);
   deathReason=damageLabel(kind);
   if(attacker&&attacker.alive)lastPlayerAttacker=attacker;
   hitSlowDur=0;
@@ -350,7 +352,7 @@ function checkDeath(){
   if(dying||hp>0)return;
   const killer=lastPlayerAttacker&&lastPlayerAttacker.alive?lastPlayerAttacker:null;
   if(killer){killer.kills=(killer.kills||0)+1;enemyKills++;updateTeamScore();}
-  dying=true;running=false;paused=false;lvlAnnOpen=false;perkPickOpen=false;refreshMobileHUD();
+  dying=true;running=false;paused=false;lvlAnnOpen=false;perkPickOpen=false;refreshMobileHUD();playSfx('death');
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');G('pause').classList.remove('on');
   // Захват мыши во время киллкамеры не отпускаем: иначе браузер часто не даёт
   // вернуть его автоматически после возрождения, появляется курсор и ломается обзор.
