@@ -405,7 +405,7 @@ function doRespawn(){
   weaponAmmo[SMOKE_WEAPON_INDEX]=playerSmokeCD>0?0:1;
   ammo=weaponAmmo[curW];
   uAmmo=Math.max(uAmmo,120);
-  recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
+  recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;weaponReadyT=0;weaponEquipT=0;weaponEquipTot=0;sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;cycleT=0;cycleTot=0;cycleKind='';reloadMode='mag';reloadShellLoaded=0;
   dying=false;paused=false;perkPickOpen=false;pendingLevels=0;lvlAnnOpen=false;lvlAnnT=0;
   combo=0;comboT=0;spawnT=0;plrVx=0;plrVz=0;zooming=false;
   hitSlowT=0;hitSlowDur=0;hitSlowMul=0;
