@@ -121,11 +121,46 @@ function mat(c){
   // Map objects receive independent materials so a hit flash cannot recolor the whole map.
   return _matCache[c].clone();
 }
+const BALLISTIC_MATERIAL_PROFILES=Object.freeze({
+  wood:{resistance:.48,maxThickness:2.65,speedRetention:.82,damageRetention:.78},
+  metal:{resistance:2.65,maxThickness:.72,speedRetention:.58,damageRetention:.55},
+  concrete:{resistance:3.35,maxThickness:.46,speedRetention:.52,damageRetention:.48}
+});
 function mapImpactMaterial(obj){
   if(!obj)return'concrete';
   if(obj.userData?.impactMaterial)return obj.userData.impactMaterial;
   if((obj.material?.metalness||0)>=.38)return'metal';
   return'concrete';
+}
+function mapBallisticProfile(obj){
+  const material=mapImpactMaterial(obj);
+  return{material,...(BALLISTIC_MATERIAL_PROFILES[material]||BALLISTIC_MATERIAL_PROFILES.concrete)};
+}
+const _penInv=new THREE.Matrix4(),_penLocalPoint=new THREE.Vector3(),_penLocalAhead=new THREE.Vector3(),_penLocalDir=new THREE.Vector3(),_penExitLocal=new THREE.Vector3(),_penExitWorld=new THREE.Vector3();
+function mapPenetrationInfo(obj,hitPoint,worldDir){
+  if(!obj?.geometry||!hitPoint||!worldDir)return null;
+  if(!obj.geometry.boundingBox)obj.geometry.computeBoundingBox();
+  const box=obj.geometry.boundingBox;if(!box)return null;
+  obj.updateMatrixWorld(true);
+  _penInv.copy(obj.matrixWorld).invert();
+  _penLocalPoint.copy(hitPoint).applyMatrix4(_penInv);
+  _penLocalAhead.copy(hitPoint).add(worldDir).applyMatrix4(_penInv);
+  _penLocalDir.subVectors(_penLocalAhead,_penLocalPoint);
+  if(_penLocalDir.lengthSq()<1e-8)return null;
+  _penLocalDir.normalize();
+  let exitT=Infinity;
+  for(const axis of ['x','y','z']){
+    const d=_penLocalDir[axis];if(Math.abs(d)<1e-7)continue;
+    const bound=d>0?box.max[axis]:box.min[axis];
+    const t=(bound-_penLocalPoint[axis])/d;
+    if(t>.0005&&t<exitT)exitT=t;
+  }
+  if(!Number.isFinite(exitT))return null;
+  _penExitLocal.copy(_penLocalPoint).addScaledVector(_penLocalDir,exitT+.002);
+  _penExitWorld.copy(_penExitLocal).applyMatrix4(obj.matrixWorld);
+  const thickness=hitPoint.distanceTo(_penExitWorld);
+  if(!Number.isFinite(thickness)||thickness<=.001||thickness>12)return null;
+  return{...mapBallisticProfile(obj),thickness,exitPoint:_penExitWorld.clone()};
 }
 
 // ─── FLOOR ──────────────────────────────
@@ -580,31 +615,47 @@ function tickBombBlastWaves(dt){
     if(p>=1){destroySceneObject(w.ring);destroySceneObject(w.shell);destroySceneObject(w.core);bombBlastWaves.splice(i,1);}
   }
 }
-const impactMarks=[];
-function wallImpact(pos,col,material='concrete'){
+const IMPACT_MARK_MAX=56;
+const impactMarks=[],impactMarkPool=[];
+const _impactMarkGeo=new THREE.CircleGeometry(.058,10);
+const _impactForward=new THREE.Vector3(0,0,1),_impactNormal=new THREE.Vector3();
+function acquireImpactMark(){
+  const m=impactMarkPool.pop()||new THREE.Mesh(
+    _impactMarkGeo,
+    new THREE.MeshBasicMaterial({color:0x151719,transparent:true,opacity:.82,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})
+  );
+  if(!m.parent)scene.add(m);
+  m.visible=true;m.material.opacity=.82;return m;
+}
+function releaseImpactMark(m){
+  if(!m)return;m.visible=false;
+  if(impactMarkPool.length<IMPACT_MARK_MAX)impactMarkPool.push(m);
+  else{scene.remove(m);m.material.dispose();}
+}
+function wallImpact(pos,col,material='concrete',normal=null){
   const metal=material==='metal',wood=material==='wood';
   const sparkCount=metal?7:wood?1:3;
   const sparkCol=metal?0xfff1b8:wood?0xd8a064:col;
   for(let i=0;i<sparkCount;i++)spawnSpark(pos,sparkCol);
   for(let i=0;i<(metal?1:wood?2:3);i++)spawnSmoke(pos,wood?0x6e513b:metal?0x555c62:0x6b6259);
   if(wood&&!PERF_MODE)for(let i=0;i<2;i++)spawnP(pos,0xb27b45,.34);
-  if(impactMarks.length>42){
-    const old=impactMarks.shift();scene.remove(old.m);old.m.geometry.dispose();old.m.material.dispose();
+  if(impactMarks.length>=IMPACT_MARK_MAX){
+    const old=impactMarks.shift();releaseImpactMark(old.m);
   }
-  const mark=new THREE.Mesh(
-    new THREE.SphereGeometry(material==='metal'?.038:.045,6,4),
-    new THREE.MeshBasicMaterial({color:wood?0x3f2819:metal?0x293039:0x151719,transparent:true,opacity:.78,depthWrite:false})
-  );
-  const towardCamera=camera.position.clone().sub(pos).normalize().multiplyScalar(.025);
-  mark.position.copy(pos).add(towardCamera);
-  scene.add(mark);
-  impactMarks.push({m:mark,life:9});
+  const mark=acquireImpactMark();
+  mark.scale.setScalar(metal?.72:wood?1.15:1);
+  mark.material.color.setHex(wood?0x3f2819:metal?0x293039:0x151719);
+  if(normal&&normal.lengthSq()>.001)_impactNormal.copy(normal).normalize();
+  else _impactNormal.copy(camera.position).sub(pos).normalize();
+  mark.quaternion.setFromUnitVectors(_impactForward,_impactNormal);
+  mark.position.copy(pos).addScaledVector(_impactNormal,.012);
+  impactMarks.push({m:mark,life:material==='metal'?7:9});
 }
 function tickImpactMarks(dt){
   for(let i=impactMarks.length-1;i>=0;i--){
     const d=impactMarks[i];d.life-=dt;
-    if(d.life<1)d.m.material.opacity=Math.max(0,d.life)*.78;
-    if(d.life<=0){scene.remove(d.m);d.m.geometry.dispose();d.m.material.dispose();impactMarks.splice(i,1);}
+    if(d.life<1)d.m.material.opacity=Math.max(0,d.life)*.82;
+    if(d.life<=0){releaseImpactMark(d.m);impactMarks.splice(i,1);}
   }
 }
 function tickExpLights(dt){for(const l of _eLights){if(!l._act)continue;l._t-=dt;l.intensity=Math.max(0,l.intensity-dt*50);if(l._t<=0){l._act=false;l.visible=false;}}}

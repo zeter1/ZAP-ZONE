@@ -2,6 +2,23 @@
 
 ## Unreleased — 2026-09-25
 
+### Combat Presence 1.4 — Advanced Ballistics & Tactical Awareness
+- travelling bullets получили penetration energy: дерево, металл и бетон имеют разные resistance/max-thickness/speed/damage retention; толщина реально оценивается в локальном BoxGeometry пространства объекта, поэтому тонкий ящик и толстая стена больше не эквивалентны;
+- player/enemy projectile может пройти максимум через два подходящих препятствия; после каждого penetration уменьшаются скорость и урон, а на входе/выходе создаются отдельные material impacts;
+- enemy tracer visuals переведены на LOD + bounded pool: дальние трассеры прореживаются, одновременно активное число ограничено, а Three.js meshes повторно используются вместо постоянного create/dispose;
+- bullet decals стали ориентированными по нормали поверхности и тоже работают через pool до 56 marks — больше читаемости попаданий с меньшим allocation pressure.
+
+### Tactical awareness
+- боты отслеживают физические frag grenades противоположной команды, оценивают дистанцию/fuse и уходят от гранаты диагональным escape-vector без teleport-like dodge;
+- path scoring и финальное steering учитывают hostile smoke: AI предпочитает обходить плотное чужое облако, но не боится собственного smoke screen во время штурма;
+- suppressor теперь имеет handoff/hysteresis: живой и боеспособный suppressor удерживает роль короткое время, а reload/death/empty magazine вызывают быструю замену без постоянного role thrashing;
+- suppressor может вести controlled fire по last-known position до 2.6 секунды после потери LOS, включая огонь сквозь дым, но не сквозь реальную стену;
+- peek-from-cover получил полный cadence out → hold → return и визуальный body lean; бот больше не телепортируется между center/peek point и естественно возвращается за укрытие.
+
+### Проверка
+- версия интерфейса повышена до v23.2;
+- validation закрепляет penetration profiles/thickness, projectile energy loss, tracer LOD/pool, pooled oriented decals, grenade awareness, smoke avoidance, suppressor handoff/last-known fire и lean/peek cadence.
+
 ### Combat Presence 1.3 — Ballistic Simulation & Squad Combat
 - обычные пистолеты, автоматы, дробовики и плазма ботов больше не наносят урон мгновенным hit-roll: каждый pellet/round становится bounded travelling projectile с muzzle velocity, gravity, range, swept-segment wall/entity collision и distance damage falloff;
 - SR-9 сохранена как мгновенный hitscan, ракеты остаются отдельными rocket entities — предыдущая игровая семантика этих классов оружия не сломана;

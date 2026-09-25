@@ -353,6 +353,7 @@ function mkTracer(col,key='default'){
   );
   tail.rotation.x=Math.PI/2;tail.position.z=-len*.28;tail.renderOrder=16;g.add(tail);
   g.userData.halo=halo;g.userData.tail=tail;g.userData.phase=Math.random()*Math.PI*2;
+  g.userData.baseOpacities=g.children.map(child=>child.material?.opacity??1);
   return g;
 }
 
@@ -360,6 +361,10 @@ function mkTracer(col,key='default'){
 const pRkts=[],eRkts=[],pTrs=[],pBullets=[],eBullets=[],botGrenades=[],mines=[],smokeGrenades=[],smokeClouds=[];
 const MAX_PLAYER_BULLETS=180;
 const MAX_ENEMY_BULLETS=260;
+const MAX_ACTIVE_ENEMY_TRACERS=PERF_MODE?28:62;
+const ENEMY_TRACER_POOL_LIMIT=18;
+const enemyTracerPool=new Map();
+let activeEnemyTracers=0,enemyTracerSequence=0;
 const MAX_BOT_GRENADES=8;
 const MAX_PLAYER_MINES=100;
 const MAX_MINES=140;
@@ -520,29 +525,77 @@ function spawnPlayerBullet(from,dir,w,meta={}){
     m,pos,vel:dir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
     life,maxLife:life,range:w.range||100,travel:0,wKey:w.key,color,
     markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),
-    penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null
+    penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null,
+    wallEnergy:projectileWallEnergy(w,true),wallPenetrations:0
   });
+}
+function enemyTracerPoolKey(wKey,color){return wKey+':'+color.toString(16);}
+function resetTracerVisual(m){
+  const base=m.userData.baseOpacities||[];
+  for(let i=0;i<m.children.length;i++){
+    const child=m.children[i];
+    if(child?.material?.opacity!==undefined)child.material.opacity=base[i]??1;
+  }
+}
+function acquireEnemyTracer(wKey,color){
+  const key=enemyTracerPoolKey(wKey,color),pool=enemyTracerPool.get(key)||[];
+  const m=pool.pop()||mkTracer(color,wKey);
+  enemyTracerPool.set(key,pool);
+  resetTracerVisual(m);m.visible=true;
+  if(!m.parent)scene.add(m);
+  activeEnemyTracers++;return m;
+}
+function releaseEnemyTracer(m,wKey,color){
+  if(!m)return;
+  activeEnemyTracers=Math.max(0,activeEnemyTracers-1);
+  m.visible=false;resetTracerVisual(m);
+  const key=enemyTracerPoolKey(wKey,color),pool=enemyTracerPool.get(key)||[];
+  if(pool.length<ENEMY_TRACER_POOL_LIMIT){pool.push(m);enemyTracerPool.set(key,pool);}
+  else destroySceneObject(m);
+}
+function enemyTracerVisible(from,meta){
+  if(meta.visual===false||activeEnemyTracers>=MAX_ACTIVE_ENEMY_TRACERS)return false;
+  enemyTracerSequence=(enemyTracerSequence+1)%4096;
+  const d=Math.hypot(from.x-camera.position.x,from.z-camera.position.z);
+  const stride=d>78?4:d>48?2:1;
+  return enemyTracerSequence%stride===0;
+}
+function projectileWallEnergy(w,playerOwned=false){
+  const base=w.key==='sniper'?4.8:w.key==='plasma'?3.1:w.key==='rifle'?2.15:w.key==='pistol'?1.05:w.key==='shotgun'?.82:1.15;
+  return base+(w.basePenetration||0)*.72+(playerOwned&&plr.piercing?1.15:0);
+}
+function tryProjectileWallPenetration(b,w,wallHit,dir,playerOwned=false){
+  const info=mapPenetrationInfo(wallHit?.object,wallHit?.point||_hitPos,dir);
+  if(!info)return null;
+  const energy=Math.max(0,b.wallEnergy??projectileWallEnergy(w,playerOwned));
+  const cost=info.resistance*info.thickness;
+  if(info.thickness>info.maxThickness||energy<=cost)return null;
+  const remaining=Math.max(.05,energy-cost);
+  const ratio=Math.max(.18,Math.min(.92,remaining/Math.max(.001,energy)));
+  b.wallEnergy=remaining;
+  return{...info,speedRetention:Math.max(.38,info.speedRetention*(.84+ratio*.16)),damageRetention:Math.max(.30,info.damageRetention*(.78+ratio*.22))};
 }
 function destroyEnemyBullet(index){
   const b=eBullets[index];if(!b)return;
-  if(b.m)destroySceneObject(b.m);
+  if(b.m)releaseEnemyTracer(b.m,b.wKey,b.color);
   eBullets.splice(index,1);
 }
 function spawnEnemyBullet(from,dir,w,src,meta={}){
   while(eBullets.length>=MAX_ENEMY_BULLETS)destroyEnemyBullet(0);
   const speed=Math.max(18,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
   const color=src?.team==='ally'?0x8cbcff:(w.bCol||0xff9b67);
-  const visual=meta.visual!==false;
-  const m=visual?mkTracer(color,w.key):null;
+  const visual=enemyTracerVisible(from,meta);
+  const m=visual?acquireEnemyTracer(w.key,color):null;
   const pos=from.clone().addScaledVector(dir,.48);pos.y-=.035;
-  if(m){m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);scene.add(m);}
+  if(m){m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);}
   const range=Math.max(8,w.range||60),life=range/speed+.42;
   eBullets.push({
     m,pos,vel:dir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
     life,maxLife:life,range,travel:0,wKey:w.key,color,team:src?.team||'enemy',src,
     damage:Math.max(0,Number(meta.damage)||w.dmg||1),
     playerDamage:Math.max(0,Number(meta.playerDamage)||Number(meta.damage)||w.dmg||1),
-    suppressing:!!meta.suppressing,suppressedPlayer:false,suppressedBot:null,ricochets:0
+    suppressing:!!meta.suppressing,suppressedPlayer:false,suppressedBot:null,ricochets:0,
+    wallEnergy:projectileWallEnergy(w,false),wallPenetrations:0
   });
 }
 const _enemyBulletPlayerCenter=new THREE.Vector3(),_enemyBulletClosest=new THREE.Vector3();
@@ -999,9 +1052,18 @@ function tickProjectiles(dt){
     }else if(wallDist<=stepDist){
       const wallHit=_rcWallHits[0],surface=mapImpactMaterial(wallHit?.object);
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
-      wallImpact(_hitPos,b.color,surface);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
-      if(w.key!=='plasma'&&wallHit?.face?.normal){
-        const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld);
+      const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
+      const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,true):null;
+      wallImpact(_hitPos,b.color,surface,n);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      if(pen){
+        playSurfaceImpactSound(surface,_hitPos,.62,false);
+        wallImpact(pen.exitPoint,b.color,surface,n?n.clone().negate():null);
+        b.pos.copy(pen.exitPoint).addScaledVector(_stepDir,.08);
+        b.vel.multiplyScalar(pen.speedRetention);b.damageScale*=pen.damageRetention;
+        b.travel+=wallDist+pen.thickness+.08;b.wallPenetrations++;b.ignoreEnemy=null;
+        continue;
+      }
+      if(w.key!=='plasma'&&n){
         const incidence=Math.abs(_stepDir.dot(n));
         const ricochetChance=surface==='metal'?.82:surface==='wood'?.08:.42;
         const ricochetLimit=surface==='metal'?.48:surface==='concrete'?.30:.16;
@@ -1084,17 +1146,27 @@ function tickProjectiles(dt){
     if(wallDist<=stepDist){
       const wallHit=_rcWallHits[0],surface=mapImpactMaterial(wallHit?.object);
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
-      wallImpact(_hitPos,b.color,surface);spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
+      const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
+      const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,false):null;
+      wallImpact(_hitPos,b.color,surface,n);spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
+      if(pen){
+        playSurfaceImpactSound(surface,_hitPos,.54,false);
+        wallImpact(pen.exitPoint,b.color,surface,n?n.clone().negate():null);
+        b.pos.copy(pen.exitPoint).addScaledVector(_stepDir,.08);
+        b.vel.multiplyScalar(pen.speedRetention);
+        b.damage*=pen.damageRetention;b.playerDamage*=pen.damageRetention;
+        b.travel+=wallDist+pen.thickness+.08;b.wallPenetrations++;
+        continue;
+      }
       let ricochet=false;
-      if(w.key!=='plasma'&&wallHit?.face?.normal){
-        const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize();
+      if(w.key!=='plasma'&&n){
         const incidence=Math.abs(_stepDir.dot(n));
         const limit=surface==='metal'?.46:surface==='concrete'?.27:.12;
         const chance=surface==='metal'?.76:surface==='concrete'?.30:.04;
         ricochet=incidence<limit&&b.ricochets<1&&Math.random()<chance;
         playSurfaceImpactSound(surface,_hitPos,Math.max(.30,1-incidence),ricochet);
         if(ricochet){
-          const reflected=_stepDir.clone().sub(n.multiplyScalar(2*_stepDir.dot(n))).normalize();
+          const reflected=_stepDir.clone().sub(n.clone().multiplyScalar(2*_stepDir.dot(n))).normalize();
           const speed=b.vel.length()*(surface==='metal'?.66:.54);
           b.vel.copy(reflected).multiplyScalar(speed);b.pos.copy(_hitPos).addScaledVector(reflected,.09);
           b.damage*=.56;b.playerDamage*=.56;b.travel+=wallDist+.09;b.ricochets++;

@@ -221,20 +221,64 @@ function clampBotVelocity(vx,vz,maxSpeed){
   if(s<=maxSpeed||s<.0001)return{x:vx,z:vz};
   const m=maxSpeed/s;return{x:vx*m,z:vz*m};
 }
-function botRoutePenalty(from,to){
+function smokeRoutePenalty(from,to,team){
+  let penalty=0;
+  const ax=from.x,az=from.z,bx=to.x,bz=to.z,dx=bx-ax,dz=bz-az,len2=dx*dx+dz*dz;
+  for(const cloud of smokeClouds){
+    if(cloud.life<=0||cloud.density<.16)continue;
+    if(cloud.team===team)continue;
+    const t=len2>.001?Math.max(0,Math.min(1,((cloud.center.x-ax)*dx+(cloud.center.z-az)*dz)/len2)):0;
+    const cx=ax+dx*t,cz=az+dz*t,dist=Math.hypot(cx-cloud.center.x,cz-cloud.center.z);
+    const effective=cloud.radius*(.82+.18*cloud.density);
+    if(dist<effective)penalty+=3.2+(1-dist/effective)*5.8;
+  }
+  return penalty;
+}
+function botRoutePenalty(from,to,team=null){
   const a=from.clone();a.y=.55;
   const b=to.clone();b.y=.55;
-  if(!wallBetween(a,b,wallMeshes))return 0;
+  let smokePenalty=team?smokeRoutePenalty(a,b,team):0;
+  if(!wallBetween(a,b,wallMeshes))return smokePenalty;
   const dx=b.x-a.x,dz=b.z-a.z,dist=Math.max(.001,Math.hypot(dx,dz));
   const px=-dz/dist,pz=dx/dist,offset=Math.max(3.8,Math.min(7.2,dist*.24));
+  let best=10.5+smokePenalty;
   for(const sign of [1,-1]){
     const mx=(a.x+b.x)*.5+px*offset*sign,mz=(a.z+b.z)*.5+pz*offset*sign;
     const coll=collideWalls(mx,mz,BOT_R);
     if(Math.hypot(coll.x-mx,coll.z-mz)>.75)continue;
     const relay=new THREE.Vector3(coll.x,.55,coll.z);
-    if(!wallBetween(a,relay,wallMeshes)&&!wallBetween(relay,b,wallMeshes))return 2.5+offset*.06;
+    if(!wallBetween(a,relay,wallMeshes)&&!wallBetween(relay,b,wallMeshes)){
+      best=Math.min(best,2.5+offset*.06+(team?smokeRoutePenalty(a,relay,team)+smokeRoutePenalty(relay,b,team):0));
+    }
   }
-  return 10.5;
+  return best;
+}
+function steerBotAroundSmoke(bot,mx,mz){
+  const speed=Math.hypot(mx,mz);if(speed<.05)return{x:mx,z:mz};
+  const nx=mx/speed,nz=mz/speed;
+  let addX=0,addZ=0;
+  for(const cloud of smokeClouds){
+    if(cloud.life<=0||cloud.density<.20||cloud.team===bot.team)continue;
+    const aheadX=bot.group.position.x+nx*5.2,aheadZ=bot.group.position.z+nz*5.2;
+    const sx=aheadX-cloud.center.x,sz=aheadZ-cloud.center.z,sd=Math.hypot(sx,sz);
+    const effective=cloud.radius*(.78+.16*cloud.density);
+    if(sd>=effective)continue;
+    const side=(nx*(cloud.center.z-bot.group.position.z)-nz*(cloud.center.x-bot.group.position.x))>=0?-1:1;
+    addX+=-nz*side*speed*.48;addZ+=nx*side*speed*.48;
+    bot.sideBias=side;
+  }
+  return{x:mx+addX,z:mz+addZ};
+}
+function nearestHostileGrenade(bot,maxDist=10){
+  let best=null,bestScore=Infinity;
+  for(const g of botGrenades){
+    if(!g?.m||g.team===bot.team||g.fuse<=0)continue;
+    const d=bot.group.position.distanceTo(g.m.position);
+    if(d>maxDist)continue;
+    const score=d+Math.max(0,g.fuse-.75)*3.2;
+    if(score<bestScore){bestScore=score;best={grenade:g,distance:d};}
+  }
+  return best;
 }
 function moveBotWithSubsteps(startX,startZ,vx,vz,dt){
   const dx=vx*dt,dz=vz*dt,total=Math.hypot(dx,dz);
@@ -483,8 +527,8 @@ const PLAYER_TACTICAL_PROFILE={
   style:'balanced',campScore:0
 };
 const BOT_TEAM_TACTICS={
-  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1},
-  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1}
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,suppressorSince:-999,suppressorGeneration:0,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,suppressorSince:-999,suppressorGeneration:0,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1}
 };
 function botRoleLabel(role){
   return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
@@ -664,7 +708,7 @@ function refreshBotTeamTactics(team){
   const plan=BOT_TEAM_TACTICS[team];
   const now=performance.now();
   if(now-plan.time<180)return plan;
-  plan.time=now;plan.focus=null;plan.focusIsPlayer=false;plan.suppressor=null;plan.flankerCount=0;plan.wounded=null;
+  plan.time=now;plan.focus=null;plan.focusIsPlayer=false;plan.flankerCount=0;plan.wounded=null;
   const mates=enemies.filter(b=>b.alive&&b.team===team);
   const votes=new Map();
   const addVote=(target,isPlayer,weight,pos)=>{
@@ -695,13 +739,21 @@ function refreshBotTeamTactics(team){
   const focusMates=mates.filter(m=>botMatchesSquadFocus(m,plan));
   const flankers=focusMates.filter(m=>(m.role==='flankL'||m.role==='flankR')&&m.hp/m.maxHp>.38);
   plan.flankerCount=flankers.length;
-  const suppressors=focusMates.filter(m=>m.canSeeTarget&&m.reloadT<=0&&m.mag>0&&m.hp/m.maxHp>.30&&m.role!=='flankL'&&m.role!=='flankR');
+  const suppressorEligible=m=>m?.alive&&botMatchesSquadFocus(m,plan)&&m.reloadT<=0&&m.mag>Math.max(1,Math.ceil(m.weapon.clip*.12))&&m.hp/m.maxHp>.30&&m.role!=='flankL'&&m.role!=='flankR'&&(m.canSeeTarget||m.lastSeenT<2.6);
+  const priorSuppressor=suppressorEligible(plan.suppressor)?plan.suppressor:null;
+  const suppressors=focusMates.filter(suppressorEligible);
   suppressors.sort((a,b)=>{
     const roleScore=x=>x.role==='anchor'?5:x.role==='assault'?4:x.role==='engineer'?3:1;
     const da=a.group.position.distanceToSquared(plan.focusPos),db=b.group.position.distanceToSquared(plan.focusPos);
-    return roleScore(b)-roleScore(a)+(da-db)*.0015;
+    const visibilityA=a.canSeeTarget?2.2:0,visibilityB=b.canSeeTarget?2.2:0;
+    return (roleScore(b)+visibilityB)-(roleScore(a)+visibilityA)+(da-db)*.0015;
   });
-  plan.suppressor=suppressors[0]||null;
+  const preferred=(priorSuppressor&&now-plan.suppressorSince<1800)?priorSuppressor:(suppressors[0]||null);
+  if(preferred!==plan.suppressor){
+    plan.suppressor=preferred;plan.suppressorSince=now;plan.suppressorGeneration=(plan.suppressorGeneration||0)+1;
+  }else if(!preferred){
+    plan.suppressor=null;plan.suppressorSince=now;
+  }
   const wounded=mates.filter(m=>m.hp/m.maxHp<.58);
   wounded.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp));
   plan.wounded=wounded[0]||null;
@@ -763,10 +815,11 @@ class Enemy{
     this.bombCD=24+Math.random()*52;
     this.mineScanT=Math.random()*.18;
     this.cachedMineThreat=null;
+    this.grenadeScanT=Math.random()*.12;this.cachedGrenadeThreat=null;
     this.weaponSwitchT=2.2+Math.random()*2.0;
     this.coverEvalT=.38+Math.random()*.22;
     this.coverPoint=null;this.coverChainT=0;
-    this.peekPoint=null;this.peekT=0;this.peekCooldownT=.45+Math.random()*.45;
+    this.peekPoint=null;this.peekT=0;this.peekDuration=0;this.peekCooldownT=.45+Math.random()*.45;this.peekLean=0;
     this.suppressedT=0;this.suppressionSource=null;
     this.flankPoint=null;this.flankEvalT=.25+Math.random()*.35;this.flankCommitT=0;
     this.tacticalMode='normal';
@@ -901,7 +954,7 @@ class Enemy{
       const tgt=target.clone();tgt.y=1.45;
       if(!wallBetween(eye,tgt,losMeshes))continue;
       const routeTo=p.clone();routeTo.y=.55;
-      const routePenalty=botRoutePenalty(routeFrom,routeTo);
+      const routePenalty=botRoutePenalty(routeFrom,routeTo,this.team);
       let crowdPenalty=0;
       for(const other of enemies){
         if(!other.alive||other===this||other.team!==this.team)continue;
@@ -941,7 +994,7 @@ class Enemy{
       const firingLane=!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt);
       const routeFrom=from.clone();routeFrom.y=.55;
       const routeTo=p.clone();routeTo.y=.55;
-      const routePenalty=botRoutePenalty(routeFrom,routeTo);
+      const routePenalty=botRoutePenalty(routeFrom,routeTo,this.team);
       let crowd=0;
       for(const mate of enemies){
         if(!mate.alive||mate===this||mate.team!==this.team)continue;
@@ -1238,11 +1291,12 @@ class Enemy{
     if(this.team==='enemy'&&this.targetIsPlayer)applyDamageToPlayer(amount*ENEMY_VS_PLAYER_DAMAGE_SCALE,'bullet',this);
   }
 
-  doShoot(tp,dist){
+  doShoot(tp,dist,suppressMemory=false){
     const wp=this.weapon;
     const from=this.getMuzzlePos();
     const aim=this.getAimPoint(tp);
-    if(wallBetween(from,aim,losMeshes)||smokeBlocksSight(from,aim)){
+    const wallBlocked=wallBetween(from,aim,losMeshes),smokeBlocked=smokeBlocksSight(from,aim);
+    if(wallBlocked||(smokeBlocked&&!suppressMemory)){
       if(Math.random()<.20){
         const missDir=aim.clone().sub(from).normalize();
         const missCol=this.team==='ally'?0x8cbcff:wp.bCol;
@@ -1253,7 +1307,7 @@ class Enemy{
     }
 
     let dir=aim.clone().sub(from).normalize();
-    const suppressing=this.tacticalMode==='suppress';
+    const suppressing=this.tacticalMode==='suppress'||suppressMemory;
     const incomingPressure=this.suppressedT>0?1+Math.min(.48,this.suppressedT*.20):1;
     const volumePenalty=suppressing?1.14:1;
     const acc=(wp.isRocket?(this.curAcc*.50+wp.spread*.45):(this.curAcc*.40+wp.spread*.78))*incomingPressure*volumePenalty;
@@ -1385,10 +1439,16 @@ class Enemy{
       this.cachedMineThreat=nearestHostileMine(this.group.position,this.team,this.role==='engineer'?18:20,this);
     }
     const mineThreat=this.cachedMineThreat&&!this.cachedMineThreat.mine.removed?this.cachedMineThreat:null;
-    if(mineThreat&&this.dodgeT<=0){
+    this.grenadeScanT-=dt;
+    if(this.grenadeScanT<=0){
+      this.grenadeScanT=.10+Math.random()*.08;
+      this.cachedGrenadeThreat=nearestHostileGrenade(this,this.role==='assault'?9:11);
+    }
+    const grenadeThreat=this.cachedGrenadeThreat&&this.cachedGrenadeThreat.grenade?.fuse>0?this.cachedGrenadeThreat:null;
+    if((mineThreat||grenadeThreat)&&this.dodgeT<=0){
       this.aiState='retreat';
       this.stateCD=.45;
-      this.coverPoint=null;
+      this.coverPoint=null;this.peekPoint=null;this.peekT=0;
     }
 
     this.weaponSwitchT-=dt;
@@ -1489,7 +1549,15 @@ class Enemy{
 
     let mx=0,mz=0;
     const spd=this.speed;
-    if(mineThreat){
+    if(grenadeThreat){
+      const gp=grenadeThreat.grenade.m.position;
+      const awayX=this.group.position.x-gp.x,awayZ=this.group.position.z-gp.z;
+      const gd=Math.max(.001,Math.hypot(awayX,awayZ));
+      const sideX=-awayZ/gd*this.sideBias,sideZ=awayX/gd*this.sideBias;
+      mx=(awayX/gd)*spd*1.30+sideX*spd*.30;
+      mz=(awayZ/gd)*spd*1.30+sideZ*spd*.30;
+      this.desiredYaw=Math.atan2(awayX,awayZ);
+    }else if(mineThreat){
       const awayX=this.group.position.x-mineThreat.mine.m.position.x;
       const awayZ=this.group.position.z-mineThreat.mine.m.position.z;
       const md=Math.max(.001,Math.hypot(awayX,awayZ));
@@ -1550,14 +1618,20 @@ class Enemy{
               if(Math.hypot(coll.x-rawX,coll.z-rawZ)>.55)continue;
               const eye=new THREE.Vector3(coll.x,1.38,coll.z),tgt=targetPos.clone();tgt.y+=1.15;
               if(!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt)){
-                this.peekPoint=new THREE.Vector3(coll.x,0,coll.z);this.peekT=.48+Math.random()*.28;
-                this.peekCooldownT=1.05+Math.random()*.75;this.sideBias=sign;break;
+                this.peekPoint=new THREE.Vector3(coll.x,0,coll.z);this.peekDuration=.92+Math.random()*.34;this.peekT=this.peekDuration;
+                this.peekCooldownT=1.25+Math.random()*.85;this.sideBias=sign;break;
               }
             }
           }
-          const coverGoal=this.peekPoint&&this.peekT>0?this.peekPoint:this.coverPoint;
+          let coverGoal=this.coverPoint,peekMoveM=.98;
+          if(this.peekPoint&&this.peekT>0&&this.peekDuration>0){
+            const p=Math.max(0,Math.min(1,1-this.peekT/this.peekDuration));
+            const envelope=p<.24?p/.24:p>.72?(1-p)/.28:1;
+            coverGoal=this.coverPoint.clone().lerp(this.peekPoint,Math.max(0,envelope));
+            peekMoveM=.68;
+          }
           const cx=coverGoal.x-myX,cz=coverGoal.z-myZ,cd=Math.sqrt(cx*cx+cz*cz)+0.001;
-          if(cd>(this.peekPoint?.42:1.4)){mx=(cx/cd)*spd*(this.peekPoint?.72:.98);mz=(cz/cd)*spd*(this.peekPoint?.72:.98);}
+          if(cd>(this.peekPoint?.42:1.4)){mx=(cx/cd)*spd*peekMoveM;mz=(cz/cd)*spd*peekMoveM;}
           else{
             this.coverHoldT-=dt;
             if(this.reloadT<=0&&this.coverHoldT<=0){
@@ -1709,9 +1783,10 @@ class Enemy{
 
     const sep=separationVector(this,3.5);
     mx+=sep.x*spd*.75; mz+=sep.z*spd*.75;
-    const steered=steerBotAroundWalls(this,mx,mz);
-    const urgentMove=!!mineThreat||this.dodgeT>0||this.unstuckT>0;
-    const maxMoveM=mineThreat?BOT_MOVE_CFG.mineMaxM:this.dodgeT>0?BOT_MOVE_CFG.dodgeMaxM:
+    const wallSteered=steerBotAroundWalls(this,mx,mz);
+    const steered=steerBotAroundSmoke(this,wallSteered.x,wallSteered.z);
+    const urgentMove=!!grenadeThreat||!!mineThreat||this.dodgeT>0||this.unstuckT>0;
+    const maxMoveM=grenadeThreat?BOT_MOVE_CFG.mineMaxM:mineThreat?BOT_MOVE_CFG.mineMaxM:this.dodgeT>0?BOT_MOVE_CFG.dodgeMaxM:
       this.aiState==='retreat'?BOT_MOVE_CFG.retreatMaxM:BOT_MOVE_CFG.normalMaxM;
     const cappedDesired=clampBotVelocity(steered.x,steered.z,spd*maxMoveM);
     const desiredMoveX=cappedDesired.x,desiredMoveZ=cappedDesired.z;
@@ -1741,6 +1816,11 @@ class Enemy{
     this.velX=actualCap.x;this.velZ=actualCap.z;
     this.motionX=this.velX;this.motionZ=this.velZ;
     this.group.rotation.y=lerpAngle(this.group.rotation.y,this.desiredYaw,Math.min(1,dt*(5.2+this.aimSkill*3.2)));
+    const peekProgress=this.peekPoint&&this.peekDuration>0?Math.max(0,Math.min(1,1-this.peekT/this.peekDuration)):0;
+    const peekEnvelope=peekProgress<.24?peekProgress/.24:peekProgress>.72?(1-peekProgress)/.28:1;
+    const targetPeekLean=this.peekPoint?(-this.sideBias*.105*Math.max(0,peekEnvelope)):0;
+    this.peekLean+=(targetPeekLean-this.peekLean)*(1-Math.exp(-dt*11));
+    this.group.rotation.z+=(this.peekLean-this.group.rotation.z)*(1-Math.exp(-dt*12));
     const intended=Math.hypot(mx,mz);
     const moved=Math.hypot(this.group.position.x-myX,this.group.position.z-myZ);
     if(intended>.6&&moved<.015)this.stuckT+=dt;else this.stuckT=Math.max(0,this.stuckT-dt*2);
@@ -1847,19 +1927,22 @@ class Enemy{
     // attached to the real grip points while walking, strafing and fighting.
     updateBotWeaponHands(this);
 
-    if(this.canSeeTarget&&targetPos&&dist<=this.weapon.range*1.08){
+    const suppressMemory=this.tacticalMode==='suppress'&&!this.canSeeTarget&&targetPos&&this.lastSeenT<2.6&&!this.weapon.isRocket;
+    if((this.canSeeTarget||suppressMemory)&&targetPos&&dist<=this.weapon.range*1.08){
       this.sT-=dt;
       const playerFireAllowed=!(this.team==='enemy'&&this.targetIsPlayer)||canPressurePlayer(this);
       if(!playerFireAllowed&&this.sT<=0)this.sT=.20+Math.random()*.25;
       if(playerFireAllowed&&this.sT<=0&&this.reactionT<=0&&this.burstPauseT<=0){
         if(this.mag<=0&&!this.reloadT)this.startReload();
         else if(!this.reloadT){
-          if(!this.weapon.isRocket&&this.maybePlantBomb(dist,targetPos)){
+          const fireTarget=suppressMemory?this.lastKnown.clone().addScaledVector(this.lastKnownVel,Math.min(.45,this.lastSeenT*.16)):targetPos;
+          const fireDist=Math.max(1,this.group.position.distanceTo(fireTarget));
+          if(!this.weapon.isRocket&&!suppressMemory&&this.maybePlantBomb(dist,targetPos)){
             this.sT=.85;
-          }else if(!this.weapon.isRocket&&this.maybePlantMine(dist,targetPos)){
+          }else if(!this.weapon.isRocket&&!suppressMemory&&this.maybePlantMine(dist,targetPos)){
             this.sT=.48;
           }else{
-            this.doShoot(targetPos,dist);
+            this.doShoot(fireTarget,fireDist,suppressMemory);
             this.burstLeft--;
             if(this.burstLeft<=0){
               const attackingPlayer=this.team==='enemy'&&this.targetIsPlayer;
