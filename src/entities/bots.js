@@ -83,6 +83,19 @@ function mkHuman(et,team){
   V(new THREE.BoxGeometry(.055,.24,.055),armorMat,.18,2.055,.02,0,0,-.10);
   V(new THREE.SphereGeometry(.04,7,5),glowMat,.19,2.175,.01);
 
+  // Real body hands. These are moved by the two-bone weapon-hold solver,
+  // so the weapon is held by the bot instead of carrying fake hands with it.
+  const gloveMat=new THREE.MeshStandardMaterial({color:0x0b1118,roughness:.78,metalness:.14});
+  const cuffMat=new THREE.MeshStandardMaterial({color:armCol,roughness:.32,metalness:.58,emissive:armCol,emissiveIntensity:.10});
+  const makeRigHand=(x,y,z)=>{
+    const hand=new THREE.Mesh(new THREE.BoxGeometry(.14,.15,.17),gloveMat);
+    hand.position.set(x,y,z);hand.castShadow=!MOBILE_LOW;
+    const cuff=new THREE.Mesh(new THREE.BoxGeometry(.16,.075,.15),cuffMat);
+    cuff.position.set(0,.095,.025);hand.add(cuff);g.add(hand);return hand;
+  };
+  const leftHand=makeRigHand(-.36,.66,-.02);
+  const rightHand=makeRigHand(.36,.66,-.02);
+
   const teamMark=makeAssetPlane(
     ally?GAME_ASSETS.characters.allyMark:GAME_ASSETS.characters.enemyMark,
     .24,.24,{opacity:.96,depthTest:true,renderOrder:8}
@@ -107,7 +120,64 @@ function mkHuman(et,team){
   weaponPivot.position.set(.39,1.23,-.07);
   weaponPivot.rotation.set(.05,.07,-.35);
   g.add(weaponPivot);
-  return{g,pts,weaponPivot};
+  const armRig={
+    leftUpper:pts[4],rightUpper:pts[5],
+    leftFore:pts[6],rightFore:pts[7],
+    leftHand,rightHand
+  };
+  return{g,pts,weaponPivot,armRig};
+}
+
+const _BOT_ARM_UP=new THREE.Vector3(0,1,0);
+const _BOT_ARM_DIR=new THREE.Vector3();
+const _BOT_ARM_BEND=new THREE.Vector3();
+const _BOT_ARM_ELBOW=new THREE.Vector3();
+const _BOT_ARM_MID=new THREE.Vector3();
+const _BOT_GRIP_R=new THREE.Vector3();
+const _BOT_GRIP_L=new THREE.Vector3();
+const _BOT_SHOULDER_R=new THREE.Vector3(.35,1.49,-.015);
+const _BOT_SHOULDER_L=new THREE.Vector3(-.35,1.49,-.015);
+function setBotLimbBetween(mesh,a,b,baseLength){
+  if(!mesh)return;
+  _BOT_ARM_DIR.subVectors(b,a);
+  const len=Math.max(.04,_BOT_ARM_DIR.length());
+  _BOT_ARM_DIR.multiplyScalar(1/len);
+  mesh.position.copy(_BOT_ARM_MID.addVectors(a,b).multiplyScalar(.5));
+  mesh.quaternion.setFromUnitVectors(_BOT_ARM_UP,_BOT_ARM_DIR);
+  mesh.scale.set(1,Math.max(.70,Math.min(1.32,len/baseLength)),1);
+}
+function solveBotTwoBoneArm(upper,fore,hand,shoulder,target,side,weaponQuat){
+  const upperLen=.50,foreLen=.43;
+  _BOT_ARM_DIR.subVectors(target,shoulder);
+  const rawDist=Math.max(.001,_BOT_ARM_DIR.length());
+  _BOT_ARM_DIR.multiplyScalar(1/rawDist);
+  const dist=Math.max(Math.abs(upperLen-foreLen)+.035,Math.min(rawDist,upperLen+foreLen-.025));
+  const along=(upperLen*upperLen-foreLen*foreLen+dist*dist)/(2*dist);
+  const bend=Math.sqrt(Math.max(0,upperLen*upperLen-along*along));
+  _BOT_ARM_BEND.set(side*.92,-.16,.52);
+  _BOT_ARM_BEND.addScaledVector(_BOT_ARM_DIR,-_BOT_ARM_BEND.dot(_BOT_ARM_DIR));
+  if(_BOT_ARM_BEND.lengthSq()<.001)_BOT_ARM_BEND.set(side,0,.25);
+  _BOT_ARM_BEND.normalize();
+  _BOT_ARM_ELBOW.copy(shoulder).addScaledVector(_BOT_ARM_DIR,along).addScaledVector(_BOT_ARM_BEND,bend);
+  setBotLimbBetween(upper,shoulder,_BOT_ARM_ELBOW,.52);
+  setBotLimbBetween(fore,_BOT_ARM_ELBOW,target,.42);
+  if(hand){
+    hand.position.copy(target);
+    hand.quaternion.copy(weaponQuat);
+  }
+}
+function updateBotWeaponHands(bot){
+  const rig=bot.armRig,pose=bot.weaponPivot?.userData.pose,mesh=bot.weaponMesh;
+  if(!rig||!pose||!mesh||!pose.gripR||!pose.gripL)return false;
+  bot.group.updateMatrixWorld(true);
+  mesh.updateMatrixWorld(true);
+  _BOT_GRIP_R.set(...pose.gripR);
+  mesh.localToWorld(_BOT_GRIP_R);bot.group.worldToLocal(_BOT_GRIP_R);
+  _BOT_GRIP_L.set(...pose.gripL);
+  mesh.localToWorld(_BOT_GRIP_L);bot.group.worldToLocal(_BOT_GRIP_L);
+  solveBotTwoBoneArm(rig.rightUpper,rig.rightFore,rig.rightHand,_BOT_SHOULDER_R,_BOT_GRIP_R,1,bot.weaponPivot.quaternion);
+  solveBotTwoBoneArm(rig.leftUpper,rig.leftFore,rig.leftHand,_BOT_SHOULDER_L,_BOT_GRIP_L,-1,bot.weaponPivot.quaternion);
+  return true;
 }
 const WPTS=[
   [0,0],[-20,20],[20,-20],[-20,-20],[20,20],
@@ -235,7 +305,7 @@ class Enemy{
     this.rocketCheckT=.18+Math.random()*.10;
 
     const built=mkHuman(et,team);
-    this.group=built.g;this.pts=built.pts;this.weaponPivot=built.weaponPivot;
+    this.group=built.g;this.pts=built.pts;this.weaponPivot=built.weaponPivot;this.armRig=built.armRig;
     this.group.position.set(x,0,z);
     scene.add(this.group);
 
@@ -1001,10 +1071,6 @@ class Enemy{
       this.pts[13].rotation.x=-rightSwing*.18-rightLift*.16;
       this.pts[13].rotation.z=strafeRoll*.30;
     }
-    if(this.pts[4])this.pts[4].rotation.x=-leftSwing*armScale+(combatPose?.07:0);
-    if(this.pts[5])this.pts[5].rotation.x=leftSwing*armScale-(combatPose?.07:0);
-    if(this.pts[6])this.pts[6].rotation.x=-leftSwing*armScale*.34+(combatPose?.12:0);
-    if(this.pts[7])this.pts[7].rotation.x=leftSwing*armScale*.34+(combatPose?.10:0);
     if(this.pts[2]){
       this.pts[2].rotation.x=-bodyLean;
       this.pts[2].rotation.y=-Math.sin(this.gaitPhase)*.035*gaitNorm;
@@ -1026,6 +1092,9 @@ class Enemy{
       this.weaponPivot.rotation.y=pose.r[1]+(combatPose?.14*this.strafeDir:0)+sideRatio*.025*gaitNorm;
       this.weaponPivot.rotation.z=pose.r[2]+(combatPose?-.05*this.strafeDir:0)-strafeRoll*.35;
     }
+    // The arm solver runs after weapon sway/pose so both hands stay physically
+    // attached to the real grip points while walking, strafing and fighting.
+    updateBotWeaponHands(this);
 
     if(this.canSeeTarget&&targetPos&&dist<=this.weapon.range*1.08){
       this.sT-=dt;

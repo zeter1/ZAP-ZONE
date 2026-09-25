@@ -339,35 +339,19 @@ function buildGun(w){
   const p=w.viewPos||WEAPONS[0].viewPos;gunBasePos.set(p[0],p[1],p[2]);gunGrp.position.copy(gunBasePos);
 }
 const BOT_WEAPON_POSES={
-  pistol:{p:[.34,1.23,-.08],r:[.07,.05,-.30],s:.72},
-  shotgun:{p:[.39,1.22,-.06],r:[.06,.08,-.36],s:.68},
-  rifle:{p:[.39,1.24,-.08],r:[.045,.06,-.35],s:.68},
-  rocket:{p:[.35,1.30,-.02],r:[.02,.10,-.31],s:.62},
-  plasma:{p:[.39,1.23,-.07],r:[.05,.07,-.35],s:.67},
-  mine:{p:[.34,1.18,-.03],r:[.16,.03,-.28],s:.68},
-  bomb:{p:[.34,1.18,-.03],r:[.16,.03,-.28],s:.68},
-  smoke:{p:[.34,1.18,-.03],r:[.16,.03,-.28],s:.68},
-  sniper:{p:[.38,1.27,-.09],r:[.035,.055,-.34],s:.65}
+  // gripR/gripL are real hand targets in weapon-model local space.
+  pistol:{p:[.30,1.28,-.10],r:[.04,.03,-.22],s:.72,gripR:[.105,-.105,.075],gripL:[-.015,-.085,-.015]},
+  shotgun:{p:[.34,1.29,-.11],r:[.035,.055,-.25],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.40]},
+  rifle:{p:[.34,1.30,-.12],r:[.025,.045,-.24],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34]},
+  rocket:{p:[.31,1.37,-.06],r:[.00,.07,-.20],s:.62,gripR:[.105,-.105,.08],gripL:[-.10,-.07,-.36]},
+  plasma:{p:[.34,1.30,-.11],r:[.03,.05,-.24],s:.67,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34]},
+  mine:{p:[.22,1.27,-.10],r:[.10,.02,-.16],s:.68,gripR:[.12,-.07,-.12],gripL:[-.12,-.06,-.31]},
+  bomb:{p:[.22,1.27,-.10],r:[.10,.02,-.16],s:.68,gripR:[.13,-.06,-.16],gripL:[-.13,-.05,-.40]},
+  smoke:{p:[.23,1.28,-.10],r:[.09,.02,-.17],s:.68,gripR:[.11,-.07,-.12],gripL:[-.11,-.06,-.34]},
+  sniper:{p:[.33,1.32,-.13],r:[.02,.04,-.22],s:.65,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.46]}
 };
-function addBotWeaponGrip(model,key,team){
-  const teamCol=team==='ally'?0x2eaeea:0xc62f4d;
-  const gloveMat=new THREE.MeshStandardMaterial({color:0x0c1117,roughness:.76,metalness:.16});
-  const cuffMat=new THREE.MeshStandardMaterial({color:teamCol,roughness:.34,metalness:.56,emissive:teamCol,emissiveIntensity:.16});
-  const addHand=(x,y,z,rz=0)=>{
-    const glove=new THREE.Mesh(new THREE.BoxGeometry(.115,.135,.17),gloveMat);
-    glove.position.set(x,y,z);glove.rotation.z=rz;model.add(glove);
-    const cuff=new THREE.Mesh(new THREE.BoxGeometry(.13,.075,.12),cuffMat);
-    cuff.position.set(x,y+.075,z+.055);cuff.rotation.z=rz;model.add(cuff);
-  };
-  const frontZ=key==='pistol'?-0.18:key==='rocket'?-0.36:key==='sniper'?-0.46:key==='shotgun'?-0.40:-0.34;
-  const rearZ=key==='pistol'?.075:key==='rocket'?.08:.055;
-  addHand(.105,-.105,rearZ,-.08);
-  if(key!=='pistol')addHand(-.10,-.07,frontZ,.10);
-}
 function makeBotWeaponMesh(key,team){
-  const model=createWeaponModel(key,{mode:'bot',team,detail:MOBILE_LOW?0:2});
-  addBotWeaponGrip(model,key,team);
-  return model;
+  return createWeaponModel(key,{mode:'bot',team,detail:MOBILE_LOW?0:2});
 }
 function refreshBotWeaponVisual(bot){
   if(!bot.weaponPivot)return;
@@ -376,7 +360,9 @@ function refreshBotWeaponVisual(bot){
   bot.weaponPivot.position.set(...pose.p);
   bot.weaponPivot.rotation.set(...pose.r);
   const mesh=makeBotWeaponMesh(key,bot.team);mesh.scale.setScalar(pose.s);
-  bot.weaponPivot.add(mesh);bot.weaponMesh=mesh;bot.weaponPivot.userData.weaponKey=key;bot.weaponPivot.userData.pose=pose;
+  bot.weaponPivot.add(mesh);bot.weaponMesh=mesh;
+  bot.weaponPivot.userData.weaponKey=key;
+  bot.weaponPivot.userData.pose=pose;
 }
 
 // ─── WEAPON BAR UI ──────────────────────

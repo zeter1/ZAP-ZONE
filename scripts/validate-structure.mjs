@@ -76,9 +76,10 @@ for(const key of ['pistol','shotgun','rifle','plasma']){
   if(!def.includes('muzzleVelocity:'))fail(key+' missing muzzleVelocity ballistic profile');
 }
 if((weapons.match(/pickupAmmoMin:50,pickupAmmoMax:400/g)||[]).length!==9)fail('all 9 weapons must grant random 50..400 reserve on pickup');
-for(const token of ['STARTING_RESERVE','STARTING_OWNED','BOT_WEAPON_POSES','function addBotWeaponGrip','userData.pose=pose','НЕ НАЙДЕНО']){
+for(const token of ['STARTING_RESERVE','STARTING_OWNED','BOT_WEAPON_POSES','gripR:','gripL:','userData.pose=pose','НЕ НАЙДЕНО']){
   if(!weapons.includes(token))fail('pickup/ownership or bot weapon presentation missing: '+token);
 }
+if(weapons.includes('function addBotWeaponGrip'))fail('bot weapon model must not carry fake detached hands');
 const rifleStart=weapons.indexOf("weaponDef('rifle'");
 const rifleEnd=weapons.indexOf('})',rifleStart);
 const rifleDef=rifleStart>=0&&rifleEnd>rifleStart?weapons.slice(rifleStart,rifleEnd):'';
@@ -105,12 +106,17 @@ const combat=readFileSync('src/combat/combat.js','utf8');
 for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible',"playSfx('ricochet'"]){
   if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
+if(!combat.includes("document.addEventListener('wheel'")||!combat.includes('cycleOwnedWeapon(e.deltaY>0?1:-1)'))fail('mouse wheel must cycle owned weapons only');
+
 
 const bots=readFileSync('src/entities/bots.js','utf8');
 if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
 if(!bots.includes("playSfx('whiz'"))fail('enemy near-miss whiz feedback missing');
 if(!bots.includes('GAME_ASSETS.characters.allyMark')||!bots.includes('Extra readability'))fail('new bot armor markings/visor missing');
 if(!bots.includes('this.weaponPivot.userData.pose||'))fail('locomotion must preserve per-weapon bot pose');
+for(const token of ['this.armRig=built.armRig','function solveBotTwoBoneArm','function updateBotWeaponHands','mesh.localToWorld(_BOT_GRIP_R)','updateBotWeaponHands(this);']){
+  if(!bots.includes(token))fail('realistic two-hand bot weapon hold missing: '+token);
+}
 for(const token of [
   'this.motionX=0;this.motionZ=0',
   'const responseT=1-Math.exp(-response*dt)',
@@ -140,13 +146,14 @@ for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMed
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
+if(!css.includes('#xp-wrap{position:absolute;top:18px;left:18px;transform:none'))fail('level/XP HUD must stay clear of the centered weapon bar');
 if((html.match(/id="xhair"/g)||[]).length!==1)fail('gameplay HUD must contain exactly one xhair root');
 
 for(const token of ['let curW=0,lastW=0','function quickSwitchWeapon()','playSfx(\'equip\')','w.cycleTime=Math.max'] ){if(!state.includes(token))fail('player weapon lifecycle missing: '+token);}
-for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:26']){
+for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function cycleOwnedWeapon(direction)','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:26']){
   if(!state.includes(token))fail('per-weapon ownership/reserve save model missing: '+token);
 }
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
 if(!html.includes('ZAP ZONE v22.2'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE v22.2 pickup inventory, bot locomotion/presentation and dual-optic validation passed.');
+if(!process.exitCode)console.log('ZAP ZONE bot arm IK, owned-weapon wheel cycling and HUD layout validation passed.');

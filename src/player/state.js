@@ -477,6 +477,14 @@ function quickSwitchWeapon(){
   const idx=weaponOwned.findIndex((owned,i)=>owned&&i!==curW);
   if(idx>=0)switchW(idx);
 }
+function cycleOwnedWeapon(direction){
+  const step=direction>=0?1:-1;
+  for(let offset=1;offset<=WEAPONS.length;offset++){
+    const idx=(curW+step*offset+WEAPONS.length*4)%WEAPONS.length;
+    if(ownsWeapon(idx)){switchW(idx);return idx;}
+  }
+  return curW;
+}
 
 
 function isLandscape(){return innerWidth>=innerHeight;}

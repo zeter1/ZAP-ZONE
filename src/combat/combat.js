@@ -11,6 +11,16 @@ window.addEventListener('keydown',e=>{
   const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
 });
 window.addEventListener('keyup',e=>{K[e.code]=false;});
+let lastWheelWeaponSwitchAt=0;
+document.addEventListener('wheel',e=>{
+  if(IS_TOUCH||!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
+  if(!Number.isFinite(e.deltaY)||Math.abs(e.deltaY)<.01)return;
+  e.preventDefault();
+  const now=performance.now();
+  if(now-lastWheelWeaponSwitchAt<90)return;
+  lastWheelWeaponSwitchAt=now;
+  cycleOwnedWeapon(e.deltaY>0?1:-1);
+},{passive:false});
 document.addEventListener('mousemove',e=>{
   if(IS_TOUCH||!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
   const sens=.002*lookSensitivityMultiplier(zooming);

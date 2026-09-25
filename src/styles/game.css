@@ -36,9 +36,9 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #tb-ally{color:#44aaff;}
 #tb-enemy{color:#ff4444;}
 
-#xp-wrap{position:absolute;top:80px;left:50%;transform:translateX(-50%);text-align:center;}
-#xp-lbl{font-size:11px;color:#00ddff;letter-spacing:2px;font-weight:700;margin-bottom:3px;}
-#xp-bar{width:260px;height:7px;background:rgba(0,0,0,.5);border-radius:4px;overflow:hidden;border:1px solid rgba(0,200,255,.4);}
+#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left;z-index:13;pointer-events:none;}
+#xp-lbl{display:inline-block;font-size:11px;color:#7eeaff;letter-spacing:2px;font-weight:900;margin-bottom:5px;padding:4px 9px;border-radius:9px;background:rgba(4,15,25,.78);border:1px solid rgba(70,210,255,.36);box-shadow:0 0 11px rgba(30,185,255,.12);}
+#xp-bar{width:230px;height:7px;background:rgba(0,0,0,.58);border-radius:4px;overflow:hidden;border:1px solid rgba(0,200,255,.4);box-shadow:0 0 8px rgba(0,190,255,.10);}
 #xp-fill{height:100%;background:linear-gradient(90deg,#0088ff,#00ffff);border-radius:4px;width:0%;}
 #hp-wrap{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;}
 #hp-txt{font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:3px;color:#aaffaa;}
@@ -183,8 +183,8 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   .wb-name{font-size:10px;}
   #team-bar{top:max(8px,env(safe-area-inset-top));gap:10px;}
   #team-bar .tb-side{font-size:18px;min-width:34px;}
-  #xp-wrap{top:max(76px,calc(env(safe-area-inset-top) + 68px));}
-  #xp-bar{width:min(54vw,260px);}
+  #xp-wrap{top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));transform:none;text-align:left;}
+  #xp-bar{width:min(42vw,230px);}
   #perk-panel{top:max(108px,calc(env(safe-area-inset-top) + 98px));left:max(10px,env(safe-area-inset-left));max-width:34vw;}
   #stats-panel{top:max(108px,calc(env(safe-area-inset-top) + 98px));right:max(10px,env(safe-area-inset-right));font-size:9px;min-width:112px;max-width:30vw;padding:7px 8px;line-height:1.45;}
   #ally-panel{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 92px);left:max(12px,env(safe-area-inset-left));gap:5px;max-width:46vw;}
