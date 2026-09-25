@@ -37,7 +37,8 @@ function loop(ts){
   // Camera recoil recovery follows the current weapon mass/handling profile.
   const activeW=getW();
   const recoilReturn=activeW.recoilReturn||12;
-  const adsWanted=!IS_TOUCH&&zooming?1:0;
+  const scopedWeapon=activeW.aimMode==='scope';
+  const adsWanted=!IS_TOUCH&&scopedWeapon&&zooming?1:0;
   const adsTime=adsWanted>adsBlend?(activeW.adsIn||.18):(activeW.adsOut||.12);
   const adsStep=dt/Math.max(.04,adsTime);
   adsBlend+=Math.max(-adsStep,Math.min(adsStep,adsWanted-adsBlend));
@@ -60,9 +61,9 @@ function loop(ts){
 
   _euler.x=effPitch;_euler.y=effYaw;camera.quaternion.setFromEuler(_euler);
 
-  const scopeActive=!IS_TOUCH&&activeW.isSniper&&adsBlend>.88;
-  const scopedFov=activeW.zoomFov||ZOOM_FOV;
-  const scopeBreath=activeW.isSniper?Math.sin(ts*.00145)*.10*adsBlend:0;
+  const scopeActive=!IS_TOUCH&&scopedWeapon&&adsBlend>.88;
+  const scopedFov=scopedWeapon?(activeW.zoomFov||ZOOM_FOV):BASE_FOV;
+  const scopeBreath=scopedWeapon?Math.sin(ts*.00145)*.10*adsBlend:0;
   const targetFov=BASE_FOV+(scopedFov-BASE_FOV)*adsBlend+scopeBreath;
   if(Math.abs(camera.fov-targetFov)>.025){
     camera.fov+=(targetFov-camera.fov)*Math.min(1,dt*13);
@@ -72,7 +73,7 @@ function loop(ts){
   if(sniperScope)sniperScope.classList.toggle('on',scopeActive);
   const crosshair=G('xhair');
   if(crosshair){
-    crosshair.classList.toggle('scope-hidden',scopeActive);
+    crosshair.classList.toggle('scope-hidden',scopeActive||scopedWeapon);
     const reticleSpread=effectiveWeaponSpread(activeW,0,false,weaponBloom);
     const gap=5+Math.min(18,reticleSpread*260);
     crosshair.style.setProperty('--xh-gap',gap.toFixed(1)+'px');
