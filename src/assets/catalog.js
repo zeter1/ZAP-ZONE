@@ -114,7 +114,6 @@ const GAME_ASSETS=Object.freeze({
   }),
   ui:Object.freeze({
     logo:'assets/ui/logo.svg',
-    crosshair:'assets/ui/crosshair.svg',
     health:'assets/ui/health.svg',
     armor:'assets/ui/armor.svg',
     xp:'assets/ui/xp.svg',
