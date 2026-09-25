@@ -81,6 +81,9 @@ function playSfx(name,intensity=1,weaponKey=''){
     case 'hurt':synthNoise(.11,.045*k,420);synthTone(92,.13,.04*k,'sawtooth',62);break;
     case 'reload':synthTone(330,.045,.025*k,'square',460);synthNoise(.035,.014*k,2200,.045);break;
     case 'reloadDone':synthTone(520,.055,.028*k,'square',660);break;
+    case 'dry':synthTone(180,.035,.020*k,'square',145);synthNoise(.025,.010*k,900,.012);break;
+    case 'bolt':synthTone(470,.035,.020*k,'square',350,.28);synthNoise(.045,.018*k,2400,.31);synthTone(620,.03,.016*k,'square',520,.39);break;
+    case 'pump':synthTone(310,.045,.022*k,'square',245,.20);synthNoise(.055,.020*k,1700,.24);synthTone(390,.035,.018*k,'square',520,.34);break;
     case 'level':synthTone(440,.13,.035*k,'triangle',660);synthTone(660,.14,.032*k,'triangle',880,.10);synthTone(880,.18,.028*k,'sine',1180,.20);break;
     case 'death':synthTone(120,.48,.055*k,'sawtooth',42);synthNoise(.32,.035*k,300);break;
     case 'explosion':synthNoise(.28,.10*k,520);synthTone(58,.30,.065*k,'sine',34);break;
