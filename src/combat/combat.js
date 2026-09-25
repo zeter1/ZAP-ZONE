@@ -500,18 +500,18 @@ function spawnPlayerBullet(from,dir,w,meta={}){
 }
 
 function weaponActionBlocked(){
-  return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||cycleT>0;
+  return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0;
 }
-function finishPlayerReload(playDone=true){
+function finishPlayerReload(playDone=true,settle=true){
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
-  weaponReadyT=Math.max(weaponReadyT,.08);
+  if(settle)weaponReadyT=Math.max(weaponReadyT,.08);
   if(playDone)playSfx('reloadDone');
   wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
 }
 function cancelPlayerReload(){
   if(!reloading)return;
   const shellMode=reloadMode==='shell';
-  finishPlayerReload(false);
+  finishPlayerReload(false,false);
   if(shellMode)playSfx('reloadCancel');
 }
 function completePlayerReloadStep(){
@@ -520,6 +520,7 @@ function completePlayerReloadStep(){
   if(reloadMode==='shell'){
     if(ammo<w.clip&&uAmmo>0){
       ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playSfx('shell');
+      G('rmsg').textContent=`ПАТРОН ${ammo} / ${w.clip} · ЛКМ — ПРЕРВАТЬ`;
     }
     if(ammo>=w.clip||uAmmo<=0){finishPlayerReload(true);return;}
     reloadT=Math.max(.16,w.reload*(w.shellInsertM||.26));
@@ -613,7 +614,7 @@ function spawnTracer(from,dir,dist,col,key='default'){
 }
 function doReload(){
   const w=getW();if(w.isBomb||w.isSmoke)return;
-  if(reloading||ammo===w.clip||uAmmo===0||weaponReadyT>0||cycleT>0)return;
+  if(reloading||ammo===w.clip||uAmmo===0||weaponActionBlocked())return;
   if(w.isSniper&&zooming)zooming=false;
   reloading=true;reloadShellLoaded=0;
   if(w.reloadStyle==='shell'){
