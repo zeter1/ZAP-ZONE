@@ -87,15 +87,17 @@ function loop(ts){
   // Movement
   const lowHpActive=hp<plr.maxHp*.35;
   const runHeld=(K['ShiftLeft']||K['ShiftRight']||mobileInput.run);
+  const sprintAllowed=!reloading&&!zooming&&weaponEquipT<=0&&cycleT<=0;
+  const wantsSprint=!!runHeld&&sprintAllowed;
   damageFlashAlpha=Math.max(0,damageFlashAlpha-damageFlashDecay*dt);
   setDamageOverlay(damageFlashAlpha);
-  const spd=(runHeld?8*plr.sprintM:5)*plr.spdM*(lowHpActive?1+plr.lowHpSpeed:1);
+  const spd=(wantsSprint?8*plr.sprintM:5)*plr.spdM*(lowHpActive?1+plr.lowHpSpeed:1);
   _fwd.set(-Math.sin(yaw),0,-Math.cos(yaw));_rgt.set(Math.cos(yaw),0,-Math.sin(yaw));_mv.set(0,0,0);
   if(K['KeyW'])_mv.addScaledVector(_fwd,spd);if(K['KeyS'])_mv.addScaledVector(_fwd,-spd);
   if(K['KeyA'])_mv.addScaledVector(_rgt,-spd);if(K['KeyD'])_mv.addScaledVector(_rgt,spd);
   if(Math.abs(mobileInput.moveY)>.05)_mv.addScaledVector(_fwd,-mobileInput.moveY*spd);
   if(Math.abs(mobileInput.moveX)>.05)_mv.addScaledVector(_rgt,mobileInput.moveX*spd);
-  const sprintingNow=!!runHeld&&_mv.lengthSq()>.05&&onGnd&&!reloading&&!scopedWeapon&&weaponEquipT<=0;
+  const sprintingNow=wantsSprint&&_mv.lengthSq()>.05&&onGnd;
   if(sprintingNow&&zooming)zooming=false;
   const sprintTarget=sprintingNow?1:0;
   const sprintStep=dt*(sprintingNow?8.5:11.5);
