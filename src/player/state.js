@@ -90,7 +90,7 @@ function increaseClips(mult,includeBomb=false){
   });
   ammo=weaponAmmo[curW];
 }
-function accelerateFire(mult){WEAPONS.forEach(w=>{if(!w.isMine&&!w.isBomb&&!w.isSmoke)w.rate=Math.max(.045,w.rate*mult);});}
+function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isMine||w.isBomb||w.isSmoke)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
 function accelerateReload(mult){WEAPONS.forEach(w=>{if(!w.isBomb&&!w.isSmoke)w.reload=Math.max(.48,w.reload*mult);});}
 
 const ALL_PERKS=[
@@ -248,7 +248,7 @@ function hardResetPlayerBuild(){
   });
   plr.pathMilestones=new Set();
   perksGot.length=0;
-  WEAPONS.forEach((w,i)=>{w.clip=W_DEFAULTS.clips[i];w.rate=W_DEFAULTS.rates[i];w.reload=W_DEFAULTS.reloads[i];});
+  WEAPONS.forEach((w,i)=>{w.clip=W_DEFAULTS.clips[i];w.rate=W_DEFAULTS.rates[i];w.reload=W_DEFAULTS.reloads[i];w.cycleTime=W_DEFAULTS.cycleTimes[i]||undefined;});
   weaponAmmo.splice(0,weaponAmmo.length,...STARTING_AMMO);
   ammo=weaponAmmo[curW]??WEAPONS[curW].clip;
 }
