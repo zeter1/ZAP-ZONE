@@ -20,7 +20,12 @@ document.addEventListener('mousemove',e=>{
 let mouseDown=false,zooming=false;
 document.addEventListener('mousedown',e=>{
   if(IS_TOUCH)return;
-  if(e.button===2){e.preventDefault();if(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying)zooming=true;return;}
+  if(e.button===2){
+    e.preventDefault();
+    const w=getW();
+    if(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying&&!reloading&&w.aimMode==='scope')zooming=true;
+    return;
+  }
   if(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying&&e.button===0){mouseDown=true;shoot();}
 });
 document.addEventListener('mouseup',e=>{
@@ -438,6 +443,41 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
   }
   return dmg;
 }
+function spawnInstantSniperTrace(from,dir,dist,color){
+  const start=from.clone().addScaledVector(dir,.48),end=from.clone().addScaledVector(dir,dist);
+  const geo=new THREE.BufferGeometry().setFromPoints([start,end]);
+  const mat=new THREE.LineBasicMaterial({color,transparent:true,opacity:.92,depthWrite:false,blending:THREE.AdditiveBlending});
+  const line=new THREE.Line(geo,mat);line.renderOrder=30;scene.add(line);
+  setTimeout(()=>{scene.remove(line);geo.dispose();mat.dispose();},70);
+}
+function fireInstantSniper(from,dir,w,meta={}){
+  const maxRange=w.range||120,color=PLR_TCOL[w.key]||0xcff8ff;
+  _rc.ray.origin.copy(from);_rc.ray.direction.copy(dir);_rc.near=0;_rc.far=maxRange;
+  _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
+  const wallDist=_rcWallHits.length?_rcWallHits[0].distance:maxRange;
+  const first=hitEnemy(from,dir,'ally',null,maxRange);
+  let traceDist=wallDist;
+  if(first.en&&first.dist<wallDist){
+    const hitFx=from.clone().addScaledVector(dir,first.dist);
+    const fake={wKey:w.key,color,markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier()};
+    resolvePlayerBulletHit(fake,first.en,first.hd,hitFx,dir,first.dist);
+    traceDist=first.dist;
+    let pen=(w.basePenetration||0)+(plr.piercing?1:0);
+    if(pen>0){
+      const second=hitEnemy(from,dir,'ally',first.en,maxRange);
+      if(second.en&&second.dist>first.dist+.05&&second.dist<wallDist){
+        fake.markerEligible=false;fake.damageScale=w.isSniper?.72:.64;
+        const hit2=from.clone().addScaledVector(dir,second.dist);
+        resolvePlayerBulletHit(fake,second.en,second.hd,hit2,dir,second.dist);
+        traceDist=second.dist;
+      }
+    }
+  }else if(_rcWallHits.length){
+    const hitFx=_rcWallHits[0].point.clone();
+    wallImpact(hitFx,color);spawnCombatImpact(hitFx,'sniper');
+  }
+  spawnInstantSniperTrace(from,dir,Math.max(.6,traceDist),color);
+}
 function spawnPlayerBullet(from,dir,w,meta={}){
   while(pBullets.length>=MAX_PLAYER_BULLETS)destroyPlayerBullet(0);
   const speed=Math.max(1,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
@@ -506,9 +546,12 @@ function shoot(){
       const d=bDir.clone();
       const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom);
       if(sp2>0){d.x+=(Math.random()-.5)*sp2*2;d.y+=(Math.random()-.5)*sp2*2;d.z+=(Math.random()-.5)*sp2*2;d.normalize();}
-      spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
+      if(w.hitscan)fireInstantSniper(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
+      else spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
     }
   }
+  if(w.isSniper)playSfx('bolt');
+  else if(w.key==='shotgun')playSfx('pump');
   weaponBloom=Math.min(w.bloomMax??.03,weaponBloom+(w.bloomPerShot||0));
 
 }
