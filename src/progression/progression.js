@@ -191,6 +191,20 @@ function weaponModeLabel(w){
   if(w.fireMode==='launcher')return 'LAUNCHER';
   return 'SEMI';
 }
+function updateWeaponStateHUD(){
+  const el=G('wstate');if(!el)return;
+  let text='ГОТОВО',state='ready';
+  if(reloading){
+    text=reloadMode==='shell'?'ЗАРЯДКА ПАТРОНОВ':reloadMode==='empty'?'ПУСТАЯ ПЕРЕЗАРЯДКА':'ТАКТИЧЕСКАЯ';
+    state='busy';
+  }else if(weaponEquipT>0){text='ВСКИДЫВАНИЕ';state='busy';
+  }else if(wasWeaponSprinting||sprintBlend>.22){text='СПРИНТ · ОРУЖИЕ ОПУЩЕНО';state='blocked';
+  }else if(sprintExitT>0){text='ГОТОВНОСТЬ ПОСЛЕ СПРИНТА';state='busy';
+  }else if(cycleT>0){text=cycleKind==='bolt'?'ПЕРЕДЁРГИВАНИЕ ЗАТВОРА':'PUMP ACTION';state='busy';
+  }else if(weaponReadyT>0){text='ГОТОВНОСТЬ';state='busy';}
+  if(el.textContent!==text)el.textContent=text;
+  if(el.dataset.state!==state)el.dataset.state=state;
+}
 function wHUD(){
   const w=getW();G('wname').textContent=w.name;
   const mode=G('wmode');
@@ -405,7 +419,7 @@ function doRespawn(){
   weaponAmmo[SMOKE_WEAPON_INDEX]=playerSmokeCD>0?0:1;
   ammo=weaponAmmo[curW];
   uAmmo=Math.max(uAmmo,120);
-  recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
+  recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;weaponReadyT=0;weaponEquipT=0;weaponEquipTot=0;sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;cycleT=0;cycleTot=0;cycleKind='';cycleEjected=false;reloadMode='mag';reloadShellLoaded=0;
   dying=false;paused=false;perkPickOpen=false;pendingLevels=0;lvlAnnOpen=false;lvlAnnT=0;
   combo=0;comboT=0;spawnT=0;plrVx=0;plrVz=0;zooming=false;
   hitSlowT=0;hitSlowDur=0;hitSlowMul=0;

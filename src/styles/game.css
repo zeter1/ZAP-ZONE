@@ -190,10 +190,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   #mines-panel{left:max(12px,env(safe-area-inset-left));padding:8px 12px;}
   #hp-wrap{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 78px);}
   #hp-bar,#armor-bar{width:min(48vw,240px);}
-  #xhair{width:22px;height:22px;}
-  #xhair::before{height:22px;left:10px;}
-  #xhair::after{width:22px;top:10px;}
-  .xh-dot{top:9px;left:9px;}
+  #xhair{transform:translate(-50%,-50%) scale(.86);}
   .mobile-only{display:block;}
 }
 
@@ -212,15 +209,8 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   user-select:none;
   pointer-events:none;
 }
-#xhair{
-  width:40px!important;
-  height:40px!important;
-  margin-left:-20px!important;
-  margin-top:-20px!important;
-  background:url('../../assets/ui/crosshair.svg') center/contain no-repeat;
-  filter:drop-shadow(0 0 7px rgba(70,220,255,.75));
-}
-#xhair::before,#xhair::after,#xhair .xh-dot{display:none!important;}
+/* Legacy SVG crosshair removed in v22.2.
+   The live reticle is rendered only by .xh-arm/.xh-dot to avoid double overlays. */
 #hp-txt{display:flex;align-items:center;justify-content:center;gap:6px;}
 #hp-txt::before{
   content:'';
@@ -245,7 +235,6 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 }
 @media (max-width:900px){
   #brand-logo{width:min(620px,88vw);max-height:165px;}
-  #xhair{width:34px!important;height:34px!important;margin-left:-17px!important;margin-top:-17px!important;}
 }
 
 
@@ -484,3 +473,13 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 }
 
 #wmode{margin-top:2px;color:#86dfff;font:800 10px/1.15 Consolas,'Courier New',monospace;letter-spacing:.7px;text-transform:uppercase;text-shadow:0 0 8px rgba(70,200,255,.25);}
+
+#wstate{margin:3px 0 4px;font:900 8px/1.1 Consolas,'Courier New',monospace;letter-spacing:1px;color:#7dffad;text-transform:uppercase;}
+#wstate[data-state="busy"]{color:#ffd15a;}
+#wstate[data-state="blocked"]{color:#ff8b6b;}
+#xhair.weapon-lowered{opacity:.30;}
+
+/* v22.2 — one authoritative gameplay reticle */
+#xhair{background:none!important;margin-left:0!important;margin-top:0!important;filter:none;}
+#xhair .xh-dot{display:block!important;}
+#xhair.dynamic-hit{filter:drop-shadow(0 0 5px rgba(255,220,70,.95));}

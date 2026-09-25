@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── PLAYER STATE ────────────────────────
-let curW=0,ammo=STARTING_AMMO[0],uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
+let curW=0,lastW=0,ammo=STARTING_AMMO[0],uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
 const weaponAmmo=STARTING_AMMO.slice();
 let yaw=0,pitch=0,onGnd=true,jumpV=0;
 let hp=100,score=0,kills=0,xp=0,level=1,armor=0;
@@ -15,6 +15,10 @@ let mineHudSecond=-1,bombHudSecond=-1,smokeHudSecond=-1;
 // Camera recoil
 let recoilPitch=0,recoilYaw=0,recoilRecovery=0;
 let adsBlend=0,weaponBloom=0,shotSequence=0,shotResetT=0;
+let weaponReadyT=0,weaponEquipT=0,weaponEquipTot=0;
+let sprintBlend=0,sprintExitT=0,wasWeaponSprinting=false;
+let cycleT=0,cycleTot=0,cycleKind='',cycleEjected=false;
+let reloadMode='mag',reloadShellLoaded=0;
 const K={};
 const mobileInput={
   moveId:null,lookId:null,fire:false,run:false,jumpQueued:false,reloadQueued:false,mineQueued:false,
@@ -86,7 +90,7 @@ function increaseClips(mult,includeBomb=false){
   });
   ammo=weaponAmmo[curW];
 }
-function accelerateFire(mult){WEAPONS.forEach(w=>{if(!w.isMine&&!w.isBomb&&!w.isSmoke)w.rate=Math.max(.045,w.rate*mult);});}
+function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isMine||w.isBomb||w.isSmoke)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
 function accelerateReload(mult){WEAPONS.forEach(w=>{if(!w.isBomb&&!w.isSmoke)w.reload=Math.max(.48,w.reload*mult);});}
 
 const ALL_PERKS=[
@@ -244,7 +248,7 @@ function hardResetPlayerBuild(){
   });
   plr.pathMilestones=new Set();
   perksGot.length=0;
-  WEAPONS.forEach((w,i)=>{w.clip=W_DEFAULTS.clips[i];w.rate=W_DEFAULTS.rates[i];w.reload=W_DEFAULTS.reloads[i];});
+  WEAPONS.forEach((w,i)=>{w.clip=W_DEFAULTS.clips[i];w.rate=W_DEFAULTS.rates[i];w.reload=W_DEFAULTS.reloads[i];w.cycleTime=W_DEFAULTS.cycleTimes[i]||undefined;});
   weaponAmmo.splice(0,weaponAmmo.length,...STARTING_AMMO);
   ammo=weaponAmmo[curW]??WEAPONS[curW].clip;
 }
@@ -396,15 +400,20 @@ function switchW(idx){
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
+  cycleT=0;cycleTot=0;cycleKind='';cycleEjected=false;sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;
+  lastW=curW;
   curW=idx;
   const w=getW();
   ammo=weaponAmmoValue(idx);
-  reloading=false;reloadT=0;reloadTot=0;
+  reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
+  weaponEquipTot=w.equipTime||.32;weaponEquipT=weaponEquipTot;weaponReadyT=weaponEquipTot;
+  playSfx('equip');
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   buildGun(w);wHUD();updateWeaponBar();
   G('mines-panel').style.display=(w.isMine||w.isBomb)?'block':'none';
   updateMineHUD();
 }
+function quickSwitchWeapon(){if(lastW!==curW)switchW(lastW);}
 
 
 function isLandscape(){return innerWidth>=innerHeight;}

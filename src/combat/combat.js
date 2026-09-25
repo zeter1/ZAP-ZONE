@@ -5,6 +5,7 @@ window.addEventListener('keydown',e=>{
   K[e.code]=true;
   if(!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
   if(e.code==='KeyR')doReload();
+  if(e.code==='KeyQ')quickSwitchWeapon();
   if(e.code==='KeyF')throwMine();
   if(e.code==='KeyG')placeBomb();
   const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
@@ -370,15 +371,18 @@ function grantPlayerKillRewards(){
   if(plr.killArmor>0)armor=Math.min(plr.maxArmor,armor+plr.killArmor);
   markHUD();
 }
-function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false,bloom=weaponBloom){
+function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false,bloom=weaponBloom,firstShot=false){
   const hip=w.spread||0,ads=w.adsSpread??hip*.55;
   const base=hip+(ads-hip)*Math.max(0,Math.min(1,adsBlend));
-  const moving=Math.min(1,Math.hypot(plrVx,plrVz)/8);
+  const speed=Math.hypot(plrVx,plrVz);
+  const moving=Math.min(1,speed/8);
   const movePenalty=(w.moveSpread||0)*moving;
   const airPenalty=onGnd?0:(w.airSpread||0);
   const pelletFactor=(w.pellets||1)>1?(pelletIndex===0?.35:1):1;
   const extraPenalty=extraShot?.035:0;
-  return Math.max(0,(base*pelletFactor+movePenalty+airPenalty+bloom+extraPenalty)*plr.spreadM);
+  const settledFirstShot=firstShot&&onGnd&&speed<1.2;
+  const firstShotM=settledFirstShot?(w.firstShotM??1):1;
+  return Math.max(0,(base*pelletFactor*firstShotM+movePenalty+airPenalty+bloom+extraPenalty)*plr.spreadM);
 }
 function kickSniperScope(){
   const scope=G('sniper-scope');if(!scope||!zooming)return;
@@ -400,7 +404,8 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
   const rangeBonus=travelDist<12?1+plr.closeDamage:(travelDist>28?1+plr.longRangeDamage:1);
   const distanceScale=weaponDamageScaleAtDistance(w,travelDist);
   const headshotMult=w.headshotMult||2.10;
-  const dmg=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+  const calculatedDamage=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+  const dmg=w.oneShot&&b.oneShotEligible?Math.max(calculatedDamage,en.hp+1):calculatedDamage;
   en.hurt(dmg,dir.clone(),'ally');
   const lethalHeadshot=hd&&!en.alive;
   if(b.markerEligible||!en.alive){
@@ -461,14 +466,14 @@ function fireInstantSniper(from,dir,w,meta={}){
   let traceDist=wallDist;
   if(first.en&&first.dist<wallDist){
     const hitFx=from.clone().addScaledVector(dir,first.dist);
-    const fake={wKey:w.key,color,markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier()};
+    const fake={wKey:w.key,color,markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),oneShotEligible:true};
     resolvePlayerBulletHit(fake,first.en,first.hd,hitFx,dir,first.dist);
     traceDist=first.dist;
     let pen=(w.basePenetration||0)+(plr.piercing?1:0);
     if(pen>0){
       const second=hitEnemy(from,dir,'ally',first.en,maxRange);
       if(second.en&&second.dist>first.dist+.05&&second.dist<wallDist){
-        fake.markerEligible=false;fake.damageScale=w.isSniper?.72:.64;
+        fake.markerEligible=false;fake.damageScale=w.isSniper?.72:.64;fake.oneShotEligible=false;
         const hit2=from.clone().addScaledVector(dir,second.dist);
         resolvePlayerBulletHit(fake,second.en,second.hd,hit2,dir,second.dist);
         traceDist=second.dist;
@@ -496,9 +501,46 @@ function spawnPlayerBullet(from,dir,w,meta={}){
   });
 }
 
+function weaponActionBlocked(){
+  return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0;
+}
+function finishPlayerReload(playDone=true,settle=true){
+  reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
+  if(settle)weaponReadyT=Math.max(weaponReadyT,.08);
+  if(playDone)playSfx('reloadDone');
+  wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
+}
+function cancelPlayerReload(){
+  if(!reloading)return;
+  const shellMode=reloadMode==='shell';
+  finishPlayerReload(false,false);
+  if(shellMode)playSfx('reloadCancel');
+}
+function completePlayerReloadStep(){
+  if(!reloading)return;
+  const w=getW();
+  if(reloadMode==='shell'){
+    if(ammo<w.clip&&uAmmo>0){
+      ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playSfx('shell');
+      G('rmsg').textContent=`ПАТРОН ${ammo} / ${w.clip} · ЛКМ — ПРЕРВАТЬ`;
+    }
+    if(ammo>=w.clip||uAmmo<=0){finishPlayerReload(true);return;}
+    reloadT=Math.max(.16,w.reload*(w.shellInsertM||.26));
+    reloadTot=reloadT;
+    return;
+  }
+  const need=w.clip-ammo,take=Math.min(need,uAmmo);
+  ammo+=take;uAmmo-=take;syncCurrentAmmo();finishPlayerReload(true);
+}
+
 function shoot(){
-  if(reloading||sCD>0)return;
-  const w=getW();if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}
+  const w=getW();
+  if(reloading){
+    if(w.reloadStyle==='shell'&&ammo>0)cancelPlayerReload();
+    else return;
+  }
+  if(sCD>0||weaponActionBlocked())return;
+  if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}
   if(ammo<=0){
     doReload();
     if(!reloading){playSfx('dry');sCD=Math.max(sCD,.18);}
@@ -513,11 +555,16 @@ function shoot(){
   if(w.isSniper)kickSniperScope();
 
   // Camera recoil: repeatable pattern + small jitter gives each weapon a learnable cadence.
+  const firstShot=shotSequence===0;
   const pattern=w.recoilPattern||[0],patternX=pattern[shotSequence%pattern.length]||0;
   recoilPitch+=(w.recoilY||.02)*(0.88+Math.min(.32,shotSequence*.018)+Math.random()*.16)*plr.recoilM;
   recoilYaw+=(patternX+(Math.random()-.5)*.22)*(w.recoilX||.01)*plr.recoilM;
   recoilRecovery=w.recoilDelay??.3;
   shotSequence++;shotResetT=Math.max(.34,w.rate*2.4);
+  if(w.cycleTime){
+    cycleTot=w.cycleTime;cycleT=cycleTot;cycleKind=w.fireMode;cycleEjected=false;
+    weaponReadyT=Math.max(weaponReadyT,cycleTot);
+  }
 
   if(flashM)flashM.material.opacity=1;
   if(beamM){beamM.material.opacity=.9;beamT=.065;}
@@ -527,9 +574,9 @@ function shoot(){
   // Muzzle flash
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
   trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1);
-  if(w.key!=='rocket'&&w.key!=='plasma'){
+  if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
-    ejectCasing(casingPos,camera.quaternion,w.key==='shotgun');
+    ejectCasing(casingPos,camera.quaternion,false);
   }
 
   if(w.isRocket){
@@ -546,7 +593,7 @@ function shoot(){
   for(let s=0;s<shots;s++){
     for(let p=0;p<w.pellets;p++){
       const d=bDir.clone();
-      const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom);
+      const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom,firstShot);
       if(sp2>0){d.x+=(Math.random()-.5)*sp2*2;d.y+=(Math.random()-.5)*sp2*2;d.z+=(Math.random()-.5)*sp2*2;d.normalize();}
       if(w.hitscan)fireInstantSniper(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
       else spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
@@ -569,10 +616,21 @@ function spawnTracer(from,dir,dist,col,key='default'){
 }
 function doReload(){
   const w=getW();if(w.isBomb||w.isSmoke)return;
-  if(reloading||ammo===w.clip||uAmmo===0)return;
+  if(reloading||ammo===w.clip||uAmmo===0||weaponActionBlocked())return;
   if(w.isSniper&&zooming)zooming=false;
-  reloading=true;reloadT=w.reload;reloadTot=w.reload;
+  reloading=true;reloadShellLoaded=0;
+  if(w.reloadStyle==='shell'){
+    reloadMode='shell';
+    reloadT=Math.max(.18,w.reload*(w.shellStartM||.22));
+  }else{
+    const empty=ammo<=0;
+    reloadMode=empty?'empty':'tactical';
+    const mult=empty?(w.emptyReloadM??1):(w.tacticalReloadM??1);
+    reloadT=Math.max(.30,w.reload*mult);
+  }
+  reloadTot=reloadT;
   playSfx('reload');
+  G('rmsg').textContent=reloadMode==='shell'?'ЗАРЯДКА ПАТРОНОВ...':reloadMode==='empty'?'ПУСТОЙ МАГАЗИН...':'ТАКТИЧЕСКАЯ ПЕРЕЗАРЯДКА...';
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';
 }
 function throwMine(){
@@ -782,8 +840,17 @@ function tickProjectiles(dt){
         b.pos.copy(_hitPos).addScaledVector(_stepDir,.14);b.travel=travelDist+.14;
       }else{destroyPlayerBullet(i);continue;}
     }else if(wallDist<=stepDist){
+      const wallHit=_rcWallHits[0];
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
       wallImpact(_hitPos,b.color);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      if(w.key!=='plasma'&&wallHit?.face?.normal){
+        const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld);
+        const incidence=Math.abs(_stepDir.dot(n));
+        if(incidence<.36&&Math.random()<.58){
+          playSfx('ricochet',Math.max(.35,1-incidence));
+          spawnP(_hitPos,0xffe3a1,.46);
+        }
+      }
       destroyPlayerBullet(i);continue;
     }else{
       b.travel+=stepDist;b.ignoreEnemy=null;

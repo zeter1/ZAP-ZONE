@@ -428,6 +428,10 @@ class Enemy{
       }
     }
 
+    if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>7&&(this.nearMissCd||0)<=0&&Math.random()<.34){
+      playSfx('whiz',Math.max(.28,Math.min(1,1-dist/120)));
+      this.nearMissCd=.32+Math.random()*.28;
+    }
     if(wp.hitscan)spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);
     else spawnTracer(from,tracerDir,Math.min(dist,wp.range+10),shotCol,wp.key);
     if(totalDmg>0)this.dealDamageToCurrentTarget(totalDmg,tracerDir);
@@ -439,6 +443,7 @@ class Enemy{
     this.syncScale();
     this.ph+=dt*3;
     if(this.lastDamageT>0)this.lastDamageT-=dt;
+    if(this.nearMissCd>0)this.nearMissCd-=dt;
 
     if(this.flashT>0){this.flashT-=dt;if(this.flashT<=0)this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(0,0,0);});}
 
