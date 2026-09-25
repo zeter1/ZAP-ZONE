@@ -31,6 +31,97 @@ function lookSensitivityMultiplier(zoomed=false){
 }
 
 let gameAudioCtx=null,gameAudioMaster=null,gameNoiseBuffer=null;
+const GAME_AUDIO_ASSETS=Object.freeze({
+  pistol:'assets/audio/pistol.wav',
+  rifle:'assets/audio/rifle.wav',
+  shotgun:'assets/audio/shotgun.wav',
+  sniper:'assets/audio/sniper.wav',
+  rocket:'assets/audio/rocket-launch.wav',
+  plasma:'assets/audio/plasma.wav',
+  explosion:'assets/audio/explosion.wav',
+  ricochet:'assets/audio/ricochet.wav',
+  whiz:'assets/audio/whiz.wav',
+  objectiveCapture:'assets/audio/objective-capture.wav'
+});
+const gameAudioBuffers=new Map(),gameAudioLoads=new Map();
+function combatSourcePosition(source){
+  return source&&(source.group?.position||source.m?.position||source.position||source);
+}
+function combatBearingDegrees(source){
+  const src=combatSourcePosition(source);
+  if(!src||typeof yaw!=='number'||typeof camera==='undefined')return 180;
+  const dx=src.x-camera.position.x,dz=src.z-camera.position.z;
+  const sourceHeading=Math.atan2(dx,dz),forwardHeading=Math.atan2(-Math.sin(yaw),-Math.cos(yaw));
+  let diff=sourceHeading-forwardHeading;while(diff>Math.PI)diff-=Math.PI*2;while(diff<-Math.PI)diff+=Math.PI*2;
+  return diff*180/Math.PI;
+}
+function spatialAudioMix(source,maxDistance=82){
+  const src=combatSourcePosition(source);
+  if(!src||typeof camera==='undefined')return{gain:1,pan:0,distance:0};
+  const dx=src.x-camera.position.x,dz=src.z-camera.position.z,dist=Math.hypot(dx,dz);
+  if(dist>=maxDistance)return{gain:0,pan:0,distance:dist};
+  const normalized=Math.max(0,1-dist/maxDistance);
+  const gain=Math.pow(normalized,1.22);
+  const side=dist>.001?(dx*Math.cos(yaw)-dz*Math.sin(yaw))/dist:0;
+  return{gain,pan:Math.max(-.92,Math.min(.92,side*.92)),distance:dist};
+}
+function loadGameAudioAsset(key){
+  if(gameAudioBuffers.has(key))return Promise.resolve(gameAudioBuffers.get(key));
+  if(gameAudioLoads.has(key))return gameAudioLoads.get(key);
+  const path=GAME_AUDIO_ASSETS[key],ctx=gameAudioCtx;
+  if(!path||!ctx)return Promise.resolve(null);
+  const load=fetch(path)
+    .then(res=>{if(!res.ok)throw new Error('HTTP '+res.status);return res.arrayBuffer();})
+    .then(raw=>ctx.decodeAudioData(raw.slice(0)))
+    .then(buffer=>{gameAudioBuffers.set(key,buffer);gameAudioLoads.delete(key);return buffer;})
+    .catch(err=>{gameAudioLoads.delete(key);console.warn('Не удалось загрузить аудио asset:',path,err);return null;});
+  gameAudioLoads.set(key,load);return load;
+}
+function preloadGameAudio(){
+  if(!gameAudioCtx||gameSettings.sfx<=0)return;
+  for(const key of Object.keys(GAME_AUDIO_ASSETS))loadGameAudioAsset(key);
+}
+function playBufferSfx(key,intensity=1,source=null,maxDistance=82,rate=1){
+  const ctx=ensureGameAudio();if(!ctx||!gameAudioMaster)return false;
+  const buffer=gameAudioBuffers.get(key);
+  if(!buffer){loadGameAudioAsset(key);return false;}
+  const mix=spatialAudioMix(source,maxDistance);
+  if(mix.gain<=.015)return true;
+  const src=ctx.createBufferSource(),gain=ctx.createGain();
+  src.buffer=buffer;src.playbackRate.value=Math.max(.78,Math.min(1.24,rate));
+  gain.gain.value=Math.max(.0001,Math.min(1.35,(Number(intensity)||1)*mix.gain));
+  src.connect(gain);
+  if(typeof ctx.createStereoPanner==='function'){
+    const pan=ctx.createStereoPanner();pan.pan.value=mix.pan;gain.connect(pan);pan.connect(gameAudioMaster);
+  }else gain.connect(gameAudioMaster);
+  src.start();return true;
+}
+function weaponAudioAsset(weaponKey){
+  return weaponKey==='sniper'?'sniper':weaponKey==='shotgun'?'shotgun':weaponKey==='rifle'?'rifle':
+    weaponKey==='rocket'?'rocket':weaponKey==='plasma'?'plasma':'pistol';
+}
+function playWeaponShotSound(weaponKey,intensity=1,source=null){
+  const asset=weaponAudioAsset(weaponKey),rate=source?.group?.position?(.96+Math.random()*.08):1;
+  if(playBufferSfx(asset,intensity,source,weaponKey==='sniper'?125:92,rate))return;
+  const mix=spatialAudioMix(source,weaponKey==='sniper'?125:92);
+  if(mix.gain>.02)playSfx('shoot',intensity*mix.gain,weaponKey);
+}
+function playExplosionSound(source,intensity=1){
+  if(playBufferSfx('explosion',intensity,source,105,.94+Math.random()*.08))return;
+  const mix=spatialAudioMix(source,105);if(mix.gain>.02)playSfx('explosion',intensity*mix.gain);
+}
+function playRicochetSound(source,intensity=1){
+  if(playBufferSfx('ricochet',intensity,source,52,.94+Math.random()*.14))return;
+  const mix=spatialAudioMix(source,52);if(mix.gain>.02)playSfx('ricochet',intensity*mix.gain);
+}
+function playWhizSound(source,intensity=1){
+  if(playBufferSfx('whiz',intensity,source,72,.92+Math.random()*.16))return;
+  playSfx('whiz',intensity);
+}
+function playObjectiveCaptureSound(team='ally'){
+  if(playBufferSfx('objectiveCapture',.82,null,90,team==='enemy'?.86:1))return;
+  playSfx(team==='enemy'?'hurt':'level',.72);
+}
 function ensureGameAudio(){
   if(gameSettings.sfx<=0)return null;
   const Ctor=window.AudioContext||window.webkitAudioContext;if(!Ctor)return null;
@@ -107,20 +198,22 @@ function pulseCrosshair(kind='fire'){
   clearTimeout(crosshairTimer);crosshairTimer=setTimeout(()=>el.classList.remove('dynamic-fire','dynamic-hit'),kind==='hit'?140:95);
 }
 
-let damageDirectionTimer=0;
+let damageDirectionTimer=0,threatDirectionTimer=0;
 function showDamageDirection(attacker,kind='bullet',amount=0){
-  const el=byId('damage-direction');if(!el)return;let degrees=180;
-  const src=attacker&&(attacker.group?.position||attacker.m?.position||attacker.position);
-  if(src&&typeof yaw==='number'&&typeof camera!=='undefined'){
-    const dx=src.x-camera.position.x,dz=src.z-camera.position.z;
-    const sourceHeading=Math.atan2(dx,dz),forwardHeading=Math.atan2(-Math.sin(yaw),-Math.cos(yaw));
-    let diff=sourceHeading-forwardHeading;while(diff>Math.PI)diff-=Math.PI*2;while(diff<-Math.PI)diff+=Math.PI*2;
-    degrees=diff*180/Math.PI;
-  }
+  const el=byId('damage-direction');if(!el)return;
+  const degrees=combatBearingDegrees(attacker);
   el.style.transform='translate(-50%,-50%) rotate('+degrees.toFixed(1)+'deg)';el.className='';void el.offsetWidth;el.classList.add('on');
   if(kind==='rocket'||kind==='mine'||kind==='bomb')el.classList.add('explosive');
   el.style.setProperty('--damage-strength',Math.max(.72,Math.min(1.18,.78+(Number(amount)||0)/120)).toFixed(2));
   clearTimeout(damageDirectionTimer);damageDirectionTimer=setTimeout(()=>{el.className='';},760);
+}
+function showThreatDirection(source,kind='bullet',intensity=.6){
+  const el=byId('threat-direction');if(!el)return;
+  const degrees=combatBearingDegrees(source);
+  el.style.transform='translate(-50%,-50%) rotate('+degrees.toFixed(1)+'deg)';
+  el.style.setProperty('--threat-strength',Math.max(.45,Math.min(1.15,Number(intensity)||.6)).toFixed(2));
+  el.className='';void el.offsetWidth;el.classList.add('on',kind);
+  clearTimeout(threatDirectionTimer);threatDirectionTimer=setTimeout(()=>{el.className='';},520);
 }
 
 let shakeTime=0,shakeDuration=.1,shakePower=0,fpsAccum=0,fpsFrames=0;
@@ -159,9 +252,12 @@ function openGameSettings(){const modal=byId('settings-modal');if(!modal)return;
 function closeGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=false;modal.classList.remove('on');modal.setAttribute('aria-hidden','true');saveGameSettings();playSfx('ui');}
 function bindGameSettings(){
   const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
+  const primeAudio=()=>{ensureGameAudio();preloadGameAudio();};
+  window.addEventListener('pointerdown',primeAudio,{once:true,capture:true});
+  window.addEventListener('keydown',primeAudio,{once:true,capture:true});
   byId('menuSettingsBtn')?.addEventListener('click',openGameSettings);byId('pauseSettingsBtn')?.addEventListener('click',openGameSettings);byId('settingsCloseBtn')?.addEventListener('click',closeGameSettings);
   sens?.addEventListener('input',()=>{gameSettings.sensitivity=clampSetting(sens.value,.5,2,1);saveGameSettings();});
-  sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();saveGameSettings();});
+  sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();preloadGameAudio();saveGameSettings();});
   shake?.addEventListener('change',()=>{gameSettings.screenShake=shake.checked;saveGameSettings();});
   crosshair?.addEventListener('change',()=>{gameSettings.dynamicCrosshair=crosshair.checked;saveGameSettings();});
   fps?.addEventListener('change',()=>{gameSettings.showFps=fps.checked;saveGameSettings();});

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v22.7</title><link rel="stylesheet" href="src/styles/game.css">
+<title>⚡ ZAP ZONE v22.8</title><link rel="stylesheet" href="src/styles/game.css">
 
 </head>
 <body>
@@ -21,6 +21,7 @@
   <div id="sniper-scope"><img src="assets/ui/sniper-scope.svg" alt=""></div>
   <div id="hitmarker"></div>
   <div id="damage-direction"><span>▲</span></div>
+  <div id="threat-direction"><span>⌃</span></div>
   <div id="fps-counter">FPS --</div>
   <div id="dfx"></div>
   <div id="team-bar">
@@ -29,7 +30,7 @@
     <div class="tb-side" id="tb-enemy">КРАСНЫЕ 0</div>
   </div>
   <div id="frontline-objective" aria-live="polite">
-    <div id="frontline-title">⌖ FRONTLINE · ЦЕНТР</div>
+    <div id="frontline-title"><span id="frontline-bearing" aria-hidden="true">▲</span><span id="frontline-label">FRONTLINE · ЦЕНТР</span></div>
     <div id="frontline-state">НЕЙТРАЛЬНАЯ ЗОНА · 0 м · 44с</div>
     <div id="frontline-track">
       <div id="frontline-ally-progress"></div>

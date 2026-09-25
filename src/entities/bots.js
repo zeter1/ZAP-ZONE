@@ -385,8 +385,14 @@ function updateFrontlineHUD(force=false){
   else if(frontlineObjective.owner==='enemy')state='УДЕРЖИВАЮТ КРАСНЫЕ';
   else if(frontlineObjective.progress>4)state='ЗАХВАТЫВАЮТ СИНИЕ';
   else if(frontlineObjective.progress<-4)state='ЗАХВАТЫВАЮТ КРАСНЫЕ';
-  G('frontline-title').textContent='⌖ FRONTLINE · '+zone.label;
-  G('frontline-state').textContent=state+' · '+dist+' м · '+Math.ceil(frontlineObjective.rotateT)+'с';
+  const bearing=G('frontline-bearing'),label=G('frontline-label');
+  const dx=zone.x-camera.position.x,dz=zone.z-camera.position.z;
+  const sourceHeading=Math.atan2(dx,dz),forwardHeading=Math.atan2(-Math.sin(yaw),-Math.cos(yaw));
+  let bearingRad=sourceHeading-forwardHeading;while(bearingRad>Math.PI)bearingRad-=Math.PI*2;while(bearingRad<-Math.PI)bearingRad+=Math.PI*2;
+  if(bearing)bearing.style.transform='rotate('+(bearingRad*180/Math.PI).toFixed(1)+'deg)';
+  if(label)label.textContent='FRONTLINE · '+zone.label;
+  const inside=dist<=zone.r;
+  G('frontline-state').textContent=(inside?'В ЗОНЕ · ':'')+state+' · '+dist+' м · '+Math.ceil(frontlineObjective.rotateT)+'с';
   const ally=G('frontline-ally-progress'),enemy=G('frontline-enemy-progress');
   if(ally)ally.style.width=(Math.max(0,frontlineObjective.progress)*.5).toFixed(1)+'%';
   if(enemy)enemy.style.width=(Math.max(0,-frontlineObjective.progress)*.5).toFixed(1)+'%';
@@ -395,6 +401,7 @@ function updateFrontlineHUD(force=false){
   root.classList.toggle('ally',frontlineObjective.owner==='ally');
   root.classList.toggle('enemy',frontlineObjective.owner==='enemy');
   root.classList.toggle('contested',contested);
+  root.classList.toggle('inside',inside);
 }
 function captureFrontline(team,zone){
   if(frontlineObjective.owner===team)return;
@@ -408,6 +415,7 @@ function captureFrontline(team,zone){
     markHUD();
     showMsg('⌖ Захват зоны: +150 очков · +35 XP');
   }
+  playObjectiveCaptureSound(team);
   showAnn((team==='ally'?'🔵 СИНИЕ':'🔴 КРАСНЫЕ')+' ЗАХВАТИЛИ · '+zone.label);
   saveProgress(true);
 }
@@ -832,7 +840,13 @@ class Enemy{
         const od=other.group.position.distanceTo(p);
         if(od<4.5)crowdPenalty+=(4.5-od)*1.6;
       }
-      let score=dFrom+Math.abs(targetDist-15)*.17+crowdPenalty+(routeBlocked?8.5:0);
+      const objective=frontlineZone();
+      const objectiveDist=Math.hypot(p.x-objective.x,p.z-objective.z);
+      const objectiveCoverPenalty=(this.commandDoctrine==='hold'||this.commandDoctrine==='retake')
+        ?Math.max(0,objectiveDist-objective.r*.78)*.42
+        :Math.max(0,objectiveDist-objective.r*1.10)*.12;
+      let score=dFrom+Math.abs(targetDist-15)*.17+crowdPenalty+(routeBlocked?8.5:0)+objectiveCoverPenalty;
+      if(objectiveDist<objective.r*.78&&(this.commandDoctrine==='hold'||this.commandDoctrine==='retake'))score-=3.4;
       const side=((p.x-from.x)*(tz-from.z)-(p.z-from.z)*(tx-from.x));
       if(Math.sign(side)===Math.sign(this.sideBias))score-=2.4;
       if(score<bestScore){bestScore=score;best=p;}
@@ -863,7 +877,10 @@ class Enemy{
         const md=mate.group.position.distanceTo(p);
         if(md<5)crowd+=(5-md)*1.5;
       }
-      const score=dFrom*.46+Math.abs(dTarget-17)*.70-side*.20+crowd+(routeBlocked?7.5:0)+(firingLane?-5.0:3.8);
+      const objective=frontlineZone();
+      const objectiveDist=Math.hypot(p.x-objective.x,p.z-objective.z);
+      const objectivePenalty=Math.max(0,objectiveDist-objective.r*1.25)*.10;
+      const score=dFrom*.46+Math.abs(dTarget-17)*.70-side*.20+crowd+(routeBlocked?7.5:0)+(firingLane?-5.0:3.8)+objectivePenalty;
       if(score<bestScore){bestScore=score;best=p;}
     }
     if(best)return best.clone();
@@ -1177,6 +1194,7 @@ class Enemy{
       return;
     }
     emitBotCombatNoise(from,this,wp,wp.isRocket?'rocket':'shot');
+    playWeaponShotSound(wp.key,this.team==='enemy'?1:.72,from);
     trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.isSniper?1.38:wp.key==='shotgun'?1.2:1);
     if(wp.key!=='rocket'&&wp.key!=='plasma'){
       const q=new THREE.Quaternion().setFromAxisAngle(_UP,this.group.rotation.y);
@@ -1230,7 +1248,9 @@ class Enemy{
       this.targetEn.registerSuppression(this,suppressing?1.10:.55);
     }
     if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>7&&(this.nearMissCd||0)<=0&&Math.random()<(suppressing?.56:.34)){
-      playSfx('whiz',Math.max(.28,Math.min(1,1-dist/120)));
+      const whizStrength=Math.max(.28,Math.min(1,1-dist/120));
+      playWhizSound(from,whizStrength);
+      showThreatDirection(this,'bullet',whizStrength);
       this.nearMissCd=.32+Math.random()*.28;
     }
     if(wp.hitscan)spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);

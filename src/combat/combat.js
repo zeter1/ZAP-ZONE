@@ -561,7 +561,7 @@ function shoot(){
   syncCurrentAmmo();
   if(ammo<=0&&uAmmo<=0)updateWeaponBar();
   sCD=w.rate;recoil=1;wHUD();
-  playSfx('shoot',1,w.key);pulseCrosshair('fire');
+  playWeaponShotSound(w.key,1,null);pulseCrosshair('fire');
   const shakePower=w.isRocket?1.15:w.isSniper?.98:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22;
   const shakeDuration=w.isRocket?.22:w.isSniper?.20:.11;
   triggerScreenShake(shakePower,shakeDuration);
@@ -795,7 +795,7 @@ function detonateRocket(arr,index,r,pos){
   const ownerType=r.ownerType||'bot';
   const radius=r.blastRadius||6.5;
   const blastDistance=camera.position.distanceTo(pos);
-  if(blastDistance<55){const proximity=Math.max(.18,1-blastDistance/70);playSfx('explosion',proximity);triggerScreenShake(proximity*.95,.20);}
+  if(blastDistance<105){const proximity=Math.max(.12,1-blastDistance/110);playExplosionSound(pos,proximity);if(blastDistance<55)triggerScreenShake(proximity*.95,.20);}
   spawnCombatImpact(pos,'rocket');
   explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius);
   applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28,r.ownerType==='player'?'ally':(r._src?.team||r.team||null));
@@ -887,7 +887,7 @@ function tickProjectiles(dt){
         const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld);
         const incidence=Math.abs(_stepDir.dot(n));
         if(incidence<.36&&Math.random()<.58){
-          playSfx('ricochet',Math.max(.35,1-incidence));
+          playRicochetSound(_hitPos,Math.max(.35,1-incidence));
           spawnP(_hitPos,0xffe3a1,.46);
         }
       }
@@ -950,6 +950,8 @@ function tickMines(dt){
       const pos=mn.m.position.clone();pos.y=Math.max(.12,pos.y);
       const ownerType=mn.owner==='player'?'player':'bot';
       const radius=mn.radius||BOMB_BLAST_RADIUS;
+      playExplosionSound(pos,1.08);
+      const bombProximity=Math.max(0,1-camera.position.distanceTo(pos)/90);if(bombProximity>0)triggerScreenShake(bombProximity*.78,.22);
       explode(pos,ownerType==='player'?0xffb000:0xff3b18,18);
       spawnBombBlastWave(pos,radius,ownerType);
       applyBlastDamage(pos,radius,mn.dmg||BOMB_BASE_DAMAGE,ownerType,mn.src||null,'bomb',.18,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
@@ -983,6 +985,8 @@ function tickMines(dt){
     const ownerType=mn.owner==='player'?'player':'bot';
     const radius=mn.radius||9;
     const pos=mp.clone();
+    playExplosionSound(pos,.88);
+    const mineProximity=Math.max(0,1-camera.position.distanceTo(pos)/55);if(mineProximity>0)triggerScreenShake(mineProximity*.52,.14);
     explode(pos,0xff4400,6);
     applyBlastDamage(pos,radius,mn.dmg||WEAPONS[5].dmg,ownerType,mn.src||null,'mine',.25,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
     mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
