@@ -83,6 +83,9 @@ for(const token of ['function spawnPlayerBullet','function fireInstantSniper','c
   if(!combat.includes(token))fail('combat ballistics/scope integration missing: '+token);
 }
 
+const bots=readFileSync('src/entities/bots.js','utf8');
+if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
+
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
