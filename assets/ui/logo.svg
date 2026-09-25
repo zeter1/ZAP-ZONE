@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300">
+<defs>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4a3"/><stop offset=".35" stop-color="#ffc928"/><stop offset=".7" stop-color="#ff8d16"/><stop offset="1" stop-color="#a93b00"/></linearGradient>
+ <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#4df1ff"/><stop offset="1" stop-color="#1474ff"/></linearGradient>
+ <filter id="g1"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<path d="M80 60h840l-45 52H125zM125 188h750l45 52H80z" fill="#091218" stroke="#293946" stroke-width="8"/>
+<path d="M146 82h708M146 218h708" stroke="url(#cyan)" stroke-width="7" opacity=".65" filter="url(#g1)"/>
+<path d="M107 142l52-82h68l-42 65h54l-96 115 28-80h-64z" fill="url(#gold)" stroke="#fff0a2" stroke-width="5" filter="url(#g1)"/>
+<text x="520" y="177" fill="url(#gold)" stroke="#271300" stroke-width="4" paint-order="stroke" font-family="Arial Black,Arial,sans-serif" font-size="112" font-weight="900" text-anchor="middle" letter-spacing="9">ZAP ZONE</text>
+<text x="520" y="223" fill="#aeefff" font-family="Arial,sans-serif" font-size="22" font-weight="700" text-anchor="middle" letter-spacing="12">COMBAT ARENA</text>
+</svg>

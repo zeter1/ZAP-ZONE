@@ -5,26 +5,52 @@ const pickups=[];
 const AMO_PTS=[[-6,-10],[10,-6],[-10,10],[6,10],[0,-15],[0,15],[-15,0],[15,0],[-20,5],[5,-20],[20,-5],[-5,20],[-20,-15],[15,-20],[20,15],[-15,20],[-25,0],[0,-25],[25,0],[0,25],[-18,-18],[18,18],[-18,18],[18,-18],[-35,10],[10,-35],[35,-10],[-10,35],[-30,30],[-30,-30],[30,-30],[30,30],[-50,0],[50,0],[0,-50],[0,50],[-40,40],[40,-40],[-40,-40],[40,40],[-55,20],[20,-55],[-20,55],[55,-20],[-45,0],[0,-45],[45,0],[0,45],[-60,30],[30,-60],[60,-30],[-30,60]];
 const HP_PTS=[[-8,6],[8,-8],[-16,-12],[16,14],[2,-22],[-22,2],[22,2],[-2,22],[12,12],[-12,-8],[-25,-20],[20,25],[-20,-25],[25,20],[-32,12],[12,-32],[32,-12],[-12,32],[-40,5],[5,-40],[40,-5],[-5,40],[-48,25],[25,-48],[48,-25],[-25,48],[-55,10],[10,-55],[55,-10],[-10,55]];
 const _ringGeo=new THREE.TorusGeometry(.5,.04,6,12);
+const PICKUP_MATS={
+  dark:new THREE.MeshStandardMaterial({color:0x111820,roughness:.42,metalness:.70}),
+  steel:new THREE.MeshStandardMaterial({color:0x8796a4,roughness:.28,metalness:.82}),
+  ammo:new THREE.MeshStandardMaterial({color:0x1d6b5b,roughness:.32,metalness:.52,emissive:0x0b3a32,emissiveIntensity:.30}),
+  ammoGlow:new THREE.MeshBasicMaterial({color:0x48ffd0,transparent:true,opacity:.92}),
+  brass:new THREE.MeshStandardMaterial({color:0xd9a441,roughness:.28,metalness:.82}),
+  med:new THREE.MeshStandardMaterial({color:0x8e1827,roughness:.38,metalness:.38,emissive:0x31030a,emissiveIntensity:.24}),
+  medWhite:new THREE.MeshStandardMaterial({color:0xf4f8fa,roughness:.46,metalness:.18}),
+  medGlow:new THREE.MeshBasicMaterial({color:0xff4058,transparent:true,opacity:.94})
+};
+const _pickupRingGeo=new THREE.TorusGeometry(.60,.045,7,18);
+function addPickupPedestal(group,color){
+  const base=new THREE.Mesh(
+    new THREE.CylinderGeometry(.52,.62,.07,18),
+    new THREE.MeshStandardMaterial({color:0x0d141b,roughness:.56,metalness:.62,emissive:color,emissiveIntensity:.12})
+  );
+  base.position.y=-.31;group.add(base);
+}
 function mkAmmoMesh(){
   const g=new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(.55,.4,.28),new THREE.MeshBasicMaterial({color:0x44ffaa})));
-  const ring=new THREE.Mesh(_ringGeo,new THREE.MeshBasicMaterial({color:0x44ffaa}));ring.rotation.x=Math.PI/2;ring.position.y=-.25;g.add(ring);
-  const c2=document.createElement('canvas');c2.width=180;c2.height=28;
-  const ctx2=c2.getContext('2d');ctx2.fillStyle='rgba(0,0,0,.6)';ctx2.fillRect(0,0,180,28);
-  ctx2.fillStyle='#aaffcc';ctx2.font='bold 13px sans-serif';ctx2.textAlign='center';ctx2.fillText('📦 ПАТРОНЫ +30',90,18);
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c2),transparent:true,depthTest:false}));
-  sp.scale.set(1.3,.24,1);sp.position.y=.62;g.add(sp);return g;
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.74,.42,.50),PICKUP_MATS.ammo);g.add(body);
+  const lid=new THREE.Mesh(new THREE.BoxGeometry(.78,.10,.54),PICKUP_MATS.dark);lid.position.y=.25;g.add(lid);
+  for(const sx of [-.30,.30]){
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(.055,.39,.53),PICKUP_MATS.steel);rail.position.x=sx;g.add(rail);
+  }
+  for(let i=0;i<4;i++){
+    const round=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.34,8),PICKUP_MATS.brass);
+    round.rotation.x=Math.PI/2;round.position.set(-.18+i*.12,.05,.28);g.add(round);
+  }
+  const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.ammoGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
+  addPickupPedestal(g,0x48ffd0);
+  const icon=makeAssetSprite(GAME_ASSETS.pickups.ammo,.88,.88,{depthTest:false});icon.position.y=1.00;g.add(icon);
+  return g;
 }
 function mkHpMesh(){
   const g=new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(.55,.55,.18),new THREE.MeshBasicMaterial({color:0xdd1111})));
-  [new THREE.BoxGeometry(.44,.14,.2),new THREE.BoxGeometry(.14,.44,.2)].forEach(geo=>g.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xffffff}))));
-  const ring=new THREE.Mesh(_ringGeo,new THREE.MeshBasicMaterial({color:0xff4444}));ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
-  const c2=document.createElement('canvas');c2.width=180;c2.height=28;
-  const ctx2=c2.getContext('2d');ctx2.fillStyle='rgba(0,0,0,.6)';ctx2.fillRect(0,0,180,28);
-  ctx2.fillStyle='#ffaaaa';ctx2.font='bold 13px sans-serif';ctx2.textAlign='center';ctx2.fillText('❤️ АПТЕЧКА +50',90,18);
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c2),transparent:true,depthTest:false}));
-  sp.scale.set(1.3,.24,1);sp.position.y=.64;g.add(sp);return g;
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.70,.50,.28),PICKUP_MATS.med);g.add(body);
+  const rim=new THREE.Mesh(new THREE.BoxGeometry(.75,.10,.32),PICKUP_MATS.dark);rim.position.y=.25;g.add(rim);
+  const handle=new THREE.Mesh(new THREE.TorusGeometry(.15,.035,6,14,Math.PI),PICKUP_MATS.steel);
+  handle.rotation.x=Math.PI/2;handle.position.set(0,.39,0);g.add(handle);
+  const crossH=new THREE.Mesh(new THREE.BoxGeometry(.39,.105,.31),PICKUP_MATS.medWhite);crossH.position.z=.025;g.add(crossH);
+  const crossV=new THREE.Mesh(new THREE.BoxGeometry(.105,.39,.31),PICKUP_MATS.medWhite);crossV.position.z=.025;g.add(crossV);
+  const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.medGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.33;g.add(ring);
+  addPickupPedestal(g,0xff4058);
+  const icon=makeAssetSprite(GAME_ASSETS.pickups.medkit,.88,.88,{depthTest:false});icon.position.y=1.02;g.add(icon);
+  return g;
 }
 
 const BOMB_PTS=[[-28,0],[28,0],[0,-28],[0,28],[-42,-24],[42,24],[-42,24],[42,-24]];
@@ -33,11 +59,8 @@ function mkBombPickupMesh(){
   const model=createWorldWeaponModel('bomb');model.position.y=.08;g.add(model);
   const ring=new THREE.Mesh(new THREE.TorusGeometry(.66,.06,7,18),new THREE.MeshBasicMaterial({color:0xffcc22}));
   ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
-  const c2=document.createElement('canvas');c2.width=210;c2.height=30;
-  const ctx2=c2.getContext('2d');ctx2.fillStyle='rgba(0,0,0,.68)';ctx2.fillRect(0,0,210,30);
-  ctx2.fillStyle='#ffe48a';ctx2.font='bold 13px sans-serif';ctx2.textAlign='center';ctx2.fillText('🧨 БОМБА +1',105,20);
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c2),transparent:true,depthTest:false}));
-  sp.scale.set(1.45,.26,1);sp.position.y=1.05;g.add(sp);return g;
+  const sp=makeAssetSprite(WEAPON_BY_KEY.bomb.asset,.96,.60,{depthTest:false});
+  sp.position.y=1.10;g.add(sp);return g;
 }
 const WORLD_WEAPON_PICKUPS=[
   ['pistol',-18,24],['shotgun',18,-24],['rifle',-33,7],['rocket',33,-7],
@@ -51,12 +74,8 @@ function mkWeaponPickupMesh(key){
   ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
   const base=new THREE.Mesh(new THREE.CylinderGeometry(.52,.62,.07,18),new THREE.MeshStandardMaterial({color:0x111820,roughness:.62,metalness:.52,emissive:haloColor,emissiveIntensity:.10}));
   base.position.y=-.31;g.add(base);
-  const c=document.createElement('canvas');c.width=260;c.height=34;const ctx=c.getContext('2d');
-  ctx.fillStyle='rgba(2,7,12,.82)';ctx.fillRect(0,0,260,34);
-  ctx.strokeStyle='#'+new THREE.Color(haloColor).getHexString();ctx.lineWidth=2;ctx.strokeRect(1,1,258,32);
-  ctx.fillStyle='#ffffff';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText(w.icon+' '+w.label,130,22);
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));
-  sp.scale.set(1.70,.28,1);sp.position.y=1.02;g.add(sp);g.userData.weaponKey=w.key;return g;
+  const sp=makeAssetSprite(w.asset,1.02,.64,{depthTest:false});
+  sp.position.y=1.08;g.add(sp);g.userData.weaponKey=w.key;return g;
 }
 
 function spawnPickups(){

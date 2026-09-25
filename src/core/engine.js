@@ -150,13 +150,73 @@ function box(w,h,d,col,x,y,z,ry=0){
   if(h>1.5&&w*d>2)losMeshes.push(m);
   return m;
 }
+
+function decorateHazardWall(mesh,w,h,d){
+  const count=Math.max(1,Math.min(4,Math.floor(Math.max(w,d)/7)));
+  const span=Math.max(w,d);
+  for(let i=0;i<count;i++){
+    const offset=(i-(count-1)/2)*(span/(count+0.25));
+    const panel=makeAssetPlane(GAME_ASSETS.environment.hazard,Math.min(4.8,span/(count+.2)),Math.min(1.05,h*.45),{opacity:.92});
+    if(w>=d){
+      panel.position.set(offset,0,d/2+.012);
+    }else{
+      panel.rotation.y=Math.PI/2;
+      panel.position.set(w/2+.012,0,offset);
+    }
+    mesh.add(panel);
+  }
+  return mesh;
+}
+function hazardWall(w,h,d,col,x,y,z,ry=0){
+  return decorateHazardWall(box(w,h,d,col,x,y,z,ry),w,h,d);
+}
+function createSupplyCrate(x,z,h,variant=0){
+  const body=box(2,h,2,variant%2?0x786448:0x6d5b43,x,h/2,z);
+  body.material=new THREE.MeshStandardMaterial({color:variant%2?0x6f5b42:0x61523f,roughness:.62,metalness:.20});
+  const frameMat=new THREE.MeshStandardMaterial({color:0x202a31,roughness:.38,metalness:.72});
+  const accentMat=new THREE.MeshStandardMaterial({color:0xd59a23,roughness:.35,metalness:.42,emissive:0x6c3b00,emissiveIntensity:.16});
+  const add=(geo,mat,x1,y1,z1)=>{
+    const m=new THREE.Mesh(geo,mat);m.position.set(x1,y1,z1);m.castShadow=!MOBILE_LOW;body.add(m);return m;
+  };
+  add(new THREE.BoxGeometry(1.92,.10,.10),frameMat,0,h/2-.08,1.01);
+  add(new THREE.BoxGeometry(1.92,.10,.10),frameMat,0,-h/2+.08,1.01);
+  add(new THREE.BoxGeometry(.10,Math.max(.35,h-.18),.10),frameMat,-.91,0,1.01);
+  add(new THREE.BoxGeometry(.10,Math.max(.35,h-.18),.10),frameMat,.91,0,1.01);
+  add(new THREE.BoxGeometry(1.30,.055,.08),accentMat,0,.18,1.055);
+  const front=makeAssetPlane(GAME_ASSETS.environment.crate,1.18,.62,{opacity:.96});
+  front.position.set(0,-.10,1.065);body.add(front);
+  const back=makeAssetPlane(GAME_ASSETS.environment.crate,1.18,.62,{opacity:.70});
+  back.rotation.y=Math.PI;back.position.set(0,-.10,-1.065);body.add(back);
+  return body;
+}
+function createArenaTerminal(x,z,ry=0){
+  const body=box(1.05,1.75,.68,0x34414b,x,.875,z,ry);
+  body.material=new THREE.MeshStandardMaterial({color:0x1c2730,roughness:.42,metalness:.64});
+  const bezel=new THREE.Mesh(
+    new THREE.BoxGeometry(.84,.78,.07),
+    new THREE.MeshStandardMaterial({color:0x0b1117,roughness:.30,metalness:.78})
+  );
+  bezel.position.set(0,.23,.37);body.add(bezel);
+  const screen=makeAssetPlane(GAME_ASSETS.environment.terminal,.70,.60,{opacity:.96});
+  screen.position.set(0,.23,.411);body.add(screen);
+  const railMat=new THREE.MeshStandardMaterial({color:0x23d5ff,roughness:.25,metalness:.42,emissive:0x0b8bb2,emissiveIntensity:.65});
+  for(const sx of [-.47,.47]){
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(.035,1.40,.035),railMat);
+    rail.position.set(sx,0,.36);body.add(rail);
+  }
+  if(VISUAL_LIGHTS){
+    const glow=new THREE.PointLight(0x39d8ff,.65,4.5);
+    glow.position.set(0,.28,.65);body.add(glow);
+  }
+  return body;
+}
 [[-50,4,-50],[50,4,-50],[-50,4,50],[50,4,50]].forEach(([x,y,z])=>{box(14,8,12,0x607088,x,y,z);box(8,5,8,0x708098,x+12,2.5,z+8);});
-box(.6,3,30,0x778088,-20,1.5,0);box(.6,3,30,0x778088,20,1.5,0);
-box(30,3,.6,0x778088,0,1.5,-20);box(30,3,.6,0x778088,0,1.5,20);
+hazardWall(.6,3,30,0x778088,-20,1.5,0);hazardWall(.6,3,30,0x778088,20,1.5,0);
+hazardWall(30,3,.6,0x778088,0,1.5,-20);hazardWall(30,3,.6,0x778088,0,1.5,20);
 [[0,2,0],[0,2,-8],[0,2,8],[-8,2,0],[8,2,0]].forEach(([x,y,z])=>box(2.5,4,2.5,0x8a8898,x,y,z));
-function crates(cx,cz){[[0,0,1.5],[2.5,0,1.2],[0,2.5,1.8],[2.5,2.5,1.4],[1.2,1.2,1.6]].forEach(([dx,dz,h])=>box(2,h,2,0x9a8060,cx+dx,h/2,cz+dz));}
+function crates(cx,cz){[[0,0,1.5],[2.5,0,1.2],[0,2.5,1.8],[2.5,2.5,1.4],[1.2,1.2,1.6]].forEach(([dx,dz,h],i)=>createSupplyCrate(cx+dx,cz+dz,h,i));}
 [[-15,-15],[15,-15],[-15,15],[15,15],[-35,5],[35,-5],[-5,-35],[5,35],[-40,-20],[40,20],[-20,40],[20,-40]].forEach(([x,z])=>crates(x,z));
-[[-35,2,10,Math.PI/2],[35,2,-10,Math.PI/2],[-10,2,-35,0],[10,2,35,0],[-60,2,0,Math.PI/2],[60,2,0,Math.PI/2],[0,2,-60,0],[0,2,60,0]].forEach(([x,y,z,r])=>box(.8,4,25,0x808898,x,y,z,r));
+[[-35,2,10,Math.PI/2],[35,2,-10,Math.PI/2],[-10,2,-35,0],[10,2,35,0],[-60,2,0,Math.PI/2],[60,2,0,Math.PI/2],[0,2,-60,0],[0,2,60,0]].forEach(([x,y,z,r])=>hazardWall(.8,4,25,0x808898,x,y,z,r));
 [[-45,20],[45,-20],[-20,45],[20,-45],[0,-30],[0,30],[-30,0],[30,0]].forEach(([x,z])=>box(.5,2.5,10,0x6a7860,x,1.25,z));
 [[-30,-45],[30,45],[-45,30],[45,-30],[-55,-20],[55,20],[-20,-55],[20,55]].forEach(([x,z])=>box(3,5,3,0x607078,x,2.5,z));
 [[-8,-6],[8,6],[-6,8],[6,-8],[-25,12],[25,-12],[12,25],[-12,-25]].forEach(([x,z])=>{
@@ -167,6 +227,7 @@ const TREE_POS=[[-80,0],[80,0],[0,-80],[0,80],[-60,-60],[60,60],[-60,60],[60,-60
   box(.35,3.5,.35,0x6b4226,x,1.75,z);
   const l=new THREE.Mesh(new THREE.SphereGeometry(1.8,MOBILE_LOW?5:6,MOBILE_LOW?3:4),mat(0x3cb25a));l.position.set(x,5,z);l.castShadow=!MOBILE_LOW;scene.add(l);
 });
+[[-27,-12,.28],[27,12,-2.86],[-12,27,1.85],[12,-27,-1.30]].forEach(([x,z,r])=>createArenaTerminal(x,z,r));
 const pool=new THREE.Mesh(new THREE.PlaneGeometry(16,10),new THREE.MeshLambertMaterial({color:0x0b3652,transparent:!MOBILE_LOW,opacity:MOBILE_LOW?1:.76}));
 pool.rotation.x=-Math.PI/2;pool.position.set(-60,.05,15);scene.add(pool);
 

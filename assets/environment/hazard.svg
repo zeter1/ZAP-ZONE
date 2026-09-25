@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180">
+<defs><pattern id="stripes" width="72" height="72" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="36" height="72" fill="#f5bd27"/><rect x="36" width="36" height="72" fill="#171b1f"/></pattern><filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect x="4" y="4" width="712" height="172" rx="22" fill="#11171c" stroke="#6d7c86" stroke-width="8"/>
+<rect x="20" y="18" width="680" height="38" rx="8" fill="url(#stripes)"/>
+<rect x="20" y="124" width="680" height="38" rx="8" fill="url(#stripes)"/>
+<path d="M330 69h60l30 43h-120z" fill="#ffcb34" stroke="#3b2a00" stroke-width="6" filter="url(#glow)"/>
+<path d="M357 81h7v18h-7zm0 23h7v7h-7z" fill="#181818"/>
+<text x="470" y="105" fill="#ffc934" font-family="Arial,sans-serif" font-size="30" font-weight="900" text-anchor="middle" letter-spacing="8">DANGER</text>
+</svg>

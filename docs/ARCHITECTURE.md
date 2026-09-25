@@ -1,36 +1,36 @@
 # Архитектура ZAP ZONE
 
-После рефакторинга v21.5 проект больше не хранит всю игру в одном HTML-файле. `index.html` отвечает за DOM-разметку и порядок загрузки.
-
 ## Порядок загрузки
 
 1. Three.js r128.
-2. `src/core/engine.js` — renderer, scene, map, collision, particles и Three.js helpers.
-3. `src/weapons/system.js` — единый каталог оружия, first-person/world/bot модели и weapon bar.
-4. `src/player/state.js` — игрок, perks, saves и переключение оружия.
-5. `src/combat/combat.js` — input, shooting, projectiles, rockets, mines, bombs, smoke.
-6. `src/entities/bots.js` — персонажи, bot AI, teams и spawn.
-7. `src/entities/pickups.js` — ammo, health, bomb и лежащее оружие.
-8. `src/progression/progression.js` — XP, HUD, damage, death/respawn.
-9. `src/game/runtime.js` — main loop, pointer lock, pause и boot.
+2. `src/assets/catalog.js` — пути visual assets и helpers для Three.js textures/sprites/planes.
+3. `src/core/engine.js` — renderer, arena, collision, environment decoration и particles.
+4. `src/weapons/system.js` — каталог оружия и общий 3D weapon factory.
+5. `src/player/state.js` — player state, perks, save/resume.
+6. `src/combat/combat.js` — input и combat.
+7. `src/entities/bots.js` — AI.
+8. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+9. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+10. `src/game/runtime.js` — main loop и boot.
 
-Файлы остаются обычными browser scripts и загружаются последовательно. Это сохраняет существующие runtime bindings без рискованной одномоментной миграции на bundler.
+## Asset layer
 
-## Оружие
+`GAME_ASSETS` — единый каталог неоружейных визуальных ресурсов. `gameTexture()` кеширует Three.js textures. `makeAssetPlane()` используется для environment decals, `makeAssetSprite()` — для billboard icons над pickups.
 
-`src/weapons/system.js` содержит единый `WEAPONS` catalog. Он определяет баланс игрока и AI, ammo defaults, UI assets и визуальные параметры.
+Каталог разделён на:
 
-`createWeaponModel()` — единый 3D factory. Один дизайн переиспользуется:
-- в руках игрока;
-- у ботов;
-- как world/pickup модель на карте.
+- `pickups`;
+- `environment`;
+- `ui`.
 
-World pickups добавлены для пистолета, дробовика, винтовки, ракетницы, плазмы, мины и дымовухи. Бомба использует тот же factory в существующем bomb pickup.
+Оружейные SVG остаются привязаны к `WEAPONS[].asset`, чтобы баланс и визуальная идентичность оружия оставались в одном источнике данных.
 
-## Assets
+## Arena visuals
 
-`assets/weapons/*.svg` — восемь weapon HUD assets. Все имеют прозрачный фон и не требуют внешних шрифтов.
+Коллизии не менялись: базовые box meshes остаются источником AABB. Декали, рамки, терминальные экраны и emissive-детали добавляются дочерними визуальными объектами и не создают лишние collision volumes.
+
+Это позволяет улучшать графику без изменения физики карты.
 
 ## Проверка
 
-`.github/workflows/validate.yml` выполняет `node --check` и структурную проверку через `scripts/validate-structure.mjs`. Workflow read-only.
+`scripts/validate-structure.mjs` проверяет существование и wiring assets. GitHub Actions дополнительно запускает browser boot smoke test через локальный HTTP server и headless Chrome.

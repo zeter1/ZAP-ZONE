@@ -198,3 +198,50 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 
 #mobile-controls,#rotate-lock{display:none!important;}
 .mobile-only{display:none!important;}
+
+
+/* v21.6 — visual asset pass */
+#brand-logo{
+  width:min(720px,78vw);
+  max-height:210px;
+  object-fit:contain;
+  margin-bottom:8px;
+  filter:drop-shadow(0 0 18px rgba(255,185,30,.48)) drop-shadow(0 10px 28px rgba(0,0,0,.65));
+  user-select:none;
+  pointer-events:none;
+}
+#xhair{
+  width:40px!important;
+  height:40px!important;
+  margin-left:-20px!important;
+  margin-top:-20px!important;
+  background:url('../../assets/ui/crosshair.svg') center/contain no-repeat;
+  filter:drop-shadow(0 0 7px rgba(70,220,255,.75));
+}
+#xhair::before,#xhair::after,#xhair .xh-dot{display:none!important;}
+#hp-txt{display:flex;align-items:center;justify-content:center;gap:6px;}
+#hp-txt::before{
+  content:'';
+  width:19px;height:19px;display:inline-block;flex:0 0 auto;
+  background:url('../../assets/ui/health.svg') center/contain no-repeat;
+  filter:drop-shadow(0 0 6px rgba(255,55,80,.55));
+}
+#armor-row{position:relative;}
+#armor-row::before{
+  content:'';
+  position:absolute;left:-27px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;
+  background:url('../../assets/ui/armor.svg') center/contain no-repeat;
+  filter:drop-shadow(0 0 6px rgba(70,170,255,.55));
+}
+#xp-wrap::before{
+  content:'';
+  position:absolute;left:-30px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;
+  background:url('../../assets/ui/xp.svg') center/contain no-repeat;
+  filter:drop-shadow(0 0 7px rgba(255,205,45,.55));
+}
+@media (max-width:900px){
+  #brand-logo{width:min(620px,88vw);max-height:165px;}
+  #xhair{width:34px!important;height:34px!important;margin-left:-17px!important;margin-top:-17px!important;}
+}

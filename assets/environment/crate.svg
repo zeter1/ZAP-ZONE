@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320">
+<defs>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffdc55"/><stop offset=".5" stop-color="#d8921c"/><stop offset="1" stop-color="#6f3b05"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="8" y="8" width="624" height="304" rx="36" fill="#111a20" stroke="#bdcbd3" stroke-width="12"/>
+<path d="M30 56h580v208H30z" fill="#27343b" stroke="#697a84" stroke-width="8"/>
+<path d="M40 72h560M40 248h560" stroke="url(#g)" stroke-width="14" filter="url(#glow)"/>
+<g fill="url(#g)">
+ <path d="M92 101h64l-32 54h40l-69 70 22-55H78z"/>
+ <path d="M548 101h-64l32 54h-40l69 70-22-55h39z"/>
+</g>
+<path d="M211 116h218v91H211z" fill="#0d1419" stroke="#e2aa31" stroke-width="6"/>
+<text x="320" y="155" fill="#ffe28a" font-family="Arial,sans-serif" font-weight="900" font-size="34" text-anchor="middle" letter-spacing="7">SUPPLY</text>
+<text x="320" y="190" fill="#91a3ad" font-family="Arial,sans-serif" font-weight="700" font-size="19" text-anchor="middle" letter-spacing="4">ZAP INDUSTRIES</text>
+</svg>

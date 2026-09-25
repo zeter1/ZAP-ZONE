@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 420">
+<defs>
+ <radialGradient id="screen"><stop stop-color="#123c4d"/><stop offset="1" stop-color="#061117"/></radialGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="10" y="10" width="460" height="400" rx="34" fill="#071016" stroke="#36d9ff" stroke-width="9"/>
+<rect x="34" y="35" width="412" height="350" rx="22" fill="url(#screen)" stroke="#178bab" stroke-width="5"/>
+<g fill="none" stroke="#47e3ff" stroke-width="5" filter="url(#glow)">
+ <path d="M66 113h103l31-43h109l31 43h74"/>
+ <path d="M66 284h70l35-57h73l40 38h130"/>
+ <circle cx="240" cy="190" r="58"/>
+ <circle cx="240" cy="190" r="24"/>
+</g>
+<g fill="#7cf2ff">
+ <circle cx="66" cy="113" r="8"/><circle cx="414" cy="113" r="8"/><circle cx="66" cy="284" r="8"/><circle cx="414" cy="265" r="8"/>
+</g>
+<text x="240" y="346" fill="#8eefff" font-family="Arial,sans-serif" font-weight="900" font-size="25" text-anchor="middle" letter-spacing="6">ZONE NET</text>
+</svg>

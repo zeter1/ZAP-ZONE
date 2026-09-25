@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+ <linearGradient id="case" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c8293d"/><stop offset=".55" stop-color="#73101f"/><stop offset="1" stop-color="#2a0710"/></linearGradient>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5fbff"/><stop offset=".45" stop-color="#8a9ba7"/><stop offset="1" stop-color="#e8f0f4"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="36" y="110" width="440" height="326" rx="60" fill="url(#case)" stroke="#ff536a" stroke-width="11"/>
+<path d="M184 112V81q0-32 32-32h80q32 0 32 32v31" fill="none" stroke="url(#steel)" stroke-width="24"/>
+<path d="M81 171h350M81 383h350" stroke="#ff7082" stroke-width="7" opacity=".75"/>
+<path d="M218 190h76v61h61v76h-61v61h-76v-61h-61v-76h61z" fill="#f7fbfd" stroke="#dbe4e9" stroke-width="8" filter="url(#glow)"/>
+<circle cx="414" cy="154" r="12" fill="#ffb9c2"/>
+<text x="256" y="421" fill="#ffe8ec" font-family="Arial,sans-serif" font-weight="900" font-size="32" text-anchor="middle" letter-spacing="6">MED</text>
+</svg>

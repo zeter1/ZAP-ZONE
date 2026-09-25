@@ -2,25 +2,26 @@
 
 **ZAP ZONE** — браузерный 3D FPS на **Three.js/WebGL**: один игрок против 9 адаптивных ботов в режиме free-for-all.
 
-В v21.5 игра прошла архитектурный рефакторинг: `index.html` теперь является оболочкой, а игровые подсистемы разделены по `src/`.
+В v21.6 проект получил второй большой визуальный проход: после оружия отдельные SVG-ассеты и более детальные 3D-представления появились у pickups, объектов арены и HUD.
 
 ## Возможности
 
 - 3D-арена на Three.js/WebGL.
 - 1 игрок + 9 адаптивных ботов.
-- 8 типов оружия и снаряжения: пистолет, дробовик, винтовка, ракетница, плазма, мины, бомбы и дымовуха.
-- Единый factory красивых 3D-моделей оружия:
-  - детальная first-person модель в руках игрока;
-  - облегчённая модель в руках AI;
-  - world-модель оружия на земле.
-- SVG weapon assets в `assets/weapons/`.
-- Лежащее оружие можно подобрать; оно переключает активный слот и восстанавливает магазин/заряд.
-- Стрельба, reload, recoil, tracers, casings и hit effects.
-- Rockets, mines, bombs и smoke.
-- XP, levels, perks и пять путей развития.
-- Armor, regeneration, critical hits, lifesteal и другие modifiers.
-- Autosave в `localStorage` / `sessionStorage`.
-- WebGL context recovery и адаптация графики под слабые устройства.
+- 8 типов оружия и снаряжения.
+- Единый factory 3D-моделей оружия для игрока, AI и world pickups.
+- Реальные SVG assets оружия в `assets/weapons/`.
+- Новый asset catalog: `src/assets/catalog.js`.
+- Красивые world pickups:
+  - sci-fi ящик боеприпасов;
+  - медицинский контейнер;
+  - weapon pickups с реальными SVG-иконками.
+- Улучшенная арена:
+  - supply crates с декалями;
+  - hazard-панели на барьерах;
+  - светящиеся терминалы Zone Net.
+- Новый SVG-логотип, crosshair, HP/armor/XP HUD icons.
+- XP, levels, perks, autosave, WebGL recovery и адаптивная графика.
 
 ## Управление
 
@@ -48,78 +49,51 @@ python -m http.server 8000
 
 Откройте `http://localhost:8000`.
 
-## Требования
-
-- современный браузер с WebGL;
-- JavaScript;
-- интернет для загрузки Three.js r128 с cdnjs.
-
-## Архитектура
+## Структура
 
 ```text
 index.html
 ├── src/
+│   ├── assets/catalog.js
 │   ├── styles/game.css
 │   ├── core/engine.js
 │   ├── weapons/system.js
 │   ├── player/state.js
 │   ├── combat/combat.js
-│   ├── entities/
-│   │   ├── bots.js
-│   │   └── pickups.js
+│   ├── entities/{bots,pickups}.js
 │   ├── progression/progression.js
 │   └── game/runtime.js
-├── assets/weapons/*.svg
+├── assets/
+│   ├── weapons/*.svg
+│   ├── pickups/*.svg
+│   ├── environment/*.svg
+│   └── ui/*.svg
 ├── scripts/validate-structure.mjs
 ├── docs/ARCHITECTURE.md
 └── .github/workflows/validate.yml
 ```
 
-Подробности: `docs/ARCHITECTURE.md`.
+## Визуальные assets
 
-### Оружие
+Все новые SVG имеют прозрачность там, где она нужна, и используются непосредственно игрой:
 
-`src/weapons/system.js` — единый источник данных и визуальной логики оружия. `createWeaponModel()` создаёт согласованный дизайн для игрока, ботов и world pickups. На слабых устройствах bot/world детализация уменьшается через существующий `MOBILE_LOW`.
-
-## Сохранения
-
-Сохраняются level/XP, score/kills, HP/armor, weapon/ammo, perks, позиция игрока и cooldown специального снаряжения.
-
-## Диагностика
-
-1. Откройте DevTools (`F12`) и Console.
-2. Проверьте загрузку Three.js.
-3. Проверьте WebGL.
-4. Запускайте через HTTP server.
-5. Проверьте GitHub Actions → **Validate**.
-
-## Ограничения
-
-- Управление в первую очередь ориентировано на ПК.
-- Three.js пока загружается с внешнего CDN.
-- Полного browser E2E набора пока нет.
+- `assets/pickups/ammo.svg` и `medkit.svg` — world sprites над 3D pickups;
+- `assets/environment/crate.svg` — декаль supply crates;
+- `hazard.svg` — маркировка барьеров;
+- `terminal.svg` — экран игровых терминалов;
+- `assets/ui/logo.svg` — главное меню;
+- `crosshair.svg`, `health.svg`, `armor.svg`, `xp.svg` — HUD.
 
 ## Проверка
 
-Workflow **Validate** read-only и выполняет:
-- `node --check` для всех JS;
-- проверку структуры;
-- проверку weapon assets;
-- проверку подключений из `index.html`.
+GitHub Actions **Validate** имеет только `contents: read` и выполняет:
 
-README-only commit workflow не запускает.
+- `node --check` всех JS;
+- проверку структуры и всех SVG;
+- проверку фактического подключения новых assets;
+- browser boot smoke test в headless Chrome.
 
-## Ручной smoke test
+## Ограничения
 
-1. загрузка игры;
-2. start + pointer lock;
-3. движение / прыжок / стрельба;
-4. переключение `1–8`;
-5. осмотр first-person оружия;
-6. подбор лежащего оружия;
-7. оружие у ботов;
-8. reload;
-9. mine/bomb/smoke;
-10. XP/perk;
-11. pause/resume;
-12. reload page + autosave restore.
+- Three.js r128 пока загружается с CDN.
+- Полный интерактивный E2E бой пока не автоматизирован.

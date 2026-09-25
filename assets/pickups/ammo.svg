@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07131a"/><stop offset="1" stop-color="#0d2f32"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8ca0ac"/><stop offset=".5" stop-color="#26343d"/><stop offset="1" stop-color="#c8d4dc"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff09a"/><stop offset=".45" stop-color="#e1a43a"/><stop offset="1" stop-color="#7a4310"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="20" y="56" width="472" height="400" rx="74" fill="url(#bg)" stroke="#47ffd3" stroke-width="10"/>
+<path d="M78 151h356v235H78z" fill="#103f42" stroke="url(#metal)" stroke-width="16"/>
+<path d="M95 178h322M95 360h322" stroke="#57ffd7" stroke-width="8" opacity=".8" filter="url(#glow)"/>
+<g transform="translate(117 208)" stroke="#34240d" stroke-width="6">
+ <path d="M0 111L18 16Q22 0 38 0h42q16 0 20 16l18 95z" fill="url(#gold)"/>
+ <path d="M94 111l18-95q4-16 20-16h42q16 0 20 16l18 95z" fill="url(#gold)"/>
+ <path d="M188 111l18-95q4-16 20-16h42q16 0 20 16l18 95z" fill="url(#gold)"/>
+</g>
+<text x="256" y="421" fill="#d7fff6" font-family="Arial,sans-serif" font-weight="900" font-size="42" text-anchor="middle" letter-spacing="9">AMMO</text>
+</svg>
