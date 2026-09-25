@@ -7,11 +7,12 @@
 3. `src/core/engine.js` — renderer, arena, collision, environment decoration и particles.
 4. `src/weapons/system.js` — каталог оружия и общий 3D weapon factory.
 5. `src/player/state.js` — player state, perks, save/resume.
-6. `src/combat/combat.js` — input и combat.
-7. `src/entities/bots.js` — AI.
-8. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-9. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-10. `src/game/runtime.js` — main loop и boot.
+6. `src/settings/settings.js` — user settings, Web Audio SFX и presentation feedback.
+7. `src/combat/combat.js` — input и combat.
+8. `src/entities/bots.js` — AI.
+9. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+10. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+11. `src/game/runtime.js` — main loop и boot.
 
 ## Asset layer
 
@@ -54,3 +55,16 @@ Combat medals не меняют score или XP. `showKillMedal()` читает 
 `spawnCombatImpact()` создаёт краткоживущие world-space sprites и rings поверх существующей particle-системы. Очистка выполняется в `tickCombatImpactFx()`.
 
 Status HUD также read-only относительно gameplay state: он отображает существующие поля `plr`, HP и armor. Отдельный armor-break overlay срабатывает только при переходе брони через ноль.
+
+
+## Player presentation layer v21.9
+
+`src/settings/settings.js` отделяет пользовательские presentation-настройки от gameplay state. Он хранит только чувствительность, громкость SFX и визуальные предпочтения — прогресс, баланс, HP/XP и perks остаются в прежних модулях.
+
+Звуки синтезируются через Web Audio API после пользовательского жеста. Это убирает внешние аудиозависимости и не блокирует boot при недоступном аудиоконтексте.
+
+`showHitMarker()` и `showDamageDirection()` являются read-only feedback относительно уже произошедшего combat event. Указатель урона вычисляет угол источника относительно `yaw`, но не вмешивается в AI, hit detection или damage calculation.
+
+`triggerScreenShake()` двигает только CSS transform canvas и не модифицирует `camera.position`, поэтому эффект не способен изменить collision, projectile origins или сохранённую позицию игрока.
+
+`tickGamePresentation()` вызывается независимо от active gameplay branch, чтобы FPS и затухание screen shake корректно восстанавливались даже при паузе или потере pointer lock.
