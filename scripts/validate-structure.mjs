@@ -88,6 +88,17 @@ for(const token of ['function spawnPlayerBullet','function fireInstantSniper','c
 const bots=readFileSync('src/entities/bots.js','utf8');
 if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
 if(!bots.includes("playSfx('whiz'"))fail('enemy near-miss whiz feedback missing');
+for(const token of [
+  'this.motionX=0;this.motionZ=0',
+  'const responseT=1-Math.exp(-response*dt)',
+  'this.gaitPhase+=moved*',
+  'const localForward=this.velX*fwdX+this.velZ*fwdZ',
+  'if(this.pts[10])',
+  'if(this.pts[12])',
+  "const combatPose=this.aiState==='engage'&&this.canSeeTarget"
+]){
+  if(!bots.includes(token))fail('bot locomotion integration missing: '+token);
+}
 
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){

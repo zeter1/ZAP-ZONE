@@ -173,6 +173,8 @@ class Enemy{
     this.aiState='patrol';this.aiT=0;this.stateCD=0;
     this.desiredYaw=0;
     this.velX=0;this.velZ=0;
+    this.motionX=0;this.motionZ=0;
+    this.gaitPhase=Math.random()*Math.PI*2;this.gaitSpeed=0;
     this.targetScanT=0;this.targetIsPlayer=false;
     this.reactionT=.22+Math.random()*.22;
     this.skillSeed=Math.random()*.18;
@@ -908,7 +910,18 @@ class Enemy{
     const sep=separationVector(this,3.5);
     mx+=sep.x*spd*.75; mz+=sep.z*spd*.75;
     const steered=steerBotAroundWalls(this,mx,mz);
-    mx=steered.x;mz=steered.z;
+    const desiredMoveX=steered.x,desiredMoveZ=steered.z;
+    const desiredMoveSpeed=Math.hypot(desiredMoveX,desiredMoveZ);
+    const currentMoveSpeed=Math.hypot(this.motionX,this.motionZ);
+    const urgentMove=!!mineThreat||this.dodgeT>0;
+    const response=urgentMove?15.5:(desiredMoveSpeed>currentMoveSpeed+.08?6.6:9.4);
+    const responseT=1-Math.exp(-response*dt);
+    this.motionX+=(desiredMoveX-this.motionX)*responseT;
+    this.motionZ+=(desiredMoveZ-this.motionZ)*responseT;
+    if(desiredMoveSpeed<.05&&Math.hypot(this.motionX,this.motionZ)<.08){
+      this.motionX=0;this.motionZ=0;
+    }
+    mx=this.motionX;mz=this.motionZ;
 
     let newX=myX+mx*dt,newZ=myZ+mz*dt;
     newX=Math.max(-93,Math.min(93,newX));newZ=Math.max(-93,Math.min(93,newZ));
@@ -916,6 +929,7 @@ class Enemy{
     this.group.position.x=coll.x;this.group.position.z=coll.z;
     this.velX=(this.group.position.x-myX)/Math.max(dt,.001);
     this.velZ=(this.group.position.z-myZ)/Math.max(dt,.001);
+    this.motionX=this.velX;this.motionZ=this.velZ;
     this.group.rotation.y=lerpAngle(this.group.rotation.y,this.desiredYaw,Math.min(1,dt*(5.2+this.aimSkill*3.2)));
     const intended=Math.hypot(mx,mz);
     const moved=Math.hypot(this.group.position.x-myX,this.group.position.z-myZ);
@@ -925,16 +939,78 @@ class Enemy{
       const wp=WPTS[(Math.random()*WPTS.length)|0];this.ptgt.set(wp[0]+(Math.random()-.5)*6,0,wp[1]+(Math.random()-.5)*6);
     }
 
-    const mv=Math.abs(mx)+Math.abs(mz)>.05;
-    const ls=mv?Math.sin(this.ph)*.28:0;
-    if(this.pts[8])this.pts[8].rotation.x=ls;
-    if(this.pts[9])this.pts[9].rotation.x=-ls;
-    if(this.pts[4])this.pts[4].rotation.x=-ls*.5;
-    if(this.pts[5])this.pts[5].rotation.x=ls*.5;
+    const actualSpeed=Math.hypot(this.velX,this.velZ);
+    const gaitFollow=1-Math.exp(-dt*(actualSpeed>this.gaitSpeed?10.5:14));
+    this.gaitSpeed+=(actualSpeed-this.gaitSpeed)*gaitFollow;
+    if(this.gaitSpeed<.025)this.gaitSpeed=0;
+    const gaitNorm=Math.min(1.18,this.gaitSpeed/Math.max(1,this.speed));
+    if(moved>.0005)this.gaitPhase+=moved*(2.05+Math.min(.55,gaitNorm*.32));
+
+    const yaw=this.group.rotation.y;
+    const fwdX=Math.sin(yaw),fwdZ=Math.cos(yaw);
+    const rightX=Math.cos(yaw),rightZ=-Math.sin(yaw);
+    const localForward=this.velX*fwdX+this.velZ*fwdZ;
+    const localSide=this.velX*rightX+this.velZ*rightZ;
+    const reverseStride=(Math.abs(localForward)>Math.abs(localSide)*.72&&localForward<-.12)?-1:1;
+    const sideRatio=this.gaitSpeed>.15?Math.max(-1,Math.min(1,localSide/this.gaitSpeed)):0;
+    const strideAmp=Math.min(.48,gaitNorm*.44);
+    const strideWave=Math.sin(this.gaitPhase)*reverseStride;
+    const leftSwing=strideWave*strideAmp,rightSwing=-leftSwing;
+    const leftLift=Math.max(0,Math.sin(this.gaitPhase+.42))*gaitNorm;
+    const rightLift=Math.max(0,Math.sin(this.gaitPhase+Math.PI+.42))*gaitNorm;
+    const strafeRoll=sideRatio*.055*gaitNorm;
+    const forwardRatio=this.gaitSpeed>.15?Math.max(-1,Math.min(1,localForward/this.gaitSpeed)):0;
+    const bodyLean=forwardRatio*.028*gaitNorm;
+    const combatPose=this.aiState==='engage'&&this.canSeeTarget;
+    const armScale=combatPose?.18:.56;
+
+    if(this.pts[8]){
+      this.pts[8].rotation.x=leftSwing;
+      this.pts[8].rotation.z=-strafeRoll;
+    }
+    if(this.pts[9]){
+      this.pts[9].rotation.x=rightSwing;
+      this.pts[9].rotation.z=-strafeRoll;
+    }
+    if(this.pts[10]){
+      this.pts[10].rotation.x=-leftSwing*.22+leftLift*.34;
+      this.pts[10].rotation.z=strafeRoll*.45;
+    }
+    if(this.pts[11]){
+      this.pts[11].rotation.x=-rightSwing*.22+rightLift*.34;
+      this.pts[11].rotation.z=strafeRoll*.45;
+    }
+    if(this.pts[12]){
+      this.pts[12].rotation.x=-leftSwing*.18-leftLift*.16;
+      this.pts[12].rotation.z=strafeRoll*.30;
+    }
+    if(this.pts[13]){
+      this.pts[13].rotation.x=-rightSwing*.18-rightLift*.16;
+      this.pts[13].rotation.z=strafeRoll*.30;
+    }
+    if(this.pts[4])this.pts[4].rotation.x=-leftSwing*armScale+(combatPose?.07:0);
+    if(this.pts[5])this.pts[5].rotation.x=leftSwing*armScale-(combatPose?.07:0);
+    if(this.pts[6])this.pts[6].rotation.x=-leftSwing*armScale*.34+(combatPose?.12:0);
+    if(this.pts[7])this.pts[7].rotation.x=leftSwing*armScale*.34+(combatPose?.10:0);
+    if(this.pts[2]){
+      this.pts[2].rotation.x=-bodyLean;
+      this.pts[2].rotation.y=-Math.sin(this.gaitPhase)*.035*gaitNorm;
+      this.pts[2].rotation.z=-strafeRoll*.55;
+    }
+    if(this.pts[3]){
+      this.pts[3].rotation.x=-bodyLean*.65;
+      this.pts[3].rotation.y=Math.sin(this.gaitPhase)*.024*gaitNorm;
+      this.pts[3].rotation.z=-strafeRoll*.72;
+    }
     if(this.weaponPivot){
-      this.weaponPivot.rotation.x=.06+Math.sin(this.ph*1.2)*(mv?.05:.012)+(this.aiState==='engage'?.05:0);
-      this.weaponPivot.rotation.y=.10+(this.aiState==='engage'?.14*this.strafeDir:0);
-      this.weaponPivot.rotation.z=-.42 + (this.aiState==='engage' ? -.05*this.strafeDir : 0);
+      const idleBreath=Math.sin(this.ph*.55)*(1-Math.min(1,gaitNorm))*.008;
+      const stepBob=Math.sin(this.gaitPhase*2)*.012*gaitNorm;
+      this.weaponPivot.position.x=.42+Math.sin(this.gaitPhase)*.008*gaitNorm;
+      this.weaponPivot.position.y=1.20+stepBob;
+      this.weaponPivot.position.z=-.02;
+      this.weaponPivot.rotation.x=.06+idleBreath+stepBob*1.8+(combatPose?.05:0);
+      this.weaponPivot.rotation.y=.10+(combatPose?.14*this.strafeDir:0)+sideRatio*.025*gaitNorm;
+      this.weaponPivot.rotation.z=-.42+(combatPose?-.05*this.strafeDir:0)-strafeRoll*.35;
     }
 
     if(this.canSeeTarget&&targetPos&&dist<=this.weapon.range*1.08){
