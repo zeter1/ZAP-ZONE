@@ -484,3 +484,8 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 }
 
 #wmode{margin-top:2px;color:#86dfff;font:800 10px/1.15 Consolas,'Courier New',monospace;letter-spacing:.7px;text-transform:uppercase;text-shadow:0 0 8px rgba(70,200,255,.25);}
+
+#wstate{margin:3px 0 4px;font:900 8px/1.1 Consolas,'Courier New',monospace;letter-spacing:1px;color:#7dffad;text-transform:uppercase;}
+#wstate[data-state="busy"]{color:#ffd15a;}
+#wstate[data-state="blocked"]{color:#ff8b6b;}
+#xhair.weapon-lowered{opacity:.30;}
