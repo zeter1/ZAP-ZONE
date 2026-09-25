@@ -37,6 +37,13 @@ function loop(ts){
   // Camera recoil recovery follows the current weapon mass/handling profile.
   const activeW=getW();
   const recoilReturn=activeW.recoilReturn||12;
+  const scopedWeapon=activeW.aimMode==='scope';
+  const adsWanted=!IS_TOUCH&&scopedWeapon&&zooming?1:0;
+  const adsTime=adsWanted>adsBlend?(activeW.adsIn||.18):(activeW.adsOut||.12);
+  const adsStep=dt/Math.max(.04,adsTime);
+  adsBlend+=Math.max(-adsStep,Math.min(adsStep,adsWanted-adsBlend));
+  weaponBloom=Math.max(0,weaponBloom-(activeW.bloomDecay||.045)*dt);
+  if(shotResetT>0){shotResetT-=dt;if(shotResetT<=0)shotSequence=0;}
   if(recoilRecovery>0){
     recoilRecovery-=dt;
     const recRate=recoilReturn*.62*dt;
@@ -54,17 +61,23 @@ function loop(ts){
 
   _euler.x=effPitch;_euler.y=effYaw;camera.quaternion.setFromEuler(_euler);
 
-  const scopeActive=!IS_TOUCH&&zooming&&activeW.isSniper;
-  const targetFov=!IS_TOUCH&&zooming?(activeW.zoomFov||ZOOM_FOV):BASE_FOV;
-  if(Math.abs(camera.fov-targetFov)>.05){
-    const fovSpeed=activeW.isSniper?8:10;
-    camera.fov+=(targetFov-camera.fov)*Math.min(1,dt*fovSpeed);
+  const scopeActive=!IS_TOUCH&&scopedWeapon&&adsBlend>.88;
+  const scopedFov=scopedWeapon?(activeW.zoomFov||ZOOM_FOV):BASE_FOV;
+  const scopeBreath=scopedWeapon?Math.sin(ts*.00145)*.10*adsBlend:0;
+  const targetFov=BASE_FOV+(scopedFov-BASE_FOV)*adsBlend+scopeBreath;
+  if(Math.abs(camera.fov-targetFov)>.025){
+    camera.fov+=(targetFov-camera.fov)*Math.min(1,dt*13);
     camera.updateProjectionMatrix();
   }
   const sniperScope=G('sniper-scope');
   if(sniperScope)sniperScope.classList.toggle('on',scopeActive);
   const crosshair=G('xhair');
-  if(crosshair)crosshair.classList.toggle('scope-hidden',scopeActive);
+  if(crosshair){
+    crosshair.classList.toggle('scope-hidden',scopeActive||scopedWeapon);
+    const reticleSpread=effectiveWeaponSpread(activeW,0,false,weaponBloom);
+    const gap=5+Math.min(18,reticleSpread*260);
+    crosshair.style.setProperty('--xh-gap',gap.toFixed(1)+'px');
+  }
   gunGrp.visible=!scopeActive;
 
   // Movement
@@ -114,8 +127,12 @@ function loop(ts){
     gunGrp.rotation.x=Math.sin(p*Math.PI)*.62;gunGrp.rotation.y=-gunSwayX*.9;gunGrp.rotation.z=Math.sin(p*Math.PI*2)*.16;
     G('reload-fill').style.width=(p*100).toFixed(1)+'%';
   } else {
-    gunGrp.position.set(gunBasePos.x+bobSide-gunSwayX,gunBasePos.y+bob-gunSwayY,gunBasePos.z+recoil*.08);
-    gunGrp.rotation.x=recoil*.16+gunSwayY*.8;gunGrp.rotation.y=-gunSwayX*.9;gunGrp.rotation.z=bobSide*.8;
+    const swayM=1-adsBlend*.72,bobM=1-adsBlend*.70;
+    const adsX=gunBasePos.x*(1-adsBlend*.94);
+    const adsY=gunBasePos.y+adsBlend*.035;
+    const adsZ=gunBasePos.z-adsBlend*.075;
+    gunGrp.position.set(adsX+bobSide*bobM-gunSwayX*swayM,adsY+bob*bobM-gunSwayY*swayM,adsZ+recoil*.08);
+    gunGrp.rotation.x=recoil*.16+gunSwayY*.8*swayM;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM;
   }
   if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/.065)*.85;if(flashM)flashM.material.opacity=beamT/.065;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
 

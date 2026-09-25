@@ -359,7 +359,9 @@ class Enemy{
     if(wallBetween(from,aim,losMeshes)||smokeBlocksSight(from,aim)){
       if(Math.random()<.20){
         const missDir=aim.clone().sub(from).normalize();
-        spawnTracer(from,missDir,Math.min(dist,18),this.team==='ally'?0x8cbcff:wp.bCol,wp.key);
+        const missCol=this.team==='ally'?0x8cbcff:wp.bCol;
+        if(wp.hitscan)spawnInstantSniperTrace(from,missDir,Math.min(dist,18),missCol);
+        else spawnTracer(from,missDir,Math.min(dist,18),missCol,wp.key);
       }
       return;
     }
@@ -426,7 +428,8 @@ class Enemy{
       }
     }
 
-    spawnTracer(from,tracerDir,Math.min(dist,wp.range+10),shotCol,wp.key);
+    if(wp.hitscan)spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);
+    else spawnTracer(from,tracerDir,Math.min(dist,wp.range+10),shotCol,wp.key);
     if(totalDmg>0)this.dealDamageToCurrentTarget(totalDmg,tracerDir);
     this.mag--;
   }

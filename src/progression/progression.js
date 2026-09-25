@@ -182,8 +182,22 @@ function flushHUD(){
   G('st-arm').textContent=Math.round(armor)+'/'+plr.maxArmor;
   updateStatusIcons();
 }
+function weaponModeLabel(w){
+  if(w.isMine||w.isBomb)return 'DEPLOY';
+  if(w.isSmoke)return 'THROW';
+  if(w.fireMode==='auto')return 'AUTO';
+  if(w.fireMode==='pump')return 'PUMP';
+  if(w.fireMode==='bolt')return 'BOLT';
+  if(w.fireMode==='launcher')return 'LAUNCHER';
+  return 'SEMI';
+}
 function wHUD(){
   const w=getW();G('wname').textContent=w.name;
+  const mode=G('wmode');
+  if(mode){
+    const velocity=w.hitscan?'МГНОВЕННО':w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
+    mode.textContent=weaponModeLabel(w)+(velocity?' · '+velocity:'');
+  }
   if(w.isSmoke){
     const ready=playerSmokeCD<=0;
     G('wammo').textContent=ready?'ГОТОВА':Math.ceil(playerSmokeCD)+'с';
@@ -378,8 +392,8 @@ function doRespawn(){
   _gibs.forEach(g=>destroySceneObject(g.m));_gibs.length=0;
   casings.forEach(c=>scene.remove(c.m));casings.length=0;
   impactMarks.forEach(d=>{scene.remove(d.m);d.m.geometry.dispose();d.m.material.dispose();});impactMarks.length=0;
-  [...eRkts,...pRkts,...pTrs].forEach(r=>destroySceneObject(r.m));
-  eRkts.length=0;pRkts.length=0;pTrs.length=0;
+  [...eRkts,...pRkts,...pTrs,...pBullets].forEach(r=>{if(r.m)destroySceneObject(r.m);});
+  eRkts.length=0;pRkts.length=0;pTrs.length=0;pBullets.length=0;
   for(const mn of mines)mn.src=null;
   updateMineHUD();
   for(let i=0;i<P_MAX;i++){_pm[i].visible=false;_pp[i].life=0;}_pHead=0;_pCount=0;
@@ -391,7 +405,7 @@ function doRespawn(){
   weaponAmmo[SMOKE_WEAPON_INDEX]=playerSmokeCD>0?0:1;
   ammo=weaponAmmo[curW];
   uAmmo=Math.max(uAmmo,120);
-  recoilPitch=0;recoilYaw=0;recoilRecovery=0;
+  recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
   dying=false;paused=false;perkPickOpen=false;pendingLevels=0;lvlAnnOpen=false;lvlAnnT=0;
   combo=0;comboT=0;spawnT=0;plrVx=0;plrVz=0;zooming=false;
   hitSlowT=0;hitSlowDur=0;hitSlowMul=0;

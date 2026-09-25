@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v22.0</title><link rel="stylesheet" href="src/styles/game.css">
+<title>⚡ ZAP ZONE v22.1</title><link rel="stylesheet" href="src/styles/game.css">
 
 </head>
 <body>
@@ -17,7 +17,7 @@
   </div>
 </div>
 <div id="ui">
-  <div id="xhair"><div class="xh-dot"></div></div>
+  <div id="xhair"><span class="xh-arm xh-t"></span><span class="xh-arm xh-r"></span><span class="xh-arm xh-b"></span><span class="xh-arm xh-l"></span><div class="xh-dot"></div></div>
   <div id="sniper-scope"><img src="assets/ui/sniper-scope.svg" alt=""></div>
   <div id="hitmarker"></div>
   <div id="damage-direction"><span>▲</span></div>
@@ -39,7 +39,7 @@
     <div class="hb"><div class="hl">Score</div><div class="hv" id="hv-sc">0</div></div>
     <div class="hb"><div class="hl">Kills</div><div class="hv" id="hv-kl">0</div></div>
   </div>
-  <div id="whud"><div id="wname">🔫 ПИСТОЛЕТ</div><div id="wammo">15 / 15</div><div id="wtot">Запас: 999</div></div>
+  <div id="whud"><div id="wname">🔫 ПИСТОЛЕТ</div><div id="wmode">SEMI · 85 м/с</div><div id="wammo">15 / 15</div><div id="wtot">Запас: 999</div></div>
   <div id="mines-panel"><div id="mine-lbl">Взрывчатка</div><div id="mine-cnt">💣 0 · 🧨 0</div></div>
   <div id="perk-panel"></div>
   <div id="status-icons"></div>
@@ -119,7 +119,7 @@
   <p style="font-size:14px;color:#ffd700;margin-bottom:4px;">Браузерный FPS — ПК · 1 игрок + 9 адаптивных ботов · каждый сам за себя</p>
   <div class="hints">
     <b>WASD</b> — ходьба &nbsp;|&nbsp; <b>Shift</b> — бег &nbsp;|&nbsp; <b>Space</b> — прыжок<br>
-    <b>Мышь</b> — обзор &nbsp;|&nbsp; <b>ЛКМ</b> — огонь &nbsp;|&nbsp; <b>ПКМ</b> — прицел / 8× scope &nbsp;|&nbsp; <b>R</b> — перезарядка<br>
+    <b>Мышь</b> — обзор &nbsp;|&nbsp; <b>ЛКМ</b> — огонь &nbsp;|&nbsp; <b>ПКМ</b> — 8× scope только SR-9 &nbsp;|&nbsp; <b>R</b> — перезарядка<br>
     <b>1–9</b> — оружие &nbsp;|&nbsp; <b>F</b> — мина &nbsp;|&nbsp; <b>G</b> — бомба &nbsp;|&nbsp; <b>ESC</b> — пауза<br>
     📦 Патроны = +30 &nbsp; ❤️ Аптечки &nbsp; 💣 Мины &nbsp; 🧨 Бомба: фитиль 45 сек. &nbsp; 🌫️ Дымовуха: 60 сек. &nbsp; ⭐ выбор из 5 улучшений<br>
   </div>
