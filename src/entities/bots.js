@@ -483,8 +483,8 @@ const PLAYER_TACTICAL_PROFILE={
   style:'balanced',campScore:0
 };
 const BOT_TEAM_TACTICS={
-  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0},
-  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0}
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1}
 };
 function botRoleLabel(role){
   return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
@@ -706,7 +706,24 @@ function refreshBotTeamTactics(team){
   wounded.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp));
   plan.wounded=wounded[0]||null;
   refreshBotMapOrder(team,plan,now);
+  plan.breachReady=(plan.doctrine==='breach'||plan.doctrine==='retake')&&botAssaultWaveState(plan,now)==='active'&&!!plan.suppressor&&plan.flankerCount>0;
   return plan;
+}
+function maybeCoordinateBotUtility(bot,plan,targetPos,dist,waveState){
+  if(!bot||!plan||!targetPos||waveState!=='active'||(plan.doctrine!=='breach'&&plan.doctrine!=='retake'))return;
+  if(plan.smokeWaveId!==plan.waveId&&(bot.role==='engineer'||bot.role==='anchor')&&dist>12&&dist<48){
+    const objective=botObjectivePoint(bot,plan)||plan.zonePos;
+    const smokeTarget=bot.group.position.clone().lerp(objective,.58);smokeTarget.y=.1;
+    if(!friendlyNearPoint(smokeTarget,bot.team,3.5)&&spawnBotSmokeGrenade(bot.getMuzzlePos(),smokeTarget,bot.team,bot)){
+      plan.smokeWaveId=plan.waveId;
+    }
+  }
+  if(plan.fragWaveId!==plan.waveId&&(bot.role==='assault'||bot.role==='engineer')&&dist>9&&dist<31&&bot.canSeeTarget){
+    const fragTarget=targetPos.clone();fragTarget.y=.1;
+    if(!friendlyNearPoint(fragTarget,bot.team,5.6)&&spawnBotFragGrenade(bot.getMuzzlePos(),fragTarget,bot.team,bot)){
+      plan.fragWaveId=plan.waveId;
+    }
+  }
 }
 
 
@@ -749,6 +766,7 @@ class Enemy{
     this.weaponSwitchT=2.2+Math.random()*2.0;
     this.coverEvalT=.38+Math.random()*.22;
     this.coverPoint=null;this.coverChainT=0;
+    this.peekPoint=null;this.peekT=0;this.peekCooldownT=.45+Math.random()*.45;
     this.suppressedT=0;this.suppressionSource=null;
     this.flankPoint=null;this.flankEvalT=.25+Math.random()*.35;this.flankCommitT=0;
     this.tacticalMode='normal';
@@ -1269,19 +1287,9 @@ class Enemy{
     }
 
     const pellets=wp.pellets||1;
-    const distanceDamageScale=weaponDamageScaleAtDistance(wp,dist);
-    let totalDmg=0;
     let tracerDir=dir.clone();
-    for(let i=0;i<pellets;i++){
-      const pd=dir.clone();
-      if(pellets>1){
-        const pe=wp.spread*(0.65+dist/Math.max(10,wp.range)*0.75);
-        pd.x+=(Math.random()-.5)*pe;
-        pd.y+=(Math.random()-.5)*pe*.34;
-        pd.z+=(Math.random()-.5)*pe;
-        pd.normalize();
-        if(i===0)tracerDir.copy(pd);
-      }
+    if(wp.hitscan){
+      const distanceDamageScale=weaponDamageScaleAtDistance(wp,dist);
       const rangePenalty=dist/(wp.range*1.55);
       const targetVx=this.targetEn&&this.targetEn.alive?(this.targetEn.velX||0):plrVx;
       const targetVz=this.targetEn&&this.targetEn.alive?(this.targetEn.velZ||0):plrVz;
@@ -1289,37 +1297,44 @@ class Enemy{
       let hitChance=Math.max(.10,Math.min(.982,wp.hitBias-rangePenalty-Math.random()*this.curAcc-movingPenalty));
       if(suppressing)hitChance*=.80;
       if(this.suppressedT>0)hitChance*=Math.max(.72,1-Math.min(.24,this.suppressedT*.10));
+      let totalDmg=0;
       if(this.targetEn&&this.targetEn.alive){
-        if(Math.random()<hitChance){
-          const crit=Math.random()<.10?1.35:1;
-          totalDmg+=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul*(pellets>1?.58:1)*crit;
-        }
+        if(Math.random()<hitChance)totalDmg=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul;
       }else if(this.team==='enemy'){
         const toPlr=new THREE.Vector3(camera.position.x-from.x,camera.position.y-from.y,camera.position.z-from.z).normalize();
-        const align=pd.dot(toPlr);
-        hitChance*=0.72;
-        const requiredAlign=pellets>1?.905:.958;
-        if(Math.random()<hitChance&&align>requiredAlign){
-          totalDmg+=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul*(pellets>1?.46:.88);
+        const align=dir.dot(toPlr);
+        hitChance*=.72;
+        if(Math.random()<hitChance&&align>.958)totalDmg=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul*.88;
+      }
+      if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>5&&(this.nearMissCd||0)<=0){
+        const approach=botShotClosestApproachToPlayer(from,tracerDir,Math.max(6,Math.min(wp.range+10,dist+18)));
+        if(approach&&approach.distance<=1.78){
+          const pressure=registerPlayerSuppression(this,wp,approach.point,approach.distance,1.78);
+          if(pressure>0)this.nearMissCd=Math.max(.16,.38-pressure*.11);
         }
       }
-    }
-
-    if(this.targetEn&&this.targetEn.alive&&totalDmg<=0&&Math.random()<(suppressing?.74:.28)){
-      this.targetEn.registerSuppression(this,suppressing?1.10:.55);
-    }
-    if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>5&&(this.nearMissCd||0)<=0&&wp.key!=='rocket'){
-      const traceRange=Math.max(6,Math.min(wp.range+10,dist+18));
-      const approach=botShotClosestApproachToPlayer(from,tracerDir,traceRange);
-      const threshold=wp.isSniper?1.78:wp.key==='shotgun'?1.92:wp.key==='plasma'?1.35:1.52;
-      if(approach&&approach.distance<=threshold){
-        const pressure=registerPlayerSuppression(this,wp,approach.point,approach.distance,threshold);
-        if(pressure>0)this.nearMissCd=Math.max(.16,.38-pressure*.11);
+      spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);
+      if(totalDmg>0)this.dealDamageToCurrentTarget(totalDmg,tracerDir);
+    }else{
+      const baseDamage=wp.dmg*BOT_DAMAGE_BOOST*this.baseDmgMul;
+      for(let i=0;i<pellets;i++){
+        const pd=dir.clone();
+        if(pellets>1){
+          const pe=wp.spread*(0.65+dist/Math.max(10,wp.range)*0.75);
+          pd.x+=(Math.random()-.5)*pe;
+          pd.y+=(Math.random()-.5)*pe*.34;
+          pd.z+=(Math.random()-.5)*pe;
+          pd.normalize();
+        }
+        if(i===0)tracerDir.copy(pd);
+        const pelletDamage=baseDamage*(pellets>1?.58:1);
+        const playerDamage=pelletDamage*ENEMY_VS_PLAYER_DAMAGE_SCALE*(pellets>1?.79:.88);
+        spawnEnemyBullet(from,pd,wp,this,{
+          visual:i===0,damage:pelletDamage,playerDamage,
+          suppressing
+        });
       }
     }
-    if(wp.hitscan)spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);
-    else spawnTracer(from,tracerDir,Math.min(dist,wp.range+10),shotCol,wp.key);
-    if(totalDmg>0)this.dealDamageToCurrentTarget(totalDmg,tracerDir);
     this.mag--;
   }
 
@@ -1334,6 +1349,9 @@ class Enemy{
     if(this.unstuckT>0)this.unstuckT=Math.max(0,this.unstuckT-dt);
     if(this.nearMissCd>0)this.nearMissCd-=dt;
     if(this.coverChainT>0)this.coverChainT=Math.max(0,this.coverChainT-dt);
+    if(this.peekT>0)this.peekT=Math.max(0,this.peekT-dt);
+    if(this.peekCooldownT>0)this.peekCooldownT=Math.max(0,this.peekCooldownT-dt);
+    if(this.peekT<=0)this.peekPoint=null;
 
     if(this.flashT>0){this.flashT-=dt;if(this.flashT<=0)this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(0,0,0);});}
 
@@ -1436,8 +1454,10 @@ class Enemy{
       this.flankEvalT=(squadPlan.doctrine==='breach'?.58:.82)+Math.random()*.42;
     }
     if(!coordinatedFlank&&this.flankCommitT<=0)this.flankPoint=null;
+    const breachRole=squadPlan.breachReady&&assaultWaveState==='active'&&this.role==='assault'&&focusMatches;
     this.tacticalMode=squadPlan.suppressor===this&&focusMatches&&squadPlan.flankerCount>0?'suppress':
-      this.flankPoint&&this.flankCommitT>0?'flank':supportReady?'support':'normal';
+      this.flankPoint&&this.flankCommitT>0?'flank':breachRole?'breach':supportReady?'support':'normal';
+    maybeCoordinateBotUtility(this,squadPlan,targetPos,dist,assaultWaveState);
     if(this.mag<=Math.max(1,Math.ceil(this.weapon.clip*.22))&&!this.reloadT&&(!this.canSeeTarget||dist>this.weapon.opt*1.15))this.startReload();
     if((hpPct<.38||(hpPct<.56&&this.reloadT>0))&&(!this.pickupTarget||!this.pickupTarget.m.visible)){
       this.pickupTarget=this.findReachableHealthPickup(30);
@@ -1521,8 +1541,23 @@ class Enemy{
       }
       case 'cover':{
         if(this.coverPoint){
-          const cx=this.coverPoint.x-myX,cz=this.coverPoint.z-myZ,cd=Math.sqrt(cx*cx+cz*cz)+0.001;
-          if(cd>1.4){mx=(cx/cd)*spd*.98;mz=(cz/cd)*spd*.98;}
+          if(!this.peekPoint&&this.peekCooldownT<=0&&targetPos&&this.reloadT<=0){
+            const tx=targetPos.x-this.coverPoint.x,tz=targetPos.z-this.coverPoint.z,td=Math.max(.001,Math.hypot(tx,tz));
+            const px=-tz/td,pz=tx/td;
+            for(const sign of [this.sideBias,-this.sideBias]){
+              const rawX=this.coverPoint.x+px*sign*1.35,rawZ=this.coverPoint.z+pz*sign*1.35;
+              const coll=collideWalls(rawX,rawZ,BOT_R);
+              if(Math.hypot(coll.x-rawX,coll.z-rawZ)>.55)continue;
+              const eye=new THREE.Vector3(coll.x,1.38,coll.z),tgt=targetPos.clone();tgt.y+=1.15;
+              if(!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt)){
+                this.peekPoint=new THREE.Vector3(coll.x,0,coll.z);this.peekT=.48+Math.random()*.28;
+                this.peekCooldownT=1.05+Math.random()*.75;this.sideBias=sign;break;
+              }
+            }
+          }
+          const coverGoal=this.peekPoint&&this.peekT>0?this.peekPoint:this.coverPoint;
+          const cx=coverGoal.x-myX,cz=coverGoal.z-myZ,cd=Math.sqrt(cx*cx+cz*cz)+0.001;
+          if(cd>(this.peekPoint?.42:1.4)){mx=(cx/cd)*spd*(this.peekPoint?.72:.98);mz=(cz/cd)*spd*(this.peekPoint?.72:.98);}
           else{
             this.coverHoldT-=dt;
             if(this.reloadT<=0&&this.coverHoldT<=0){

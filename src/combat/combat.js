@@ -172,16 +172,24 @@ function mkSmokeGrenade(){
   band.rotation.y=Math.PI/2;g.add(band);
   return g;
 }
+function mkFragGrenade(team='enemy'){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshLambertMaterial({color:team==='ally'?0x35596c:0x5b4834}));
+  body.scale.y=1.18;g.add(body);
+  const band=new THREE.Mesh(new THREE.TorusGeometry(.105,.018,5,10),new THREE.MeshBasicMaterial({color:team==='ally'?0x69d8ff:0xff9a45}));
+  band.rotation.x=Math.PI/2;g.add(band);
+  return g;
+}
 function removeSmokeCloud(cloud){
   if(!cloud)return;
   destroySceneObject(cloud.m);
 }
-function deploySmokeCloud(pos){
+function deploySmokeCloud(pos,radiusM=1,durationM=1,team=null){
   while(smokeClouds.length>=MAX_ACTIVE_SMOKE_CLOUDS)removeSmokeCloud(smokeClouds.shift());
   const group=new THREE.Group();
   group.position.set(pos.x,Math.max(.10,pos.y),pos.z);
-  const radius=SMOKE_RADIUS*plr.smokeRadiusM;
-  const duration=SMOKE_DURATION_SECONDS*plr.smokeDurationM;
+  const radius=SMOKE_RADIUS*(team?1:(plr.smokeRadiusM||1))*Math.max(.65,Number(radiusM)||1);
+  const duration=SMOKE_DURATION_SECONDS*(team?1:(plr.smokeDurationM||1))*Math.max(.55,Number(durationM)||1);
   // Несколько почти непрозрачных центральных слоёв полностью перекрывают обзор,
   // а внешние клубы смягчают край облака без большого числа тяжёлых частиц.
   const puffCount=PERF_MODE?14:22;
@@ -208,8 +216,8 @@ function deploySmokeCloud(pos){
     group.add(puff);puffs.push(puff);
   }
   scene.add(group);
-  smokeClouds.push({m:group,center:new THREE.Vector3(pos.x,1.6,pos.z),radius,life:duration,maxLife:duration,age:0,puffs,density:0});
-  showMsg('🌫️ Дымовое облако развёрнуто на '+Math.round(duration)+' сек.');
+  smokeClouds.push({m:group,center:new THREE.Vector3(pos.x,1.6,pos.z),radius,life:duration,maxLife:duration,age:0,puffs,density:0,team});
+  if(!team)showMsg('🌫️ Дымовое облако развёрнуто на '+Math.round(duration)+' сек.');
 }
 const _smokeAB=new THREE.Vector3(),_smokeAC=new THREE.Vector3(),_smokeClosest=new THREE.Vector3();
 function smokeBlocksSight(from,to){
@@ -252,7 +260,7 @@ function tickSmoke(dt){
     if(g.trailT<=0){g.trailT=.12;spawnSmoke(g.m.position,0x899095);}
     if((g.grounded&&g.age>=1.05)||g.age>=1.85||g.life<=0){
       const p=g.m.position.clone();p.y=.12;
-      destroySceneObject(g.m);smokeGrenades.splice(i,1);deploySmokeCloud(p);
+      destroySceneObject(g.m);smokeGrenades.splice(i,1);deploySmokeCloud(p,g.radiusM||1,g.durationM||1,g.team||null);
     }
   }
   for(let i=smokeClouds.length-1;i>=0;i--){
@@ -349,8 +357,10 @@ function mkTracer(col,key='default'){
 }
 
 // ─── PROJECTILE ARRAYS ──────────────────
-const pRkts=[],eRkts=[],pTrs=[],pBullets=[],mines=[],smokeGrenades=[],smokeClouds=[];
+const pRkts=[],eRkts=[],pTrs=[],pBullets=[],eBullets=[],botGrenades=[],mines=[],smokeGrenades=[],smokeClouds=[];
 const MAX_PLAYER_BULLETS=180;
+const MAX_ENEMY_BULLETS=260;
+const MAX_BOT_GRENADES=8;
 const MAX_PLAYER_MINES=100;
 const MAX_MINES=140;
 function playerMineCount(){let c=0;for(const mn of mines)if(mn.owner==='player'&&mn.kind!=='bomb')c++;return c;}
@@ -493,8 +503,8 @@ function fireInstantSniper(from,dir,w,meta={}){
       }
     }
   }else if(_rcWallHits.length){
-    const hitFx=_rcWallHits[0].point.clone();
-    wallImpact(hitFx,color);spawnCombatImpact(hitFx,'sniper');
+    const wallHit=_rcWallHits[0],hitFx=wallHit.point.clone(),surface=mapImpactMaterial(wallHit.object);
+    wallImpact(hitFx,color,surface);spawnCombatImpact(hitFx,'sniper');playSurfaceImpactSound(surface,hitFx,.92,surface==='metal');
   }
   spawnInstantSniperTrace(from,dir,Math.max(.6,traceDist),color);
 }
@@ -512,6 +522,63 @@ function spawnPlayerBullet(from,dir,w,meta={}){
     markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),
     penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null
   });
+}
+function destroyEnemyBullet(index){
+  const b=eBullets[index];if(!b)return;
+  if(b.m)destroySceneObject(b.m);
+  eBullets.splice(index,1);
+}
+function spawnEnemyBullet(from,dir,w,src,meta={}){
+  while(eBullets.length>=MAX_ENEMY_BULLETS)destroyEnemyBullet(0);
+  const speed=Math.max(18,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
+  const color=src?.team==='ally'?0x8cbcff:(w.bCol||0xff9b67);
+  const visual=meta.visual!==false;
+  const m=visual?mkTracer(color,w.key):null;
+  const pos=from.clone().addScaledVector(dir,.48);pos.y-=.035;
+  if(m){m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);scene.add(m);}
+  const range=Math.max(8,w.range||60),life=range/speed+.42;
+  eBullets.push({
+    m,pos,vel:dir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
+    life,maxLife:life,range,travel:0,wKey:w.key,color,team:src?.team||'enemy',src,
+    damage:Math.max(0,Number(meta.damage)||w.dmg||1),
+    playerDamage:Math.max(0,Number(meta.playerDamage)||Number(meta.damage)||w.dmg||1),
+    suppressing:!!meta.suppressing,suppressedPlayer:false,suppressedBot:null,ricochets:0
+  });
+}
+const _enemyBulletPlayerCenter=new THREE.Vector3(),_enemyBulletClosest=new THREE.Vector3();
+function hitPlayerByEnemyBullet(origin,dir,maxDist){
+  if(dying)return Infinity;
+  let best=Infinity;
+  _enemyBulletPlayerCenter.set(camera.position.x,camera.position.y-.72,camera.position.z);
+  best=Math.min(best,rSphere(origin,dir,_enemyBulletPlayerCenter,.42));
+  _enemyBulletPlayerCenter.y=camera.position.y-.28;
+  best=Math.min(best,rSphere(origin,dir,_enemyBulletPlayerCenter,.39));
+  _enemyBulletPlayerCenter.y=camera.position.y-.06;
+  best=Math.min(best,rSphere(origin,dir,_enemyBulletPlayerCenter,.25));
+  return best<=maxDist?best:Infinity;
+}
+function closestPointOnBulletSegment(a,b,p,out=_enemyBulletClosest){
+  const dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z;
+  const len2=dx*dx+dy*dy+dz*dz;
+  const t=len2>1e-7?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy+(p.z-a.z)*dz)/len2)):0;
+  out.set(a.x+dx*t,a.y+dy*t,a.z+dz*t);
+  return{distance:out.distanceTo(p),t};
+}
+function awardBotBulletKill(b,target){
+  if(!b?.src||!target)return;
+  b.src.kills=(b.src.kills||0)+1;
+  if(b.team==='ally')allyKills++;else enemyKills++;
+  updateTeamScore();
+  if(typeof pushKillFeed==='function')pushKillFeed(
+    b.team,b.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
+    target.team,target.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',b.wKey||'bullet'
+  );
+}
+function applyEnemyBulletToBot(b,target,damage,dir){
+  if(!target?.alive||damage<=0)return;
+  const wasAlive=target.alive;
+  target.hurt(damage,dir,b.team,b.src);
+  if(wasAlive&&!target.alive)awardBotBulletKill(b,target);
 }
 
 function weaponActionBlocked(){
@@ -705,6 +772,32 @@ function placeBomb(){
   bombHudSecond=-1;updateMineHUD();
   showMsg('🧨 Фитиль зажжён: мощный взрыв через 45 секунд!');
 }
+function spawnBotSmokeGrenade(from,target,team,src){
+  if(smokeGrenades.length>=4||!from||!target)return false;
+  const flat=new THREE.Vector3(target.x-from.x,0,target.z-from.z),dist=Math.max(1,flat.length());
+  flat.multiplyScalar(1/dist);
+  const m=mkSmokeGrenade();m.position.copy(from).addScaledVector(flat,.55);m.position.y=Math.max(.75,from.y);scene.add(m);
+  const speed=Math.max(8.5,Math.min(13,8.8+dist*.12));
+  smokeGrenades.push({
+    m,vx:flat.x*speed,vy:4.8+Math.min(2.8,dist*.07),vz:flat.z*speed,
+    rx:7+Math.random()*4,rz:6+Math.random()*4,age:0,life:3,grounded:false,trailT:.02,
+    team,src,radiusM:.90,durationM:.78
+  });
+  return true;
+}
+function spawnBotFragGrenade(from,target,team,src){
+  if(botGrenades.length>=MAX_BOT_GRENADES||!from||!target)return false;
+  const flat=new THREE.Vector3(target.x-from.x,0,target.z-from.z),dist=Math.max(1,flat.length());
+  flat.multiplyScalar(1/dist);
+  const m=mkFragGrenade(team);m.position.copy(from).addScaledVector(flat,.48);m.position.y=Math.max(.78,from.y);scene.add(m);
+  const speed=Math.max(8.2,Math.min(12.2,8.5+dist*.10));
+  botGrenades.push({
+    m,vx:flat.x*speed,vy:5.4+Math.min(2.4,dist*.065),vz:flat.z*speed,
+    rx:8+Math.random()*5,rz:7+Math.random()*4,fuse:1.72+Math.random()*.22,
+    team,src,dmg:78*(src?.baseDmgMul||1),radius:5.4,bounces:0
+  });
+  return true;
+}
 function throwSmokeGrenade(){
   const smokeIdx=SMOKE_WEAPON_INDEX,smokeW=WEAPONS[smokeIdx];
   if(reloading||sCD>0)return;
@@ -805,6 +898,27 @@ function detonateRocket(arr,index,r,pos){
   arr.splice(index,1);
 }
 
+function tickBotGrenades(dt){
+  for(let i=botGrenades.length-1;i>=0;i--){
+    const g=botGrenades[i];g.fuse-=dt;g.vy-=18*dt;
+    const prevX=g.m.position.x,prevZ=g.m.position.z;
+    g.m.position.x+=g.vx*dt;g.m.position.y+=g.vy*dt;g.m.position.z+=g.vz*dt;
+    g.m.rotation.x+=g.rx*dt;g.m.rotation.z+=g.rz*dt;
+    const coll=collideWalls(g.m.position.x,g.m.position.z,.14);
+    if(Math.abs(coll.x-g.m.position.x)>.001){g.vx*=-.34;g.m.position.x=coll.x;g.bounces++;}
+    if(Math.abs(coll.z-g.m.position.z)>.001){g.vz*=-.34;g.m.position.z=coll.z;g.bounces++;}
+    if(g.m.position.y<=.14){
+      g.m.position.y=.14;
+      if(Math.abs(g.vy)>.9){g.vy=Math.abs(g.vy)*.34;g.vx*=.76;g.vz*=.76;g.bounces++;}
+      else{g.vy=0;g.vx*=.90;g.vz*=.90;}
+    }
+    if(g.fuse>0)continue;
+    const pos=g.m.position.clone();pos.y=Math.max(.14,pos.y);
+    playExplosionSound(pos,.80);explode(pos,g.team==='ally'?0x4caeff:0xff5a2a,7);spawnCombatImpact(pos,'rocket');
+    applyBlastDamage(pos,g.radius,g.dmg,'bot',g.src,'grenade',.28,g.team);
+    destroySceneObject(g.m);botGrenades.splice(i,1);
+  }
+}
 function tickProjectiles(dt){
   let warn=false;
   const playerTargetPos=(dying&&deathCamActive)?deathCamPlayerPos:camera.position;
@@ -853,6 +967,7 @@ function tickProjectiles(dt){
   };
   processRockets(eRkts);
   processRockets(pRkts);
+  tickBotGrenades(dt);
 
   // Player firearm projectiles use swept segment collision, so fast rounds cannot tunnel through bots or walls.
   const _stepDir=new THREE.Vector3(),_hitPos=new THREE.Vector3();
@@ -882,16 +997,17 @@ function tickProjectiles(dt){
         b.pos.copy(_hitPos).addScaledVector(_stepDir,.14);b.travel=travelDist+.14;
       }else{destroyPlayerBullet(i);continue;}
     }else if(wallDist<=stepDist){
-      const wallHit=_rcWallHits[0];
+      const wallHit=_rcWallHits[0],surface=mapImpactMaterial(wallHit?.object);
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
-      wallImpact(_hitPos,b.color);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      wallImpact(_hitPos,b.color,surface);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
       if(w.key!=='plasma'&&wallHit?.face?.normal){
         const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld);
         const incidence=Math.abs(_stepDir.dot(n));
-        if(incidence<.36&&Math.random()<.58){
-          playRicochetSound(_hitPos,Math.max(.35,1-incidence));
-          spawnP(_hitPos,0xffe3a1,.46);
-        }
+        const ricochetChance=surface==='metal'?.82:surface==='wood'?.08:.42;
+        const ricochetLimit=surface==='metal'?.48:surface==='concrete'?.30:.16;
+        const ricochet=incidence<ricochetLimit&&Math.random()<ricochetChance;
+        playSurfaceImpactSound(surface,_hitPos,Math.max(.35,1-incidence),ricochet);
+        if(ricochet)spawnP(_hitPos,surface==='metal'?0xfff2b8:0xffd69a,.46);
       }
       destroyPlayerBullet(i);continue;
     }else{
@@ -907,6 +1023,94 @@ function tickProjectiles(dt){
       if(b.m.children[3])b.m.children[3].material.opacity=Math.min(.34,fade*.34);
     }
     if(b.life<=0||b.travel>=b.range)destroyPlayerBullet(i);
+  }
+
+  // Bot firearm projectiles use the same swept-segment principle as player bullets.
+  for(let i=eBullets.length-1;i>=0;i--){
+    const b=eBullets[i],w=WEAPON_BY_KEY[b.wKey]||WEAPONS[0];
+    b.life-=dt;_prev.copy(b.pos);
+    if(b.gravity)b.vel.y-=b.gravity*dt;
+    b.pos.addScaledVector(b.vel,dt);
+    _stepDir.subVectors(b.pos,_prev);
+    const stepDist=_stepDir.length();
+    if(stepDist<=1e-5){if(b.life<=0)destroyEnemyBullet(i);continue;}
+    _stepDir.multiplyScalar(1/stepDist);
+
+    _rc.ray.origin.copy(_prev);_rc.ray.direction.copy(_stepDir);_rc.near=0;_rc.far=stepDist;
+    _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
+    const wallDist=_rcWallHits.length?_rcWallHits[0].distance:Infinity;
+    const botHit=hitEnemy(_prev,_stepDir,b.team,b.src,stepDist+.8);
+    const botDist=botHit.en?botHit.dist:Infinity;
+    const playerDist=b.team==='enemy'?hitPlayerByEnemyBullet(_prev,_stepDir,stepDist):Infinity;
+    const visibleStep=Math.min(stepDist,wallDist);
+
+    if(b.team==='enemy'&&!b.suppressedPlayer&&playerDist===Infinity&&!dying){
+      _enemyBulletPlayerCenter.set(camera.position.x,camera.position.y-.34,camera.position.z);
+      const near=closestPointOnBulletSegment(_prev,_prev.clone().addScaledVector(_stepDir,visibleStep),_enemyBulletPlayerCenter);
+      const threshold=w.isSniper?1.78:w.key==='shotgun'?1.92:w.key==='plasma'?1.36:1.55;
+      if(near.distance<=threshold){
+        registerPlayerSuppression(b.src,w,_enemyBulletClosest.clone(),near.distance,threshold);
+        b.suppressedPlayer=true;
+      }
+    }
+    if(!b.suppressedBot){
+      let nearest=null,nearestD=Infinity;
+      const segEnd=_prev.clone().addScaledVector(_stepDir,visibleStep);
+      for(const candidate of enemies){
+        if(!candidate.alive||candidate===b.src||candidate.team===b.team)continue;
+        const center=candidate.group.position.clone();center.y+=1.15;
+        const near=closestPointOnBulletSegment(_prev,segEnd,center);
+        if(near.distance<1.32&&near.distance<nearestD){nearest=candidate;nearestD=near.distance;}
+      }
+      if(nearest&&(!botHit.en||nearest!==botHit.en)){
+        nearest.registerSuppression(b.src,b.suppressing?1.10:Math.max(.38,1-nearestD/1.45));
+        b.suppressedBot=nearest;
+      }
+    }
+
+    if(playerDist<wallDist&&playerDist<=stepDist&&playerDist<=botDist){
+      _hitPos.copy(_prev).addScaledVector(_stepDir,playerDist);
+      const travel=b.travel+playerDist,falloff=weaponDamageScaleAtDistance(w,travel);
+      applyDamageToPlayer(b.playerDamage*falloff,'bullet',b.src);
+      destroyEnemyBullet(i);continue;
+    }
+    if(botHit.en&&botDist<=stepDist&&botDist<wallDist){
+      _hitPos.copy(_prev).addScaledVector(_stepDir,botDist);
+      const travel=b.travel+botDist,falloff=weaponDamageScaleAtDistance(w,travel);
+      applyEnemyBulletToBot(b,botHit.en,b.damage*falloff,_stepDir.clone());
+      playHitImpactSound(botHit.hd?'head':botHit.zone,_hitPos,.46);
+      destroyEnemyBullet(i);continue;
+    }
+    if(wallDist<=stepDist){
+      const wallHit=_rcWallHits[0],surface=mapImpactMaterial(wallHit?.object);
+      _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
+      wallImpact(_hitPos,b.color,surface);spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
+      let ricochet=false;
+      if(w.key!=='plasma'&&wallHit?.face?.normal){
+        const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize();
+        const incidence=Math.abs(_stepDir.dot(n));
+        const limit=surface==='metal'?.46:surface==='concrete'?.27:.12;
+        const chance=surface==='metal'?.76:surface==='concrete'?.30:.04;
+        ricochet=incidence<limit&&b.ricochets<1&&Math.random()<chance;
+        playSurfaceImpactSound(surface,_hitPos,Math.max(.30,1-incidence),ricochet);
+        if(ricochet){
+          const reflected=_stepDir.clone().sub(n.multiplyScalar(2*_stepDir.dot(n))).normalize();
+          const speed=b.vel.length()*(surface==='metal'?.66:.54);
+          b.vel.copy(reflected).multiplyScalar(speed);b.pos.copy(_hitPos).addScaledVector(reflected,.09);
+          b.damage*=.56;b.playerDamage*=.56;b.travel+=wallDist+.09;b.ricochets++;
+          spawnP(_hitPos,surface==='metal'?0xfff1b8:0xffd69a,.52);
+          continue;
+        }
+      }
+      destroyEnemyBullet(i);continue;
+    }
+    b.travel+=stepDist;
+    if(b.m){
+      b.m.position.copy(b.pos);b.m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),_stepDir);
+      const fade=Math.max(0,Math.min(1,b.life/Math.max(.001,b.maxLife)));
+      for(let c=0;c<b.m.children.length;c++)if(b.m.children[c]?.material?.opacity!==undefined)b.m.children[c].material.opacity*=Math.max(.35,fade);
+    }
+    if(b.life<=0||b.travel>=b.range)destroyEnemyBullet(i);
   }
 
   for(let i=pTrs.length-1;i>=0;i--){

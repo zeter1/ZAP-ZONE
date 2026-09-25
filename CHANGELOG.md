@@ -2,6 +2,29 @@
 
 ## Unreleased — 2026-09-25
 
+### Combat Presence 1.3 — Ballistic Simulation & Squad Combat
+- обычные пистолеты, автоматы, дробовики и плазма ботов больше не наносят урон мгновенным hit-roll: каждый pellet/round становится bounded travelling projectile с muzzle velocity, gravity, range, swept-segment wall/entity collision и distance damage falloff;
+- SR-9 сохранена как мгновенный hitscan, ракеты остаются отдельными rocket entities — предыдущая игровая семантика этих классов оружия не сломана;
+- входящий suppression теперь собирается с фактических сегментов нескольких пуль: closest point считается на каждом реально пройденном участке, поэтому стена действительно прекращает suppression;
+- физические пули могут подавлять и других ботов рядом с траекторией, а попадание может прийтись не только в исходную выбранную AI-цель.
+
+### Material impacts + reactive battlefield
+- объектам карты добавлена impact-material metadata: hazard walls = metal, supply crates = wood, остальные стены по умолчанию concrete;
+- sparks, smoke, decals, impact pitch и вероятность ricochet различаются по metal / concrete / wood;
+- вражеская пуля может один раз физически отрикошетить от metal/concrete при малом угле, теряя скорость и 44% урона;
+- дальний acoustic tail теперь дополнительно рождается из реальных пространственных выстрелов ботов, поэтому distant combat реагирует на фактическую перестрелку, а не только на фоновый loop.
+
+### Squad utility + peek combat
+- breach/retake wave получила цепочку suppressor → flankers → breach assault; состояние breachReady появляется только при активном suppressor и живом flank pressure;
+- инженер/anchor один раз за assault wave может поставить smoke screen на направлении движения, а assault/engineer — бросить физическую осколочную гранату, если в точке нет союзников;
+- bot smoke использует общий smoke simulation и реально блокирует LOS;
+- frag grenade имеет полёт, gravity, bounce, fuse и team-safe blast damage через общий explosion pipeline;
+- бот в cover теперь ищет безопасную левую/правую peek-position с проверкой collision, LOS и smoke, ненадолго выходит из укрытия и возвращается вместо вечной стрельбы из центра cover point.
+
+### Проверка
+- версия интерфейса повышена до v23.1;
+- validation закрепляет travelling enemy bullets, bounded pool, swept collision, physical suppression, material metadata/ricochet, squad utility, breachReady role chain и peek-from-cover.
+
 ### Combat Presence 1.2 — Suppression & Battlefield Life
 - случайный near-miss feedback заменён геометрией реального выстрела бота: для фактического tracer direction вычисляется closest approach к торсу игрока, дальность вдоль луча и проверка препятствий; whiz/suppression возникает только если пуля действительно проходит рядом;
 - добавлено накопительное состояние suppression: плотный близкий огонь мягко увеличивает реальный weapon spread, раскачивает оружие, расширяет/подсвечивает reticle и даёт короткую presentation-only camera reaction без фиктивного урона;

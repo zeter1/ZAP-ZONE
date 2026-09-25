@@ -121,6 +121,12 @@ function mat(c){
   // Map objects receive independent materials so a hit flash cannot recolor the whole map.
   return _matCache[c].clone();
 }
+function mapImpactMaterial(obj){
+  if(!obj)return'concrete';
+  if(obj.userData?.impactMaterial)return obj.userData.impactMaterial;
+  if((obj.material?.metalness||0)>=.38)return'metal';
+  return'concrete';
+}
 
 // ─── FLOOR ──────────────────────────────
 (()=>{
@@ -138,8 +144,9 @@ function mat(c){
 const wallMeshes=[],losMeshes=[];
 // Store wall AABBs for collision
 const wallAABBs=[];
-function box(w,h,d,col,x,y,z,ry=0){
+function box(w,h,d,col,x,y,z,ry=0,impactMaterial='concrete'){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(col));
+  m.userData.impactMaterial=impactMaterial;
   m.position.set(x,y,z);m.rotation.y=ry;m.castShadow=!MOBILE_LOW;m.receiveShadow=!MOBILE_LOW;scene.add(m);
   if(h>0.5){
     wallMeshes.push(m);
@@ -168,10 +175,13 @@ function decorateHazardWall(mesh,w,h,d){
   return mesh;
 }
 function hazardWall(w,h,d,col,x,y,z,ry=0){
-  return decorateHazardWall(box(w,h,d,col,x,y,z,ry),w,h,d);
+  const wall=decorateHazardWall(box(w,h,d,col,x,y,z,ry,'metal'),w,h,d);
+  wall.userData.impactMaterial='metal';
+  return wall;
 }
 function createSupplyCrate(x,z,h,variant=0){
-  const body=box(2,h,2,variant%2?0x786448:0x6d5b43,x,h/2,z);
+  const body=box(2,h,2,variant%2?0x786448:0x6d5b43,x,h/2,z,0,'wood');
+  body.userData.impactMaterial='wood';
   body.material=new THREE.MeshStandardMaterial({color:variant%2?0x6f5b42:0x61523f,roughness:.62,metalness:.20});
   const frameMat=new THREE.MeshStandardMaterial({color:0x202a31,roughness:.38,metalness:.72});
   const accentMat=new THREE.MeshStandardMaterial({color:0xd59a23,roughness:.35,metalness:.42,emissive:0x6c3b00,emissiveIntensity:.16});
@@ -571,15 +581,19 @@ function tickBombBlastWaves(dt){
   }
 }
 const impactMarks=[];
-function wallImpact(pos,col){
-  for(let i=0;i<3;i++)spawnSpark(pos,col);
-  for(let i=0;i<2;i++)spawnSmoke(pos,0x6b6259);
+function wallImpact(pos,col,material='concrete'){
+  const metal=material==='metal',wood=material==='wood';
+  const sparkCount=metal?7:wood?1:3;
+  const sparkCol=metal?0xfff1b8:wood?0xd8a064:col;
+  for(let i=0;i<sparkCount;i++)spawnSpark(pos,sparkCol);
+  for(let i=0;i<(metal?1:wood?2:3);i++)spawnSmoke(pos,wood?0x6e513b:metal?0x555c62:0x6b6259);
+  if(wood&&!PERF_MODE)for(let i=0;i<2;i++)spawnP(pos,0xb27b45,.34);
   if(impactMarks.length>42){
     const old=impactMarks.shift();scene.remove(old.m);old.m.geometry.dispose();old.m.material.dispose();
   }
   const mark=new THREE.Mesh(
-    new THREE.SphereGeometry(.045,6,4),
-    new THREE.MeshBasicMaterial({color:0x151719,transparent:true,opacity:.78,depthWrite:false})
+    new THREE.SphereGeometry(material==='metal'?.038:.045,6,4),
+    new THREE.MeshBasicMaterial({color:wood?0x3f2819:metal?0x293039:0x151719,transparent:true,opacity:.78,depthWrite:false})
   );
   const towardCamera=camera.position.clone().sub(pos).normalize().multiplyScalar(.025);
   mark.position.copy(pos).add(towardCamera);

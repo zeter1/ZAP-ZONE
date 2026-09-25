@@ -158,7 +158,20 @@ function playWeaponShotSound(weaponKey,intensity=1,source=null){
     if(mix.gain>.02)playSfx('shoot',intensity*mix.gain,weaponKey);
   }
   playWeaponTail(weaponKey,intensity,source);
+  if(source){
+    const distant=spatialAudioMix(source,145);
+    if(distant.distance>38&&distant.gain>.012){
+      const echoPower=Math.min(.24,.07+distant.distance/760)*intensity;
+      playBufferSfx('tailOpen',echoPower,source,145,.84+Math.random()*.10,.085+Math.min(.10,distant.distance/900));
+    }
+  }
   if(weaponKey==='sniper')playSniperCrack(source,intensity,false);
+}
+function playSurfaceImpactSound(material='concrete',source=null,intensity=.6,ricochet=false){
+  const rate=material==='metal'?(ricochet?1.18:1.08):material==='wood'?.78:.94;
+  const power=Math.max(.12,Math.min(1,(ricochet?.78:.38)*intensity));
+  if(playBufferSfx('ricochet',power,source,ricochet?62:42,rate))return;
+  if(ricochet)playSfx('ricochet',power);
 }
 function playExplosionSound(source,intensity=1){
   if(playBufferSfx('explosion',intensity,source,105,.94+Math.random()*.08))return;
