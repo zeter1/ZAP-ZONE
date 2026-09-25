@@ -118,7 +118,7 @@ for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferS
 }
 
 const pickups=readFileSync('src/entities/pickups.js','utf8');
-for(const token of ['WORLD_WEAPON_KEYS=WEAPONS.map','function randomWeaponReserve','grantWeapon(idx,reserveGrant)','relocateWeaponPickup(pk)']){
+for(const token of ['WORLD_WEAPON_COPIES','WEAPONS.flatMap','pistol:2','shotgun:2','rifle:3','rocket:2','plasma:2','sniper:2','function randomWeaponReserve','grantWeapon(idx,reserveGrant)','relocateWeaponPickup(pk)']){
   if(!pickups.includes(token))fail('dynamic weapon pickup economy missing: '+token);
 }
 if(pickups.includes("type:'ammo'"))fail('standalone ammo pickups must not spawn');
