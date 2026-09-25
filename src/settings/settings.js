@@ -61,8 +61,9 @@ const GAME_AUDIO_ASSETS=Object.freeze({
   footstepGravel:'assets/audio/footstep-gravel.wav',
   footstepWater:'assets/audio/footstep-water.wav'
 });
-const gameAudioBuffers=new Map(),gameAudioLoads=new Map();
+const gameAudioBuffers=new Map(),gameAudioLoads=new Map(),gameAudioRetryAfter=new Map();
 const acousticProfileCache=new Map(),acousticTailCooldowns=new Map();
+let gameAudioWarmupScheduled=false;
 let playerFootstepDistance=0,battlefieldAmbienceSource=null,battlefieldAmbienceGain=null,battlefieldAmbiencePending=false;
 let playerSuppression=0,playerSuppressionPulse=0;
 function combatSourcePosition(source){
@@ -105,18 +106,32 @@ function combatAcousticProfile(source){
 function loadGameAudioAsset(key){
   if(gameAudioBuffers.has(key))return Promise.resolve(gameAudioBuffers.get(key));
   if(gameAudioLoads.has(key))return gameAudioLoads.get(key);
+  const retryAt=gameAudioRetryAfter.get(key)||0;
+  if(retryAt>performance.now())return Promise.resolve(null);
   const path=GAME_AUDIO_ASSETS[key],ctx=gameAudioCtx;
   if(!path||!ctx)return Promise.resolve(null);
   const load=fetch(path)
     .then(res=>{if(!res.ok)throw new Error('HTTP '+res.status);return res.arrayBuffer();})
     .then(raw=>ctx.decodeAudioData(raw.slice(0)))
-    .then(buffer=>{gameAudioBuffers.set(key,buffer);gameAudioLoads.delete(key);return buffer;})
-    .catch(err=>{gameAudioLoads.delete(key);console.warn('Не удалось загрузить аудио asset:',path,err);return null;});
+    .then(buffer=>{gameAudioBuffers.set(key,buffer);gameAudioLoads.delete(key);gameAudioRetryAfter.delete(key);return buffer;})
+    .catch(err=>{
+      gameAudioLoads.delete(key);
+      gameAudioRetryAfter.set(key,performance.now()+(location.protocol==='file:'?60000:12000));
+      console.warn('Не удалось загрузить аудио asset:',path,err);
+      return null;
+    });
   gameAudioLoads.set(key,load);return load;
 }
 function preloadGameAudio(){
   if(!gameAudioCtx||gameSettings.sfx<=0)return;
   for(const key of Object.keys(GAME_AUDIO_ASSETS))loadGameAudioAsset(key);
+}
+function scheduleGameAudioWarmup(){
+  if(gameAudioWarmupScheduled||gameSettings.sfx<=0)return;
+  gameAudioWarmupScheduled=true;
+  const run=()=>{gameAudioWarmupScheduled=false;preloadGameAudio();startBattlefieldAmbience();};
+  if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:700});
+  else setTimeout(run,80);
 }
 function playBufferSfx(key,intensity=1,source=null,maxDistance=82,rate=1,delay=0){
   const ctx=ensureGameAudio();if(!ctx||!gameAudioMaster)return false;
@@ -402,12 +417,12 @@ function openGameSettings(){const modal=byId('settings-modal');if(!modal)return;
 function closeGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=false;modal.classList.remove('on');modal.setAttribute('aria-hidden','true');saveGameSettings();playSfx('ui');}
 function bindGameSettings(){
   const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
-  const primeAudio=()=>{ensureGameAudio();preloadGameAudio();startBattlefieldAmbience();};
+  const primeAudio=()=>{ensureGameAudio();scheduleGameAudioWarmup();};
   window.addEventListener('pointerdown',primeAudio,{once:true,capture:true});
   window.addEventListener('keydown',primeAudio,{once:true,capture:true});
   byId('menuSettingsBtn')?.addEventListener('click',openGameSettings);byId('pauseSettingsBtn')?.addEventListener('click',openGameSettings);byId('settingsCloseBtn')?.addEventListener('click',closeGameSettings);
   sens?.addEventListener('input',()=>{gameSettings.sensitivity=clampSetting(sens.value,.5,2,1);saveGameSettings();});
-  sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();preloadGameAudio();startBattlefieldAmbience();saveGameSettings();});
+  sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();scheduleGameAudioWarmup();saveGameSettings();});
   shake?.addEventListener('change',()=>{gameSettings.screenShake=shake.checked;saveGameSettings();});
   crosshair?.addEventListener('change',()=>{gameSettings.dynamicCrosshair=crosshair.checked;saveGameSettings();});
   fps?.addEventListener('change',()=>{gameSettings.showFps=fps.checked;saveGameSettings();});

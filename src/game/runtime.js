@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── MAIN LOOP ──────────────────────────
-let lastT=0;
+let lastT=0,idleRenderAt=0;
 const _euler=new THREE.Euler(0,0,0,'YXZ');
 const _fwd=new THREE.Vector3(),_rgt=new THREE.Vector3(),_mv=new THREE.Vector3();
 let prevPX=0,prevPZ=0;
@@ -11,9 +11,14 @@ let autoFireT=0;
 function loop(ts){
   requestAnimationFrame(loop);
   const rawDt=(ts-lastT)/1000;
-  tickGamePresentation(Math.min(Math.max(rawDt||0,0),.05),ts);
-
   if(webglLost){lastT=ts;return;}
+  const menuIdle=!running&&!dying&&!portraitBlocked&&!lvlAnnOpen&&!perkPickOpen&&!paused;
+  if(menuIdle){
+    lastT=ts;
+    if(ts-idleRenderAt>=180){idleRenderAt=ts;renderFrame();}
+    return;
+  }
+  tickGamePresentation(Math.min(Math.max(rawDt||0,0),.05),ts);
   // Страховка от редкого сброса pointer lock: если курсор появился во время
   // активной игры, симуляция сразу ставится на паузу и открывает нормальное меню.
   if(!IS_TOUCH&&running&&!paused&&!dying&&!perkPickOpen&&!lvlAnnOpen&&document.pointerLockElement!==canvas){
@@ -28,9 +33,9 @@ function loop(ts){
     renderFrame();return;
   }
   if(portraitBlocked){lastT=ts;renderFrame();return;}
-  if(lvlAnnOpen){lastT=ts;tickLvlAnn(Math.min(rawDt,.05));renderFrame();return;}
-  if(perkPickOpen||paused){lastT=ts;renderFrame();return;}
-  if(!running){lastT=ts;renderFrame();return;}
+  if(lvlAnnOpen){lastT=ts;tickLvlAnn(Math.min(rawDt,.05));if(ts-idleRenderAt>=60){idleRenderAt=ts;renderFrame();}return;}
+  if(perkPickOpen||paused){lastT=ts;if(ts-idleRenderAt>=85){idleRenderAt=ts;renderFrame();}return;}
+  if(!running){lastT=ts;if(ts-idleRenderAt>=120){idleRenderAt=ts;renderFrame();}return;}
 
   const dt=Math.min(rawDt,.033);lastT=ts;
 

@@ -42,7 +42,7 @@ const html=readFileSync('index.html','utf8');
 for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
 if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-map-grid"','id="frontline-map-hint"','data-frontline-zone="north"','data-frontline-zone="mid"','data-frontline-zone="south"','data-frontline-zone="west"','data-frontline-zone="east"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
@@ -109,7 +109,7 @@ if(shotgunDef.includes("aimMode:'scope'"))fail('shotgun must not use rifle/snipe
 
 
 const settings=readFileSync('src/settings/settings.js','utf8');
-for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferSfx','function combatAcousticProfile','function playWeaponTail','function playSniperCrack','function footstepSurfaceAt','function playFootstepSound','function tickPlayerFootsteps','function playHitImpactSound','function playWeaponMechanicSound','function startBattlefieldAmbience','function playerSuppressionSpreadPenalty','function registerPlayerSuppression','function playWeaponShotSound','function playSurfaceImpactSound','distant.distance>38','function playExplosionSound','function playWhizSound','function showHitMarker','function showDamageDirection','function showThreatDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
+for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferSfx','gameAudioRetryAfter','function scheduleGameAudioWarmup','requestIdleCallback','location.protocol===\'file:\'','function combatAcousticProfile','function playWeaponTail','function playSniperCrack','function footstepSurfaceAt','function playFootstepSound','function tickPlayerFootsteps','function playHitImpactSound','function playWeaponMechanicSound','function startBattlefieldAmbience','function playerSuppressionSpreadPenalty','function registerPlayerSuppression','function playWeaponShotSound','function playSurfaceImpactSound','distant.distance>38','function playExplosionSound','function playWhizSound','function showHitMarker','function showDamageDirection','function showThreatDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
   if(!settings.includes(token))fail('settings/presentation integration missing: '+token);
 }
 
@@ -216,8 +216,8 @@ for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke',
 }
 if(!bots.includes('if(wp.hitscan){')||!bots.includes('spawnInstantSniperTrace(from,tracerDir'))fail('bot sniper must remain hitscan while normal guns use travelling bullets');
 if(bots.includes("Math.random()<(suppressing?.56:.34)"))fail('legacy random player near-miss whiz returned');
-for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineBias=s=>','allyControlScore','enemyControlScore']){
-  if(!bots.includes(token))fail('Frontline objective integration missing: '+token);
+for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineZoneOwners=','zoneOwners:{...frontlineZoneOwners}','frontlineZoneOwners[zone.id]=team','document.querySelector','data-frontline-zone','frontline-map-hint','const frontlineBias=s=>','allyControlScore','enemyControlScore']){
+  if(!bots.includes(token))fail('Frontline objective/map integration missing: '+token);
 }
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
@@ -233,13 +233,16 @@ if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick 
 if(!runtime.includes('tickFrontlineObjective(dt,ts)'))fail('Frontline objective runtime tick missing');
 if(!runtime.includes('tickPlayerFootsteps(playerMoved,sprintingNow,onGnd)'))fail('distance-driven player footsteps missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
+for(const token of ['idleRenderAt=0','const menuIdle=!running','ts-idleRenderAt>=180','ts-idleRenderAt>=85']){
+  if(!runtime.includes(token))fail('menu/Firefox idle render throttling missing: '+token);
+}
 if(!runtime.includes('activeW.scopeAsset||GAME_ASSETS.ui.sniperScope'))fail('per-weapon scope asset switching missing');
 if(runtime.includes('setWeaponAmmo(SMOKE_WEAPON_INDEX,1)'))fail('smoke cooldown must not generate free ammo');
 if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-switch away from depleted current weapon');
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-objective','#frontline-track','#frontline-bearing','one authoritative gameplay reticle']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-map-grid','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#menu .btn','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
@@ -255,5 +258,5 @@ for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weapon
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v23.2'))fail('index version is not v23.2');
-if(!process.exitCode)console.log('ZAP ZONE v23.2 Combat Presence 1.4 validation passed.');
+if(!html.includes('ZAP ZONE v23.3'))fail('index version is not v23.3');
+if(!process.exitCode)console.log('ZAP ZONE v23.3 Frontline tactical map and Firefox menu validation passed.');

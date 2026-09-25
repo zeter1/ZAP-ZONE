@@ -354,6 +354,7 @@ const frontlineObjective={
   zoneId:'mid',progress:0,owner:null,rotateT:FRONTLINE_CFG.rotateSeconds,
   allyPresence:0,enemyPresence:0,hudT:0,marker:null
 };
+const frontlineZoneOwners=Object.fromEntries(BOT_MAP_ZONES.map(zone=>[zone.id,null]));
 function frontlineZone(){
   return BOT_MAP_ZONES.find(zone=>zone.id===frontlineObjective.zoneId)||BOT_MAP_ZONES[0];
 }
@@ -367,6 +368,7 @@ function serializeFrontlineObjective(){
     progress:Math.max(-100,Math.min(100,frontlineObjective.progress)),
     owner:frontlineObjective.owner,
     rotateT:Math.max(1,Math.min(FRONTLINE_CFG.rotateSeconds,frontlineObjective.rotateT)),
+    zoneOwners:{...frontlineZoneOwners},
     allyControlScore,enemyControlScore
   };
 }
@@ -379,7 +381,10 @@ function resetFrontlineObjective(zoneId='mid',resetScores=false){
   frontlineObjective.allyPresence=0;
   frontlineObjective.enemyPresence=0;
   frontlineObjective.hudT=0;
-  if(resetScores){allyControlScore=0;enemyControlScore=0;}
+  if(resetScores){
+    allyControlScore=0;enemyControlScore=0;
+    for(const id of Object.keys(frontlineZoneOwners))frontlineZoneOwners[id]=null;
+  }
   updateFrontlineMarker(0);
   updateFrontlineHUD(true);
 }
@@ -393,6 +398,11 @@ function restoreFrontlineObjective(data){
   frontlineObjective.allyPresence=0;
   frontlineObjective.enemyPresence=0;
   frontlineObjective.hudT=0;
+  for(const id of Object.keys(frontlineZoneOwners)){
+    const owner=data.zoneOwners?.[id];
+    frontlineZoneOwners[id]=owner==='ally'||owner==='enemy'?owner:null;
+  }
+  if(frontlineObjective.owner&&!frontlineZoneOwners[zone.id])frontlineZoneOwners[zone.id]=frontlineObjective.owner;
   allyControlScore=Math.max(0,Math.floor(Number(data.allyControlScore)||0));
   enemyControlScore=Math.max(0,Math.floor(Number(data.enemyControlScore)||0));
   updateFrontlineMarker(0);
@@ -468,6 +478,31 @@ function updateFrontlineHUD(force=false){
   if(enemy)enemy.style.width=(Math.max(0,-frontlineObjective.progress)*.5).toFixed(1)+'%';
   const scoreEl=G('frontline-score');
   if(scoreEl)scoreEl.textContent='ЗОНЫ '+allyControlScore+' : '+enemyControlScore+' · ЗАХВАТ = '+FRONTLINE_CFG.capturePoints+' ОЧКА';
+  const mapHint=G('frontline-map-hint');
+  if(mapHint)mapHint.textContent='ЦЕЛЬ: '+zone.label+' · '+dist+' м';
+  for(const mapZone of BOT_MAP_ZONES){
+    const el=document.querySelector('[data-frontline-zone="'+mapZone.id+'"]');if(!el)continue;
+    const active=mapZone.id===zone.id,owner=frontlineZoneOwners[mapZone.id];
+    el.classList.toggle('active',active);
+    el.classList.toggle('ally',owner==='ally');
+    el.classList.toggle('enemy',owner==='enemy');
+    el.classList.toggle('contested',active&&contested);
+    el.classList.toggle('capturing-ally',active&&!contested&&!frontlineObjective.owner&&frontlineObjective.progress>4);
+    el.classList.toggle('capturing-enemy',active&&!contested&&!frontlineObjective.owner&&frontlineObjective.progress<-4);
+    const status=el.querySelector('.frontline-zone-state');
+    if(status){
+      let txt=owner==='ally'?'СИНИЕ':owner==='enemy'?'КРАСНЫЕ':'НЕЙТРАЛ';
+      if(active){
+        if(contested)txt='БОЙ';
+        else if(!frontlineObjective.owner&&frontlineObjective.progress>4)txt='ЗАХВАТ СИНИХ';
+        else if(!frontlineObjective.owner&&frontlineObjective.progress<-4)txt='ЗАХВАТ КРАСНЫХ';
+        else if(frontlineObjective.owner==='ally')txt='СИНИЕ · ЦЕЛЬ';
+        else if(frontlineObjective.owner==='enemy')txt='КРАСНЫЕ · ЦЕЛЬ';
+        else txt='ЦЕЛЬ';
+      }
+      status.textContent=txt;
+    }
+  }
   root.classList.toggle('ally',frontlineObjective.owner==='ally');
   root.classList.toggle('enemy',frontlineObjective.owner==='enemy');
   root.classList.toggle('contested',contested);
@@ -476,6 +511,7 @@ function updateFrontlineHUD(force=false){
 function captureFrontline(team,zone){
   if(frontlineObjective.owner===team)return;
   frontlineObjective.owner=team;
+  frontlineZoneOwners[zone.id]=team;
   if(team==='ally')allyControlScore++;else enemyControlScore++;
   updateTeamScore();
   const playerHelped=team==='ally'&&frontlinePlayerInside(zone);
