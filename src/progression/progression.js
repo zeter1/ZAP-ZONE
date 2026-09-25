@@ -495,6 +495,7 @@ function restartGameFromScratch(){
   clearWorldForFreshGame();
   curW=0;hardResetPlayerBuild();
   level=1;xp=0;score=0;kills=0;allyKills=0;enemyKills=0;
+  resetFrontlineObjective('mid',true);
   hp=plr.maxHp;armor=0;uAmmo=STARTING_RESERVE[0];ammo=weaponAmmo[0];
   playerMineCD=0;playerBombCD=0;playerSmokeCD=0;mineHudSecond=-1;bombHudSecond=-1;smokeHudSecond=-1;
   reloading=false;reloadT=0;reloadTot=0;sCD=0;recoil=0;recoilPitch=0;recoilYaw=0;recoilRecovery=0;

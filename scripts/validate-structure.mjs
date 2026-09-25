@@ -40,7 +40,7 @@ const html=readFileSync('index.html','utf8');
 for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
 if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-objective"','id="frontline-track"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
@@ -199,6 +199,9 @@ for(const token of [
 }
 if(bots.includes('this.dodgeSpd=this.speed*(2.35+this.aimSkill*.65)'))fail('legacy teleport-like dodge multiplier returned');
 if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.triggerDodge()'))fail('stuck recovery must not trigger high-speed dodge');
+for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineBias=s=>','allyControlScore','enemyControlScore']){
+  if(!bots.includes(token))fail('Frontline objective integration missing: '+token);
+}
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
@@ -210,6 +213,7 @@ for(const token of ["botDoctrineLabel(plan.doctrine)","plan.zone?.label","ПРИ
   if(!runtime.includes(token))fail('ally map-order HUD missing: '+token);
 }
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
+if(!runtime.includes('tickFrontlineObjective(dt,ts)'))fail('Frontline objective runtime tick missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('activeW.scopeAsset||GAME_ASSETS.ui.sniperScope'))fail('per-weapon scope asset switching missing');
 if(runtime.includes('setWeaponAmmo(SMOKE_WEAPON_INDEX,1)'))fail('smoke cooldown must not generate free ammo');
@@ -217,7 +221,7 @@ if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-swi
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','one authoritative gameplay reticle']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-objective','#frontline-track','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
@@ -227,11 +231,11 @@ if(!rifleScope.includes('Transparent center')||rifleScope.includes('<rect width=
 if((html.match(/id="xhair"/g)||[]).length!==1)fail('gameplay HUD must contain exactly one xhair root');
 
 for(const token of ['let curW=0,lastW=0','function quickSwitchWeapon()','playSfx(\'equip\')','w.cycleTime=Math.max'] ){if(!state.includes(token))fail('player weapon lifecycle missing: '+token);}
-for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function weaponTotalAmmo','function weaponSelectable','function cycleOwnedWeapon(direction)','function ensureCurrentWeaponUsable','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:26']){
+for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function weaponTotalAmmo','function weaponSelectable','function cycleOwnedWeapon(direction)','function ensureCurrentWeaponUsable','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:27','serializeFrontlineObjective','restoreFrontlineObjective']){
   if(!state.includes(token))fail('per-weapon ownership/reserve save model missing: '+token);
 }
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v22.6'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE v22.6 Adaptive Commander and anti-teleport locomotion validation passed.');
+if(!html.includes('ZAP ZONE v22.7'))fail('index version is not v22.7');
+if(!process.exitCode)console.log('ZAP ZONE v22.7 Frontline objective validation passed.');

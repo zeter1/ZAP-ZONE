@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v22.6</title><link rel="stylesheet" href="src/styles/game.css">
+<title>⚡ ZAP ZONE v22.7</title><link rel="stylesheet" href="src/styles/game.css">
 
 </head>
 <body>
@@ -27,6 +27,16 @@
     <div class="tb-side" id="tb-ally">СИНИЕ 0</div>
     <div class="tb-vs">5 × 5</div>
     <div class="tb-side" id="tb-enemy">КРАСНЫЕ 0</div>
+  </div>
+  <div id="frontline-objective" aria-live="polite">
+    <div id="frontline-title">⌖ FRONTLINE · ЦЕНТР</div>
+    <div id="frontline-state">НЕЙТРАЛЬНАЯ ЗОНА · 0 м · 44с</div>
+    <div id="frontline-track">
+      <div id="frontline-ally-progress"></div>
+      <div id="frontline-enemy-progress"></div>
+      <div id="frontline-mid"></div>
+    </div>
+    <div id="frontline-score">ЗОНЫ 0 : 0 · ЗАХВАТ = 3 ОЧКА</div>
   </div>
   <div id="kill-feed" aria-live="polite"></div>
   <div id="weapon-bar"></div>
@@ -117,7 +127,7 @@
 
 <div id="menu" class="fs">
   <img id="brand-logo" src="assets/ui/logo.svg" alt="ZAP ZONE">
-  <p style="font-size:14px;color:#ffd700;margin-bottom:4px;">Браузерный FPS — командный бой 5×5 · вы + 4 синих союзника против 5 красных ботов</p>
+  <p style="font-size:14px;color:#ffd700;margin-bottom:4px;">Браузерный FPS — командный бой 5×5 с ротационной линией фронта · вы + 4 синих союзника против 5 красных ботов</p>
   <div class="hints">
     <b>WASD</b> — ходьба &nbsp;|&nbsp; <b>Shift</b> — бег &nbsp;|&nbsp; <b>Space</b> — прыжок<br>
     <b>Мышь</b> — обзор &nbsp;|&nbsp; <b>ЛКМ</b> — огонь &nbsp;|&nbsp; <b>ПКМ</b> — оптика у штурмовой и SR-9 &nbsp;|&nbsp; <b>R</b> — перезарядка<br>

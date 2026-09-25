@@ -305,8 +305,9 @@ function captureSave(){
   const mags=weaponAmmo.map((value,i)=>ownsWeapon(i)?Math.max(0,Math.min(WEAPONS[i].clip,value)):0);
   const reserves=weaponReserve.map((value,i)=>ownsWeapon(i)?Math.max(0,Math.min(WEAPONS[i].reserveCap??9999,value)):0);
   return {
-    v:26,t:Date.now(),
+    v:27,t:Date.now(),
     level,xp,score,kills,allyKills,enemyKills,
+    frontline:typeof serializeFrontlineObjective==='function'?serializeFrontlineObjective():null,
     hp,armor,uAmmo,curW,ammo,weaponAmmo:mags,weaponReserve:reserves,weaponOwned:weaponOwned.slice(),
     playerMineCD,playerBombCD,playerSmokeCD,
     perks:perksGot.map(p=>p.id),
@@ -332,7 +333,7 @@ function loadProgress(){
       localStorage.getItem(PRIMITIVE_SAVE_KEY)||sessionStorage.getItem(PRIMITIVE_SAVE_KEY);
     if(!raw)return null;
     const data=JSON.parse(raw);
-    if(!data||(data.v<20||data.v>26))return null;
+    if(!data||(data.v<20||data.v>27))return null;
     return data;
   }catch(e){return null;}
 }
@@ -412,6 +413,7 @@ function applyRuntimeSave(data){
   kills=Math.max(0,data.kills||0);
   allyKills=data.v>=25?Math.max(0,data.allyKills||0):0;
   enemyKills=data.v>=25?Math.max(0,data.enemyKills||0):0;
+  if(typeof restoreFrontlineObjective==='function')restoreFrontlineObjective(data.v>=27?data.frontline:null);
   armor=Math.max(0,Math.min(plr.maxArmor,data.armor||0));
   hp=Math.max(1,Math.min(data.hp==null?plr.maxHp:data.hp,plr.maxHp));
   playerMineCD=Math.max(0,Math.min(MINE_COOLDOWN_SECONDS,Number(data.playerMineCD)||0));

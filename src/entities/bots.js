@@ -14,6 +14,7 @@ const ETYPES=[
 
 const enemies=[];
 let allyKills=0,enemyKills=0;
+let allyControlScore=0,enemyControlScore=0;
 
 function lvlHpMult(){ return 1 + level * 0.06; }
 function lvlDmgMult(){ return 1 + level * 0.06; }
@@ -277,6 +278,172 @@ const BOT_MAP_ZONES=[
   {id:'west',label:'ЗАПАД',x:-34,z:0,r:19,weight:.94},
   {id:'east',label:'ВОСТОК',x:34,z:0,r:19,weight:.94}
 ];
+
+const FRONTLINE_CFG=Object.freeze({rotateSeconds:44,captureSeconds:8.5,capturePoints:3});
+const frontlineObjective={
+  zoneId:'mid',progress:0,owner:null,rotateT:FRONTLINE_CFG.rotateSeconds,
+  allyPresence:0,enemyPresence:0,hudT:0,marker:null
+};
+function frontlineZone(){
+  return BOT_MAP_ZONES.find(zone=>zone.id===frontlineObjective.zoneId)||BOT_MAP_ZONES[0];
+}
+function frontlinePlayerInside(zone=frontlineZone()){
+  if(dying)return false;
+  return Math.hypot(camera.position.x-zone.x,camera.position.z-zone.z)<=zone.r;
+}
+function serializeFrontlineObjective(){
+  return {
+    zoneId:frontlineZone().id,
+    progress:Math.max(-100,Math.min(100,frontlineObjective.progress)),
+    owner:frontlineObjective.owner,
+    rotateT:Math.max(1,Math.min(FRONTLINE_CFG.rotateSeconds,frontlineObjective.rotateT)),
+    allyControlScore,enemyControlScore
+  };
+}
+function resetFrontlineObjective(zoneId='mid',resetScores=false){
+  const zone=BOT_MAP_ZONES.find(z=>z.id===zoneId)||BOT_MAP_ZONES[0];
+  frontlineObjective.zoneId=zone.id;
+  frontlineObjective.progress=0;
+  frontlineObjective.owner=null;
+  frontlineObjective.rotateT=FRONTLINE_CFG.rotateSeconds;
+  frontlineObjective.allyPresence=0;
+  frontlineObjective.enemyPresence=0;
+  frontlineObjective.hudT=0;
+  if(resetScores){allyControlScore=0;enemyControlScore=0;}
+  updateFrontlineMarker(0);
+  updateFrontlineHUD(true);
+}
+function restoreFrontlineObjective(data){
+  if(!data||typeof data!=='object'){resetFrontlineObjective('mid',true);return;}
+  const zone=BOT_MAP_ZONES.find(z=>z.id===data.zoneId)||BOT_MAP_ZONES[0];
+  frontlineObjective.zoneId=zone.id;
+  frontlineObjective.progress=Math.max(-100,Math.min(100,Number(data.progress)||0));
+  frontlineObjective.owner=data.owner==='ally'||data.owner==='enemy'?data.owner:null;
+  frontlineObjective.rotateT=Math.max(2,Math.min(FRONTLINE_CFG.rotateSeconds,Number(data.rotateT)||FRONTLINE_CFG.rotateSeconds));
+  frontlineObjective.allyPresence=0;
+  frontlineObjective.enemyPresence=0;
+  frontlineObjective.hudT=0;
+  allyControlScore=Math.max(0,Math.floor(Number(data.allyControlScore)||0));
+  enemyControlScore=Math.max(0,Math.floor(Number(data.enemyControlScore)||0));
+  updateFrontlineMarker(0);
+  updateFrontlineHUD(true);
+}
+function chooseNextFrontlineZone(){
+  const current=frontlineZone();
+  const choices=BOT_MAP_ZONES.filter(zone=>zone.id!==current.id);
+  let total=0;
+  for(const zone of choices)total+=zone.weight;
+  let roll=Math.random()*Math.max(.001,total);
+  for(const zone of choices){roll-=zone.weight;if(roll<=0)return zone;}
+  return choices[0]||BOT_MAP_ZONES[0];
+}
+function ensureFrontlineMarker(){
+  if(frontlineObjective.marker)return frontlineObjective.marker;
+  const group=new THREE.Group();
+  const ring=new THREE.Mesh(
+    new THREE.RingGeometry(.91,1,48),
+    new THREE.MeshBasicMaterial({color:0xffd45a,transparent:true,opacity:.44,side:THREE.DoubleSide,depthWrite:false})
+  );
+  ring.rotation.x=-Math.PI/2;ring.position.y=.045;
+  const disc=new THREE.Mesh(
+    new THREE.CircleGeometry(.90,48),
+    new THREE.MeshBasicMaterial({color:0xffd45a,transparent:true,opacity:.035,side:THREE.DoubleSide,depthWrite:false})
+  );
+  disc.rotation.x=-Math.PI/2;disc.position.y=.03;
+  const beam=new THREE.Mesh(
+    new THREE.CylinderGeometry(.055,.15,7,10),
+    new THREE.MeshBasicMaterial({color:0xffd45a,transparent:true,opacity:.16,depthWrite:false})
+  );
+  beam.position.y=3.5;
+  group.add(disc,ring,beam);scene.add(group);
+  frontlineObjective.marker={group,ring,disc,beam};
+  return frontlineObjective.marker;
+}
+function updateFrontlineMarker(ts=0){
+  const marker=ensureFrontlineMarker(),zone=frontlineZone();
+  marker.group.position.set(zone.x,0,zone.z);
+  marker.ring.scale.set(zone.r,zone.r,1);
+  marker.disc.scale.set(zone.r,zone.r,1);
+  const team=frontlineObjective.owner||(frontlineObjective.progress>6?'ally':frontlineObjective.progress<-6?'enemy':null);
+  const color=team==='ally'?0x44aaff:team==='enemy'?0xff4458:0xffd45a;
+  marker.ring.material.color.setHex(color);marker.disc.material.color.setHex(color);marker.beam.material.color.setHex(color);
+  const pulse=.5+.5*Math.sin((ts||performance.now())*.0042);
+  marker.ring.material.opacity=.34+pulse*.18;
+  marker.disc.material.opacity=.028+pulse*.020;
+  marker.beam.material.opacity=.10+pulse*.10;
+}
+function updateFrontlineHUD(force=false){
+  const root=G('frontline-objective');if(!root)return;
+  if(!force&&frontlineObjective.hudT>0)return;
+  frontlineObjective.hudT=.10;
+  const zone=frontlineZone(),a=frontlineObjective.allyPresence,e=frontlineObjective.enemyPresence;
+  const dist=Math.round(Math.hypot(camera.position.x-zone.x,camera.position.z-zone.z));
+  const contested=a>.2&&e>.2&&Math.abs(a-e)<.45;
+  let state='НЕЙТРАЛЬНАЯ ЗОНА';
+  if(contested)state='ОСПАРИВАЕТСЯ';
+  else if(frontlineObjective.owner==='ally')state='УДЕРЖИВАЮТ СИНИЕ';
+  else if(frontlineObjective.owner==='enemy')state='УДЕРЖИВАЮТ КРАСНЫЕ';
+  else if(frontlineObjective.progress>4)state='ЗАХВАТЫВАЮТ СИНИЕ';
+  else if(frontlineObjective.progress<-4)state='ЗАХВАТЫВАЮТ КРАСНЫЕ';
+  G('frontline-title').textContent='⌖ FRONTLINE · '+zone.label;
+  G('frontline-state').textContent=state+' · '+dist+' м · '+Math.ceil(frontlineObjective.rotateT)+'с';
+  const ally=G('frontline-ally-progress'),enemy=G('frontline-enemy-progress');
+  if(ally)ally.style.width=(Math.max(0,frontlineObjective.progress)*.5).toFixed(1)+'%';
+  if(enemy)enemy.style.width=(Math.max(0,-frontlineObjective.progress)*.5).toFixed(1)+'%';
+  const scoreEl=G('frontline-score');
+  if(scoreEl)scoreEl.textContent='ЗОНЫ '+allyControlScore+' : '+enemyControlScore+' · ЗАХВАТ = '+FRONTLINE_CFG.capturePoints+' ОЧКА';
+  root.classList.toggle('ally',frontlineObjective.owner==='ally');
+  root.classList.toggle('enemy',frontlineObjective.owner==='enemy');
+  root.classList.toggle('contested',contested);
+}
+function captureFrontline(team,zone){
+  if(frontlineObjective.owner===team)return;
+  frontlineObjective.owner=team;
+  if(team==='ally')allyControlScore++;else enemyControlScore++;
+  updateTeamScore();
+  const playerHelped=team==='ally'&&frontlinePlayerInside(zone);
+  if(playerHelped){
+    score+=150;
+    addXP(35);
+    markHUD();
+    showMsg('⌖ Захват зоны: +150 очков · +35 XP');
+  }
+  showAnn((team==='ally'?'🔵 СИНИЕ':'🔴 КРАСНЫЕ')+' ЗАХВАТИЛИ · '+zone.label);
+  saveProgress(true);
+}
+function rotateFrontlineObjective(){
+  const zone=chooseNextFrontlineZone();
+  frontlineObjective.zoneId=zone.id;
+  frontlineObjective.progress=0;
+  frontlineObjective.owner=null;
+  frontlineObjective.rotateT=FRONTLINE_CFG.rotateSeconds;
+  frontlineObjective.allyPresence=0;
+  frontlineObjective.enemyPresence=0;
+  frontlineObjective.hudT=0;
+  BOT_TEAM_TACTICS.ally.orderUntil=-999;BOT_TEAM_TACTICS.enemy.orderUntil=-999;
+  updateFrontlineMarker(0);
+  updateFrontlineHUD(true);
+  showAnn('⌖ НОВАЯ ЦЕЛЬ · '+zone.label);
+}
+function tickFrontlineObjective(dt,ts){
+  frontlineObjective.hudT=Math.max(0,frontlineObjective.hudT-dt);
+  frontlineObjective.rotateT-=dt;
+  if(frontlineObjective.rotateT<=0)rotateFrontlineObjective();
+  const zone=frontlineZone();
+  const ally=botZonePresence(zone,'ally'),enemy=botZonePresence(zone,'enemy');
+  frontlineObjective.allyPresence=ally;frontlineObjective.enemyPresence=enemy;
+  const delta=Math.max(-2.5,Math.min(2.5,ally-enemy));
+  if(Math.abs(delta)>.10){
+    frontlineObjective.progress+=delta*dt*(100/FRONTLINE_CFG.captureSeconds);
+  }else if(!frontlineObjective.owner){
+    frontlineObjective.progress*=Math.max(0,1-dt*.09);
+  }
+  frontlineObjective.progress=Math.max(-100,Math.min(100,frontlineObjective.progress));
+  if(frontlineObjective.progress>=100)captureFrontline('ally',zone);
+  else if(frontlineObjective.progress<=-100)captureFrontline('enemy',zone);
+  updateFrontlineMarker(ts);
+  updateFrontlineHUD(false);
+}
 const PLAYER_TACTICAL_PROFILE={
   time:-999,lastPos:new THREE.Vector3(),anchor:new THREE.Vector3(),stationaryMs:0,moveSpeed:0,lastShotAt:-999,
   style:'balanced',campScore:0
@@ -353,6 +520,8 @@ function refreshBotMapOrder(team,plan,now){
     const friendly=botZonePresence(zone,team),hostile=botZonePresence(zone,enemyTeam);
     return{zone,friendly,hostile,control:friendly-hostile,depth:zone.x*direction};
   });
+  const frontline=frontlineZone();
+  const frontlineBias=s=>s.zone.id===frontline.id?7.4:0;
   const ownIncursion=samples
     .filter(s=>s.depth<=4&&s.control<-.45)
     .sort((a,b)=>a.control-b.control||a.depth-b.depth)[0]||null;
@@ -374,16 +543,16 @@ function refreshBotMapOrder(team,plan,now){
   let ranked;
   if(doctrine==='breach'){
     ranked=samples.map(s=>({s,score:s.zone.weight*1.7-s.zone.x*.018+
-      (s.zone===playerZone?8:0)+s.hostile*1.8-s.friendly*.30}));
+      (s.zone===playerZone?8:0)+s.hostile*1.8-s.friendly*.30+frontlineBias(s)}));
   }else if(doctrine==='retake'){
     ranked=samples.map(s=>({s,score:(-s.control)*4.4+s.zone.weight*2.2-Math.max(0,s.depth)*.08-Math.abs(s.depth)*.012+
-      (enemyCounterRush&&s.zone===playerZone?5.5:0)}));
+      (enemyCounterRush&&s.zone===playerZone?5.5:0)+frontlineBias(s)}));
   }else if(doctrine==='push'){
-    ranked=samples.map(s=>({s,score:s.zone.weight*2.2+s.depth*.055+s.hostile*1.45-s.friendly*.42+(Math.abs(s.zone.z)>1?.22:0)}));
+    ranked=samples.map(s=>({s,score:s.zone.weight*2.2+s.depth*.055+s.hostile*1.45-s.friendly*.42+(Math.abs(s.zone.z)>1?.22:0)+frontlineBias(s)}));
   }else{
     ranked=samples.map(s=>({
       s,
-      score:s.zone.weight*2.0+s.friendly*1.15-s.hostile*.72-Math.abs(s.depth)*.020+(s.depth<=5?.42:0)
+      score:s.zone.weight*2.0+s.friendly*1.15-s.hostile*.72-Math.abs(s.depth)*.020+(s.depth<=5?.42:0)+frontlineBias(s)
     }));
   }
   ranked.sort((a,b)=>b.score-a.score);
@@ -1766,8 +1935,12 @@ function generateSpawnPlan(){
   return {player,allies,enemies};
 }
 function updateTeamScore(){
-  G('tb-ally').textContent='СИНИЕ '+allyKills;
-  G('tb-enemy').textContent='КРАСНЫЕ '+enemyKills;
+  const allyTotal=allyKills+allyControlScore*FRONTLINE_CFG.capturePoints;
+  const enemyTotal=enemyKills+enemyControlScore*FRONTLINE_CFG.capturePoints;
+  G('tb-ally').textContent='СИНИЕ '+allyTotal;
+  G('tb-enemy').textContent='КРАСНЫЕ '+enemyTotal;
+  G('tb-ally').title='Убийства: '+allyKills+' · Захваты: '+allyControlScore;
+  G('tb-enemy').title='Убийства: '+enemyKills+' · Захваты: '+enemyControlScore;
 }
 function countTeam(t){let c=0;for(const e of enemies)if(e.alive&&e.team===t)c++;return c;}
 function getAliveTeamPositions(team){return enemies.filter(e=>e.alive&&e.team===team).map(e=>[e.group.position.x,e.group.position.z]);}

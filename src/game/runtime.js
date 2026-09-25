@@ -231,6 +231,7 @@ function loop(ts){
   }
   if(touched)markHUD();
 
+  tickFrontlineObjective(dt,ts);
   flushHUD();
   tickProjectiles(dt);tickMines(dt);tickSmoke(dt);tickPickups(dt);
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickCombatImpactFx(dt);tickEnvironment(dt);
@@ -354,7 +355,7 @@ window.addEventListener('keyup',e=>{
 
 // ─── BOOT ───────────────────────────────
 setGameCursorHidden(false);
-buildGun(getW());buildWeaponBar();bindMobileControls();updateMineHUD();updateStats();updateTeamScore();updateOrientationState();refreshMobileHUD();xpHUD();refreshStartButton();
+buildGun(getW());buildWeaponBar();bindMobileControls();updateMineHUD();updateStats();updateTeamScore();ensureFrontlineMarker();updateFrontlineHUD(true);updateOrientationState();refreshMobileHUD();xpHUD();refreshStartButton();
 requestAnimationFrame(loop);
 preloadGameContent().then(()=>{
   document.documentElement.dataset.zapBoot='ready';
