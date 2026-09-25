@@ -104,6 +104,7 @@ function loop(ts){
   sprintBlend+=Math.max(-sprintStep,Math.min(sprintStep,sprintTarget-sprintBlend));
   if(wasWeaponSprinting&&!sprintingNow)sprintExitT=Math.max(sprintExitT,activeW.sprintRecover||.15);
   wasWeaponSprinting=sprintingNow;
+  if(crosshair)crosshair.classList.toggle('weapon-lowered',sprintingNow||weaponEquipT>0||sprintExitT>0);
   if((K['Space']||mobileInput.jumpQueued)&&onGnd){jumpV=6*plr.jumpM;onGnd=false;mobileInput.jumpQueued=false;}
   jumpV-=22*dt;camera.position.y+=jumpV*dt;
   if(camera.position.y<=1.75){camera.position.y=1.75;onGnd=true;jumpV=0;}
@@ -171,6 +172,7 @@ function loop(ts){
 
   if(sCD>0)sCD-=dt;
   if(reloading){reloadT-=dt;if(reloadT<=0)completePlayerReloadStep();}
+  updateWeaponStateHUD();
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}
