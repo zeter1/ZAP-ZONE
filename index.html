@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v21.8</title><link rel="stylesheet" href="src/styles/game.css">
+<title>⚡ ZAP ZONE v21.9</title><link rel="stylesheet" href="src/styles/game.css">
 
 </head>
 <body>
@@ -18,6 +18,9 @@
 </div>
 <div id="ui">
   <div id="xhair"><div class="xh-dot"></div></div>
+  <div id="hitmarker"></div>
+  <div id="damage-direction"><span>▲</span></div>
+  <div id="fps-counter">FPS --</div>
   <div id="dfx"></div>
   <div id="team-bar">
     <div class="tb-side" id="tb-ally">ВЫ 0</div>
@@ -120,15 +123,35 @@
     📦 Патроны = +30 &nbsp; ❤️ Аптечки &nbsp; 💣 Мины &nbsp; 🧨 Бомба: фитиль 45 сек. &nbsp; 🌫️ Дымовуха: 60 сек. &nbsp; ⭐ выбор из 5 улучшений<br>
   </div>
   <button class="btn byellow" id="startBtn">▶ ИГРАТЬ</button>
+  <button class="btn bsecondary" id="menuSettingsBtn">⚙ НАСТРОЙКИ</button>
 </div>
 <div id="pause" class="fs">
   <div class="bigtitle" style="font-size:48px">⏸ ПАУЗА</div>
   <div class="pause-actions">
     <button class="btn byellow" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button>
     <button class="btn byellow" id="fullscreenBtn">⛶ НА ВЕСЬ ЭКРАН</button>
+    <button class="btn bsecondary" id="pauseSettingsBtn">⚙ НАСТРОЙКИ</button>
     <button class="btn brestart" id="restartBtn">↻ НАЧАТЬ ИГРУ ЗАНОВО</button>
   </div>
   <div class="pause-note">Новая игра удалит автосохранение, уровень, улучшения, счёт и текущее снаряжение.</div>
+</div>
+<div id="settings-modal" aria-hidden="true">
+  <div id="settings-box" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div id="settings-title">⚙ НАСТРОЙКИ</div>
+    <div class="setting-row">
+      <label for="setting-sensitivity">Чувствительность мыши</label>
+      <div class="setting-control"><input id="setting-sensitivity" type="range" min="0.50" max="2.00" step="0.05"><span id="setting-sensitivity-value">1.00×</span></div>
+    </div>
+    <div class="setting-row">
+      <label for="setting-sfx">Громкость эффектов</label>
+      <div class="setting-control"><input id="setting-sfx" type="range" min="0" max="1" step="0.05"><span id="setting-sfx-value">65%</span></div>
+    </div>
+    <label class="setting-toggle"><span>Тряска экрана</span><input id="setting-shake" type="checkbox"></label>
+    <label class="setting-toggle"><span>Динамический прицел</span><input id="setting-crosshair" type="checkbox"></label>
+    <label class="setting-toggle"><span>Показывать FPS</span><input id="setting-fps" type="checkbox"></label>
+    <div class="settings-note">Настройки сохраняются отдельно от прогресса игры и применяются сразу.</div>
+    <button class="btn byellow" id="settingsCloseBtn" type="button">ГОТОВО</button>
+  </div>
 </div>
 <div id="death-flash"></div>
 <div id="death-msg"><img src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
@@ -138,6 +161,7 @@
 <script src="src/core/engine.js"></script>
 <script src="src/weapons/system.js"></script>
 <script src="src/player/state.js"></script>
+<script src="src/settings/settings.js"></script>
 <script src="src/combat/combat.js"></script>
 <script src="src/entities/bots.js"></script>
 <script src="src/entities/pickups.js"></script>

@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/combat/combat.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg']
@@ -33,7 +33,7 @@ const html=readFileSync('index.html','utf8');
 for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
 if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="settings-modal"','id="fps-counter"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
@@ -54,8 +54,13 @@ for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','fun
   if(!progression.includes(token))fail('progression visual integration missing: '+token);
 }
 
+const settings=readFileSync('src/settings/settings.js','utf8');
+for(const token of ['function playSfx','function showHitMarker','function showDamageDirection','function tickGamePresentation','function lookSensitivityMultiplier']){
+  if(!settings.includes(token))fail('settings/presentation integration missing: '+token);
+}
+
 const combat=readFileSync('src/combat/combat.js','utf8');
-for(const token of ['spawnCombatImpact(hitFx','showKillMedal({distance:dist','showKillMedal({explosive:true})',"spawnCombatImpact(pos,'rocket')"]){
+for(const token of ['spawnCombatImpact(hitFx','showKillMedal({distance:dist','showKillMedal({explosive:true})',"spawnCombatImpact(pos,'rocket')",'showHitMarker(hitKind)',"playSfx('shoot'",'lookSensitivityMultiplier(zooming)']){
   if(!combat.includes(token))fail('combat visual integration missing: '+token);
 }
 
@@ -66,10 +71,11 @@ for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
+if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#settings-modal']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 
-if(!process.exitCode)console.log('ZAP ZONE v21.8 asset and combat UI validation passed.');
+if(!process.exitCode)console.log('ZAP ZONE v21.9 structure, assets, settings and combat feedback validation passed.');

@@ -11,6 +11,7 @@ let autoFireT=0;
 function loop(ts){
   requestAnimationFrame(loop);
   const rawDt=(ts-lastT)/1000;
+  tickGamePresentation(Math.min(Math.max(rawDt||0,0),.05),ts);
 
   if(webglLost){lastT=ts;return;}
   // Страховка от редкого сброса pointer lock: если курсор появился во время
@@ -109,7 +110,7 @@ function loop(ts){
   if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/.065)*.85;if(flashM)flashM.material.opacity=beamT/.065;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
 
   if(sCD>0)sCD-=dt;
-  if(reloading){reloadT-=dt;if(reloadT<=0){const w=getW(),need=w.clip-ammo,take=Math.min(need,uAmmo);ammo+=take;uAmmo-=take;syncCurrentAmmo();reloading=false;reloadTot=0;wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';}}
+  if(reloading){reloadT-=dt;if(reloadT<=0){const w=getW(),need=w.clip-ammo,take=Math.min(need,uAmmo);ammo+=take;uAmmo-=take;syncCurrentAmmo();reloading=false;reloadTot=0;playSfx('reloadDone');wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';}}
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}

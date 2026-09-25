@@ -12,7 +12,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{K[e.code]=false;});
 document.addEventListener('mousemove',e=>{
   if(IS_TOUCH||!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
-  const sens=zooming?.0011:.002;
+  const sens=.002*lookSensitivityMultiplier(zooming);
   yaw-=e.movementX*sens;pitch=Math.max(-1.2,Math.min(1.2,pitch-e.movementY*sens));
   gunSwayX=Math.max(-.045,Math.min(.045,gunSwayX+e.movementX*.00010));
   gunSwayY=Math.max(-.035,Math.min(.035,gunSwayY+e.movementY*.00009));
@@ -367,6 +367,8 @@ function shoot(){
   if(ammo<=0){doReload();noAmmoT=1.5;G('no-ammo').style.opacity='1';return;}
   if(Math.random()>=plr.ammoSaveChance)ammo--;
   syncCurrentAmmo();sCD=w.rate;recoil=1;wHUD();
+  playSfx('shoot',1,w.key);pulseCrosshair('fire');
+  triggerScreenShake(w.key==='rocket'?1.15:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22,w.key==='rocket'?.22:.11);
 
   // Camera recoil
   recoilPitch+=(w.recoilY||.02)*(0.8+Math.random()*.4)*plr.recoilM;
@@ -415,6 +417,11 @@ function shoot(){
         const hitFx=camera.position.clone().addScaledVector(d,dist);
         en.hurt(dmg,d.clone(),'ally');
         const lethalHeadshot=hd&&!en.alive;
+        if(p===0){
+          const hitKind=!en.alive?'kill':isCrit?'crit':hd?'head':'hit';
+          showHitMarker(hitKind);
+          playSfx(hitKind==='kill'?'kill':hitKind==='crit'?'crit':'hit',1,w.key);
+        }
         if(isCrit&&plr.critHeal>0){hp=Math.min(plr.maxHp,hp+plr.critHeal);markHUD();}
         if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
         if(p===0||w.key==='plasma'){spawnSpark(hitFx,tc);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
@@ -488,6 +495,7 @@ function doReload(){
   const w=getW();if(w.isBomb||w.isSmoke)return;
   if(reloading||ammo===w.clip||uAmmo===0)return;
   reloading=true;reloadT=w.reload;reloadTot=w.reload;
+  playSfx('reload');
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';
 }
 function throwMine(){
@@ -571,6 +579,7 @@ function awardExplosionKill(victim,ownerType,ownerBot,kind){
     score+=(victim.type+1)*pts;
     kills++;grantPlayerKillRewards();allyKills++;
     markHUD();updateTeamScore();
+    showHitMarker('kill');playSfx('kill');
     showKillMedal({explosive:true});
     scorePop((kind==='bomb'?'🧨':kind==='mine'?'💣':'🚀')+'+'+(victim.type+1)*pts);
   }else{
@@ -611,6 +620,8 @@ function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,k
 function detonateRocket(arr,index,r,pos){
   const ownerType=r.ownerType||'bot';
   const radius=r.blastRadius||6.5;
+  const blastDistance=camera.position.distanceTo(pos);
+  if(blastDistance<55){const proximity=Math.max(.18,1-blastDistance/70);playSfx('explosion',proximity);triggerScreenShake(proximity*.95,.20);}
   spawnCombatImpact(pos,'rocket');
   explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius);
   applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28);
