@@ -15,6 +15,7 @@
 
 ### Regression checks
 - validation закрепляет наличие safe-respawn selector, непрерывного player respawn и kill-feed wiring;
+- исправлена дублирующая декларация в validation script, найденная первым CI-run после v22.3;
 - версия интерфейса повышена до v22.3.
 
 ### Premium-pass всех first-person моделей оружия

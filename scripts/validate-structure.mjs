@@ -115,7 +115,6 @@ if(pickups.includes("type:'ammo'"))fail('standalone ammo pickups must not spawn'
 if(pickups.includes("type:'bomb'"))fail('bomb must use the same weapon pickup/reserve economy');
 
 const combat=readFileSync('src/combat/combat.js','utf8');
-const progression=readFileSync('src/progression/progression.js','utf8');
 for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible',"playSfx('ricochet'"]){
   if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
