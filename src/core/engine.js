@@ -402,12 +402,9 @@ function createArenaTree(x,z,variant=0){
 (TREE_POS.slice(0,MOBILE_LOW?6:TREE_POS.length)).forEach(([x,z],i)=>createArenaTree(x,z,i));
 [[-27,-12,.28],[27,12,-2.86],[-12,27,1.85],[12,-27,-1.30]].forEach(([x,z,r])=>createArenaTerminal(x,z,r));
 
-const waterTex=gameTexture(GAME_ASSETS.environment.water);
-waterTex.wrapS=waterTex.wrapT=THREE.RepeatWrapping;
-waterTex.repeat.set(3.2,2.0);
 const poolMat=new THREE.MeshStandardMaterial({
-  color:0x0b5573,map:waterTex,transparent:true,opacity:MOBILE_LOW?.88:.72,
-  roughness:.18,metalness:.12,emissive:0x062838,emissiveIntensity:.32,side:THREE.DoubleSide
+  color:0x0b6682,transparent:true,opacity:MOBILE_LOW?.86:.70,
+  roughness:.22,metalness:.10,emissive:0x073b50,emissiveIntensity:.34,side:THREE.DoubleSide
 });
 const pool=new THREE.Mesh(new THREE.PlaneGeometry(16,10),poolMat);
 pool.rotation.x=-Math.PI/2;pool.position.set(-60,.055,15);scene.add(pool);
@@ -419,8 +416,8 @@ poolGlow.scale.x=1.55;poolGlow.rotation.x=-Math.PI/2;poolGlow.position.set(-60,.
 let environmentTime=0;
 function tickEnvironment(dt){
   environmentTime+=dt;
-  waterTex.offset.x=(environmentTime*.018)%1;
-  waterTex.offset.y=(environmentTime*.011)%1;
+  poolMat.opacity=(MOBILE_LOW?.86:.70)+Math.sin(environmentTime*1.15)*.025;
+  poolMat.emissiveIntensity=.30+Math.sin(environmentTime*.85)*.045;
   poolGlow.material.opacity=.17+Math.sin(environmentTime*1.8)*.055;
   poolGlow.rotation.z=environmentTime*.035;
   if(!MOBILE_LOW){
@@ -512,16 +509,48 @@ function tickParticles(dt){
 }
 
 const _eLights=[];
+function makeProceduralBurst(color,size=1,spokes=8,coreColor=0xffffff){
+  const g=new THREE.Group();
+  const rayMat=new THREE.MeshBasicMaterial({
+    color,transparent:true,opacity:.88,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending
+  });
+  const coreMat=new THREE.MeshBasicMaterial({
+    color:coreColor,transparent:true,opacity:.96,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending
+  });
+  const haloMat=new THREE.MeshBasicMaterial({
+    color,transparent:true,opacity:.62,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending
+  });
+  const core=new THREE.Mesh(new THREE.SphereGeometry(.11*size,8,6),coreMat);
+  g.add(core);
+  const halo=new THREE.Mesh(new THREE.TorusGeometry(.20*size,.018*size,5,24),haloMat);
+  g.add(halo);
+  const len=.34*size;
+  for(let i=0;i<spokes;i++){
+    const a=i*Math.PI*2/spokes;
+    const ray=new THREE.Mesh(new THREE.BoxGeometry(.030*size,len,.018*size),rayMat);
+    ray.position.set(Math.sin(a)*len*.78,Math.cos(a)*len*.78,0);
+    ray.rotation.z=-a;
+    g.add(ray);
+  }
+  g.userData.fxMaterials=[rayMat,coreMat,haloMat];
+  g.userData.baseSize=size;
+  return g;
+}
+function setProceduralFxOpacity(group,opacity){
+  if(!group)return;
+  const mats=group.userData?.fxMaterials||[];
+  for(let i=0;i<mats.length;i++)mats[i].opacity=Math.max(0,opacity*(i===1?1:i===2?.72:.90));
+}
 const explosionFx=[];
 function spawnExplosionFx(pos,col,r=3){
-  const sprite=makeAssetSprite(GAME_ASSETS.fx.explosion,Math.min(4.2,1.15+r*.34),Math.min(4.2,1.15+r*.34),{depthTest:false,renderOrder:25});
-  sprite.position.copy(pos);sprite.position.y+=.20;scene.add(sprite);
+  const burst=makeProceduralBurst(col,Math.min(1.65,.72+r*.10),10,0xfff4b5);
+  burst.position.copy(pos);burst.position.y+=.30;burst.lookAt(camera.position);burst.renderOrder=25;scene.add(burst);
   const ring=new THREE.Mesh(
     new THREE.RingGeometry(.18,.30,36),
     new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.86,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending})
   );
   ring.position.copy(pos);ring.position.y+=.08;ring.rotation.x=Math.PI/2;scene.add(ring);
-  explosionFx.push({sprite,ring,t:0,dur:.42+Math.min(.30,r*.025),radius:Math.min(5.5,1.3+r*.28)});
+  explosionFx.push({burst,ring,t:0,dur:.42+Math.min(.30,r*.025),radius:Math.min(5.5,1.3+r*.28)});
 }
 function tickExplosionFx(dt){
   for(let i=explosionFx.length-1;i>=0;i--){
@@ -529,11 +558,13 @@ function tickExplosionFx(dt){
     const p=Math.min(1,fx.t/fx.dur),ease=1-Math.pow(1-p,3);
     fx.ring.scale.setScalar(.5+ease*fx.radius);
     fx.ring.material.opacity=(1-p)*.86;
-    fx.sprite.material.opacity=Math.max(0,1-p*1.10);
-    const s=.72+Math.sin(Math.min(1,p)*Math.PI)*.58;
-    fx.sprite.scale.multiplyScalar(1+(s-1)*dt*6);
+    fx.burst.lookAt(camera.position);
+    setProceduralFxOpacity(fx.burst,1-p);
+    const pulse=.70+Math.sin(Math.min(1,p)*Math.PI)*.82;
+    fx.burst.scale.setScalar(pulse);
+    fx.burst.rotation.z+=dt*2.8;
     if(p>=1){
-      destroySceneObject(fx.ring);destroySceneObject(fx.sprite);explosionFx.splice(i,1);
+      destroySceneObject(fx.ring);destroySceneObject(fx.burst);explosionFx.splice(i,1);
     }
   }
 }
@@ -562,11 +593,8 @@ function spawnHeadshotFx(pos,lethal=false){
   );
   ring.position.copy(center);ring.lookAt(camera.position);ring.renderOrder=26;scene.add(ring);
 
-  const sprite=makeAssetSprite(
-    lethal?GAME_ASSETS.fx.headshotKill:GAME_ASSETS.fx.headshot,
-    lethal?1.85:1.04,lethal?1.02:.58,{depthTest:false,renderOrder:28}
-  );
-  sprite.position.copy(center);sprite.position.y+=lethal?.78:.48;scene.add(sprite);
+  const marker=makeProceduralBurst(gold,lethal?1.34:.82,lethal?10:8,lethal?0xfff3b2:0xffffff);
+  marker.position.copy(center);marker.position.y+=lethal?.78:.48;marker.lookAt(camera.position);marker.renderOrder=28;scene.add(marker);
 
   let shell=null,beam=null,light=null;
   if(lethal){
@@ -602,7 +630,7 @@ function spawnHeadshotFx(pos,lethal=false){
     for(let i=0;i<(MOBILE_LOW?3:7);i++)spawnSpark(center,i%2?0xffb52e:0xff5331);
   }
 
-  headshotFx.push({ring,sprite,shell,beam,light,t:0,dur:lethal?.92:.46,lethal});
+  headshotFx.push({ring,marker,shell,beam,light,t:0,dur:lethal?.92:.46,lethal});
 }
 function tickHeadshotFx(dt){
   for(let i=headshotFx.length-1;i>=0;i--){
@@ -612,10 +640,12 @@ function tickHeadshotFx(dt){
     fx.ring.lookAt(camera.position);
     fx.ring.scale.setScalar(.55+ease*(fx.lethal?4.2:2.0));
     fx.ring.material.opacity=(1-p)*(fx.lethal?.95:.76);
-    fx.sprite.material.opacity=Math.max(0,1-p*.88);
-    const ss=fx.lethal?(1+Math.sin(Math.min(1,p)*Math.PI)*.30):(1+Math.sin(p*Math.PI)*.12);
-    fx.sprite.scale.multiplyScalar(1+(ss-1)*dt*5);
-    fx.sprite.position.y+=dt*(fx.lethal?.62:.28);
+    fx.marker.lookAt(camera.position);
+    setProceduralFxOpacity(fx.marker,Math.max(0,1-p*.88));
+    const ss=fx.lethal?(1+Math.sin(Math.min(1,p)*Math.PI)*.34):(1+Math.sin(p*Math.PI)*.16);
+    fx.marker.scale.setScalar(ss);
+    fx.marker.rotation.z+=dt*(fx.lethal?3.1:2.2);
+    fx.marker.position.y+=dt*(fx.lethal?.62:.28);
     if(fx.shell){
       fx.shell.scale.setScalar(1+ease*3.2);
       fx.shell.material.opacity=(1-p)*.34;
@@ -626,7 +656,7 @@ function tickHeadshotFx(dt){
     }
     if(fx.light)fx.light.intensity=Math.max(0,7.2*(1-p));
     if(p>=1){
-      destroySceneObject(fx.ring);destroySceneObject(fx.sprite);
+      destroySceneObject(fx.ring);destroySceneObject(fx.marker);
       if(fx.shell)destroySceneObject(fx.shell);
       if(fx.beam)destroySceneObject(fx.beam);
       if(fx.light){scene.remove(fx.light);fx.light.dispose?.();}
@@ -638,17 +668,16 @@ function tickHeadshotFx(dt){
 
 const combatImpactFx=[];
 function spawnCombatImpact(pos,type='bullet'){
-  const asset=GAME_ASSETS.impact[type]||GAME_ASSETS.impact.bullet;
-  const size=type==='rocket'?1.65:type==='sniper'?1.48:type==='plasma'?1.12:type==='critical'?1.20:type==='wall'?.72:.82;
-  const sprite=makeAssetSprite(asset,size,size,{depthTest:false,renderOrder:24});
-  sprite.position.copy(pos);scene.add(sprite);
+  const size=type==='rocket'?1.18:type==='sniper'?1.02:type==='plasma'?.84:type==='critical'?.90:type==='wall'?.56:.62;
   const col=type==='sniper'?0xa7efff:type==='plasma'?0xc76cff:type==='critical'?0xffe34f:type==='rocket'?0xff6930:type==='wall'?0xdce6eb:0xffb650;
+  const burst=makeProceduralBurst(col,size,type==='rocket'?10:type==='sniper'?8:6,type==='wall'?0xf5fbff:0xffffff);
+  burst.position.copy(pos);burst.lookAt(camera.position);burst.renderOrder=24;scene.add(burst);
   const ring=new THREE.Mesh(
     new THREE.RingGeometry(.08,.14,28),
     new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.74,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending})
   );
   ring.position.copy(pos);ring.lookAt(camera.position);scene.add(ring);
-  combatImpactFx.push({sprite,ring,t:0,dur:type==='rocket'?.52:type==='sniper'?.34:.28,max:type==='rocket'?2.8:type==='sniper'?2.15:type==='plasma'?1.8:1.35});
+  combatImpactFx.push({burst,ring,t:0,dur:type==='rocket'?.52:type==='sniper'?.34:.28,max:type==='rocket'?2.8:type==='sniper'?2.15:type==='plasma'?1.8:1.35});
 }
 function tickCombatImpactFx(dt){
   for(let i=combatImpactFx.length-1;i>=0;i--){
@@ -656,10 +685,11 @@ function tickCombatImpactFx(dt){
     const p=Math.min(1,fx.t/fx.dur),ease=1-Math.pow(1-p,3);
     fx.ring.lookAt(camera.position);fx.ring.scale.setScalar(.7+ease*fx.max);
     fx.ring.material.opacity=(1-p)*.74;
-    fx.sprite.material.opacity=Math.max(0,1-p*1.12);
-    const pulse=1+Math.sin(p*Math.PI)*.38;
-    fx.sprite.scale.multiplyScalar(1+(pulse-1)*dt*7);
-    if(p>=1){destroySceneObject(fx.ring);destroySceneObject(fx.sprite);combatImpactFx.splice(i,1);}
+    fx.burst.lookAt(camera.position);
+    setProceduralFxOpacity(fx.burst,Math.max(0,1-p*1.12));
+    fx.burst.scale.setScalar(1+Math.sin(p*Math.PI)*.42);
+    fx.burst.rotation.z+=dt*2.4;
+    if(p>=1){destroySceneObject(fx.ring);destroySceneObject(fx.burst);combatImpactFx.splice(i,1);}
   }
 }
 

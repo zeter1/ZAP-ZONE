@@ -2,6 +2,19 @@
 
 ## Unreleased — 2026-09-25
 
+### Hosting Compatibility 3.0 — без texture-quads в 3D-сцене
+- устранён оставшийся эпизодический источник чёрных квадратов на uCoz: временные explosion/headshot/impact эффекты больше не создают SVG Sprite billboards;
+- explosion, headshot/headshot-kill и bullet/wall/plasma/sniper/rocket/critical impacts переведены на procedural Three.js burst geometry: additive ring + core + radial rays;
+- procedural bursts по-прежнему billboard-ориентируются к камере для читаемости, но состоят только из WebGL geometry/materials и не имеют image texture;
+- water.svg удалён из 3D water material: поверхность воды теперь процедурная по цвету/emissive/opacity и анимируется без TextureLoader;
+- после этого src/core/engine.js не содержит makeAssetPlane, makeAssetSprite или gameTexture и не зависит от внешних SVG/image textures для 3D-сцены;
+- обычные SVG в HTML/CSS UI остаются допустимыми, потому что они не создают WebGL texture-quads.
+
+### Regression protection
+- validation запрещает любые внешние texture plane/sprite вызовы внутри 3D engine scene;
+- отдельно проверяются makeProceduralBurst / setProceduralFxOpacity и отсутствие waterTex / GAME_ASSETS.fx / GAME_ASSETS.impact usage в engine;
+- версия повышена до v23.9.
+
 ### Bot HUD cleanup — только здоровье над ботами
 - удалены текстовые overhead-бейджи над ботами: больше нет подписей «СВОЙ», «ВРАГ», роли и иконки оружия над головой;
 - над каждым видимым ботом остаётся только компактная полоска здоровья;

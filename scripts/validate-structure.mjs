@@ -240,8 +240,15 @@ const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
   if(!engine.includes(token))fail('polished engine FX/material/cover integration missing: '+token);
 }
-if(engine.includes('makeAssetPlane(GAME_ASSETS.environment'))fail('persistent environment must not depend on SVG texture planes');
-if(engine.includes('GAME_ASSETS.environment.foliage'))fail('tree foliage must use procedural geometry only');
+if(engine.includes('makeAssetPlane(')||engine.includes('makeAssetSprite(')||engine.includes('gameTexture(')){
+  fail('3D engine scene must not depend on external SVG/image texture quads');
+}
+for(const token of ['function makeProceduralBurst','function setProceduralFxOpacity','const burst=makeProceduralBurst(col','const marker=makeProceduralBurst(gold','poolMat.emissiveIntensity=.30']){
+  if(!engine.includes(token))fail('hosting-safe procedural transient FX missing: '+token);
+}
+if(engine.includes('waterTex')||engine.includes('map:waterTex')||engine.includes('GAME_ASSETS.fx.')||engine.includes('GAME_ASSETS.impact[')){
+  fail('hosting-sensitive external FX/water texture reference returned to engine');
+}
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
@@ -300,5 +307,5 @@ const minimap=readFileSync('src/ui/minimap.js','utf8');
 for(const token of ['MINIMAP_WORLD_HALF=92','minimapStaticGeometry','BOT_MAP_ZONES','frontlineZoneOwners','camera.position',"team!=='ally'","pk.type!=='weapon'",'MINIMAP_HZ=10',"ctx.strokeStyle='rgba(3,10,16,.92)'","performance.now()*.006","minimapDrawTriangle(pos.x,pos.z,bot.group.rotation.y,'#5fc9ff'"]){
   if(!minimap.includes(token))fail('polished tactical minimap integration missing: '+token);
 }
-if(!html.includes('ZAP ZONE v23.8'))fail('index version is not v23.8');
-if(!process.exitCode)console.log('ZAP ZONE v23.8 health-only bot HUD validation passed.');
+if(!html.includes('ZAP ZONE v23.9'))fail('index version is not v23.9');
+if(!process.exitCode)console.log('ZAP ZONE v23.9 texture-quad-free 3D FX validation passed.');
