@@ -997,7 +997,8 @@ let mineHudSecond=-1,bombHudSecond=-1,smokeHudSecond=-1;
 // Camera recoil
 let recoilPitch=0,recoilYaw=0,recoilRecovery=0;
 const K={};
-const mobileInput={  moveId:null,lookId:null,fire:false,run:false,jumpQueued:false,reloadQueued:false,mineQueued:false,
+const mobileInput={
+  moveId:null,lookId:null,fire:false,run:false,jumpQueued:false,reloadQueued:false,mineQueued:false,
   moveX:0,moveY:0,lookDX:0,lookDY:0,joyR:0,lookActive:false
 };
 let portraitBlocked=false;
@@ -1996,7 +1997,8 @@ function throwMine(){
   const vv=dir.clone().multiplyScalar(9);vv.y+=5;
   mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z,fall:true,life:Infinity,armed:false,aT:1.5,checkT:.08,ph:0,team:'player',owner:'player',dmg:mineW.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.mineDamageM*plr.explosiveDamageM,radius:9*plr.explosiveRadiusM*plr.mineRadiusM});
   playerMineCD=MINE_COOLDOWN_SECONDS*plr.mineCooldownM;
-  mineHudSecond=-1;  updateMineHUD();
+  mineHudSecond=-1;
+  updateMineHUD();
 }
 
 function placeBomb(){
@@ -2995,7 +2997,8 @@ class Enemy{
 
     this.hEl.style.display=this.uiVis?'block':'none';
     this.wEl.style.display=this.uiVis?'block':'none';
-    if(this.uiVis){      const sx=this.uiX,sy=this.uiY;
+    if(this.uiVis){
+      const sx=this.uiX,sy=this.uiY;
       this.hEl.style.left=(sx-24)+'px';this.hEl.style.top=(sy-10)+'px';
       this.hFill.style.width=(this.hp/this.maxHp*100)+'%';
       const pct=this.hp/this.maxHp;
