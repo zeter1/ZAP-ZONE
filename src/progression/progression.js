@@ -12,6 +12,8 @@ function addXP(amt){
   saveTick=Math.min(saveTick,1.5);
 }
 function openLvlAnn(lvl){
+  zooming=false;
+  G('sniper-scope')?.classList.remove('on','kick');
   lvlAnnOpen=true;refreshMobileHUD();playSfx('level');
   G('lvl-ann-num').textContent=lvl;
   G('lvl-ann-bar').style.width='100%';
@@ -352,6 +354,8 @@ function checkDeath(){
   if(dying||hp>0)return;
   const killer=lastPlayerAttacker&&lastPlayerAttacker.alive?lastPlayerAttacker:null;
   if(killer){killer.kills=(killer.kills||0)+1;enemyKills++;updateTeamScore();}
+  zooming=false;
+  G('sniper-scope')?.classList.remove('on','kick');
   dying=true;running=false;paused=false;lvlAnnOpen=false;perkPickOpen=false;refreshMobileHUD();playSfx('death');
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');G('pause').classList.remove('on');
   // Захват мыши во время киллкамеры не отпускаем: иначе браузер часто не даёт
