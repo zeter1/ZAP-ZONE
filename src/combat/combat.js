@@ -39,12 +39,13 @@ function rSphere(o,d,c,r){
   if(dd<0)return Infinity;const sq=Math.sqrt(dd),t0=-b-sq;if(t0>.001)return t0;const t1=-b+sq;return t1>.001?t1:Infinity;
 }
 const _ht=new THREE.Vector3();
-function hitEnemy(o,d,team,exclude=null){
+function hitEnemy(o,d,team,exclude=null,maxRange=120){
   let best=Infinity,en=null,hd=false;
+  const maxD2=maxRange*maxRange;
   for(const e of enemies){
     if(!e.alive||e===exclude)continue;
     const p=e.group.position;
-    const dx=p.x-o.x,dz=p.z-o.z;if(dx*dx+dz*dz>3600)continue;
+    const dx=p.x-o.x,dz=p.z-o.z;if(dx*dx+dz*dz>maxD2)continue;
     _ht.set(p.x,p.y+1.0,p.z);if(rSphere(o,d,_ht,.85)===Infinity)continue;
     _ht.set(p.x,p.y+.55,p.z);let t=rSphere(o,d,_ht,.36);if(t<best){best=t;en=e;hd=false;}
     _ht.set(p.x,p.y+1.25,p.z);t=rSphere(o,d,_ht,.46);if(t<best){best=t;en=e;hd=false;}
@@ -330,7 +331,8 @@ function mkTracer(col,key='default'){
 }
 
 // ─── PROJECTILE ARRAYS ──────────────────
-const pRkts=[],eRkts=[],pTrs=[],mines=[],smokeGrenades=[],smokeClouds=[];
+const pRkts=[],eRkts=[],pTrs=[],pBullets=[],mines=[],smokeGrenades=[],smokeClouds=[];
+const MAX_PLAYER_BULLETS=180;
 const MAX_PLAYER_MINES=100;
 const MAX_MINES=140;
 function playerMineCount(){let c=0;for(const mn of mines)if(mn.owner==='player'&&mn.kind!=='bomb')c++;return c;}
@@ -361,25 +363,104 @@ function grantPlayerKillRewards(){
   if(plr.killArmor>0)armor=Math.min(plr.maxArmor,armor+plr.killArmor);
   markHUD();
 }
-function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false){
-  const base=zooming?(w.adsSpread??(w.spread||0)*.55):(w.spread||0);
+function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false,bloom=weaponBloom){
+  const hip=w.spread||0,ads=w.adsSpread??hip*.55;
+  const base=hip+(ads-hip)*Math.max(0,Math.min(1,adsBlend));
   const moving=Math.min(1,Math.hypot(plrVx,plrVz)/8);
   const movePenalty=(w.moveSpread||0)*moving;
   const airPenalty=onGnd?0:(w.airSpread||0);
   const pelletFactor=(w.pellets||1)>1?(pelletIndex===0?.35:1):1;
   const extraPenalty=extraShot?.035:0;
-  return Math.max(0,(base*pelletFactor+movePenalty+airPenalty+extraPenalty)*plr.spreadM);
+  return Math.max(0,(base*pelletFactor+movePenalty+airPenalty+bloom+extraPenalty)*plr.spreadM);
 }
 function kickSniperScope(){
   const scope=G('sniper-scope');if(!scope||!zooming)return;
   scope.classList.remove('kick');void scope.offsetWidth;scope.classList.add('kick');
   clearTimeout(kickSniperScope._t);kickSniperScope._t=setTimeout(()=>scope.classList.remove('kick'),260);
 }
+function weaponImpactType(w,isCrit=false){
+  return w.isSniper?'sniper':(w.key==='plasma'?'plasma':(isCrit?'critical':'bullet'));
+}
+function destroyPlayerBullet(index){
+  const b=pBullets[index];if(!b)return;
+  if(b.m)destroySceneObject(b.m);
+  pBullets.splice(index,1);
+}
+function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
+  const w=WEAPON_BY_KEY[b.wKey]||WEAPONS[0];
+  const isCrit=Math.random()<plr.critChance;
+  const lowTarget=en.hp/en.maxHp<.35;
+  const rangeBonus=travelDist<12?1+plr.closeDamage:(travelDist>28?1+plr.longRangeDamage:1);
+  const distanceScale=weaponDamageScaleAtDistance(w,travelDist);
+  const headshotMult=w.headshotMult||2.10;
+  const dmg=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+  en.hurt(dmg,dir.clone(),'ally');
+  const lethalHeadshot=hd&&!en.alive;
+  if(b.markerEligible||!en.alive){
+    const hitKind=!en.alive?'kill':isCrit?'crit':hd?'head':'hit';
+    showHitMarker(hitKind);playSfx(hitKind==='kill'?'kill':hitKind==='crit'?'crit':'hit',1,w.key);
+  }
+  if(isCrit&&plr.critHeal>0){hp=Math.min(plr.maxHp,hp+plr.critHeal);markHUD();}
+  if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
+  if(b.markerEligible||w.key==='plasma'){spawnSpark(hitFx,b.color);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
+  if(b.markerEligible)spawnCombatImpact(hitFx,weaponImpactType(w,isCrit));
+  if(hd){
+    spawnHeadshotFx(hitFx,lethalHeadshot);
+    const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
+    hs.classList.remove('on','kill');void hs.offsetWidth;
+    if(lethalHeadshot){
+      hs.classList.add('kill');hsIcon.src=GAME_ASSETS.fx.headshotKill;hsText.textContent='HEADSHOT KILL';
+      const flash=G('hs-kill-flash');flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');
+      clearTimeout(resolvePlayerBulletHit._kft);resolvePlayerBulletHit._kft=setTimeout(()=>flash.classList.remove('on'),520);
+    }else{hsIcon.src=GAME_ASSETS.fx.headshot;hsText.textContent='HEADSHOT';}
+    hs.classList.add('on');
+    clearTimeout(resolvePlayerBulletHit._ht);resolvePlayerBulletHit._ht=setTimeout(()=>hs.classList.remove('on','kill'),lethalHeadshot?940:620);
+  }
+  if(plr.lifeSteal>0)hp=Math.min(hp+dmg*plr.lifeSteal,plr.maxHp);
+  if(!en.alive){
+    addXP((en.type+1)*25+level*3);score+=(en.type+1)*100;kills++;grantPlayerKillRewards();
+    combo++;comboT=3;if(combo>2)showCombo();
+    showKillMedal({distance:travelDist,isCrit,headshot:lethalHeadshot,explosive:false});
+    markHUD();scorePop(lethalHeadshot?'HEADSHOT KILL · +'+(en.type+1)*100:'+'+(en.type+1)*100+(hd?' 🎯':'')+(isCrit?' КРИТ!':''));
+    allyKills++;updateTeamScore();
+  }
+  if(plr.explode){
+    const center=en.group.position.clone();center.y+=1.0;explode(center,0xff8800,2.6*plr.explodeRadiusM);
+    for(const e2 of enemies){
+      if(!e2.alive||e2.team==='ally'||e2===en)continue;
+      const dd=center.distanceTo(e2.group.position.clone().setY(e2.group.position.y+1));
+      const exRadius=3.6*plr.explodeRadiusM;if(dd>=exRadius)continue;
+      const splash=dmg*.32*plr.explodeDamageM*(1-dd/exRadius);
+      e2.hurt(splash,dir.clone(),'ally');
+      if(plr.lifeSteal>0)hp=Math.min(hp+splash*plr.lifeSteal,plr.maxHp);
+      if(!e2.alive){addXP((e2.type+1)*22);score+=(e2.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();showKillMedal({explosive:true});scorePop('💥+'+(e2.type+1)*90);}
+    }
+  }
+  return dmg;
+}
+function spawnPlayerBullet(from,dir,w,meta={}){
+  while(pBullets.length>=MAX_PLAYER_BULLETS)destroyPlayerBullet(0);
+  const speed=Math.max(1,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
+  const color=PLR_TCOL[w.key]||0xffffaa;
+  const m=mkTracer(color,w.key);
+  const pos=from.clone().addScaledVector(dir,.48);pos.y-=.04;
+  m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);scene.add(m);
+  pBullets.push({
+    m,pos,vel:dir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
+    life:(w.range||100)/speed+.40,range:w.range||100,travel:0,wKey:w.key,color,
+    markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),
+    penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null
+  });
+}
 
 function shoot(){
   if(reloading||sCD>0)return;
   const w=getW();if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}
-  if(ammo<=0){doReload();noAmmoT=1.5;G('no-ammo').style.opacity='1';return;}
+  if(ammo<=0){
+    doReload();
+    if(!reloading){playSfx('dry');sCD=Math.max(sCD,.18);}
+    noAmmoT=1.5;G('no-ammo').style.opacity='1';return;
+  }
   if(Math.random()>=plr.ammoSaveChance)ammo--;
   syncCurrentAmmo();sCD=w.rate;recoil=1;wHUD();
   playSfx('shoot',1,w.key);pulseCrosshair('fire');
@@ -388,10 +469,12 @@ function shoot(){
   triggerScreenShake(shakePower,shakeDuration);
   if(w.isSniper)kickSniperScope();
 
-  // Camera recoil
-  recoilPitch+=(w.recoilY||.02)*(0.8+Math.random()*.4)*plr.recoilM;
-  recoilYaw+=(Math.random()-.5)*(w.recoilX||.01)*plr.recoilM;
+  // Camera recoil: repeatable pattern + small jitter gives each weapon a learnable cadence.
+  const pattern=w.recoilPattern||[0],patternX=pattern[shotSequence%pattern.length]||0;
+  recoilPitch+=(w.recoilY||.02)*(0.88+Math.min(.32,shotSequence*.018)+Math.random()*.16)*plr.recoilM;
+  recoilYaw+=(patternX+(Math.random()-.5)*.22)*(w.recoilX||.01)*plr.recoilM;
   recoilRecovery=w.recoilDelay??.3;
+  shotSequence++;shotResetT=Math.max(.34,w.rate*2.4);
 
   if(flashM)flashM.material.opacity=1;
   if(beamM){beamM.material.opacity=.9;beamT=.065;}
@@ -416,91 +499,17 @@ function shoot(){
     return;
   }
   const tc=PLR_TCOL[w.key]||0xffffaa;
+  const shotBloom=weaponBloom;
   for(let s=0;s<shots;s++){
     for(let p=0;p<w.pellets;p++){
       const d=bDir.clone();
-      const sp2=effectiveWeaponSpread(w,p,s>0);
+      const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom);
       if(sp2>0){d.x+=(Math.random()-.5)*sp2*2;d.y+=(Math.random()-.5)*sp2*2;d.z+=(Math.random()-.5)*sp2*2;d.normalize();}
-      const maxRange=w.range||100;
-      _rc.ray.origin.copy(camera.position);_rc.ray.direction.copy(d);_rc.near=0;_rc.far=maxRange;
-      _rcWallHits.length=0;
-      _rc.intersectObjects(wallMeshes,false,_rcWallHits);
-      let wDist=maxRange,wPos=null;if(_rcWallHits.length>0){wDist=_rcWallHits[0].distance;wPos=_rcWallHits[0].point.clone();}
-      const {en,dist,hd}=hitEnemy(camera.position,d,'ally');
-      // Check wall between player and enemy (can't shoot through walls)
-      if(en&&dist<wDist){
-        const isCrit=Math.random()<plr.critChance;
-        const lowTarget=en.hp/en.maxHp<.35;
-        const rangeBonus=dist<12?1+plr.closeDamage:(dist>28?1+plr.longRangeDamage:1);
-        const distanceScale=weaponDamageScaleAtDistance(w,dist);
-        const headshotMult=w.headshotMult||2.10;
-        const dmg=w.dmg*distanceScale*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
-        const hitFx=camera.position.clone().addScaledVector(d,dist);
-        en.hurt(dmg,d.clone(),'ally');
-        const lethalHeadshot=hd&&!en.alive;
-        if(p===0){
-          const hitKind=!en.alive?'kill':isCrit?'crit':hd?'head':'hit';
-          showHitMarker(hitKind);
-          playSfx(hitKind==='kill'?'kill':hitKind==='crit'?'crit':'hit',1,w.key);
-        }
-        if(isCrit&&plr.critHeal>0){hp=Math.min(plr.maxHp,hp+plr.critHeal);markHUD();}
-        if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
-        if(p===0||w.key==='plasma'){spawnSpark(hitFx,tc);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
-        if(p===0)spawnCombatImpact(hitFx,w.isSniper?'sniper':(w.key==='plasma'?'plasma':(isCrit?'critical':'bullet')));
-        if(hd){
-          spawnHeadshotFx(hitFx,lethalHeadshot);
-          const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
-          hs.classList.remove('on','kill');void hs.offsetWidth;
-          if(lethalHeadshot){
-            hs.classList.add('kill');
-            hsIcon.src=GAME_ASSETS.fx.headshotKill;hsText.textContent='HEADSHOT KILL';
-            const flash=G('hs-kill-flash');flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');
-            clearTimeout(shoot._kft);shoot._kft=setTimeout(()=>flash.classList.remove('on'),520);
-          }else{
-            hsIcon.src=GAME_ASSETS.fx.headshot;hsText.textContent='HEADSHOT';
-          }
-          hs.classList.add('on');
-          clearTimeout(shoot._ht);shoot._ht=setTimeout(()=>hs.classList.remove('on','kill'),lethalHeadshot?940:620);
-        }
-        if(plr.lifeSteal>0)hp=Math.min(hp+dmg*plr.lifeSteal,plr.maxHp);
-        if(!en.alive){
-          addXP((en.type+1)*25+level*3);score+=(en.type+1)*100;kills++;grantPlayerKillRewards();
-          combo++;comboT=3;if(combo>2)showCombo();
-          showKillMedal({distance:dist,isCrit,headshot:lethalHeadshot,explosive:false});
-          markHUD();
-          scorePop(lethalHeadshot?'HEADSHOT KILL · +'+(en.type+1)*100:'+'+(en.type+1)*100+(hd?' 🎯':'')+(isCrit?' КРИТ!':''));
-          allyKills++;updateTeamScore();
-        }
-        if(plr.explode){
-          const center=en.group.position.clone();center.y+=1.0;explode(center,0xff8800,2.6*plr.explodeRadiusM);
-          for(const e2 of enemies){
-            if(!e2.alive||e2.team==='ally'||e2===en)continue;
-            const dd=center.distanceTo(e2.group.position.clone().setY(e2.group.position.y+1));
-            const exRadius=3.6*plr.explodeRadiusM;
-            if(dd>=exRadius)continue;
-            const splash=dmg*.32*plr.explodeDamageM*(1-dd/exRadius);
-            e2.hurt(splash,d.clone(),'ally');
-            if(plr.lifeSteal>0)hp=Math.min(hp+splash*plr.lifeSteal,plr.maxHp);
-            if(!e2.alive){addXP((e2.type+1)*22);score+=(e2.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();showKillMedal({explosive:true});scorePop('💥+'+(e2.type+1)*90);}
-          }
-        }
-        if(plr.piercing){
-          const pierced=hitEnemy(camera.position,d,'ally',en);
-          if(pierced.en&&pierced.dist<wDist){
-            const pdmg=dmg*.72*(pierced.hd?1.20:1);
-            pierced.en.hurt(pdmg,d.clone(),'ally');
-            if(plr.lifeSteal>0)hp=Math.min(hp+pdmg*plr.lifeSteal,plr.maxHp);
-            if(!pierced.en.alive){addXP((pierced.en.type+1)*22);score+=(pierced.en.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();scorePop('🔱+'+(pierced.en.type+1)*90);}
-          }
-        }
-        if(s===0&&p===0)spawnTracer(camera.position,d,dist,tc,w.key);
-      } else {
-        if(wPos){wallImpact(wPos,tc);spawnCombatImpact(wPos,w.isSniper?'sniper':(w.key==='plasma'?'plasma':'wall'));}
-        if(s===0&&p===0)spawnTracer(camera.position,d,wDist,tc,w.key);
-      }
-      if(w.key==='shotgun'&&p===1)spawnTracer(camera.position,d,Math.min(en&&dist<wDist?dist:wDist,28),tc,w.key);
+      spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
     }
   }
+  weaponBloom=Math.min(w.bloomMax??.03,weaponBloom+(w.bloomPerShot||0));
+
 }
 function spawnTracer(from,dir,dist,col,key='default'){
   if(pTrs.length>=MAX_TRACERS){const old=pTrs.shift();destroySceneObject(old.m);}
