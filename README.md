@@ -1,5 +1,7 @@
 # ZAP ZONE
 
+[![Validate](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml/badge.svg)](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml)
+
 **ZAP ZONE** — браузерный 3D FPS на **Three.js/WebGL** с командным боем **5×5**: игрок и 4 союзных AI-бота против команды из 5 вражеских ботов.
 
 ## История изменений
@@ -130,7 +132,17 @@ GitHub Actions **Validate** имеет только `contents: read` и выпо
 - проверку фактического подключения новых assets;
 - browser boot smoke test в headless Chrome.
 
+## Диагностика
+
+Для воспроизводимой проблемы укажите браузер и версию, GPU/WebGL-среду, режим качества/FPS, оружие или тип AI-сценария, точные шаги и небольшой фрагмент DevTools Console без секретов.
+
+Структурированная форма: **[Bug report](https://github.com/zeter1/ZAP-ZONE/issues/new?template=bug_report.yml)**.
+
+## Безопасность
+
+Политика ответственного сообщения об уязвимостях: **[SECURITY.md](SECURITY.md)**.
+
 ## Ограничения
 
 - Three.js r128 пока загружается с CDN.
-- Полный интерактивный E2E бой пока не автоматизирован.
+- Полный интерактивный E2E бой пока не автоматизирован; CI доказывает boot/static contracts, но не полный gameplay runtime.

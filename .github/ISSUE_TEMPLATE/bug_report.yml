@@ -1,0 +1,75 @@
+name: Bug report
+description: Сообщить о воспроизводимой проблеме в ZAP ZONE
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: browser
+    attributes:
+      label: Браузер и версия
+      placeholder: "Chrome 140 / Firefox 142"
+    validations:
+      required: true
+
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU / WebGL
+      placeholder: "RTX 4060, WebGL2 enabled"
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Область
+      options:
+        - Запуск / boot / Three.js
+        - Движение игрока / камера
+        - Оружие / перезарядка / прицел
+        - Баллистика / hit detection
+        - AI ботов / навигация / тактика
+        - Pickups / progression / autosave
+        - UI / HUD / assets
+        - Web Audio
+        - Производительность / FPS / качество
+        - WebGL recovery
+        - Другое
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      placeholder: |
+        1. Запустить матч ...
+        2. Взять оружие ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Фактический результат
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемый результат
+    validations:
+      required: true
+
+  - type: input
+    id: context
+    attributes:
+      label: Игровой контекст
+      placeholder: "SR-9, 5x5, High quality, ~60 FPS, bot flank"
+
+  - type: textarea
+    id: console
+    attributes:
+      label: DevTools Console
+      description: Небольшой релевантный фрагмент без личных данных и секретов.
+      render: text
