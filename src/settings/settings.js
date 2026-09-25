@@ -82,6 +82,11 @@ function playSfx(name,intensity=1,weaponKey=''){
     case 'reload':synthTone(330,.045,.025*k,'square',460);synthNoise(.035,.014*k,2200,.045);break;
     case 'reloadDone':synthTone(520,.055,.028*k,'square',660);break;
     case 'dry':synthTone(180,.035,.020*k,'square',145);synthNoise(.025,.010*k,900,.012);break;
+    case 'equip':synthTone(260,.035,.014*k,'square',340);synthNoise(.030,.008*k,1800,.018);break;
+    case 'shell':synthTone(390,.030,.017*k,'square',520);synthNoise(.032,.012*k,2100,.015);break;
+    case 'reloadCancel':synthTone(240,.028,.012*k,'square',190);break;
+    case 'ricochet':synthTone(1180,.055,.020*k,'triangle',1760);break;
+    case 'whiz':synthTone(920,.075,.014*k,'sine',1380);synthNoise(.050,.007*k,4200);break;
     case 'bolt':synthTone(470,.035,.020*k,'square',350,.28);synthNoise(.045,.018*k,2400,.31);synthTone(620,.03,.016*k,'square',520,.39);break;
     case 'pump':synthTone(310,.045,.022*k,'square',245,.20);synthNoise(.055,.020*k,1700,.24);synthTone(390,.035,.018*k,'square',520,.34);break;
     case 'level':synthTone(440,.13,.035*k,'triangle',660);synthTone(660,.14,.032*k,'triangle',880,.10);synthTone(880,.18,.028*k,'sine',1180,.20);break;
