@@ -7,7 +7,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyR')doReload();
   if(e.code==='KeyF')throwMine();
   if(e.code==='KeyG')placeBomb();
-  const n=parseInt(e.key);if(n>=1&&n<=8)switchW(n-1);
+  const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
 });
 window.addEventListener('keyup',e=>{K[e.code]=false;});
 document.addEventListener('mousemove',e=>{
@@ -298,30 +298,31 @@ function updateBombFuseVisual(mn,dt){
 function mkTracer(col,key='default'){
   const g=new THREE.Group();
   const plasma=key==='plasma';
+  const sniper=key==='sniper';
   const rifle=key==='rifle';
   const shotgun=key==='shotgun';
-  const len=plasma?1.48:(rifle?1.18:(shotgun?.86:1.02));
+  const len=sniper?2.85:(plasma?1.48:(rifle?1.18:(shotgun?.86:1.02)));
   const additive=(color,opacity)=>new THREE.MeshBasicMaterial({
     color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending
   });
   const core=new THREE.Mesh(
-    new THREE.CylinderGeometry(plasma?.028:.012,plasma?.040:.018,len,6),
-    additive(plasma?0xffffff:0xfff0bf,plasma?.96:.92)
+    new THREE.CylinderGeometry(sniper?.016:(plasma?.028:.012),sniper?.026:(plasma?.040:.018),len,6),
+    additive(sniper?0xeaffff:(plasma?0xffffff:0xfff0bf),sniper?.99:(plasma?.96:.92))
   );
   core.rotation.x=Math.PI/2;core.renderOrder=18;g.add(core);
   const tip=new THREE.Mesh(
-    new THREE.SphereGeometry(plasma?.082:.034,7,5),
+    new THREE.SphereGeometry(sniper?.050:(plasma?.082:.034),7,5),
     additive(0xffffff,.98)
   );
   tip.position.z=len*.46;tip.renderOrder=20;g.add(tip);
   const halo=new THREE.Mesh(
-    new THREE.CylinderGeometry(plasma?.085:.034,plasma?.12:.052,len*.94,7),
-    additive(col,plasma?.38:.24)
+    new THREE.CylinderGeometry(sniper?.050:(plasma?.085:.034),sniper?.075:(plasma?.12:.052),len*.94,7),
+    additive(col,sniper?.46:(plasma?.38:.24))
   );
   halo.rotation.x=Math.PI/2;halo.renderOrder=17;g.add(halo);
   const tail=new THREE.Mesh(
-    new THREE.CylinderGeometry(plasma?.042:.014,plasma?.072:.030,len*.86,6),
-    additive(col,plasma?.24:.14)
+    new THREE.CylinderGeometry(sniper?.020:(plasma?.042:.014),sniper?.050:(plasma?.072:.030),len*.86,6),
+    additive(col,sniper?.30:(plasma?.24:.14))
   );
   tail.rotation.x=Math.PI/2;tail.position.z=-len*.28;tail.renderOrder=16;g.add(tail);
   g.userData.halo=halo;g.userData.tail=tail;g.userData.phase=Math.random()*Math.PI*2;
@@ -360,6 +361,20 @@ function grantPlayerKillRewards(){
   if(plr.killArmor>0)armor=Math.min(plr.maxArmor,armor+plr.killArmor);
   markHUD();
 }
+function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false){
+  const base=zooming?(w.adsSpread??(w.spread||0)*.55):(w.spread||0);
+  const moving=Math.min(1,Math.hypot(plrVx,plrVz)/8);
+  const movePenalty=(w.moveSpread||0)*moving;
+  const airPenalty=onGnd?0:(w.airSpread||0);
+  const pelletFactor=(w.pellets||1)>1?(pelletIndex===0?.35:1):1;
+  const extraPenalty=extraShot?.035:0;
+  return Math.max(0,(base*pelletFactor+movePenalty+airPenalty+extraPenalty)*plr.spreadM);
+}
+function kickSniperScope(){
+  const scope=G('sniper-scope');if(!scope||!zooming)return;
+  scope.classList.remove('kick');void scope.offsetWidth;scope.classList.add('kick');
+  clearTimeout(kickSniperScope._t);kickSniperScope._t=setTimeout(()=>scope.classList.remove('kick'),260);
+}
 
 function shoot(){
   if(reloading||sCD>0)return;
@@ -368,12 +383,15 @@ function shoot(){
   if(Math.random()>=plr.ammoSaveChance)ammo--;
   syncCurrentAmmo();sCD=w.rate;recoil=1;wHUD();
   playSfx('shoot',1,w.key);pulseCrosshair('fire');
-  triggerScreenShake(w.key==='rocket'?1.15:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22,w.key==='rocket'?.22:.11);
+  const shakePower=w.isRocket?1.15:w.isSniper?.98:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22;
+  const shakeDuration=w.isRocket?.22:w.isSniper?.20:.11;
+  triggerScreenShake(shakePower,shakeDuration);
+  if(w.isSniper)kickSniperScope();
 
   // Camera recoil
   recoilPitch+=(w.recoilY||.02)*(0.8+Math.random()*.4)*plr.recoilM;
   recoilYaw+=(Math.random()-.5)*(w.recoilX||.01)*plr.recoilM;
-  recoilRecovery=0.3;
+  recoilRecovery=w.recoilDelay??.3;
 
   if(flashM)flashM.material.opacity=1;
   if(beamM){beamM.material.opacity=.9;beamT=.065;}
@@ -382,7 +400,7 @@ function shoot(){
 
   // Muzzle flash
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
-  trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.key==='shotgun'?1.25:1);
+  trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1);
   if(w.key!=='rocket'&&w.key!=='plasma'){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
     ejectCasing(casingPos,camera.quaternion,w.key==='shotgun');
@@ -401,19 +419,22 @@ function shoot(){
   for(let s=0;s<shots;s++){
     for(let p=0;p<w.pellets;p++){
       const d=bDir.clone();
-      const sp2=((s>0?.08:0)+(p>0?w.spread:w.spread*.5))*plr.spreadM;
+      const sp2=effectiveWeaponSpread(w,p,s>0);
       if(sp2>0){d.x+=(Math.random()-.5)*sp2*2;d.y+=(Math.random()-.5)*sp2*2;d.z+=(Math.random()-.5)*sp2*2;d.normalize();}
-      _rc.ray.origin.copy(camera.position);_rc.ray.direction.copy(d);_rc.near=0;_rc.far=100;
+      const maxRange=w.range||100;
+      _rc.ray.origin.copy(camera.position);_rc.ray.direction.copy(d);_rc.near=0;_rc.far=maxRange;
       _rcWallHits.length=0;
       _rc.intersectObjects(wallMeshes,false,_rcWallHits);
-      let wDist=100,wPos=null;if(_rcWallHits.length>0){wDist=_rcWallHits[0].distance;wPos=_rcWallHits[0].point.clone();}
+      let wDist=maxRange,wPos=null;if(_rcWallHits.length>0){wDist=_rcWallHits[0].distance;wPos=_rcWallHits[0].point.clone();}
       const {en,dist,hd}=hitEnemy(camera.position,d,'ally');
       // Check wall between player and enemy (can't shoot through walls)
       if(en&&dist<wDist){
         const isCrit=Math.random()<plr.critChance;
         const lowTarget=en.hp/en.maxHp<.35;
         const rangeBonus=dist<12?1+plr.closeDamage:(dist>28?1+plr.longRangeDamage:1);
-        const dmg=w.dmg*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*rangeBonus*(hd?2.10*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+        const distanceScale=weaponDamageScaleAtDistance(w,dist);
+        const headshotMult=w.headshotMult||2.10;
+        const dmg=w.dmg*distanceScale*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
         const hitFx=camera.position.clone().addScaledVector(d,dist);
         en.hurt(dmg,d.clone(),'ally');
         const lethalHeadshot=hd&&!en.alive;
@@ -425,7 +446,7 @@ function shoot(){
         if(isCrit&&plr.critHeal>0){hp=Math.min(plr.maxHp,hp+plr.critHeal);markHUD();}
         if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
         if(p===0||w.key==='plasma'){spawnSpark(hitFx,tc);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
-        if(p===0)spawnCombatImpact(hitFx,w.key==='plasma'?'plasma':(isCrit?'critical':'bullet'));
+        if(p===0)spawnCombatImpact(hitFx,w.isSniper?'sniper':(w.key==='plasma'?'plasma':(isCrit?'critical':'bullet')));
         if(hd){
           spawnHeadshotFx(hitFx,lethalHeadshot);
           const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
@@ -474,7 +495,7 @@ function shoot(){
         }
         if(s===0&&p===0)spawnTracer(camera.position,d,dist,tc,w.key);
       } else {
-        if(wPos){wallImpact(wPos,tc);spawnCombatImpact(wPos,w.key==='plasma'?'plasma':'wall');}
+        if(wPos){wallImpact(wPos,tc);spawnCombatImpact(wPos,w.isSniper?'sniper':(w.key==='plasma'?'plasma':'wall'));}
         if(s===0&&p===0)spawnTracer(camera.position,d,wDist,tc,w.key);
       }
       if(w.key==='shotgun'&&p===1)spawnTracer(camera.position,d,Math.min(en&&dist<wDist?dist:wDist,28),tc,w.key);
