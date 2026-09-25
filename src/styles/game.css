@@ -212,15 +212,8 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   user-select:none;
   pointer-events:none;
 }
-#xhair{
-  width:40px!important;
-  height:40px!important;
-  margin-left:-20px!important;
-  margin-top:-20px!important;
-  background:url('../../assets/ui/crosshair.svg') center/contain no-repeat;
-  filter:drop-shadow(0 0 7px rgba(70,220,255,.75));
-}
-#xhair::before,#xhair::after,#xhair .xh-dot{display:none!important;}
+/* Legacy SVG crosshair removed in v22.2.
+   The live reticle is rendered only by .xh-arm/.xh-dot to avoid double overlays. */
 #hp-txt{display:flex;align-items:center;justify-content:center;gap:6px;}
 #hp-txt::before{
   content:'';
@@ -489,3 +482,8 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #wstate[data-state="busy"]{color:#ffd15a;}
 #wstate[data-state="blocked"]{color:#ff8b6b;}
 #xhair.weapon-lowered{opacity:.30;}
+
+/* v22.2 — one authoritative gameplay reticle */
+#xhair{background:none!important;margin-left:0!important;margin-top:0!important;filter:none;}
+#xhair .xh-dot{display:block!important;}
+#xhair.dynamic-hit{filter:drop-shadow(0 0 5px rgba(255,220,70,.95));}
