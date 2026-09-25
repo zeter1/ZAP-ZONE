@@ -171,7 +171,6 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
 }
 
 // ─── HUD ────────────────────────────────
-function G(id){return document.getElementById(id);}
 function pushKillFeed(killerTeam,killerLabel,victimTeam,victimLabel,kind='bullet'){
   const root=G('kill-feed');if(!root)return;
   const row=document.createElement('div');row.className='kf-row';

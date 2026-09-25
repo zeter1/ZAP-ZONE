@@ -480,29 +480,6 @@ function updateFrontlineHUD(force=false){
   if(scoreEl)scoreEl.textContent='ЗОНЫ '+allyControlScore+' : '+enemyControlScore+' · ЗАХВАТ = '+FRONTLINE_CFG.capturePoints+' ОЧКА';
   const mapHint=G('frontline-map-hint');
   if(mapHint)mapHint.textContent='ЦЕЛЬ: '+zone.label+' · '+dist+' м';
-  for(const mapZone of BOT_MAP_ZONES){
-    const el=document.querySelector('[data-frontline-zone="'+mapZone.id+'"]');if(!el)continue;
-    const active=mapZone.id===zone.id,owner=frontlineZoneOwners[mapZone.id];
-    el.classList.toggle('active',active);
-    el.classList.toggle('ally',owner==='ally');
-    el.classList.toggle('enemy',owner==='enemy');
-    el.classList.toggle('contested',active&&contested);
-    el.classList.toggle('capturing-ally',active&&!contested&&!frontlineObjective.owner&&frontlineObjective.progress>4);
-    el.classList.toggle('capturing-enemy',active&&!contested&&!frontlineObjective.owner&&frontlineObjective.progress<-4);
-    const status=el.querySelector('.frontline-zone-state');
-    if(status){
-      let txt=owner==='ally'?'СИНИЕ':owner==='enemy'?'КРАСНЫЕ':'НЕЙТРАЛ';
-      if(active){
-        if(contested)txt='БОЙ';
-        else if(!frontlineObjective.owner&&frontlineObjective.progress>4)txt='ЗАХВАТ СИНИХ';
-        else if(!frontlineObjective.owner&&frontlineObjective.progress<-4)txt='ЗАХВАТ КРАСНЫХ';
-        else if(frontlineObjective.owner==='ally')txt='СИНИЕ · ЦЕЛЬ';
-        else if(frontlineObjective.owner==='enemy')txt='КРАСНЫЕ · ЦЕЛЬ';
-        else txt='ЦЕЛЬ';
-      }
-      status.textContent=txt;
-    }
-  }
   root.classList.toggle('ally',frontlineObjective.owner==='ally');
   root.classList.toggle('enemy',frontlineObjective.owner==='enemy');
   root.classList.toggle('contested',contested);
@@ -563,8 +540,8 @@ const PLAYER_TACTICAL_PROFILE={
   style:'balanced',campScore:0
 };
 const BOT_TEAM_TACTICS={
-  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,suppressorSince:-999,suppressorGeneration:0,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1},
-  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,suppressorSince:-999,suppressorGeneration:0,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,fragWaveId:-1}
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,suppressorSince:-999,suppressorGeneration:0,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,smokeDecisionWaveId:-1,smokeDecisionUse:false,smokeReadyAt:-999,fragWaveId:-1},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,suppressorSince:-999,suppressorGeneration:0,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0,breachReady:false,smokeWaveId:-1,smokeDecisionWaveId:-1,smokeDecisionUse:false,smokeReadyAt:-999,fragWaveId:-1}
 };
 function botRoleLabel(role){
   return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
@@ -799,11 +776,18 @@ function refreshBotTeamTactics(team){
 }
 function maybeCoordinateBotUtility(bot,plan,targetPos,dist,waveState){
   if(!bot||!plan||!targetPos||waveState!=='active'||(plan.doctrine!=='breach'&&plan.doctrine!=='retake'))return;
-  if(plan.smokeWaveId!==plan.waveId&&(bot.role==='engineer'||bot.role==='anchor')&&dist>12&&dist<48){
+  const now=performance.now();
+  if(plan.smokeDecisionWaveId!==plan.waveId){
+    plan.smokeDecisionWaveId=plan.waveId;
+    plan.smokeDecisionUse=now>=plan.smokeReadyAt&&Math.random()<.30;
+  }
+  if(plan.smokeDecisionUse&&plan.smokeWaveId!==plan.waveId&&(bot.role==='engineer'||bot.role==='anchor')&&dist>14&&dist<46){
     const objective=botObjectivePoint(bot,plan)||plan.zonePos;
     const smokeTarget=bot.group.position.clone().lerp(objective,.58);smokeTarget.y=.1;
     if(!friendlyNearPoint(smokeTarget,bot.team,3.5)&&spawnBotSmokeGrenade(bot.getMuzzlePos(),smokeTarget,bot.team,bot)){
       plan.smokeWaveId=plan.waveId;
+      plan.smokeDecisionUse=false;
+      plan.smokeReadyAt=now+14000+Math.random()*8000;
     }
   }
   if(plan.fragWaveId!==plan.waveId&&(bot.role==='assault'||bot.role==='engineer')&&dist>9&&dist<31&&bot.canSeeTarget){

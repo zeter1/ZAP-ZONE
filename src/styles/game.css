@@ -36,42 +36,29 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #tb-ally{color:#44aaff;}
 #tb-enemy{color:#ff4444;}
 
-/* Frontline tactical map + lower-left objective stack */
-#frontline-map{position:absolute;top:108px;left:50%;transform:translateX(-50%);width:360px;padding:7px 10px 8px;border-radius:14px;background:linear-gradient(180deg,rgba(5,12,20,.82),rgba(0,0,0,.64));border:1px solid rgba(92,175,235,.28);box-shadow:0 8px 24px rgba(0,0,0,.30),inset 0 0 22px rgba(55,150,220,.035);pointer-events:none;z-index:11;}
-#frontline-map-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:9px;font-weight:900;letter-spacing:1.5px;color:#91dcff;}
-#frontline-map-hint{color:#ffe176;text-shadow:0 0 8px rgba(255,210,70,.28);white-space:nowrap;}
-#frontline-map-grid{position:relative;width:250px;height:92px;margin:5px auto 2px;display:grid;grid-template-columns:repeat(3,72px);grid-template-rows:repeat(3,26px);gap:6px;justify-content:center;align-content:center;}
-#frontline-map-grid::before,#frontline-map-grid::after{content:'';position:absolute;z-index:0;background:rgba(150,185,210,.20);box-shadow:0 0 7px rgba(80,175,235,.08);}
-#frontline-map-grid::before{width:2px;height:74px;left:50%;top:9px;transform:translateX(-1px);}
-#frontline-map-grid::after{height:2px;width:196px;left:27px;top:45px;}
-.frontline-zone{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:72px;height:26px;padding:2px 5px;border-radius:8px;background:rgba(12,20,29,.96);border:1px solid rgba(180,205,225,.20);color:#d4dde5;font-size:8px;font-weight:900;letter-spacing:.65px;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.30);transition:border-color .14s,box-shadow .14s,transform .14s,background .14s;}
-.frontline-zone small{margin-top:2px;font-size:6px;letter-spacing:.55px;color:#768897;}
-.zone-north{grid-column:2;grid-row:1}.zone-west{grid-column:1;grid-row:2}.zone-mid{grid-column:2;grid-row:2}.zone-east{grid-column:3;grid-row:2}.zone-south{grid-column:2;grid-row:3}
-.frontline-zone.ally{border-color:rgba(68,170,255,.70);background:linear-gradient(180deg,rgba(17,65,105,.94),rgba(6,25,45,.96));box-shadow:0 0 11px rgba(60,170,255,.16);}
-.frontline-zone.ally small{color:#7bd7ff}.frontline-zone.enemy{border-color:rgba(255,75,95,.70);background:linear-gradient(180deg,rgba(105,28,43,.94),rgba(45,8,18,.96));box-shadow:0 0 11px rgba(255,55,80,.15);}
-.frontline-zone.enemy small{color:#ff8f9d}.frontline-zone.active{transform:scale(1.08);border-color:#ffe176;box-shadow:0 0 14px rgba(255,215,70,.34),inset 0 0 9px rgba(255,210,70,.08);}
-.frontline-zone.contested{animation:frontlineMapPulse .64s ease-in-out infinite alternate;}
-.frontline-zone.capturing-ally{border-color:#65dbff}.frontline-zone.capturing-enemy{border-color:#ff7b88}
-@keyframes frontlineMapPulse{from{box-shadow:0 0 8px rgba(255,210,70,.18)}to{box-shadow:0 0 18px rgba(255,210,70,.48)}}
-#frontline-map-legend{display:flex;justify-content:center;gap:14px;font-size:6px;font-weight:900;letter-spacing:.8px;color:#788894;}
-.fm-blue{color:#62cfff}.fm-target{color:#ffe176}.fm-red{color:#ff7484}
-#left-tactical-stack{position:absolute;left:18px;bottom:65px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:min(58vw,520px);pointer-events:none;z-index:13;}
-#frontline-objective{position:relative;top:auto;left:auto;bottom:auto;transform:none;width:min(410px,100%);padding:7px 11px 8px;border-radius:12px;background:linear-gradient(180deg,rgba(5,12,20,.82),rgba(0,0,0,.64));border:1px solid rgba(255,214,90,.30);box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 0 18px rgba(255,210,70,.035);text-align:center;pointer-events:none;transition:border-color .16s,box-shadow .16s;}
-#frontline-title{font-size:11px;font-weight:900;letter-spacing:1.6px;color:#ffe176;text-shadow:0 0 9px rgba(255,205,70,.28);display:flex;align-items:center;justify-content:center;gap:7px;}
-#frontline-bearing{display:inline-flex;width:15px;height:15px;align-items:center;justify-content:center;transform-origin:50% 50%;transition:transform .09s linear;color:#fff2a0;text-shadow:0 0 9px rgba(255,210,75,.72);}
-#frontline-objective.inside{background:linear-gradient(180deg,rgba(19,39,45,.86),rgba(0,10,13,.70));border-color:rgba(94,255,207,.56);box-shadow:0 8px 24px rgba(0,0,0,.28),0 0 18px rgba(70,255,196,.11);}
-#frontline-state{margin-top:2px;font-size:9px;font-weight:800;letter-spacing:.8px;color:#c5d0da;}
-#frontline-track{position:relative;height:6px;margin-top:5px;border-radius:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);overflow:hidden;}
+/* Tactical minimap + lower-left objective stack */
+#left-tactical-stack{position:absolute;left:18px;bottom:65px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;width:286px;pointer-events:none;z-index:13;}
+#frontline-map{position:relative;width:266px;padding:8px 9px 9px;border-radius:16px;background:linear-gradient(180deg,rgba(7,15,24,.94),rgba(1,5,9,.88));border:1px solid rgba(98,191,245,.38);box-shadow:0 10px 30px rgba(0,0,0,.38),inset 0 0 26px rgba(60,170,240,.045);pointer-events:none;}
+#frontline-map-head{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:0 2px 6px;font-size:8px;font-weight:900;letter-spacing:1.25px;color:#8cdcff;}
+#frontline-map-hint{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ffe36f;text-shadow:0 0 8px rgba(255,210,70,.25);}
+#frontline-minimap{display:block;width:246px;height:246px;margin:0 auto;border-radius:50%;background:#071018;border:2px solid rgba(130,215,255,.72);box-shadow:0 0 0 3px rgba(20,60,90,.44),0 0 22px rgba(40,180,255,.15),inset 0 0 26px rgba(0,0,0,.65);}
+#frontline-map-legend{display:flex;justify-content:center;gap:10px;margin:6px 0 5px;font-size:6px;font-weight:900;letter-spacing:.55px;color:#7f919f;}
+.fm-player{color:#bffcff}.fm-blue{color:#62cfff}.fm-target{color:#ffe176}
+#frontline-objective{position:relative;width:100%;box-sizing:border-box;padding:7px 8px 6px;border-radius:10px;background:linear-gradient(180deg,rgba(9,18,27,.72),rgba(0,0,0,.48));border:1px solid rgba(255,214,90,.20);text-align:center;pointer-events:none;transition:border-color .16s,box-shadow .16s;}
+#frontline-title{font-size:9px;font-weight:900;letter-spacing:1.1px;color:#ffe176;text-shadow:0 0 9px rgba(255,205,70,.28);display:flex;align-items:center;justify-content:center;gap:6px;}
+#frontline-bearing{display:inline-flex;width:13px;height:13px;align-items:center;justify-content:center;transform-origin:50% 50%;transition:transform .09s linear;color:#fff2a0;text-shadow:0 0 9px rgba(255,210,75,.72);}
+#frontline-objective.inside{background:linear-gradient(180deg,rgba(19,39,45,.82),rgba(0,10,13,.62));border-color:rgba(94,255,207,.50);box-shadow:0 0 16px rgba(70,255,196,.10);}
+#frontline-state{margin-top:2px;font-size:8px;font-weight:800;letter-spacing:.55px;color:#c5d0da;}
+#frontline-track{position:relative;height:5px;margin-top:5px;border-radius:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);overflow:hidden;}
 #frontline-ally-progress,#frontline-enemy-progress{position:absolute;top:0;height:100%;transition:width .10s linear;}
 #frontline-ally-progress{right:50%;background:linear-gradient(90deg,#2677ff,#61d7ff);box-shadow:0 0 9px rgba(60,180,255,.55);}
 #frontline-enemy-progress{left:50%;background:linear-gradient(90deg,#ff6f62,#ef244b);box-shadow:0 0 9px rgba(255,55,80,.50);}
 #frontline-mid{position:absolute;top:-2px;bottom:-2px;left:50%;width:2px;transform:translateX(-1px);background:rgba(255,255,255,.74);}
-#frontline-score{margin-top:4px;font-size:8px;font-weight:800;letter-spacing:.6px;color:#8f9eaa;}
-#frontline-objective.ally{border-color:rgba(80,190,255,.52);box-shadow:0 8px 24px rgba(0,0,0,.28),0 0 14px rgba(50,175,255,.12);}
-#frontline-objective.enemy{border-color:rgba(255,75,95,.52);box-shadow:0 8px 24px rgba(0,0,0,.28),0 0 14px rgba(255,55,80,.11);}
-#frontline-objective.contested{border-color:rgba(255,225,100,.68);}
+#frontline-score{margin-top:4px;font-size:7px;font-weight:800;letter-spacing:.45px;color:#8f9eaa;}
+#frontline-objective.ally{border-color:rgba(80,190,255,.44)}#frontline-objective.enemy{border-color:rgba(255,75,95,.44)}#frontline-objective.contested{border-color:rgba(255,225,100,.64);}
+#ally-panel{position:relative;bottom:auto;left:auto;display:flex;gap:5px;flex-wrap:wrap;width:286px;max-width:286px;}
 
-#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left;z-index:13;pointer-events:none;}
+#xp-wrap{position:absolute;top:18px;left:18px;transform:none#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left;z-index:13;pointer-events:none;}
 #xp-lbl{display:inline-block;font-size:11px;color:#7eeaff;letter-spacing:2px;font-weight:900;margin-bottom:5px;padding:4px 9px;border-radius:9px;background:rgba(4,15,25,.78);border:1px solid rgba(70,210,255,.36);box-shadow:0 0 11px rgba(30,185,255,.12);}
 #xp-bar{width:230px;height:7px;background:rgba(0,0,0,.58);border-radius:4px;overflow:hidden;border:1px solid rgba(0,200,255,.4);box-shadow:0 0 8px rgba(0,190,255,.10);}
 #xp-fill{height:100%;background:linear-gradient(90deg,#0088ff,#00ffff);border-radius:4px;width:0%;}
@@ -214,10 +201,12 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 
 @media (pointer:coarse), (max-width:1100px){
   #weapon-bar{top:max(42px,calc(env(safe-area-inset-top) + 34px));gap:6px;max-width:min(94vw,760px);}
-  #frontline-map{top:max(108px,calc(env(safe-area-inset-top) + 102px));width:min(350px,54vw);padding:6px 8px;}
-  #frontline-map-grid{transform:scale(.92);transform-origin:50% 50%;margin-top:1px;margin-bottom:-2px;}
-  #left-tactical-stack{left:max(12px,env(safe-area-inset-left));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 58px);max-width:min(48vw,430px);}
-  #frontline-objective{width:min(360px,100%);}
+  #left-tactical-stack{left:max(10px,env(safe-area-inset-left));bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);width:224px;}
+  #frontline-map{width:210px;padding:6px 6px 7px;}
+  #frontline-minimap{width:196px;height:196px;}
+  #frontline-map-head{font-size:7px;}
+  #frontline-map-hint{max-width:112px;}
+  #ally-panel{width:224px;max-width:224px;gap:4px;}
   .wb-slot{min-width:56px;padding:4px 7px;border-radius:12px;}
   .wb-key{font-size:10px;}
   .wb-name{font-size:10px;}

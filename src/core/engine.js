@@ -177,11 +177,15 @@ function mapPenetrationInfo(obj,hitPoint,worldDir){
 
 // ─── MAP ────────────────────────────────
 const wallMeshes=[],losMeshes=[];
+const minimapStaticGeometry=[];
 // Store wall AABBs for collision
 const wallAABBs=[];
 function box(w,h,d,col,x,y,z,ry=0,impactMaterial='concrete'){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(col));
   m.userData.impactMaterial=impactMaterial;
+  const minimapDescriptor={x,z,w,d,h,ry,impactMaterial,kind:'structure'};
+  m.userData.minimap=minimapDescriptor;
+  if(h>.45)minimapStaticGeometry.push(minimapDescriptor);
   m.position.set(x,y,z);m.rotation.y=ry;m.castShadow=!MOBILE_LOW;m.receiveShadow=!MOBILE_LOW;scene.add(m);
   if(h>0.5){
     wallMeshes.push(m);
@@ -217,6 +221,7 @@ function hazardWall(w,h,d,col,x,y,z,ry=0){
 function createSupplyCrate(x,z,h,variant=0){
   const body=box(2,h,2,variant%2?0x786448:0x6d5b43,x,h/2,z,0,'wood');
   body.userData.impactMaterial='wood';
+  if(body.userData.minimap)body.userData.minimap.kind='crate';
   body.material=new THREE.MeshStandardMaterial({color:variant%2?0x6f5b42:0x61523f,roughness:.62,metalness:.20});
   const frameMat=new THREE.MeshStandardMaterial({color:0x202a31,roughness:.38,metalness:.72});
   const accentMat=new THREE.MeshStandardMaterial({color:0xd59a23,roughness:.35,metalness:.42,emissive:0x6c3b00,emissiveIntensity:.16});
@@ -236,6 +241,7 @@ function createSupplyCrate(x,z,h,variant=0){
 }
 function createArenaTerminal(x,z,ry=0){
   const body=box(1.05,1.75,.68,0x34414b,x,.875,z,ry);
+  if(body.userData.minimap)body.userData.minimap.kind='terminal';
   body.material=new THREE.MeshStandardMaterial({color:0x1c2730,roughness:.42,metalness:.64});
   const bezel=new THREE.Mesh(
     new THREE.BoxGeometry(.84,.78,.07),
@@ -255,6 +261,47 @@ function createArenaTerminal(x,z,ry=0){
   }
   return body;
 }
+function createArenaCover(x,z,ry=0,variant=0){
+  const type=((variant%3)+3)%3;
+  const dims=type===0?[4.8,1.55,.72]:type===1?[4.2,1.25,1.05]:[3.6,1.65,1.35];
+  const impact=type===2?'wood':'metal';
+  const baseColor=type===0?0x40505e:type===1?0x535d64:0x66523d;
+  const body=box(dims[0],dims[1],dims[2],baseColor,x,dims[1]/2,z,ry,impact);
+  if(body.userData.minimap){body.userData.minimap.kind='cover';body.userData.minimap.variant=type;}
+  body.userData.coverType=type===0?'aegis':type===1?'barrier':'cargo';
+  body.material=new THREE.MeshStandardMaterial({color:baseColor,roughness:type===2?.68:.34,metalness:type===2?.18:.72,emissive:type===0?0x062c3b:type===1?0x241a04:0x120b04,emissiveIntensity:.12});
+  const dark=new THREE.MeshStandardMaterial({color:0x111922,roughness:.40,metalness:.78});
+  const metal=new THREE.MeshStandardMaterial({color:0x8b9aa8,roughness:.30,metalness:.82});
+  const glow=new THREE.MeshStandardMaterial({color:type===1?0xffb329:0x36d9ff,roughness:.22,metalness:.36,emissive:type===1?0x8a4300:0x087a99,emissiveIntensity:.92});
+  const wood=new THREE.MeshStandardMaterial({color:0x9a7449,roughness:.72,metalness:.08});
+  const add=(geo,mat,x1,y1,z1,rx=0,ry1=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x1,y1,z1);m.rotation.set(rx,ry1,rz);m.castShadow=!MOBILE_LOW;m.receiveShadow=!MOBILE_LOW;body.add(m);return m;};
+  if(type===0){
+    add(new THREE.BoxGeometry(3.55,.15,.86),metal,0,.72,0);
+    add(new THREE.BoxGeometry(.92,1.34,.20),dark,-2.15,.02,.25,0,-.28,.06);
+    add(new THREE.BoxGeometry(.92,1.34,.20),dark,2.15,.02,.25,0,.28,-.06);
+    add(new THREE.BoxGeometry(2.35,.075,.10),glow,0,.24,.42);
+    add(new THREE.BoxGeometry(.12,1.02,.11),glow,-1.68,.02,.42);
+    add(new THREE.BoxGeometry(.12,1.02,.11),glow,1.68,.02,.42);
+  }else if(type===1){
+    add(new THREE.BoxGeometry(4.35,.12,1.10),metal,0,.56,0);
+    for(const sx of [-1.55,0,1.55])add(new THREE.BoxGeometry(.11,1.08,1.13),dark,sx,0,0);
+    add(new THREE.BoxGeometry(3.20,.065,.09),glow,0,.18,.57);
+    add(new THREE.BoxGeometry(1.15,.18,1.20),dark,-1.47,-.48,0,0,0,.05);
+    add(new THREE.BoxGeometry(1.15,.18,1.20),dark,1.47,-.48,0,0,0,-.05);
+  }else{
+    add(new THREE.BoxGeometry(3.35,.15,1.28),dark,0,.72,0);
+    for(const sy of [-.38,.08,.52])add(new THREE.BoxGeometry(3.00,.08,1.40),wood,0,sy,0);
+    for(const sx of [-1.48,1.48])add(new THREE.BoxGeometry(.12,1.35,1.42),metal,sx,0,0);
+    add(new THREE.BoxGeometry(2.10,.06,.08),glow,0,.23,.715);
+  }
+  return body;
+}
+const ARENA_COVER_LAYOUT=[
+  [-27,-18,.22,0],[27,18,-2.92,0],[-18,27,-1.22,1],[18,-27,1.92,1],
+  [-48,34,.62,2],[48,-34,-2.52,2],[-34,-48,.18,0],[34,48,-2.96,0],
+  [-58,44,1.02,1],[58,-44,-2.14,1]
+];
+ARENA_COVER_LAYOUT.forEach(([x,z,ry,variant])=>createArenaCover(x,z,ry,variant));
 [[-50,4,-50],[50,4,-50],[-50,4,50],[50,4,50]].forEach(([x,y,z])=>{box(14,8,12,0x607088,x,y,z);box(8,5,8,0x708098,x+12,2.5,z+8);});
 hazardWall(.6,3,30,0x778088,-20,1.5,0);hazardWall(.6,3,30,0x778088,20,1.5,0);
 hazardWall(30,3,.6,0x778088,0,1.5,-20);hazardWall(30,3,.6,0x778088,0,1.5,20);
@@ -271,7 +318,8 @@ const TREE_POS=[[-80,0],[80,0],[0,-80],[0,80],[-60,-60],[60,60],[-60,60],[60,-60
 const arenaFoliage=[];
 function createArenaTree(x,z,variant=0){
   // Preserve the old trunk collision/LOS volume; the cylinder below is visual only.
-  box(.35,3.5,.35,0x3a281c,x,1.75,z);
+  const trunkCollision=box(.35,3.5,.35,0x3a281c,x,1.75,z);
+  if(trunkCollision.userData.minimap)trunkCollision.userData.minimap.kind='tree';
   const g=new THREE.Group();
   g.position.set(x,0,z);
 

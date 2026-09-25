@@ -4,7 +4,7 @@ const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
   'src/settings/settings.js','src/combat/combat.js','src/entities/bots.js','src/entities/pickups.js',
-  'src/progression/progression.js','src/game/runtime.js'
+  'src/progression/progression.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
   .map(name=>'assets/weapons/'+name);
@@ -42,7 +42,7 @@ const html=readFileSync('index.html','utf8');
 for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
 if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-map-grid"','id="frontline-map-hint"','data-frontline-zone="north"','data-frontline-zone="mid"','data-frontline-zone="south"','data-frontline-zone="west"','data-frontline-zone="east"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
@@ -61,12 +61,16 @@ for(const file of audioAssets){
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
+for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
+  if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
+}
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');
 if(!catalog.includes('firstPersonSkins:Object.freeze'))fail('first-person weapon skin catalog missing');
 if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must not be catalogued');
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
 const progression=readFileSync('src/progression/progression.js','utf8');
+if(progression.includes('function G(id)'))fail('G helper must be available before progression.js loads');
 for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
   if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
@@ -208,7 +212,7 @@ if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.trigge
 for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','playObjectiveCaptureSound(team)','function botRoutePenalty','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','function botAssaultWaveState','waveStart:-999','assaultWaveState===\'staging\'','coverChainT','objectiveAdvance','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
   if(!bots.includes(token))fail('Combat Presence 1.2 / Frontline coordination missing: '+token);
 }
-for(const token of ['breachReady:false','smokeWaveId:-1','fragWaveId:-1','function maybeCoordinateBotUtility','spawnBotSmokeGrenade(bot.getMuzzlePos()','spawnBotFragGrenade(bot.getMuzzlePos()',"this.tacticalMode=squadPlan.suppressor===this","breachRole?'breach'","spawnEnemyBullet(from,pd,wp,this",'this.peekPoint=null;this.peekT=0','let coverGoal=this.coverPoint']){
+for(const token of ['breachReady:false','smokeWaveId:-1','smokeDecisionWaveId:-1','smokeDecisionUse:false','smokeReadyAt:-999','Math.random()<.30','plan.smokeReadyAt=now+14000+Math.random()*8000','fragWaveId:-1','function maybeCoordinateBotUtility','spawnBotSmokeGrenade(bot.getMuzzlePos()','spawnBotFragGrenade(bot.getMuzzlePos()',"this.tacticalMode=squadPlan.suppressor===this","breachRole?'breach'","spawnEnemyBullet(from,pd,wp,this",'this.peekPoint=null;this.peekT=0','let coverGoal=this.coverPoint']){
   if(!bots.includes(token))fail('Combat Presence 1.3 squad/ballistic integration missing: '+token);
 }
 for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke','function nearestHostileGrenade','cachedGrenadeThreat','suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
@@ -216,11 +220,11 @@ for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke',
 }
 if(!bots.includes('if(wp.hitscan){')||!bots.includes('spawnInstantSniperTrace(from,tracerDir'))fail('bot sniper must remain hitscan while normal guns use travelling bullets');
 if(bots.includes("Math.random()<(suppressing?.56:.34)"))fail('legacy random player near-miss whiz returned');
-for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineZoneOwners=','zoneOwners:{...frontlineZoneOwners}','frontlineZoneOwners[zone.id]=team','document.querySelector','data-frontline-zone','frontline-map-hint','const frontlineBias=s=>','allyControlScore','enemyControlScore']){
+for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineZoneOwners=','zoneOwners:{...frontlineZoneOwners}','frontlineZoneOwners[zone.id]=team','frontline-map-hint','const frontlineBias=s=>','allyControlScore','enemyControlScore']){
   if(!bots.includes(token))fail('Frontline objective/map integration missing: '+token);
 }
 const engine=readFileSync('src/core/engine.js','utf8');
-for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
+for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
   if(!engine.includes(token))fail('engine FX/material/penetration integration missing: '+token);
 }
 
@@ -231,6 +235,7 @@ for(const token of ["botDoctrineLabel(plan.doctrine)","plan.zone?.label","ПРИ
 }
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 if(!runtime.includes('tickFrontlineObjective(dt,ts)'))fail('Frontline objective runtime tick missing');
+if(!runtime.includes('tickTacticalMinimap(dt,ts)'))fail('real tactical minimap runtime tick missing');
 if(!runtime.includes('tickPlayerFootsteps(playerMoved,sprintingNow,onGnd)'))fail('distance-driven player footsteps missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 for(const token of ['idleRenderAt=0','const menuIdle=!running','ts-idleRenderAt>=180','ts-idleRenderAt>=85']){
@@ -242,7 +247,7 @@ if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-swi
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-map-grid','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#menu .btn','one authoritative gameplay reticle']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-minimap','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#menu .btn','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
@@ -262,5 +267,13 @@ const menuSmoke=readFileSync('scripts/browser-menu-smoke.mjs','utf8');
 for(const token of ['menuSettingsBtn','fileAudioEnabled','pendingLoads','settingsOpen','settingsClosed']){
   if(!menuSmoke.includes(token))fail('local file menu regression smoke missing: '+token);
 }
-if(!html.includes('ZAP ZONE v23.4'))fail('index version is not v23.4');
-if(!process.exitCode)console.log('ZAP ZONE v23.4 local-file audio and menu responsiveness validation passed.');
+const pickupsSrc=readFileSync('src/entities/pickups.js','utf8');
+for(const token of ['WORLD_WEAPON_COPIES','rifle:3','sniper:2','WEAPONS.flatMap']){
+  if(!pickupsSrc.includes(token))fail('expanded world weapon distribution missing: '+token);
+}
+const minimap=readFileSync('src/ui/minimap.js','utf8');
+for(const token of ['MINIMAP_WORLD_HALF=92','minimapStaticGeometry','BOT_MAP_ZONES','frontlineZoneOwners','camera.position',"team!=='ally'","pk.type!=='weapon'",'MINIMAP_HZ=10']){
+  if(!minimap.includes(token))fail('real tactical minimap integration missing: '+token);
+}
+if(!html.includes('ZAP ZONE v23.5'))fail('index version is not v23.5');
+if(!process.exitCode)console.log('ZAP ZONE v23.5 real minimap, cover assets and battlefield distribution validation passed.');

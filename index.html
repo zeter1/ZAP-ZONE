@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v23.4</title><link rel="stylesheet" href="src/styles/game.css">
+<title>⚡ ZAP ZONE v23.5</title><link rel="stylesheet" href="src/styles/game.css">
 
 </head>
 <body>
@@ -28,17 +28,6 @@
     <div class="tb-side" id="tb-ally">СИНИЕ 0</div>
     <div class="tb-vs">5 × 5</div>
     <div class="tb-side" id="tb-enemy">КРАСНЫЕ 0</div>
-  </div>
-  <div id="frontline-map" aria-label="Тактическая карта линии фронта">
-    <div id="frontline-map-head"><span>КАРТА ФРОНТА</span><span id="frontline-map-hint">ЦЕЛЬ: ЦЕНТР</span></div>
-    <div id="frontline-map-grid">
-      <div class="frontline-zone zone-north" data-frontline-zone="north"><span>СЕВЕР</span><small class="frontline-zone-state">НЕЙТРАЛ</small></div>
-      <div class="frontline-zone zone-west" data-frontline-zone="west"><span>ЗАПАД</span><small class="frontline-zone-state">НЕЙТРАЛ</small></div>
-      <div class="frontline-zone zone-mid" data-frontline-zone="mid"><span>ЦЕНТР</span><small class="frontline-zone-state">НЕЙТРАЛ</small></div>
-      <div class="frontline-zone zone-east" data-frontline-zone="east"><span>ВОСТОК</span><small class="frontline-zone-state">НЕЙТРАЛ</small></div>
-      <div class="frontline-zone zone-south" data-frontline-zone="south"><span>ЮГ</span><small class="frontline-zone-state">НЕЙТРАЛ</small></div>
-    </div>
-    <div id="frontline-map-legend"><span class="fm-blue">СИНИЕ</span><span class="fm-target">ЦЕЛЬ</span><span class="fm-red">КРАСНЫЕ</span></div>
   </div>
   <div id="kill-feed" aria-live="polite"></div>
   <div id="weapon-bar"></div>
@@ -76,15 +65,20 @@
   <div id="hs-kill-flash"></div>
   <div id="armor-break-fx"><img src="assets/fx/armor-break.svg" alt=""></div>
   <div id="left-tactical-stack">
-    <div id="frontline-objective" aria-live="polite">
-      <div id="frontline-title"><span id="frontline-bearing" aria-hidden="true">▲</span><span id="frontline-label">FRONTLINE · ЦЕНТР</span></div>
-      <div id="frontline-state">НЕЙТРАЛЬНАЯ ЗОНА · 0 м · 44с</div>
-      <div id="frontline-track">
-        <div id="frontline-ally-progress"></div>
-        <div id="frontline-enemy-progress"></div>
-        <div id="frontline-mid"></div>
+    <div id="frontline-map" aria-label="Тактическая миникарта арены">
+      <div id="frontline-map-head"><span>ТАКТИЧЕСКАЯ КАРТА</span><span id="frontline-map-hint">ЦЕЛЬ: ЦЕНТР</span></div>
+      <canvas id="frontline-minimap" width="256" height="256" aria-label="Миникарта с игроком, союзниками и зонами захвата"></canvas>
+      <div id="frontline-map-legend"><span class="fm-player">▲ ВЫ</span><span class="fm-blue">● СОЮЗНИК</span><span class="fm-target">◎ ЦЕЛЬ</span></div>
+      <div id="frontline-objective" aria-live="polite">
+        <div id="frontline-title"><span id="frontline-bearing" aria-hidden="true">▲</span><span id="frontline-label">FRONTLINE · ЦЕНТР</span></div>
+        <div id="frontline-state">НЕЙТРАЛЬНАЯ ЗОНА · 0 м · 44с</div>
+        <div id="frontline-track">
+          <div id="frontline-ally-progress"></div>
+          <div id="frontline-enemy-progress"></div>
+          <div id="frontline-mid"></div>
+        </div>
+        <div id="frontline-score">ЗОНЫ 0 : 0 · ЗАХВАТ = 3 ОЧКА</div>
       </div>
-      <div id="frontline-score">ЗОНЫ 0 : 0 · ЗАХВАТ = 3 ОЧКА</div>
     </div>
     <div id="ally-panel"></div>
   </div>
@@ -192,6 +186,7 @@
 <script src="src/entities/bots.js"></script>
 <script src="src/entities/pickups.js"></script>
 <script src="src/progression/progression.js"></script>
+<script src="src/ui/minimap.js"></script>
 <script src="src/game/runtime.js"></script>
 
 </body>

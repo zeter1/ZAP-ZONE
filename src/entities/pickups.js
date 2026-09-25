@@ -54,7 +54,8 @@ function mkHpMesh(){
 }
 
 const WEAPON_SPAWN_PTS=AMO_PTS.slice();
-const WORLD_WEAPON_KEYS=WEAPONS.map(w=>w.key);
+const WORLD_WEAPON_COPIES=Object.freeze({pistol:2,shotgun:2,rifle:3,rocket:2,plasma:2,mine:1,bomb:1,smoke:1,sniper:2});
+const WORLD_WEAPON_KEYS=WEAPONS.flatMap(w=>Array(WORLD_WEAPON_COPIES[w.key]||1).fill(w.key));
 function mkWeaponPickupMesh(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0],g=new THREE.Group();
   const model=createWorldWeaponModel(w.key);model.position.y=.16;g.add(model);
@@ -113,7 +114,7 @@ function spawnPickups(){
   keys.forEach((weaponKey,i)=>{
     const m=mkWeaponPickupMesh(weaponKey);scene.add(m);
     const pk={m,type:'weapon',weaponKey,bob:Math.random()*Math.PI*2,respawn:0,cd:0};
-    pickups.push(pk);relocateWeaponPickup(pk,i*5+2);
+    pickups.push(pk);relocateWeaponPickup(pk,i*3+2);
   });
 }let pickupTickAcc=0;
 function tickPickups(dt){

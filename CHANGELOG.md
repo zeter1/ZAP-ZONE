@@ -2,6 +2,32 @@
 
 ## Unreleased — 2026-09-25
 
+### Tactical Radar 2.0 — настоящая миникарта арены
+- абстрактная схема пяти зон удалена: в нижнем левом tactical stack теперь круглая real-time миникарта, построенная из той же collision geometry, что используется игроком и ботами;
+- радар показывает стены, строения, ящики, деревья, терминалы и новые cover-prefabs в их фактических координатах и поворотах;
+- игрок отображается яркой направленной стрелкой, союзники — синими стрелками, активная зона и владельцы всех пяти capture zones — цветными кругами; видимые world weapon pickups дополнительно отмечены маленькими золотыми точками;
+- north-up карта обновляется 10 раз/с независимо от 3D FPS, поэтому HUD остаётся дешёвым даже при 144 FPS;
+- Frontline progress/status встроен прямо под картой; прежний верхний схематичный блок больше не занимает центр экрана.
+
+### Battlefield Dressing — procedural cover assets
+- добавлены три новые полностью процедурные разновидности укрытий: Aegis armor shield, industrial barrier и cargo cover;
+- укрытия имеют отдельные low-poly детали, металлические/деревянные материалы, светящиеся полосы, collision/LOS и material penetration semantics;
+- десять новых укрытий размещены по боковым и внешним маршрутам арены; они автоматически попадают на реальную миникарту;
+- новые prefab-объекты не требуют SVG/texture fetch и поэтому одинаково работают через HTTP и file://.
+
+### Loot & bot utility tuning
+- количество world weapon pickups увеличено с 9 до 16: пистолет/дробовик/ракетница/плазма/SR-9 имеют по две точки, rifle — три, utility остаются по одной;
+- точки продолжают релоцироваться после подбора и избегают скучивания;
+- командный smoke теперь решается один раз на assault wave, используется только в 30% подходящих волн и после броска получает общий cooldown 14–22 секунды.
+
+### Local file resilience
+- общий DOM helper G перенесён в самый ранний catalog.js, поэтому state/bots больше не зависят от поздней загрузки progression.js;
+- Three.js TextureLoader при file:// больше не создаёт CORS-шторм для SVG: используется прозрачная procedural fallback texture; по HTTP/HTTPS настоящие SVG остаются активными.
+
+### Проверка
+- версия интерфейса повышена до v23.5;
+- validation закрепляет real minimap geometry, ally/player/zone markers, 10 Hz budget, новые covers, расширенный weapon distribution, reduced bot smoke и file:// texture fallback.
+
 ### Browser Local-File Hotfix — клики меню и WAV fetch storm
 - исправлен root cause зависающих кнопок в Chrome/Firefox при запуске через file://: browser fetch локальных WAV возвращал Failed to fetch, а battlefield ambience после null-result немедленно вызывал себя снова через resolved Promise и мог создать бесконечную microtask-цепочку;
 - в file:// режиме файловые WAV полностью отключены, а звук использует существующий Web Audio synth fallback; при HTTP/HTTPS качественные WAV продолжают загружаться;

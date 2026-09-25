@@ -1,5 +1,8 @@
 'use strict';
 
+function G(id){return document.getElementById(id);}
+const GAME_LOCAL_FILE_MODE=location.protocol==='file:';
+
 // Centralized visual asset catalog. Paths are root-relative to the game URL.
 const GAME_ASSETS=Object.freeze({
   pickups:Object.freeze({
@@ -164,8 +167,17 @@ const GAME_ASSET_PATHS=Object.freeze([
 const _gameTextureLoader=new THREE.TextureLoader();
 const _gameTextureCache=new Map();
 
+function makeLocalAssetFallbackTexture(){
+  const data=new Uint8Array([255,255,255,0]);
+  const tex=new THREE.DataTexture(data,1,1,THREE.RGBAFormat);
+  tex.encoding=THREE.sRGBEncoding;tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;tex.needsUpdate=true;
+  return tex;
+}
 function gameTexture(path){
   if(_gameTextureCache.has(path))return _gameTextureCache.get(path);
+  if(GAME_LOCAL_FILE_MODE){
+    const tex=makeLocalAssetFallbackTexture();_gameTextureCache.set(path,tex);return tex;
+  }
   const tex=_gameTextureLoader.load(
     path,
     loaded=>{
