@@ -22,7 +22,8 @@ const SMOKE_WEAPON_INDEX=WEAPONS.findIndex(w=>w.key==='smoke');
 const W_DEFAULTS={
   clips:WEAPONS.map(w=>w.clip),
   rates:WEAPONS.map(w=>w.rate),
-  reloads:WEAPONS.map(w=>w.reload)
+  reloads:WEAPONS.map(w=>w.reload),
+  cycleTimes:WEAPONS.map(w=>w.cycleTime??0)
 };
 const STARTING_AMMO=WEAPONS.map(w=>w.startingAmmo??w.clip);
 const PLR_TCOL=Object.fromEntries(WEAPONS.filter(w=>w.tracerColor!==undefined).map(w=>[w.key,w.tracerColor]));
