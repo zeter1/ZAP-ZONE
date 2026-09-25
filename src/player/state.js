@@ -315,7 +315,7 @@ function activatePreparedGame(){
   gameSessionActivated=true;
   respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;
   deathReason='';
-  showAnn(preparedSaveLoaded?'АВТОСЕЙВ ВОССТАНОВЛЕН':'FREE-FOR-ALL — GO!');
+  showAnn(preparedSaveLoaded?'АВТОСЕЙВ ВОССТАНОВЛЕН':'КОМАНДНЫЙ БОЙ 5×5 — GO!');
 }
 async function preloadGameContent(){
   if(preloadStarted)return;

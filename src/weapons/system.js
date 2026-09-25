@@ -114,7 +114,11 @@ function chooseBotWeaponByDistance(dist,prevIdx=-1,force=false,role='assault'){
 }
 function countTeamMines(team){
   let c=0;
-  for(const mn of mines)if(mn.owner==='bot'&&mn.kind!=='bomb')c++;
+  for(const mn of mines){
+    if(mn.owner!=='bot'||mn.kind==='bomb')continue;
+    const ownerTeam=mn.src?.team||mn.team||null;
+    if(ownerTeam===team)c++;
+  }
   return c;
 }
 function teamRoleForNextBot(team){return BOT_ROLE_ORDER[countTeam(team)%BOT_ROLE_ORDER.length];}
@@ -122,6 +126,8 @@ function nearestHostileMine(pos,team,maxDist=8,bot=null){
   let best=null,bestD=maxDist;
   for(const mn of mines){
     if(!mn.armed||mn.removed)continue;
+    const ownerTeam=mn.owner==='player'?'ally':(mn.src?.team||mn.team||null);
+    if(ownerTeam===team)continue;
     const d=pos.distanceTo(mn.m.position);
     if(mn.kind==='bomb'){
       if((mn.fuseT??BOMB_FUSE_SECONDS)>12)continue;

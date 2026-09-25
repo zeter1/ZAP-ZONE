@@ -204,7 +204,7 @@ function loop(ts){
   saveTick-=dt;
   if(saveTick<=0){saveTick=8;saveProgress();}
 
-  // Respawn dead bots to maintain 1 player + 9 bots
+  // Respawn dead bots to maintain 5v5: player + 4 allies versus 5 enemies
   spawnT-=dt;
   if(spawnT<=0){
     spawnT=1.7+Math.random()*1.0;
@@ -238,10 +238,10 @@ let allyPanelCd=0;
 function updateAllyPanel(dt){
   allyPanelCd-=dt;if(allyPanelCd>0)return;allyPanelCd=.20;
   const panel=G('ally-panel');
-  const leaders=enemies.filter(e=>e.alive).sort((a,b)=>(b.kills||0)-(a.kills||0)).slice(0,3);
-  panel.innerHTML=leaders.map((e,i)=>{
+  const squad=enemies.filter(e=>e.alive&&e.team==='ally').sort((a,b)=>(b.kills||0)-(a.kills||0));
+  panel.innerHTML=squad.map((e,i)=>{
     const pct=Math.round(e.hp/e.maxHp*100);
-    return `<div class="ally-icon" style="border-color:rgba(255,80,80,.5);background:rgba(90,0,0,.62);color:#ffaaaa;"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.enemy}" alt=""> Бот ${i+1}: ${e.kills||0} ☠ · ${pct}%</div>`;
+    return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.ally}" alt=""> СВОЙ ${i+1}: ${e.kills||0} ☠ · ${pct}%</div>`;
   }).join('');
 }
 

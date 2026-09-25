@@ -51,7 +51,7 @@ function hitEnemy(o,d,team,exclude=null,maxRange=120){
   let best=Infinity,en=null,hd=false;
   const maxD2=maxRange*maxRange;
   for(const e of enemies){
-    if(!e.alive||e===exclude)continue;
+    if(!e.alive||e===exclude||e.team===team)continue;
     const p=e.group.position;
     const dx=p.x-o.x,dz=p.z-o.z;if(dx*dx+dz*dz>maxD2)continue;
     _ht.set(p.x,p.y+1.0,p.z);if(rSphere(o,d,_ht,.85)===Infinity)continue;
@@ -707,7 +707,7 @@ function throwSmokeGrenade(){
 
 // ─── UPDATE PROJECTILES ─────────────────
 
-function awardExplosionKill(victim,ownerType,ownerBot,kind){
+function awardExplosionKill(victim,ownerType,ownerBot,kind,ownerTeam=null){
   if(ownerType==='player'){
     const pts=kind==='bomb'?160:kind==='mine'?120:110;
     addXP((victim.type+1)*(kind==='bomb'?42:kind==='mine'?35:28));
@@ -718,16 +718,18 @@ function awardExplosionKill(victim,ownerType,ownerBot,kind){
     showKillMedal({explosive:true});
     scorePop((kind==='bomb'?'🧨':kind==='mine'?'💣':'🚀')+'+'+(victim.type+1)*pts);
   }else{
-    enemyKills++;
+    const team=ownerBot?.team||ownerTeam;
+    if(team==='ally')allyKills++;else enemyKills++;
     if(ownerBot)ownerBot.kills=(ownerBot.kills||0)+1;
     updateTeamScore();
   }
 }
-function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,kind='rocket',playerSelfScale=.35){
+function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,kind='rocket',playerSelfScale=.35,ownerTeamOverride=null){
   const r2=radius*radius;
   const dir=new THREE.Vector3();
+  const ownerTeam=ownerType==='player'?'ally':(ownerBot?.team||ownerTeamOverride||null);
   for(const en of enemies){
-    if(!en.alive||en===ownerBot)continue;
+    if(!en.alive||en===ownerBot||(ownerTeam&&en.team===ownerTeam))continue;
     const center=en.group.position.clone();center.y+=.9;
     const dx=center.x-pos.x,dy=center.y-pos.y,dz=center.z-pos.z;
     const d2=dx*dx+dy*dy+dz*dz;
@@ -737,12 +739,13 @@ function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,k
     if(wallBetween(pos,center,losMeshes))falloff*=.48;
     const before=en.alive;
     dir.set(dx,Math.max(.12,dy),dz).normalize();
-    en.hurt(maxDamage*falloff,dir,ownerType==='player'?'player':'bot');
-    if(before&&!en.alive)awardExplosionKill(en,ownerType,ownerBot,kind);
+    en.hurt(maxDamage*falloff,dir,ownerTeam||'world',ownerType==='player'?'player':ownerBot);
+    if(before&&!en.alive)awardExplosionKill(en,ownerType,ownerBot,kind,ownerTeam);
   }
+  const canHitPlayer=ownerType==='player'||ownerTeam==='enemy'||!ownerTeam;
   const pdx=camera.position.x-pos.x,pdy=camera.position.y-pos.y,pdz=camera.position.z-pos.z;
   const pd2=pdx*pdx+pdy*pdy+pdz*pdz;
-  if(pd2<r2&&!dying){
+  if(canHitPlayer&&pd2<r2&&!dying){
     const pd=Math.sqrt(pd2);
     let falloff=Math.max(.06,1-pd/radius);
     if(wallBetween(pos,camera.position.clone(),losMeshes))falloff*=.48;
@@ -759,7 +762,7 @@ function detonateRocket(arr,index,r,pos){
   if(blastDistance<55){const proximity=Math.max(.18,1-blastDistance/70);playSfx('explosion',proximity);triggerScreenShake(proximity*.95,.20);}
   spawnCombatImpact(pos,'rocket');
   explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius);
-  applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28);
+  applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28,r.ownerType==='player'?'ally':(r._src?.team||r.team||null));
   destroySceneObject(r.m);
   arr.splice(index,1);
 }
@@ -790,17 +793,18 @@ function tickProjectiles(dt){
         spawnSmoke(r.m.position,0x4b4f55);
         if(!PERF_MODE||Math.random()<.55)spawnP(r.m.position,0xffa02a,.45);
       }
-      if((r.ownerType||'bot')==='bot'&&r.m.position.distanceToSquared(playerTargetPos)<225)warn=true;
+      const rocketTeam=r.ownerType==='player'?'ally':(r._src?.team||r.team||null);
+      if((r.ownerType||'bot')==='bot'&&rocketTeam==='enemy'&&r.m.position.distanceToSquared(playerTargetPos)<225)warn=true;
 
       let impact=false;
       if(r.m.position.y<=.10)impact=true;
       else if(wallBetween(_prev,r.m.position,wallMeshes))impact=true;
       else{
         for(const en of enemies){
-          if(!en.alive||en===r._src)continue;
+          if(!en.alive||en===r._src||(rocketTeam&&en.team===rocketTeam))continue;
           if(r.m.position.distanceToSquared(en.group.position)<2.65){impact=true;break;}
         }
-        if(!impact&&(r.ownerType||'bot')==='bot'&&r.m.position.distanceToSquared(playerTargetPos)<2.5)impact=true;
+        if(!impact&&(r.ownerType||'bot')==='bot'&&rocketTeam==='enemy'&&r.m.position.distanceToSquared(playerTargetPos)<2.5)impact=true;
       }
       if(impact||r.life<=0){
         const pos=r.m.position.clone();
@@ -883,8 +887,9 @@ function tickProjectiles(dt){
 }
 
 function spawnERkt(from,dir,dmg,team,src){
-  const m=mkRkt(0xff2200);m.position.copy(from).addScaledVector(dir,1.4);m.quaternion.setFromUnitVectors(_UP,dir);scene.add(m);
-  eRkts.push({m,vx:dir.x*BOT_ROCKET_SPEED,vy:dir.y*BOT_ROCKET_SPEED,vz:dir.z*BOT_ROCKET_SPEED,life:12,maxSpeed:BOT_ROCKET_SPEED,dmg,sT:0,fT:0,team:'bot',ownerType:'bot',_src:src,blastRadius:6.2});
+  const color=team==='ally'?0x35bfff:0xff2200;
+  const m=mkRkt(color);m.position.copy(from).addScaledVector(dir,1.4);m.quaternion.setFromUnitVectors(_UP,dir);scene.add(m);
+  eRkts.push({m,vx:dir.x*BOT_ROCKET_SPEED,vy:dir.y*BOT_ROCKET_SPEED,vz:dir.z*BOT_ROCKET_SPEED,life:12,maxSpeed:BOT_ROCKET_SPEED,dmg,sT:0,fT:0,team,ownerType:'bot',_src:src,blastRadius:6.2});
 }
 
 // ─── MINES ──────────────────────────────
@@ -911,7 +916,7 @@ function tickMines(dt){
       const radius=mn.radius||BOMB_BLAST_RADIUS;
       explode(pos,ownerType==='player'?0xffb000:0xff3b18,18);
       spawnBombBlastWave(pos,radius,ownerType);
-      applyBlastDamage(pos,radius,mn.dmg||BOMB_BASE_DAMAGE,ownerType,mn.src||null,'bomb',.18);
+      applyBlastDamage(pos,radius,mn.dmg||BOMB_BASE_DAMAGE,ownerType,mn.src||null,'bomb',.18,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
       mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
       continue;
     }
@@ -926,13 +931,14 @@ function tickMines(dt){
     if(!mn.armed)continue;
 
     const mp=mn.m.position;
+    const mineTeam=mn.owner==='player'?'ally':(mn.src?.team||mn.team||null);
     let trig=false;
     for(const en of enemies){
-      if(!en.alive||en===mn.src)continue;
+      if(!en.alive||en===mn.src||(mineTeam&&en.team===mineTeam))continue;
       const dx=mp.x-en.group.position.x,dz=mp.z-en.group.position.z;
       if(dx*dx+dz*dz<10){trig=true;break;}
     }
-    if(!trig&&mn.owner==='bot'){
+    if(!trig&&mineTeam==='enemy'){
       const pdx=mp.x-camera.position.x,pdz=mp.z-camera.position.z;
       if(pdx*pdx+pdz*pdz<10)trig=true;
     }
@@ -942,7 +948,7 @@ function tickMines(dt){
     const radius=mn.radius||9;
     const pos=mp.clone();
     explode(pos,0xff4400,6);
-    applyBlastDamage(pos,radius,mn.dmg||WEAPONS[5].dmg,ownerType,mn.src||null,'mine',.25);
+    applyBlastDamage(pos,radius,mn.dmg||WEAPONS[5].dmg,ownerType,mn.src||null,'mine',.25,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
     mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
   }
 }
@@ -971,20 +977,47 @@ function countPlayerTargeters(team,exclude=null){
 let playerPressureCacheT=-999;
 const playerPressureSet=new Set();
 function canPressurePlayer(bot){
+  if(bot.team!=='enemy')return false;
   const now=performance.now();
   if(now-playerPressureCacheT>120){
     playerPressureCacheT=now;
     playerPressureSet.clear();
     const maxPressure=level<4?2:level<10?3:level<18?4:5;
     const candidates=enemies
-      .filter(b=>b.alive&&b.targetIsPlayer&&b.canSeeTarget)
+      .filter(b=>b.alive&&b.team==='enemy'&&b.targetIsPlayer&&b.canSeeTarget)
       .sort((a,b)=>a.group.position.distanceToSquared(camera.position)-b.group.position.distanceToSquared(camera.position));
-    for(let i=0;i<Math.min(maxPressure,candidates.length);i++)playerPressureSet.add(candidates[i]);
+    for(let j=0;j<Math.min(maxPressure,candidates.length);j++)playerPressureSet.add(candidates[j]);
   }
   return playerPressureSet.has(bot);
 }
-function friendlyInLine(from,dir,team,maxDist){return false;}
-function friendlyNearPoint(pos,team,radius){return false;}
+function friendlyInLine(from,dir,team,maxDist){
+  const r2=.72*.72;
+  for(const mate of enemies){
+    if(!mate.alive||mate.team!==team)continue;
+    const px=mate.group.position.x-from.x,py=mate.group.position.y+1.05-from.y,pz=mate.group.position.z-from.z;
+    const t=px*dir.x+py*dir.y+pz*dir.z;
+    if(t<=.15||t>=maxDist)continue;
+    const cx=px-dir.x*t,cy=py-dir.y*t,cz=pz-dir.z*t;
+    if(cx*cx+cy*cy+cz*cz<r2)return true;
+  }
+  if(team==='ally'&&!dying){
+    const px=camera.position.x-from.x,py=camera.position.y-from.y,pz=camera.position.z-from.z;
+    const t=px*dir.x+py*dir.y+pz*dir.z;
+    if(t>.15&&t<maxDist){
+      const cx=px-dir.x*t,cy=py-dir.y*t,cz=pz-dir.z*t;
+      if(cx*cx+cy*cy+cz*cz<.55)return true;
+    }
+  }
+  return false;
+}
+function friendlyNearPoint(pos,team,radius){
+  const r2=radius*radius;
+  for(const mate of enemies){
+    if(!mate.alive||mate.team!==team)continue;
+    if(mate.group.position.distanceToSquared(pos)<r2)return true;
+  }
+  return team==='ally'&&!dying&&camera.position.distanceToSquared(pos)<r2;
+}
 function nearestVisiblePickup(type,pos,maxDist=28){
   let best=null,bestD=maxDist;
   for(const pk of pickups){
