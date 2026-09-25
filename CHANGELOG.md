@@ -2,6 +2,21 @@
 
 ## Unreleased — 2026-09-25
 
+### Hosting Compatibility 2.0 — одинаковая 3D-сцена на uCoz / localhost / file://
+- устранён источник чёрных прямоугольников и тёмных накладок на uCoz: постоянные 3D-объекты больше не используют полноразмерные SVG как PlaneGeometry/Sprite texture overlays;
+- причина была архитектурной: локальный file:// режим скрывал эти texture overlays прозрачным fallback, а HTTP-хостинг реально загружал SVG с собственными тёмными подложками, поэтому сайт выглядел иначе локального запуска;
+- оружие от первого лица теперь получает нативные emissive tech-panels/полосы из Three.js geometry вместо SVG skin/tech planes;
+- боты получили процедурные цветные insignia/chevrons вместо SVG emblem planes;
+- аптечки, боеприпасы и лежащее оружие используют объёмные beacon-маркеры (stem + diamond + halo) вместо billboard SVG sprites;
+- hazard-разметка на стенах заменена объёмными жёлто-чёрными панелями, crate labels — металлическими plates/bolts, terminal screens — emissive geometry/glyphs;
+- low-poly foliage остаётся полностью геометрическим: дополнительные SVG foliage cards удалены;
+- временные FX и обычный 2D UI могут по-прежнему использовать SVG, потому что они не являются постоянными surface overlays на 3D-моделях.
+
+### Regression protection
+- validation запрещает возвращать SVG PlaneGeometry на first-person weapons, bots и persistent environment, а также SVG Sprite для pickup markers;
+- проверяются procedural hazard panels, terminal glyph screen, bot insignia и pickup beacon;
+- версия повышена до v23.6.
+
 ### Tactical Radar 2.0 — настоящая миникарта арены
 - абстрактная схема пяти зон удалена: в нижнем левом tactical stack теперь круглая real-time миникарта, построенная из той же collision geometry, что используется игроком и ботами;
 - радар показывает стены, строения, ящики, деревья, терминалы и новые cover-prefabs в их фактических координатах и поворотах;

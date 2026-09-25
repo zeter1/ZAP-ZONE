@@ -97,19 +97,19 @@ function mkHuman(et,team){
   const leftHand=makeRigHand(-.36,.66,-.02);
   const rightHand=makeRigHand(.36,.66,-.02);
 
-  const teamMark=makeAssetPlane(
-    ally?GAME_ASSETS.characters.allyMark:GAME_ASSETS.characters.enemyMark,
-    .24,.24,{opacity:.96,depthTest:true,renderOrder:8}
-  );
-  teamMark.position.set(0,1.31,.281);teamMark.rotation.y=Math.PI;g.add(teamMark);
-
-  const emblem=makeAssetPlane(
-    ally?GAME_ASSETS.characters.ally:GAME_ASSETS.characters.enemy,
-    .25,.25,{opacity:.98,depthTest:true,renderOrder:8}
-  );
-  emblem.position.set(0,1.36,-.219);g.add(emblem);
-
   const ringCol=ally?0x35c8ff:0xff2748;
+  const insigniaMat=new THREE.MeshBasicMaterial({color:ringCol,side:THREE.DoubleSide});
+  const insigniaDark=new THREE.MeshStandardMaterial({color:0x101820,roughness:.42,metalness:.62,emissive:ringCol,emissiveIntensity:.10});
+  const addInsignia=(z,flip=0)=>{
+    const plate=new THREE.Mesh(new THREE.BoxGeometry(.25,.25,.025),insigniaDark);
+    plate.position.set(0,1.34,z);plate.rotation.y=flip;g.add(plate);
+    const chevron=new THREE.Mesh(new THREE.RingGeometry(.065,.105,4,1,Math.PI/4,Math.PI*2),insigniaMat);
+    chevron.position.set(0,0,.016);plate.add(chevron);
+    const core=new THREE.Mesh(new THREE.BoxGeometry(.035,.13,.014),insigniaMat);
+    core.position.set(0,-.018,.018);plate.add(core);
+  };
+  addInsignia(.281,Math.PI);addInsignia(-.219,0);
+
   const ringOpacity=.96;
   const ring=new THREE.Mesh(
     new THREE.TorusGeometry(.40,.045,5,16),

@@ -23,6 +23,15 @@ function addPickupPedestal(group,color){
   );
   base.position.y=-.31;group.add(base);
 }
+function addPickupBeacon(group,color,y=1.0,scale=1){
+  const glow=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.88,depthTest:false,depthWrite:false});
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.34,6),glow);
+  stem.position.y=y-.22;group.add(stem);
+  const diamond=new THREE.Mesh(new THREE.OctahedronGeometry(.11*scale,0),glow);
+  diamond.position.y=y;diamond.rotation.y=Math.PI/4;group.add(diamond);
+  const halo=new THREE.Mesh(new THREE.TorusGeometry(.16*scale,.018,5,14),glow);
+  halo.position.y=y;halo.rotation.x=Math.PI/2;group.add(halo);
+}
 function mkAmmoMesh(){
   const g=new THREE.Group();
   const body=new THREE.Mesh(new THREE.BoxGeometry(.74,.42,.50),PICKUP_MATS.ammo);g.add(body);
@@ -36,7 +45,7 @@ function mkAmmoMesh(){
   }
   const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.ammoGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
   addPickupPedestal(g,0x48ffd0);
-  const icon=makeAssetSprite(GAME_ASSETS.pickups.ammo,.88,.88,{depthTest:false});icon.position.y=1.00;g.add(icon);
+  addPickupBeacon(g,0x48ffd0,1.00,.92);
   return g;
 }
 function mkHpMesh(){
@@ -49,7 +58,7 @@ function mkHpMesh(){
   const crossV=new THREE.Mesh(new THREE.BoxGeometry(.105,.39,.31),PICKUP_MATS.medWhite);crossV.position.z=.025;g.add(crossV);
   const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.medGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.33;g.add(ring);
   addPickupPedestal(g,0xff4058);
-  const icon=makeAssetSprite(GAME_ASSETS.pickups.medkit,.88,.88,{depthTest:false});icon.position.y=1.02;g.add(icon);
+  addPickupBeacon(g,0xff4058,1.02,1.02);
   return g;
 }
 
@@ -70,7 +79,7 @@ function mkWeaponPickupMesh(key){
     new THREE.MeshStandardMaterial({color:0x111820,roughness:.62,metalness:.52,emissive:haloColor,emissiveIntensity:.15})
   );
   base.position.y=-.31;g.add(base);
-  const sp=makeAssetSprite(w.asset,1.02,.64,{depthTest:false});sp.position.y=1.08;g.add(sp);
+  addPickupBeacon(g,haloColor,1.08,1.10);
   g.userData.weaponKey=w.key;return g;
 }
 function randomWeaponReserve(w){

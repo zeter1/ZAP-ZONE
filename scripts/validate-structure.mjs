@@ -98,8 +98,11 @@ for(const token of ['STARTING_RESERVE','STARTING_OWNED','BOT_WEAPON_POSES','grip
   if(!weapons.includes(token))fail('pickup/ownership or bot weapon presentation missing: '+token);
 }
 if(weapons.includes('function addBotWeaponGrip'))fail('bot weapon model must not carry fake detached hands');
-for(const token of ['FP_HAND_POSES','FP_DECAL_TUNING','FP_MODEL_TUNING','function addFirstPersonWeaponDecal','GAME_ASSETS.firstPersonWeapons','GAME_ASSETS.firstPersonSkins','addFirstPersonHands(gunGrp,w.key)','if(mode===\'firstPerson\'&&detail>1)','model.add(flashM)']){
-  if(!weapons.includes(token))fail('premium first-person weapon presentation missing: '+token);
+for(const token of ['FP_HAND_POSES','FP_DECAL_TUNING','FP_MODEL_TUNING','function addFirstPersonWeaponDecal','new THREE.BoxGeometry(sw*.82','new THREE.BoxGeometry(tw*.42','emissive:accentColor','addFirstPersonHands(gunGrp,w.key)','if(mode===\'firstPerson\'&&detail>1)','model.add(flashM)']){
+  if(!weapons.includes(token))fail('portable procedural first-person weapon presentation missing: '+token);
+}
+if(weapons.includes('makeAssetPlane(')||weapons.includes('GAME_ASSETS.firstPersonWeapons')||weapons.includes('GAME_ASSETS.firstPersonSkins')){
+  fail('first-person weapon scene must not depend on SVG texture planes');
 }
 if(!weapons.includes("el.style.display=owned&&!selectable?'none':''"))fail('empty owned weapons must disappear from the weapon bar');
 const rifleStart=weapons.indexOf("weaponDef('rifle'");
@@ -215,6 +218,10 @@ for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','object
 for(const token of ['breachReady:false','smokeWaveId:-1','smokeDecisionWaveId:-1','smokeDecisionUse:false','smokeReadyAt:-999','Math.random()<.30','plan.smokeReadyAt=now+14000+Math.random()*8000','fragWaveId:-1','function maybeCoordinateBotUtility','spawnBotSmokeGrenade(bot.getMuzzlePos()','spawnBotFragGrenade(bot.getMuzzlePos()',"this.tacticalMode=squadPlan.suppressor===this","breachRole?'breach'","spawnEnemyBullet(from,pd,wp,this",'this.peekPoint=null;this.peekT=0','let coverGoal=this.coverPoint']){
   if(!bots.includes(token))fail('Combat Presence 1.3 squad/ballistic integration missing: '+token);
 }
+for(const token of ['const insigniaMat=','const addInsignia=','addInsignia(.281,Math.PI)','addInsignia(-.219,0)']){
+  if(!bots.includes(token))fail('procedural bot insignia missing: '+token);
+}
+if(bots.includes('makeAssetPlane('))fail('bot scene must not depend on SVG texture planes');
 for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke','function nearestHostileGrenade','cachedGrenadeThreat','suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
   if(!bots.includes(token))fail('Combat Presence 1.4 tactical awareness missing: '+token);
 }
@@ -224,9 +231,11 @@ for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function 
   if(!bots.includes(token))fail('Frontline objective/map integration missing: '+token);
 }
 const engine=readFileSync('src/core/engine.js','utf8');
-for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
+for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
   if(!engine.includes(token))fail('engine FX/material/penetration integration missing: '+token);
 }
+if(engine.includes('makeAssetPlane(GAME_ASSETS.environment'))fail('persistent environment must not depend on SVG texture planes');
+if(engine.includes('GAME_ASSETS.environment.foliage'))fail('tree foliage must use procedural geometry only');
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
@@ -274,9 +283,13 @@ const pickupsSrc=readFileSync('src/entities/pickups.js','utf8');
 for(const token of ['WORLD_WEAPON_COPIES','rifle:3','sniper:2','WEAPONS.flatMap']){
   if(!pickupsSrc.includes(token))fail('expanded world weapon distribution missing: '+token);
 }
+for(const token of ['function addPickupBeacon','new THREE.OctahedronGeometry','addPickupBeacon(g,0x48ffd0','addPickupBeacon(g,0xff4058','addPickupBeacon(g,haloColor']){
+  if(!pickupsSrc.includes(token))fail('procedural pickup beacon missing: '+token);
+}
+if(pickupsSrc.includes('makeAssetSprite('))fail('persistent pickup scene must not depend on SVG sprites');
 const minimap=readFileSync('src/ui/minimap.js','utf8');
 for(const token of ['MINIMAP_WORLD_HALF=92','minimapStaticGeometry','BOT_MAP_ZONES','frontlineZoneOwners','camera.position',"team!=='ally'","pk.type!=='weapon'",'MINIMAP_HZ=10']){
   if(!minimap.includes(token))fail('real tactical minimap integration missing: '+token);
 }
-if(!html.includes('ZAP ZONE v23.5'))fail('index version is not v23.5');
-if(!process.exitCode)console.log('ZAP ZONE v23.5 real minimap, cover assets and battlefield distribution validation passed.');
+if(!html.includes('ZAP ZONE v23.6'))fail('index version is not v23.6');
+if(!process.exitCode)console.log('ZAP ZONE v23.6 hosting-safe procedural scene validation passed.');

@@ -397,16 +397,21 @@ const FP_DECAL_TUNING={
 };
 function addFirstPersonWeaponDecal(target,w){
   const tune=FP_DECAL_TUNING[w.key]||FP_DECAL_TUNING.rifle;
-  const skinPath=GAME_ASSETS.firstPersonSkins?.[w.key];
-  if(skinPath){
-    const [sw,sh,pos]=tune.skin;
-    const skin=makeAssetPlane(skinPath,sw,sh,{opacity:.90,depthTest:true,renderOrder:4});
-    skin.position.set(...pos);skin.rotation.set(-.06,.02,0);target.add(skin);
-  }
-  const path=GAME_ASSETS.firstPersonWeapons?.[w.key];if(!path)return;
+  const accentColor=w.gCol||w.bCol||0x58d7ff;
+  const accent=new THREE.MeshStandardMaterial({color:accentColor,roughness:.24,metalness:.55,emissive:accentColor,emissiveIntensity:.48});
+  const dark=new THREE.MeshStandardMaterial({color:0x0a1118,roughness:.36,metalness:.68,emissive:accentColor,emissiveIntensity:.045});
+  const [sw,sh,pos]=tune.skin;
+  const panel=new THREE.Mesh(new THREE.BoxGeometry(sw*.82,Math.max(.022,sh*.38),.018),dark);
+  panel.position.set(...pos);panel.rotation.set(-.06,.02,0);target.add(panel);
+  const strip=new THREE.Mesh(new THREE.BoxGeometry(sw*.58,.018,.022),accent);
+  strip.position.set(pos[0],pos[1]+Math.max(.018,sh*.18),pos[2]-.012);strip.rotation.copy(panel.rotation);target.add(strip);
   const [tw,th,tpos]=tune.tech;
-  const p=makeAssetPlane(path,tw,th,{opacity:.97,depthTest:true,renderOrder:5});
-  p.position.set(...tpos);p.rotation.set(-.08,.10,0);target.add(p);
+  const tech=new THREE.Mesh(new THREE.BoxGeometry(tw*.42,Math.max(.018,th*.34),.020),accent);
+  tech.position.set(...tpos);tech.rotation.set(-.08,.10,0);target.add(tech);
+  for(let i=0;i<3;i++){
+    const node=new THREE.Mesh(new THREE.BoxGeometry(.018,.018,.026),accent);
+    node.position.set(tpos[0]+(i-1)*.035,tpos[1]+.026,tpos[2]-.008);node.rotation.copy(tech.rotation);target.add(node);
+  }
 }
 function addFirstPersonHands(target,key){
   const pose=FP_HAND_POSES[key]||FP_HAND_POSES.rifle;
