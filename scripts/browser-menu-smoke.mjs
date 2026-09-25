@@ -45,43 +45,63 @@ while(Date.now()<deadline){
 }
 if(!ready)throw new Error('file:// boot did not reach ready state');
 
-const evalResult=await send('Runtime.evaluate',{
-  expression:`(async()=>{
-    const btn=document.getElementById('menuSettingsBtn');
-    if(!btn)return {ok:false,reason:'missing-settings-button'};
-    const r=btn.getBoundingClientRect();
-    const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
-    const started=performance.now();
-    btn.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'mouse',isPrimary:true}));
-    btn.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerType:'mouse',isPrimary:true}));
-    btn.click();
-    await new Promise(resolve=>setTimeout(resolve,180));
-    const modal=document.getElementById('settings-modal');
-    const audioFlag=typeof GAME_AUDIO_FILE_ASSETS_ENABLED!=='undefined'?GAME_AUDIO_FILE_ASSETS_ENABLED:null;
-    const pendingLoads=typeof gameAudioLoads!=='undefined'?gameAudioLoads.size:null;
-    const result={
-      ok:true,
-      hitId:hit?.id||'',
-      settingsOpen:!!modal?.classList.contains('on'),
-      fileAudioEnabled:audioFlag,
-      pendingLoads,
-      delay:performance.now()-started
-    };
-    document.getElementById('settingsCloseBtn')?.click();
-    await new Promise(resolve=>setTimeout(resolve,40));
-    result.settingsClosed=!modal?.classList.contains('on');
-    return result;
-  })()`,
-  awaitPromise:true,
-  returnByValue:true
-});
-const result=evalResult.result?.value;
+async function evaluate(expression,awaitPromise=false){
+  const result=await send('Runtime.evaluate',{expression,awaitPromise,returnByValue:true});
+  if(result.exceptionDetails)throw new Error('Runtime.evaluate failed: '+JSON.stringify(result.exceptionDetails));
+  return result.result?.value;
+}
+async function mouseClick(x,y){
+  await send('Input.dispatchMouseEvent',{type:'mouseMoved',x,y});
+  await send('Input.dispatchMouseEvent',{type:'mousePressed',x,y,button:'left',buttons:1,clickCount:1});
+  await send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:1});
+}
+
+const prep=await evaluate(`(()=>{
+  const settings=document.getElementById('menuSettingsBtn');
+  const start=document.getElementById('startBtn');
+  if(!settings||!start)return {ok:false,reason:'missing-menu-buttons'};
+  const sr=settings.getBoundingClientRect(),pr=start.getBoundingClientRect();
+  const settingsHit=document.elementFromPoint(sr.left+sr.width/2,sr.top+sr.height/2);
+  const startHit=document.elementFromPoint(pr.left+pr.width/2,pr.top+pr.height/2);
+  window.__zapMenuSmokeStarted=performance.now();
+  return {
+    ok:true,
+    settingsX:sr.left+sr.width/2,
+    settingsY:sr.top+sr.height/2,
+    settingsHit:!!settingsHit?.closest?.('#menuSettingsBtn'),
+    startHit:!!startHit?.closest?.('#startBtn')
+  };
+})()`);
+if(!prep?.ok)throw new Error('menu geometry smoke failed: '+JSON.stringify(prep));
+if(!prep.settingsHit||!prep.startHit)throw new Error('menu buttons are not browser hit-test targets: '+JSON.stringify(prep));
+
+await mouseClick(prep.settingsX,prep.settingsY);
+await sleep(220);
+
+const opened=await evaluate(`(()=>{
+  const modal=document.getElementById('settings-modal');
+  const close=document.getElementById('settingsCloseBtn');
+  const r=close?.getBoundingClientRect();
+  return {
+    settingsOpen:!!modal?.classList.contains('on'),
+    fileAudioEnabled:typeof GAME_AUDIO_FILE_ASSETS_ENABLED!=='undefined'?GAME_AUDIO_FILE_ASSETS_ENABLED:null,
+    pendingLoads:typeof gameAudioLoads!=='undefined'?gameAudioLoads.size:null,
+    delay:performance.now()-(window.__zapMenuSmokeStarted||performance.now()),
+    closeX:r?r.left+r.width/2:null,
+    closeY:r?r.top+r.height/2:null,
+    closeHit:r?!!document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest?.('#settingsCloseBtn'):false
+  };
+})()`);
+if(!opened?.settingsOpen)throw new Error('real CDP click did not open settings: '+JSON.stringify(opened));
+if(!opened.closeHit)throw new Error('settings close button is not a hit-test target: '+JSON.stringify(opened));
+if(opened.fileAudioEnabled!==false)throw new Error('file:// WAV loading is still enabled: '+JSON.stringify(opened));
+if(opened.pendingLoads!==0)throw new Error('file:// audio loads were started: '+JSON.stringify(opened));
+if(opened.delay>1200)throw new Error('menu click event loop latency is too high: '+JSON.stringify(opened));
+
+await mouseClick(opened.closeX,opened.closeY);
+await sleep(80);
+const settingsClosed=await evaluate("!document.getElementById('settings-modal')?.classList.contains('on')");
 ws.close();
 
-if(!result?.ok)throw new Error('menu smoke failed: '+JSON.stringify(result));
-if(result.hitId!=='menuSettingsBtn')throw new Error('settings button is not the hit-test target: '+JSON.stringify(result));
-if(!result.settingsOpen||!result.settingsClosed)throw new Error('settings button/modal click path failed: '+JSON.stringify(result));
-if(result.fileAudioEnabled!==false)throw new Error('file:// WAV loading is still enabled: '+JSON.stringify(result));
-if(result.pendingLoads!==0)throw new Error('file:// audio loads were started: '+JSON.stringify(result));
-if(result.delay>1200)throw new Error('menu click event loop latency is too high: '+JSON.stringify(result));
-console.log('Local file menu smoke passed:',JSON.stringify(result));
+if(!settingsClosed)throw new Error('real CDP click did not close settings');
+console.log('Local file menu smoke passed:',JSON.stringify({...prep,...opened,settingsClosed}));
