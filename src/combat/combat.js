@@ -370,15 +370,18 @@ function grantPlayerKillRewards(){
   if(plr.killArmor>0)armor=Math.min(plr.maxArmor,armor+plr.killArmor);
   markHUD();
 }
-function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false,bloom=weaponBloom){
+function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false,bloom=weaponBloom,firstShot=false){
   const hip=w.spread||0,ads=w.adsSpread??hip*.55;
   const base=hip+(ads-hip)*Math.max(0,Math.min(1,adsBlend));
-  const moving=Math.min(1,Math.hypot(plrVx,plrVz)/8);
+  const speed=Math.hypot(plrVx,plrVz);
+  const moving=Math.min(1,speed/8);
   const movePenalty=(w.moveSpread||0)*moving;
   const airPenalty=onGnd?0:(w.airSpread||0);
   const pelletFactor=(w.pellets||1)>1?(pelletIndex===0?.35:1):1;
   const extraPenalty=extraShot?.035:0;
-  return Math.max(0,(base*pelletFactor+movePenalty+airPenalty+bloom+extraPenalty)*plr.spreadM);
+  const settledFirstShot=firstShot&&onGnd&&speed<1.2;
+  const firstShotM=settledFirstShot?(w.firstShotM??1):1;
+  return Math.max(0,(base*pelletFactor*firstShotM+movePenalty+airPenalty+bloom+extraPenalty)*plr.spreadM);
 }
 function kickSniperScope(){
   const scope=G('sniper-scope');if(!scope||!zooming)return;
@@ -496,9 +499,45 @@ function spawnPlayerBullet(from,dir,w,meta={}){
   });
 }
 
+function weaponActionBlocked(){
+  return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||cycleT>0;
+}
+function finishPlayerReload(playDone=true){
+  reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
+  weaponReadyT=Math.max(weaponReadyT,.08);
+  if(playDone)playSfx('reloadDone');
+  wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
+}
+function cancelPlayerReload(){
+  if(!reloading)return;
+  const shellMode=reloadMode==='shell';
+  finishPlayerReload(false);
+  if(shellMode)playSfx('reloadCancel');
+}
+function completePlayerReloadStep(){
+  if(!reloading)return;
+  const w=getW();
+  if(reloadMode==='shell'){
+    if(ammo<w.clip&&uAmmo>0){
+      ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playSfx('shell');
+    }
+    if(ammo>=w.clip||uAmmo<=0){finishPlayerReload(true);return;}
+    reloadT=Math.max(.16,w.reload*(w.shellInsertM||.26));
+    reloadTot=reloadT;
+    return;
+  }
+  const need=w.clip-ammo,take=Math.min(need,uAmmo);
+  ammo+=take;uAmmo-=take;syncCurrentAmmo();finishPlayerReload(true);
+}
+
 function shoot(){
-  if(reloading||sCD>0)return;
-  const w=getW();if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}
+  const w=getW();
+  if(reloading){
+    if(w.reloadStyle==='shell'&&ammo>0)cancelPlayerReload();
+    else return;
+  }
+  if(sCD>0||weaponActionBlocked())return;
+  if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}
   if(ammo<=0){
     doReload();
     if(!reloading){playSfx('dry');sCD=Math.max(sCD,.18);}
@@ -513,11 +552,16 @@ function shoot(){
   if(w.isSniper)kickSniperScope();
 
   // Camera recoil: repeatable pattern + small jitter gives each weapon a learnable cadence.
+  const firstShot=shotSequence===0;
   const pattern=w.recoilPattern||[0],patternX=pattern[shotSequence%pattern.length]||0;
   recoilPitch+=(w.recoilY||.02)*(0.88+Math.min(.32,shotSequence*.018)+Math.random()*.16)*plr.recoilM;
   recoilYaw+=(patternX+(Math.random()-.5)*.22)*(w.recoilX||.01)*plr.recoilM;
   recoilRecovery=w.recoilDelay??.3;
   shotSequence++;shotResetT=Math.max(.34,w.rate*2.4);
+  if(w.cycleTime){
+    cycleTot=w.cycleTime;cycleT=cycleTot;cycleKind=w.fireMode;
+    weaponReadyT=Math.max(weaponReadyT,cycleTot);
+  }
 
   if(flashM)flashM.material.opacity=1;
   if(beamM){beamM.material.opacity=.9;beamT=.065;}
@@ -546,7 +590,7 @@ function shoot(){
   for(let s=0;s<shots;s++){
     for(let p=0;p<w.pellets;p++){
       const d=bDir.clone();
-      const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom);
+      const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom,firstShot);
       if(sp2>0){d.x+=(Math.random()-.5)*sp2*2;d.y+=(Math.random()-.5)*sp2*2;d.z+=(Math.random()-.5)*sp2*2;d.normalize();}
       if(w.hitscan)fireInstantSniper(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
       else spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
@@ -569,10 +613,21 @@ function spawnTracer(from,dir,dist,col,key='default'){
 }
 function doReload(){
   const w=getW();if(w.isBomb||w.isSmoke)return;
-  if(reloading||ammo===w.clip||uAmmo===0)return;
+  if(reloading||ammo===w.clip||uAmmo===0||weaponReadyT>0||cycleT>0)return;
   if(w.isSniper&&zooming)zooming=false;
-  reloading=true;reloadT=w.reload;reloadTot=w.reload;
+  reloading=true;reloadShellLoaded=0;
+  if(w.reloadStyle==='shell'){
+    reloadMode='shell';
+    reloadT=Math.max(.18,w.reload*(w.shellStartM||.22));
+  }else{
+    const empty=ammo<=0;
+    reloadMode=empty?'empty':'tactical';
+    const mult=empty?(w.emptyReloadM??1):(w.tacticalReloadM??1);
+    reloadT=Math.max(.30,w.reload*mult);
+  }
+  reloadTot=reloadT;
   playSfx('reload');
+  G('rmsg').textContent=reloadMode==='shell'?'ЗАРЯДКА ПАТРОНОВ...':reloadMode==='empty'?'ПУСТОЙ МАГАЗИН...':'ТАКТИЧЕСКАЯ ПЕРЕЗАРЯДКА...';
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';
 }
 function throwMine(){
