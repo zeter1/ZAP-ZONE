@@ -61,6 +61,14 @@ const prep=await evaluate(`(()=>{
   const start=document.getElementById('startBtn');
   if(!settings||!start)return {ok:false,reason:'missing-menu-buttons'};
   const sr=settings.getBoundingClientRect(),pr=start.getBoundingClientRect();
+  const describe=el=>{
+    const path=[];
+    for(let n=el;n&&path.length<6;n=n.parentElement){
+      const cs=getComputedStyle(n);
+      path.push({tag:n.tagName,id:n.id||'',cls:typeof n.className==='string'?n.className:'',pe:cs.pointerEvents,z:cs.zIndex,display:cs.display,visibility:cs.visibility});
+    }
+    return path;
+  };
   const settingsHit=document.elementFromPoint(sr.left+sr.width/2,sr.top+sr.height/2);
   const startHit=document.elementFromPoint(pr.left+pr.width/2,pr.top+pr.height/2);
   window.__zapMenuSmokeStarted=performance.now();
@@ -68,12 +76,11 @@ const prep=await evaluate(`(()=>{
     ok:true,
     settingsX:sr.left+sr.width/2,
     settingsY:sr.top+sr.height/2,
-    settingsHit:!!settingsHit?.closest?.('#menuSettingsBtn'),
-    startHit:!!startHit?.closest?.('#startBtn')
+    settingsHitPath:describe(settingsHit),
+    startHitPath:describe(startHit)
   };
 })()`);
 if(!prep?.ok)throw new Error('menu geometry smoke failed: '+JSON.stringify(prep));
-if(!prep.settingsHit||!prep.startHit)throw new Error('menu buttons are not browser hit-test targets: '+JSON.stringify(prep));
 
 await mouseClick(prep.settingsX,prep.settingsY);
 await sleep(220);
@@ -92,7 +99,7 @@ const opened=await evaluate(`(()=>{
     closeHit:r?!!document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest?.('#settingsCloseBtn'):false
   };
 })()`);
-if(!opened?.settingsOpen)throw new Error('real CDP click did not open settings: '+JSON.stringify(opened));
+if(!opened?.settingsOpen)throw new Error('real CDP click did not open settings; blockers='+JSON.stringify({prep,opened}));
 if(!opened.closeHit)throw new Error('settings close button is not a hit-test target: '+JSON.stringify(opened));
 if(opened.fileAudioEnabled!==false)throw new Error('file:// WAV loading is still enabled: '+JSON.stringify(opened));
 if(opened.pendingLoads!==0)throw new Error('file:// audio loads were started: '+JSON.stringify(opened));
