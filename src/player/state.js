@@ -17,7 +17,7 @@ let recoilPitch=0,recoilYaw=0,recoilRecovery=0;
 let adsBlend=0,weaponBloom=0,shotSequence=0,shotResetT=0;
 let weaponReadyT=0,weaponEquipT=0,weaponEquipTot=0;
 let sprintBlend=0,sprintExitT=0,wasWeaponSprinting=false;
-let cycleT=0,cycleTot=0,cycleKind='';
+let cycleT=0,cycleTot=0,cycleKind='',cycleEjected=false;
 let reloadMode='mag',reloadShellLoaded=0;
 const K={};
 const mobileInput={
@@ -400,7 +400,7 @@ function switchW(idx){
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
-  cycleT=0;cycleTot=0;cycleKind='';sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;
+  cycleT=0;cycleTot=0;cycleKind='';cycleEjected=false;sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;
   lastW=curW;
   curW=idx;
   const w=getW();
