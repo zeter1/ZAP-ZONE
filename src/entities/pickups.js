@@ -15,22 +15,23 @@ const PICKUP_MATS={
   medWhite:new THREE.MeshStandardMaterial({color:0xf4f8fa,roughness:.46,metalness:.18}),
   medGlow:new THREE.MeshBasicMaterial({color:0xff4058,transparent:true,opacity:.94})
 };
-const _pickupRingGeo=new THREE.TorusGeometry(.60,.045,7,18);
+const _pickupRingGeo=new THREE.TorusGeometry(.52,.030,7,18);
 function addPickupPedestal(group,color){
   const base=new THREE.Mesh(
-    new THREE.CylinderGeometry(.52,.62,.07,18),
-    new THREE.MeshStandardMaterial({color:0x0d141b,roughness:.56,metalness:.62,emissive:color,emissiveIntensity:.12})
+    new THREE.CylinderGeometry(.46,.55,.055,18),
+    new THREE.MeshStandardMaterial({color:0x0d141b,roughness:.58,metalness:.64,emissive:color,emissiveIntensity:.09})
   );
   base.position.y=-.31;group.add(base);
 }
-function addPickupBeacon(group,color,y=1.0,scale=1){
-  const glow=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.88,depthTest:false,depthWrite:false});
-  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.34,6),glow);
-  stem.position.y=y-.22;group.add(stem);
-  const diamond=new THREE.Mesh(new THREE.OctahedronGeometry(.11*scale,0),glow);
+function addPickupBeacon(group,color,y=.84,scale=1){
+  const glow=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.70,depthTest:false,depthWrite:false});
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.20,6),glow);
+  stem.position.y=y-.13;group.add(stem);
+  const diamond=new THREE.Mesh(new THREE.OctahedronGeometry(.075*scale,0),glow);
   diamond.position.y=y;diamond.rotation.y=Math.PI/4;group.add(diamond);
-  const halo=new THREE.Mesh(new THREE.TorusGeometry(.16*scale,.018,5,14),glow);
+  const halo=new THREE.Mesh(new THREE.TorusGeometry(.115*scale,.012,5,14),glow);
   halo.position.y=y;halo.rotation.x=Math.PI/2;group.add(halo);
+  group.userData.pickupBeacon={stem,diamond,halo,material:glow,baseY:y,phase:Math.random()*Math.PI*2};
 }
 function mkAmmoMesh(){
   const g=new THREE.Group();
@@ -45,7 +46,7 @@ function mkAmmoMesh(){
   }
   const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.ammoGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
   addPickupPedestal(g,0x48ffd0);
-  addPickupBeacon(g,0x48ffd0,1.00,.92);
+  addPickupBeacon(g,0x48ffd0,.82,.88);
   return g;
 }
 function mkHpMesh(){
@@ -58,7 +59,7 @@ function mkHpMesh(){
   const crossV=new THREE.Mesh(new THREE.BoxGeometry(.105,.39,.31),PICKUP_MATS.medWhite);crossV.position.z=.025;g.add(crossV);
   const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.medGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.33;g.add(ring);
   addPickupPedestal(g,0xff4058);
-  addPickupBeacon(g,0xff4058,1.02,1.02);
+  addPickupBeacon(g,0xff4058,.86,.94);
   return g;
 }
 
@@ -79,7 +80,7 @@ function mkWeaponPickupMesh(key){
     new THREE.MeshStandardMaterial({color:0x111820,roughness:.62,metalness:.52,emissive:haloColor,emissiveIntensity:.15})
   );
   base.position.y=-.31;g.add(base);
-  addPickupBeacon(g,haloColor,1.08,1.10);
+  addPickupBeacon(g,haloColor,.90,1.00);
   g.userData.weaponKey=w.key;return g;
 }
 function randomWeaponReserve(w){
@@ -141,9 +142,19 @@ function tickPickups(dt){
       continue;
     }
 
-    pk.bob+=step*(pk.type==='weapon'?1.45:1.8);
-    pk.m.position.y=(pk.type==='weapon'?.62:.55)+Math.sin(pk.bob)*(pk.type==='weapon'?.14:.18);
-    pk.m.rotation.y+=step*(pk.type==='weapon'?.82:1.2);
+    pk.bob+=step*(pk.type==='weapon'?1.30:1.55);
+    pk.m.position.y=(pk.type==='weapon'?.62:.55)+Math.sin(pk.bob)*(pk.type==='weapon'?.10:.13);
+    pk.m.rotation.y+=step*(pk.type==='weapon'?.70:1.0);
+    const beacon=pk.m.userData.pickupBeacon;
+    if(beacon){
+      const pulse=.5+.5*Math.sin(pk.bob*1.35+beacon.phase);
+      beacon.material.opacity=.52+pulse*.22;
+      const haloScale=.88+pulse*.18;
+      beacon.halo.scale.setScalar(haloScale);
+      beacon.halo.rotation.z+=step*.75;
+      beacon.diamond.rotation.y+=step*1.1;
+      beacon.diamond.position.y=beacon.baseY+Math.sin(pk.bob*1.6+beacon.phase)*.025;
+    }
     if(pk.cd>0){pk.cd-=step;continue;}
 
     const dx=px-pk.m.position.x,dz=pz-pk.m.position.z;

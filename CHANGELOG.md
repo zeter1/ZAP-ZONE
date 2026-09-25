@@ -2,6 +2,26 @@
 
 ## Unreleased — 2026-09-25
 
+### Visual Polish 2.0 — HUD, pickups, weapons и укрытия
+- tactical minimap стала примерно на 12% компактнее: меньше рамка/легенда и нижний tactical stack, при этом canvas остаётся высоким по внутреннему разрешению для чёткой картинки;
+- контраст реальной геометрии карты повышен, союзники и игрок получили более читаемые маркеры с тёмной обводкой, активная capture-zone мягко пульсирует, world-weapon dots стали круглыми и аккуратнее;
+- pickup beacons стали ниже и тоньше: уменьшены stem/diamond/halo, pedestal/ring больше не доминируют над предметом; добавлены мягкий pulse, локальный bob и медленное вращение;
+- общая амплитуда bob/rotation самих pickup-моделей уменьшена, чтобы предметы выглядели как физические объекты, а не как крупные аркадные маркеры.
+
+### First-person weapon materials
+- procedural weapon accents получили металлические fasteners, более тонкие emissive strips и отдельные micro-details без возврата SVG overlays;
+- rifle/sniper получили боковые rails и status module, plasma — парные emissive coils/caps, shotgun/rocket — дополнительный structural brace;
+- материалы сохранены hosting-safe и одинаково работают на uCoz / localhost / file://.
+
+### Cover material variation
+- Aegis / industrial barrier / cargo cover теперь получают детерминированные вариации палитры по позиции на карте;
+- добавлены разные metal/wood trims, fasteners, small braces и менее агрессивное свечение;
+- collision, LOS, penetration semantics и minimap geometry не менялись.
+
+### Проверка
+- версия повышена до v23.7;
+- validation закрепляет compact minimap sizing, marker contrast/pulse, pickup beacon animation, weapon micro-details и cover palettes.
+
 ### Hosting Compatibility 2.0 — одинаковая 3D-сцена на uCoz / localhost / file://
 - устранён источник чёрных прямоугольников и тёмных накладок на uCoz: постоянные 3D-объекты больше не используют полноразмерные SVG как PlaneGeometry/Sprite texture overlays;
 - причина была архитектурной: локальный file:// режим скрывал эти texture overlays прозрачным fallback, а HTTP-хостинг реально загружал SVG с собственными тёмными подложками, поэтому сайт выглядел иначе локального запуска;

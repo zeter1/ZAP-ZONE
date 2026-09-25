@@ -398,19 +398,42 @@ const FP_DECAL_TUNING={
 function addFirstPersonWeaponDecal(target,w){
   const tune=FP_DECAL_TUNING[w.key]||FP_DECAL_TUNING.rifle;
   const accentColor=w.gCol||w.bCol||0x58d7ff;
-  const accent=new THREE.MeshStandardMaterial({color:accentColor,roughness:.24,metalness:.55,emissive:accentColor,emissiveIntensity:.48});
-  const dark=new THREE.MeshStandardMaterial({color:0x0a1118,roughness:.36,metalness:.68,emissive:accentColor,emissiveIntensity:.045});
+  const accent=new THREE.MeshStandardMaterial({color:accentColor,roughness:.22,metalness:.58,emissive:accentColor,emissiveIntensity:.44});
+  const dark=new THREE.MeshStandardMaterial({color:0x0a1118,roughness:.34,metalness:.72,emissive:accentColor,emissiveIntensity:.04});
+  const trim=new THREE.MeshStandardMaterial({color:0xa9b9c7,roughness:.22,metalness:.86});
+  const boltMat=new THREE.MeshStandardMaterial({color:0xd6e1e8,roughness:.20,metalness:.92});
   const [sw,sh,pos]=tune.skin;
   const panel=new THREE.Mesh(new THREE.BoxGeometry(sw*.82,Math.max(.022,sh*.38),.018),dark);
   panel.position.set(...pos);panel.rotation.set(-.06,.02,0);target.add(panel);
-  const strip=new THREE.Mesh(new THREE.BoxGeometry(sw*.58,.018,.022),accent);
+  const strip=new THREE.Mesh(new THREE.BoxGeometry(sw*.58,.016,.022),accent);
   strip.position.set(pos[0],pos[1]+Math.max(.018,sh*.18),pos[2]-.012);strip.rotation.copy(panel.rotation);target.add(strip);
+  for(const sx of [-1,1]){
+    const bolt=new THREE.Mesh(new THREE.CylinderGeometry(.010,.010,.010,8),boltMat);
+    bolt.rotation.x=Math.PI/2;bolt.position.set(pos[0]+sx*sw*.30,pos[1]-sh*.08,pos[2]-.018);target.add(bolt);
+  }
   const [tw,th,tpos]=tune.tech;
   const tech=new THREE.Mesh(new THREE.BoxGeometry(tw*.42,Math.max(.018,th*.34),.020),accent);
   tech.position.set(...tpos);tech.rotation.set(-.08,.10,0);target.add(tech);
   for(let i=0;i<3;i++){
-    const node=new THREE.Mesh(new THREE.BoxGeometry(.018,.018,.026),accent);
-    node.position.set(tpos[0]+(i-1)*.035,tpos[1]+.026,tpos[2]-.008);node.rotation.copy(tech.rotation);target.add(node);
+    const node=new THREE.Mesh(new THREE.BoxGeometry(.016,.016,.024),accent);
+    node.position.set(tpos[0]+(i-1)*.033,tpos[1]+.026,tpos[2]-.008);node.rotation.copy(tech.rotation);target.add(node);
+  }
+  if(w.key==='rifle'||w.key==='sniper'){
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(.028,.028,w.key==='sniper'?.38:.30),trim);
+    rail.position.set(-.155,.135,w.key==='sniper'?-.34:-.26);rail.rotation.x=-.02;target.add(rail);
+    const rail2=rail.clone();rail2.position.x=.155;target.add(rail2);
+    const status=new THREE.Mesh(new THREE.BoxGeometry(.060,.025,.085),accent);
+    status.position.set(.12,.18,w.key==='sniper'?-.08:-.02);target.add(status);
+  }else if(w.key==='plasma'){
+    for(const sx of [-.145,.145]){
+      const coil=new THREE.Mesh(new THREE.BoxGeometry(.024,.030,.34),accent);
+      coil.position.set(sx,.13,-.42);target.add(coil);
+      const cap=new THREE.Mesh(new THREE.SphereGeometry(.020,8,6),accent);
+      cap.position.set(sx,.13,-.61);target.add(cap);
+    }
+  }else if(w.key==='shotgun'||w.key==='rocket'){
+    const brace=new THREE.Mesh(new THREE.BoxGeometry(.26,.025,.045),trim);
+    brace.position.set(0,.14,-.18);target.add(brace);
   }
 }
 function addFirstPersonHands(target,key){

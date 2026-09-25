@@ -290,34 +290,53 @@ function createArenaCover(x,z,ry=0,variant=0){
   const type=((variant%3)+3)%3;
   const dims=type===0?[4.8,1.55,.72]:type===1?[4.2,1.25,1.05]:[3.6,1.65,1.35];
   const impact=type===2?'wood':'metal';
-  const baseColor=type===0?0x40505e:type===1?0x535d64:0x66523d;
+  const paletteIndex=Math.abs(Math.round(x*3+z*5))%3;
+  const palettes=[
+    [0x40505e,0x4a5d6a,0x374650],
+    [0x535d64,0x665e4b,0x465b60],
+    [0x66523d,0x735a40,0x5b4937]
+  ];
+  const baseColor=palettes[type][paletteIndex];
   const body=box(dims[0],dims[1],dims[2],baseColor,x,dims[1]/2,z,ry,impact);
   if(body.userData.minimap){body.userData.minimap.kind='cover';body.userData.minimap.variant=type;}
   body.userData.coverType=type===0?'aegis':type===1?'barrier':'cargo';
-  body.material=new THREE.MeshStandardMaterial({color:baseColor,roughness:type===2?.68:.34,metalness:type===2?.18:.72,emissive:type===0?0x062c3b:type===1?0x241a04:0x120b04,emissiveIntensity:.12});
+  body.userData.coverPalette=paletteIndex;
+  body.material=new THREE.MeshStandardMaterial({color:baseColor,roughness:type===2?.68:.34,metalness:type===2?.18:.72,emissive:type===0?0x062c3b:type===1?0x241a04:0x120b04,emissiveIntensity:.10});
   const dark=new THREE.MeshStandardMaterial({color:0x111922,roughness:.40,metalness:.78});
-  const metal=new THREE.MeshStandardMaterial({color:0x8b9aa8,roughness:.30,metalness:.82});
-  const glow=new THREE.MeshStandardMaterial({color:type===1?0xffb329:0x36d9ff,roughness:.22,metalness:.36,emissive:type===1?0x8a4300:0x087a99,emissiveIntensity:.92});
-  const wood=new THREE.MeshStandardMaterial({color:0x9a7449,roughness:.72,metalness:.08});
+  const metal=new THREE.MeshStandardMaterial({color:paletteIndex===1?0xa38f72:0x8b9aa8,roughness:.30,metalness:.82});
+  const accentColor=type===1?(paletteIndex===1?0xffd15b:0xffb329):(paletteIndex===2?0x66f0b8:0x36d9ff);
+  const glow=new THREE.MeshStandardMaterial({color:accentColor,roughness:.22,metalness:.36,emissive:accentColor,emissiveIntensity:.58});
+  const wood=new THREE.MeshStandardMaterial({color:paletteIndex===1?0xa67a4b:0x9a7449,roughness:.72,metalness:.08});
+  const bolt=new THREE.MeshStandardMaterial({color:0xb9c5cf,roughness:.24,metalness:.90});
   const add=(geo,mat,x1,y1,z1,rx=0,ry1=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x1,y1,z1);m.rotation.set(rx,ry1,rz);m.castShadow=!MOBILE_LOW;m.receiveShadow=!MOBILE_LOW;body.add(m);return m;};
   if(type===0){
     add(new THREE.BoxGeometry(3.55,.15,.86),metal,0,.72,0);
     add(new THREE.BoxGeometry(.92,1.34,.20),dark,-2.15,.02,.25,0,-.28,.06);
     add(new THREE.BoxGeometry(.92,1.34,.20),dark,2.15,.02,.25,0,.28,-.06);
-    add(new THREE.BoxGeometry(2.35,.075,.10),glow,0,.24,.42);
-    add(new THREE.BoxGeometry(.12,1.02,.11),glow,-1.68,.02,.42);
-    add(new THREE.BoxGeometry(.12,1.02,.11),glow,1.68,.02,.42);
+    add(new THREE.BoxGeometry(2.35,.065,.10),glow,0,.24,.42);
+    add(new THREE.BoxGeometry(.10,1.02,.11),glow,-1.68,.02,.42);
+    add(new THREE.BoxGeometry(.10,1.02,.11),glow,1.68,.02,.42);
+    for(const sx of [-1.95,1.95])for(const sy of [-.42,.42]){
+      const fastener=add(new THREE.CylinderGeometry(.035,.035,.025,8),bolt,sx,sy,.39,Math.PI/2);
+      fastener.rotation.z=Math.PI/2;
+    }
   }else if(type===1){
     add(new THREE.BoxGeometry(4.35,.12,1.10),metal,0,.56,0);
     for(const sx of [-1.55,0,1.55])add(new THREE.BoxGeometry(.11,1.08,1.13),dark,sx,0,0);
-    add(new THREE.BoxGeometry(3.20,.065,.09),glow,0,.18,.57);
+    add(new THREE.BoxGeometry(3.20,.055,.09),glow,0,.18,.57);
     add(new THREE.BoxGeometry(1.15,.18,1.20),dark,-1.47,-.48,0,0,0,.05);
     add(new THREE.BoxGeometry(1.15,.18,1.20),dark,1.47,-.48,0,0,0,-.05);
+    for(const sx of [-1.05,1.05]){
+      add(new THREE.BoxGeometry(.52,.06,.10),metal,sx,-.22,.575,0,0,sx<0?-.18:.18);
+    }
   }else{
     add(new THREE.BoxGeometry(3.35,.15,1.28),dark,0,.72,0);
     for(const sy of [-.38,.08,.52])add(new THREE.BoxGeometry(3.00,.08,1.40),wood,0,sy,0);
     for(const sx of [-1.48,1.48])add(new THREE.BoxGeometry(.12,1.35,1.42),metal,sx,0,0);
-    add(new THREE.BoxGeometry(2.10,.06,.08),glow,0,.23,.715);
+    add(new THREE.BoxGeometry(2.10,.05,.08),glow,0,.23,.715);
+    for(const sx of [-1.05,1.05])for(const sy of [-.42,.42]){
+      add(new THREE.BoxGeometry(.11,.11,.055),bolt,sx,sy,.72);
+    }
   }
   return body;
 }
