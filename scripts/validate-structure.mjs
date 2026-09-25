@@ -25,7 +25,7 @@ const visualAssets=[
   'assets/fx/bullet-hit.svg','assets/fx/wall-impact.svg','assets/fx/plasma-impact.svg','assets/fx/sniper-shot.svg','assets/fx/rocket-impact.svg','assets/fx/critical-hit.svg','assets/fx/armor-break.svg',
   'assets/medals/first-blood.svg','assets/medals/double-kill.svg','assets/medals/triple-kill.svg','assets/medals/multikill.svg','assets/medals/killing-spree.svg','assets/medals/longshot.svg','assets/medals/critical-kill.svg','assets/medals/explosive-kill.svg',
   'assets/status/second-wind.svg','assets/status/lifesteal.svg','assets/status/armor-regen.svg','assets/status/low-health.svg','assets/status/smoke-guard.svg','assets/status/crit-ready.svg',
-  'assets/ui/logo.svg','assets/ui/crosshair.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg','assets/ui/sniper-scope.svg'
+  'assets/ui/logo.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg','assets/ui/sniper-scope.svg'
 ];
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
@@ -48,23 +48,25 @@ for(const file of requiredAssets){
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
+if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must not be catalogued');
+if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
 const progression=readFileSync('src/progression/progression.js','utf8');
-for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx']){
-  if(!progression.includes(token))fail('progression visual integration missing: '+token);
+for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'"]){
+  if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
 
 const weapons=readFileSync('src/weapons/system.js','utf8');
 const weaponDefs=[...weapons.matchAll(/weaponDef\('([^']+)'/g)].map(m=>m[1]);
 if(weaponDefs.length!==9)fail('expected 9 weapon definitions, found '+weaponDefs.length);
 if(!weaponDefs.includes('sniper'))fail('sniper weapon definition missing');
-for(const token of ["fireMode:'bolt'","isSniper:true","aimMode:'scope'","hitscan:true","headshotMult:2.55","muzzleVelocity:85","bulletGravity:4.8","function weaponDamageScaleAtDistance"]){
-  if(!weapons.includes(token))fail('weapon physics integration missing: '+token);
+for(const token of ["fireMode:'bolt'","isSniper:true","aimMode:'scope'","hitscan:true","oneShot:true","headshotMult:2.55","muzzleVelocity:85","bulletGravity:4.8","reloadStyle:'shell'","equipTime:.26","sprintRecover:.12","tacticalReloadM:.88","emptyReloadM:1.08","cycleTimes:WEAPONS.map","function weaponDamageScaleAtDistance"]){
+  if(!weapons.includes(token))fail('weapon physics/handling integration missing: '+token);
 }
 const sniperStart=weapons.indexOf("weaponDef('sniper'");
 const sniperEnd=weapons.indexOf('})',sniperStart);
 const sniperDef=sniperStart>=0&&sniperEnd>sniperStart?weapons.slice(sniperStart,sniperEnd):'';
-if(!sniperDef.includes("aimMode:'scope'")||!sniperDef.includes('hitscan:true'))fail('SR-9 must be scope-only hitscan');
+if(!sniperDef.includes("aimMode:'scope'")||!sniperDef.includes('hitscan:true')||!sniperDef.includes('oneShot:true'))fail('SR-9 must be scope-only one-shot hitscan');
 if(sniperDef.includes('muzzleVelocity:')||sniperDef.includes('bulletGravity:'))fail('SR-9 must not use projectile travel physics');
 for(const key of ['pistol','shotgun','rifle','plasma']){
   const start=weapons.indexOf("weaponDef('"+key+"'");
@@ -74,17 +76,18 @@ for(const key of ['pistol','shotgun','rifle','plasma']){
 }
 
 const settings=readFileSync('src/settings/settings.js','utf8');
-for(const token of ['function playSfx','function showHitMarker','function showDamageDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'"]){
+for(const token of ['function playSfx','function showHitMarker','function showDamageDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
   if(!settings.includes(token))fail('settings/presentation integration missing: '+token);
 }
 
 const combat=readFileSync('src/combat/combat.js','utf8');
-for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread']){
-  if(!combat.includes(token))fail('combat ballistics/scope integration missing: '+token);
+for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible',"playSfx('ricochet'"]){
+  if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
 
 const bots=readFileSync('src/entities/bots.js','utf8');
 if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
+if(!bots.includes("playSfx('whiz'"))fail('enemy near-miss whiz feedback missing');
 
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
@@ -94,13 +97,17 @@ for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','
 const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
-for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0"]){if(!runtime.includes(token))fail('runtime weapon handling missing: '+token);}
+for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#settings-modal','#sniper-scope','sniperScopeKick']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
+if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
+if((html.match(/id="xhair"/g)||[]).length!==1)fail('gameplay HUD must contain exactly one xhair root');
 
-if(!progression.includes("w.hitscan?'МГНОВЕННО'"))fail('HUD must identify hitscan weapon');
-if(!html.includes('ZAP ZONE v22.1'))fail('index version is not v22.1');
-if(!process.exitCode)console.log('ZAP ZONE v22.1 ballistics, instant sniper and scope isolation validation passed.');
+for(const token of ['let curW=0,lastW=0','function quickSwitchWeapon()','playSfx(\'equip\')','w.cycleTime=Math.max'] ){if(!state.includes(token))fail('player weapon lifecycle missing: '+token);}
+if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
+if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
+if(!html.includes('ZAP ZONE v22.2'))fail('index version is not v22.2');
+if(!process.exitCode)console.log('ZAP ZONE v22.2 weapon lifecycle, one-shot sniper and single-reticle validation passed.');
