@@ -424,3 +424,37 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   #combat-medal img{height:118px;}
   #combat-medal span{font-size:13px;letter-spacing:2px;margin-top:-27px;}
 }
+
+
+/* v21.9 — settings, audio feedback and combat telegraphing */
+#hitmarker{position:absolute;left:50%;top:50%;width:38px;height:38px;transform:translate(-50%,-50%) rotate(45deg) scale(.72);opacity:0;z-index:19;pointer-events:none;}
+#hitmarker::before,#hitmarker::after{content:'';position:absolute;left:50%;top:50%;width:4px;height:34px;border-radius:3px;background:#fff;box-shadow:0 0 9px rgba(255,255,255,.9);transform:translate(-50%,-50%);}
+#hitmarker::after{transform:translate(-50%,-50%) rotate(90deg);}
+#hitmarker.on{animation:hitMarkerPulse .18s ease-out forwards;}
+#hitmarker.crit::before,#hitmarker.crit::after,#hitmarker.head::before,#hitmarker.head::after{background:#ffe65c;box-shadow:0 0 12px rgba(255,208,43,.95);}
+#hitmarker.kill::before,#hitmarker.kill::after{background:#ff4c4c;box-shadow:0 0 14px rgba(255,30,30,.95);}
+@keyframes hitMarkerPulse{0%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.35)}24%{opacity:1;transform:translate(-50%,-50%) rotate(45deg) scale(1.08)}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.78)}}
+#xhair.dynamic-fire{transform:translate(-50%,-50%) scale(1.30);}
+#xhair.dynamic-hit{filter:drop-shadow(0 0 5px rgba(255,220,70,.95));}
+#damage-direction{position:absolute;left:50%;top:50%;width:1px;height:1px;z-index:17;pointer-events:none;opacity:0;transform:translate(-50%,-50%) rotate(0deg);}
+#damage-direction span{position:absolute;left:-17px;top:-145px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:1000;color:#ff4d3a;text-shadow:0 0 12px rgba(255,35,15,.95),0 2px 2px #210000;}
+#damage-direction.on{animation:damageDirectionPulse .72s ease-out forwards;}
+#damage-direction.explosive span{font-size:34px;color:#ffb130;text-shadow:0 0 16px rgba(255,103,15,.95);}
+@keyframes damageDirectionPulse{0%{opacity:0}12%{opacity:1}48%{opacity:.86}100%{opacity:0}}
+#fps-counter{position:absolute;right:12px;top:10px;display:none;z-index:14;min-width:72px;text-align:center;padding:5px 8px;border-radius:8px;background:rgba(5,11,17,.72);border:1px solid rgba(117,208,255,.22);color:#a9e9ff;font:800 11px/1 'Consolas','Courier New',monospace;letter-spacing:.8px;box-shadow:0 0 10px rgba(32,170,255,.08);}
+.bsecondary{background:linear-gradient(135deg,#1c3446,#0c1721);color:#cceeff;border:1px solid rgba(93,203,255,.38);box-shadow:0 4px 20px rgba(20,148,220,.18);}
+.bsecondary:hover{filter:brightness(1.18);}
+#settings-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at center,rgba(10,24,36,.80),rgba(0,3,8,.95));color:#eef8ff;padding:20px;}
+#settings-modal.on{display:flex;}
+#settings-box{width:min(560px,94vw);padding:24px 26px 22px;border-radius:20px;background:linear-gradient(180deg,rgba(14,27,39,.98),rgba(4,10,16,.98));border:1px solid rgba(96,207,255,.32);box-shadow:0 24px 80px rgba(0,0,0,.65),0 0 36px rgba(36,168,255,.12);}
+#settings-title{margin-bottom:18px;text-align:center;font-size:25px;font-weight:1000;letter-spacing:3px;color:#ffd95b;text-shadow:0 0 18px rgba(255,184,30,.35);}
+.setting-row,.setting-toggle{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:50px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;font-weight:750;letter-spacing:.4px;}
+.setting-control{display:flex;align-items:center;gap:10px;min-width:min(280px,52vw);}
+.setting-control input[type=range]{width:210px;accent-color:#46cfff;}
+.setting-control span{min-width:54px;text-align:right;color:#7fddff;font-family:Consolas,monospace;font-weight:900;}
+.setting-toggle{cursor:pointer;}
+.setting-toggle input{width:19px;height:19px;accent-color:#45caff;}
+.settings-note{margin:14px 0 2px;color:#8fa8ba;font-size:11px;line-height:1.55;text-align:center;}
+#settings-box .btn{display:block;margin:18px auto 0;}
+#canvas{transform-origin:50% 50%;will-change:transform;}
+@media(max-width:700px){#damage-direction span{top:-105px;}#settings-box{padding:18px;}.setting-row{align-items:flex-start;flex-direction:column;gap:7px;}.setting-control{width:100%;min-width:0;}.setting-control input[type=range]{width:100%;}}
