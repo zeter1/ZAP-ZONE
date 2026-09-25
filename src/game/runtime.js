@@ -276,4 +276,9 @@ window.addEventListener('keyup',e=>{
 setGameCursorHidden(false);
 buildGun(getW());buildWeaponBar();bindMobileControls();updateMineHUD();updateStats();updateTeamScore();updateOrientationState();refreshMobileHUD();xpHUD();refreshStartButton();
 requestAnimationFrame(loop);
-preloadGameContent();
+preloadGameContent().then(()=>{
+  document.documentElement.dataset.zapBoot='ready';
+}).catch(err=>{
+  console.error('ZAP ZONE boot failed',err);
+  document.documentElement.dataset.zapBoot='failed';
+});

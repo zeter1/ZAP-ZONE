@@ -41,3 +41,45 @@ jobs:
           node --check scripts/validate-structure.mjs
       - name: Project structure
         run: node scripts/validate-structure.mjs
+
+      - name: Browser boot smoke test
+        shell: bash
+        run: |
+          python3 -m http.server 8000 > /tmp/zap-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl -fsS http://127.0.0.1:8000/ >/dev/null; then
+              break
+            fi
+            sleep 0.25
+          done
+
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo "Chrome/Chromium is not installed on the runner."
+            exit 1
+          fi
+
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-dev-shm-usage \
+            --enable-webgl \
+            --enable-unsafe-swiftshader \
+            --ignore-gpu-blocklist \
+            --virtual-time-budget=15000 \
+            --dump-dom http://127.0.0.1:8000/ \
+            > /tmp/zap-dom.html 2> /tmp/zap-chrome.log
+
+          if ! grep -q 'data-zap-boot="ready"' /tmp/zap-dom.html; then
+            echo "Game did not reach the boot-ready marker."
+            echo "--- Chrome log ---"
+            cat /tmp/zap-chrome.log
+            echo "--- DOM tail ---"
+            tail -n 80 /tmp/zap-dom.html
+            exit 1
+          fi
+
+          echo "Browser boot smoke test passed."
