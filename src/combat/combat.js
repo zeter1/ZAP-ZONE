@@ -404,7 +404,8 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
   const rangeBonus=travelDist<12?1+plr.closeDamage:(travelDist>28?1+plr.longRangeDamage:1);
   const distanceScale=weaponDamageScaleAtDistance(w,travelDist);
   const headshotMult=w.headshotMult||2.10;
-  const dmg=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+  const calculatedDamage=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
+  const dmg=w.oneShot&&b.oneShotEligible?Math.max(calculatedDamage,en.hp+1):calculatedDamage;
   en.hurt(dmg,dir.clone(),'ally');
   const lethalHeadshot=hd&&!en.alive;
   if(b.markerEligible||!en.alive){
@@ -465,14 +466,14 @@ function fireInstantSniper(from,dir,w,meta={}){
   let traceDist=wallDist;
   if(first.en&&first.dist<wallDist){
     const hitFx=from.clone().addScaledVector(dir,first.dist);
-    const fake={wKey:w.key,color,markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier()};
+    const fake={wKey:w.key,color,markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),oneShotEligible:true};
     resolvePlayerBulletHit(fake,first.en,first.hd,hitFx,dir,first.dist);
     traceDist=first.dist;
     let pen=(w.basePenetration||0)+(plr.piercing?1:0);
     if(pen>0){
       const second=hitEnemy(from,dir,'ally',first.en,maxRange);
       if(second.en&&second.dist>first.dist+.05&&second.dist<wallDist){
-        fake.markerEligible=false;fake.damageScale=w.isSniper?.72:.64;
+        fake.markerEligible=false;fake.damageScale=w.isSniper?.72:.64;fake.oneShotEligible=false;
         const hit2=from.clone().addScaledVector(dir,second.dist);
         resolvePlayerBulletHit(fake,second.en,second.hd,hit2,dir,second.dist);
         traceDist=second.dist;
