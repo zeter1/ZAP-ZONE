@@ -58,7 +58,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #frontline-objective.ally{border-color:rgba(80,190,255,.44)}#frontline-objective.enemy{border-color:rgba(255,75,95,.44)}#frontline-objective.contested{border-color:rgba(255,225,100,.64);}
 #ally-panel{position:relative;bottom:auto;left:auto;display:flex;gap:5px;flex-wrap:wrap;width:286px;max-width:286px;}
 
-#xp-wrap{position:absolute;top:18px;left:18px;transform:none#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left;z-index:13;pointer-events:none;}
+#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left;z-index:13;pointer-events:none;}
 #xp-lbl{display:inline-block;font-size:11px;color:#7eeaff;letter-spacing:2px;font-weight:900;margin-bottom:5px;padding:4px 9px;border-radius:9px;background:rgba(4,15,25,.78);border:1px solid rgba(70,210,255,.36);box-shadow:0 0 11px rgba(30,185,255,.12);}
 #xp-bar{width:230px;height:7px;background:rgba(0,0,0,.58);border-radius:4px;overflow:hidden;border:1px solid rgba(0,200,255,.4);box-shadow:0 0 8px rgba(0,190,255,.10);}
 #xp-fill{height:100%;background:linear-gradient(90deg,#0088ff,#00ffff);border-radius:4px;width:0%;}
