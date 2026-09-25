@@ -94,9 +94,9 @@ jobs:
           fi
 
           profile_dir="$(mktemp -d)"
-          "$chrome"             --headless=new             --no-sandbox             --disable-dev-shm-usage             --enable-webgl             --enable-unsafe-swiftshader             --ignore-gpu-blocklist             --remote-debugging-port=9222             --remote-allow-origins='*'             --user-data-dir="$profile_dir"             "file://$GITHUB_WORKSPACE/index.html"             > /tmp/zap-file-chrome.out 2> /tmp/zap-file-chrome.log &
+          "$chrome"             --headless=new             --no-sandbox             --disable-dev-shm-usage             --enable-webgl             --enable-unsafe-swiftshader             --ignore-gpu-blocklist             --window-size=1280,900             --remote-debugging-port=9222             --remote-allow-origins='*'             --user-data-dir="$profile_dir"             "file://$GITHUB_WORKSPACE/index.html"             > /tmp/zap-file-chrome.out 2> /tmp/zap-file-chrome.log &
           chrome_pid=$!
-          trap 'kill "$chrome_pid" 2>/dev/null || true; rm -rf "$profile_dir"' EXIT
+          trap 'kill "$chrome_pid" 2>/dev/null || true; wait "$chrome_pid" 2>/dev/null || true; rm -rf "$profile_dir"' EXIT
 
           if ! timeout 20s node scripts/browser-menu-smoke.mjs; then
             echo "--- local-file Chrome log ---"
