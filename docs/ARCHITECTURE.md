@@ -68,3 +68,21 @@ Status HUD также read-only относительно gameplay state: он о
 `triggerScreenShake()` двигает только CSS transform canvas и не модифицирует `camera.position`, поэтому эффект не способен изменить collision, projectile origins или сохранённую позицию игрока.
 
 `tickGamePresentation()` вызывается независимо от active gameplay branch, чтобы FPS и затухание screen shake корректно восстанавливались даже при паузе или потере pointer lock.
+
+
+## Weapon handling model v22.0
+
+`WEAPONS[]` теперь является не только каталогом урона и моделей, но и единым источником handling-профиля оружия. Для огнестрельных систем используются:
+
+- `fireMode` / `automatic` — semi, auto, pump, launcher или bolt;
+- `rate`, `reload`, `clip` — cadence и ammo economy;
+- `spread`, `adsSpread`, `moveSpread`, `airSpread` — точность по состоянию игрока;
+- `falloffStart`, `falloffEnd`, `minDamageM` — дистанционная потеря урона;
+- `recoilX`, `recoilY`, `recoilReturn`, `recoilDelay` — отдача и восстановление;
+- `tracerSpeed`, `range`, `zoomFov` — визуальная скорость выстрела, дальность и ADS.
+
+`weaponDamageScaleAtDistance()` является общей функцией falloff для игрока и AI, чтобы бот и игрок не жили в разных моделях баланса.
+
+SR-9 использует `isSniper` и bolt-action profile. Scope — presentation-only слой: FOV, overlay и sensitivity меняются, но world collision/hit meshes и camera position не подменяются.
+
+Старые индексы mine/bomb/smoke сохранены: SR-9 добавлена девятым слотом. Это специально уменьшает migration risk для сохранений и существующей логики взрывчатки.
