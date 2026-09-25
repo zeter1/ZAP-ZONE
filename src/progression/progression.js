@@ -36,7 +36,7 @@ function renderPerkChoices(lvl){
     const rarity=PERK_RARITIES[p.rarity]||PERK_RARITIES.common;
     const d=document.createElement('div');
     d.className='pcard rarity-'+p.rarity;
-    d.innerHTML=`<img class="pcard-ic" src="${perkAsset(p.path)}" alt=""><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
+    d.innerHTML=`<img class="pcard-ic" src="${perkAsset(p.id,p.path)}" alt=""><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
     d.addEventListener('click',()=>pickPerk(p));
     cards.appendChild(d);
   });
@@ -89,7 +89,7 @@ function updatePerkPanel(){
     shown.push(perk.id);
     const d=document.createElement('div');d.className='ptag';
     const cnt=counts.get(perk.id)||1;
-    d.innerHTML='<img class="ptag-ic" src="'+perkAsset(perk.path)+'" alt=""><span>'+perk.ic+' '+perk.nm+' '+cnt+'/'+(perk.maxRank||1)+'</span>';
+    d.innerHTML='<img class="ptag-ic" src="'+perkAsset(perk.id,perk.path)+'" alt=""><span>'+perk.ic+' '+perk.nm+' '+cnt+'/'+(perk.maxRank||1)+'</span>';
     p.appendChild(d);
     if(shown.length>=8)break;
   }
@@ -115,6 +115,7 @@ function updateStats(){
   if(plr.dodgeChance>0)s.push('🫥 Уклонение '+Math.round(plr.dodgeChance*100)+'%');
   if(plr.smokeRadiusM>1||plr.smokeDurationM>1||plr.smokeCooldownM<1)s.push('🌫️ Дым: '+Math.round(SMOKE_RADIUS*plr.smokeRadiusM)+'м · '+Math.round(SMOKE_DURATION_SECONDS*plr.smokeDurationM)+'с');
   G('st-perks').innerHTML=s.join('<br>');
+  updateStatusIcons();
 }
 
 // ─── PLAYER DAMAGE / SHIELD ─────────────
@@ -134,11 +135,13 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
   else dmg*=PLAYER_BULLET_DAMAGE_SCALE;
   if(kind==='rocket'||kind==='mine'||kind==='bomb')dmg*=Math.max(.35,1-plr.blastResist);
   else if(kind==='bullet')dmg*=Math.max(.45,1-plr.bulletResist);
+  const armorBefore=armor;
   if(armor>0){
     const absorb=Math.min(armor,dmg*(kind==='rocket'||kind==='mine'?0.45:0.35));
     armor-=absorb;
     dmg-=absorb;
   }
+  if(armorBefore>0&&armor<=0)showArmorBreakFx();
   if(dmg<=0)return 0;
   hp-=dmg;
   if(hp<0)hp=0;
@@ -173,6 +176,7 @@ function flushHUD(){
   if(armor>0){G('armor-row').style.display='block';G('armor-fill').style.width=(armor/plr.maxArmor*100)+'%';}
   else G('armor-row').style.display='none';
   G('st-arm').textContent=Math.round(armor)+'/'+plr.maxArmor;
+  updateStatusIcons();
 }
 function wHUD(){
   const w=getW();G('wname').textContent=w.name;
@@ -193,6 +197,53 @@ function xpHUD(){
   const cur=xpFor(level),nxt=xpFor(level+1),pct=Math.max(0,Math.min(100,(xp-cur)/(nxt-cur)*100)).toFixed(1);
   G('xp-fill').style.width=pct+'%';G('xp-lbl').textContent='ЛВЛ '+level+' · '+xp+'/'+nxt+' XP';
 }
+
+let _statusSig='';
+function updateStatusIcons(){
+  const wrap=G('status-icons');if(!wrap)return;
+  const active=[];
+  if(plr.secondWind&&plr.secondWindReady)active.push(['secondWind','Второе дыхание готово']);
+  if(plr.lifeSteal>0)active.push(['lifesteal','Биопоглощение '+Math.round(plr.lifeSteal*100)+'%']);
+  if(plr.armorRegen>0)active.push(['armorRegen','Регенерация брони']);
+  if(hp>0&&hp<plr.maxHp*.35)active.push(['lowHealth','Критическое здоровье']);
+  if(plr.smokeResist>0)active.push(['smokeGuard','Защита в дыму']);
+  if(plr.critChance>0)active.push(['critReady','Крит '+Math.round(plr.critChance*100)+'%']);
+  const sig=active.map(x=>x[0]+':'+x[1]).join('|');
+  if(sig===_statusSig)return;_statusSig=sig;wrap.replaceChildren();
+  for(const [key,label] of active.slice(0,6)){
+    const item=document.createElement('div');item.className='status-chip';item.title=label;
+    const img=document.createElement('img');img.src=GAME_ASSETS.status[key];img.alt='';
+    const tip=document.createElement('span');tip.textContent=label;
+    item.append(img,tip);wrap.appendChild(item);
+  }
+}
+let _combatMedalT=0;
+function showCombatMedal(type,label){
+  const root=G('combat-medal'),img=G('combat-medal-icon'),txt=G('combat-medal-text');
+  if(!root||!img||!txt||!GAME_ASSETS.medals[type])return;
+  img.src=GAME_ASSETS.medals[type];txt.textContent=label;
+  root.classList.remove('on');void root.offsetWidth;root.classList.add('on');
+  clearTimeout(_combatMedalT);_combatMedalT=setTimeout(()=>root.classList.remove('on'),1450);
+}
+function showKillMedal(ctx={}){
+  let type=null,label='';
+  if(kills===1){type='first-blood';label='FIRST BLOOD';}
+  else if(ctx.explosive){type='explosive-kill';label='EXPLOSIVE KILL';}
+  else if(ctx.isCrit){type='critical-kill';label='CRITICAL KILL';}
+  else if((ctx.distance||0)>=32){type='longshot';label='LONGSHOT';}
+  else if(combo>=5){type='killing-spree';label='KILLING SPREE';}
+  else if(combo===4){type='multikill';label='MULTI KILL';}
+  else if(combo===3){type='triple-kill';label='TRIPLE KILL';}
+  else if(combo===2){type='double-kill';label='DOUBLE KILL';}
+  if(type)showCombatMedal(type,label);
+}
+let _armorBreakT=0;
+function showArmorBreakFx(){
+  const root=G('armor-break-fx');if(!root)return;
+  root.classList.remove('on');void root.offsetWidth;root.classList.add('on');
+  clearTimeout(_armorBreakT);_armorBreakT=setTimeout(()=>root.classList.remove('on'),650);
+}
+
 let _spT=0,_spEl=null;
 function scorePop(t){if(!_spEl)_spEl=G('score-pop');_spEl.textContent=t;_spEl.style.opacity='1';_spEl.style.top='40%';clearTimeout(_spT);_spT=setTimeout(()=>{_spEl.style.opacity='0';_spEl.style.top='36%';},800);}
 let _msgT=0;function showMsg(t){G('pmsg').textContent=t;G('pmsg').style.opacity='1';clearTimeout(_msgT);_msgT=setTimeout(()=>G('pmsg').style.opacity='0',2200);}
@@ -306,7 +357,7 @@ function checkDeath(){
   startDeathCamera(killer);
   G('death-flash').style.background='radial-gradient(circle at center,rgba(170,0,0,.05) 34%,rgba(145,0,0,.72) 100%)';
   G('death-flash').style.opacity='1';
-  G('death-msg').textContent='☠ ВЫ ПОГИБЛИ'+(deathReason?' · '+deathReason.toUpperCase():'');
+  const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ'+(deathReason?' · '+deathReason.toUpperCase():'');
   G('death-msg').style.opacity='1';
   dyingT=deathCamDuration;
 }
@@ -314,7 +365,7 @@ function doRespawn(){
   cleanupDeathCamera();
   G('death-flash').style.background='rgba(255,0,0,0)';
   G('death-flash').style.opacity='1';
-  G('death-msg').textContent='☠ ВЫ ПОГИБЛИ';
+  const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ';
   G('death-msg').style.opacity='0';
   enemies.forEach(e=>e.destroy());enemies.length=0;
   pickups.forEach(p=>destroySceneObject(p.m));pickups.length=0;

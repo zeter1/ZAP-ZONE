@@ -157,7 +157,7 @@ function loop(ts){
 
   flushHUD();
   tickProjectiles(dt);tickMines(dt);tickSmoke(dt);tickPickups(dt);
-  tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickEnvironment(dt);
+  tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickCombatImpactFx(dt);tickEnvironment(dt);
 
   // Update ally panel
   updateAllyPanel(dt);

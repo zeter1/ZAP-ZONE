@@ -505,6 +505,34 @@ function tickHeadshotFx(dt){
   }
 }
 
+
+const combatImpactFx=[];
+function spawnCombatImpact(pos,type='bullet'){
+  const asset=GAME_ASSETS.impact[type]||GAME_ASSETS.impact.bullet;
+  const size=type==='rocket'?1.65:type==='plasma'?1.12:type==='critical'?1.20:type==='wall'?.72:.82;
+  const sprite=makeAssetSprite(asset,size,size,{depthTest:false,renderOrder:24});
+  sprite.position.copy(pos);scene.add(sprite);
+  const col=type==='plasma'?0xc76cff:type==='critical'?0xffe34f:type==='rocket'?0xff6930:type==='wall'?0xdce6eb:0xffb650;
+  const ring=new THREE.Mesh(
+    new THREE.RingGeometry(.08,.14,28),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.74,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending})
+  );
+  ring.position.copy(pos);ring.lookAt(camera.position);scene.add(ring);
+  combatImpactFx.push({sprite,ring,t:0,dur:type==='rocket'?.52:.28,max:type==='rocket'?2.8:type==='plasma'?1.8:1.35});
+}
+function tickCombatImpactFx(dt){
+  for(let i=combatImpactFx.length-1;i>=0;i--){
+    const fx=combatImpactFx[i];fx.t+=dt;
+    const p=Math.min(1,fx.t/fx.dur),ease=1-Math.pow(1-p,3);
+    fx.ring.lookAt(camera.position);fx.ring.scale.setScalar(.7+ease*fx.max);
+    fx.ring.material.opacity=(1-p)*.74;
+    fx.sprite.material.opacity=Math.max(0,1-p*1.12);
+    const pulse=1+Math.sin(p*Math.PI)*.38;
+    fx.sprite.scale.multiplyScalar(1+(pulse-1)*dt*7);
+    if(p>=1){destroySceneObject(fx.ring);destroySceneObject(fx.sprite);combatImpactFx.splice(i,1);}
+  }
+}
+
 const bombBlastWaves=[];
 function spawnBombBlastWave(pos,radius,ownerType='player'){
   const col=ownerType==='player'?0xffc128:0xff3b18;

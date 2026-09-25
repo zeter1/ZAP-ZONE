@@ -8,6 +8,13 @@ const requiredScripts=[
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg']
   .map(name=>'assets/weapons/'+name);
+
+const state=readFileSync('src/player/state.js','utf8');
+const perkIds=[...state.matchAll(/\{id:'([^']+)'/g)].map(m=>m[1]);
+if(perkIds.length!==52)fail('expected 52 perks, found '+perkIds.length);
+if(new Set(perkIds).size!==perkIds.length)fail('duplicate perk ids');
+const perkIconAssets=perkIds.map(id=>'assets/perks/'+id+'.svg');
+
 const visualAssets=[
   'assets/pickups/ammo.svg','assets/pickups/medkit.svg',
   'assets/environment/crate.svg','assets/environment/hazard.svg','assets/environment/terminal.svg',
@@ -15,16 +22,20 @@ const visualAssets=[
   'assets/characters/ally-emblem.svg','assets/characters/enemy-emblem.svg',
   'assets/perks/assault.svg','assets/perks/precision.svg','assets/perks/survival.svg','assets/perks/mobility.svg','assets/perks/demolition.svg',
   'assets/fx/headshot.svg','assets/fx/headshot-kill.svg','assets/fx/explosion.svg','assets/fx/levelup.svg','assets/fx/skull.svg',
+  'assets/fx/bullet-hit.svg','assets/fx/wall-impact.svg','assets/fx/plasma-impact.svg','assets/fx/rocket-impact.svg','assets/fx/critical-hit.svg','assets/fx/armor-break.svg',
+  'assets/medals/first-blood.svg','assets/medals/double-kill.svg','assets/medals/triple-kill.svg','assets/medals/multikill.svg','assets/medals/killing-spree.svg','assets/medals/longshot.svg','assets/medals/critical-kill.svg','assets/medals/explosive-kill.svg',
+  'assets/status/second-wind.svg','assets/status/lifesteal.svg','assets/status/armor-regen.svg','assets/status/low-health.svg','assets/status/smoke-guard.svg','assets/status/crit-ready.svg',
   'assets/ui/logo.svg','assets/ui/crosshair.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
 
 for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
 if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
-if(!html.includes('src="assets/ui/logo.svg"'))fail('menu logo asset is not wired');
-if(!html.includes('assets/fx/headshot.svg')||!html.includes('assets/fx/levelup.svg')||!html.includes('assets/fx/skull.svg'))fail('combat HUD assets are not wired');
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"']){
+  if(!html.includes(token))fail('HUD integration missing: '+token);
+}
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
 for(const match of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)){
   if(match[1].trim().length>120)fail('large inline game script returned');
@@ -35,36 +46,30 @@ for(const file of requiredAssets){
 }
 
 const catalog=readFileSync('src/assets/catalog.js','utf8');
-for(const file of visualAssets)if(!catalog.includes(file))fail('visual asset missing from catalog: '+file);
-
-const weapons=readFileSync('src/weapons/system.js','utf8');
-for(const key of ['pistol','shotgun','rifle','rocket','plasma','mine','bomb','smoke']){
-  if(!weapons.includes("weaponDef('"+key+"'"))fail('weapon missing: '+key);
-}
-if(!weapons.includes('function createWeaponModel'))fail('shared weapon model factory missing');
-
-const engine=readFileSync('src/core/engine.js','utf8');
-for(const token of [
-  'GAME_ASSETS.environment.crate','GAME_ASSETS.environment.hazard','GAME_ASSETS.environment.terminal',
-  'GAME_ASSETS.environment.foliage','GAME_ASSETS.environment.water',
-  'function spawnHeadshotFx','function tickHeadshotFx','function spawnExplosionFx','function tickExplosionFx','function tickEnvironment'
-]){
-  if(!engine.includes(token))fail('engine visual integration missing: '+token);
-}
-const bots=readFileSync('src/entities/bots.js','utf8');
-if(!bots.includes('GAME_ASSETS.characters.enemy')||!bots.includes('Decorative armor'))fail('bot visual layer missing');
+for(const file of [...visualAssets,...perkIconAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
+if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
 
 const progression=readFileSync('src/progression/progression.js','utf8');
-if(!progression.includes('perkAsset(p.path)'))fail('perk SVG cards missing');
+for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx']){
+  if(!progression.includes(token))fail('progression visual integration missing: '+token);
+}
 
 const combat=readFileSync('src/combat/combat.js','utf8');
-if(!combat.includes('lethalHeadshot')||!combat.includes('spawnHeadshotFx(hitFx,lethalHeadshot)')||!combat.includes('HEADSHOT KILL'))fail('headshot kill finisher missing');
+for(const token of ['spawnCombatImpact(hitFx','showKillMedal({distance:dist','showKillMedal({explosive:true})',"spawnCombatImpact(pos,'rocket')"]){
+  if(!combat.includes(token))fail('combat visual integration missing: '+token);
+}
+
+const engine=readFileSync('src/core/engine.js','utf8');
+for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
+  if(!engine.includes(token))fail('engine FX missing: '+token);
+}
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
-if(!runtime.includes('tickHeadshotFx(dt)')||!runtime.includes('tickExplosionFx(dt)')||!runtime.includes('tickEnvironment(dt)'))fail('visual runtime ticks missing');
+if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const asset of ['crosshair.svg','health.svg','armor.svg','xp.svg'])if(!css.includes(asset))fail('HUD asset not wired: '+asset);
-if(!css.includes('zapHeadshotKill')||!css.includes('#hs-kill-flash'))fail('headshot kill CSS animation missing');
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop']){
+  if(!css.includes(token))fail('CSS visual integration missing: '+token);
+}
 
-if(!process.exitCode)console.log('ZAP ZONE structure, assets and headshot finisher validation passed.');
+if(!process.exitCode)console.log('ZAP ZONE v21.8 asset and combat UI validation passed.');

@@ -24,6 +24,86 @@ const GAME_ASSETS=Object.freeze({
     mobility:'assets/perks/mobility.svg',
     demolition:'assets/perks/demolition.svg'
   }),
+  perkIcons:Object.freeze({
+    'damage':'assets/perks/damage.svg',
+    'overclock':'assets/perks/overclock.svg',
+    'magazine':'assets/perks/magazine.svg',
+    'reload':'assets/perks/reload.svg',
+    'doubletap':'assets/perks/doubletap.svg',
+    'bulletstorm':'assets/perks/bulletstorm.svg',
+    'crit':'assets/perks/crit.svg',
+    'critpower':'assets/perks/critpower.svg',
+    'headshot':'assets/perks/headshot.svg',
+    'executioner':'assets/perks/executioner.svg',
+    'piercing':'assets/perks/piercing.svg',
+    'predator':'assets/perks/predator.svg',
+    'vitality':'assets/perks/vitality.svg',
+    'armor':'assets/perks/armor.svg',
+    'nanorepair':'assets/perks/nanorepair.svg',
+    'armorregen':'assets/perks/armorregen.svg',
+    'lifesteal':'assets/perks/lifesteal.svg',
+    'hunter':'assets/perks/hunter.svg',
+    'blastshield':'assets/perks/blastshield.svg',
+    'secondwind':'assets/perks/secondwind.svg',
+    'immortal':'assets/perks/immortal.svg',
+    'mobility':'assets/perks/mobility.svg',
+    'laststand':'assets/perks/laststand.svg',
+    'reflex':'assets/perks/reflex.svg',
+    'thorns':'assets/perks/thorns.svg',
+    'explosive_payload':'assets/perks/explosive_payload.svg',
+    'rockettech':'assets/perks/rockettech.svg',
+    'minetech':'assets/perks/minetech.svg',
+    'bombtech':'assets/perks/bombtech.svg',
+    'explosive_rounds':'assets/perks/explosive_rounds.svg',
+    'warmachine':'assets/perks/warmachine.svg',
+    'ammo_saver':'assets/perks/ammo_saver.svg',
+    'close_quarters':'assets/perks/close_quarters.svg',
+    'full_charge':'assets/perks/full_charge.svg',
+    'steady_grip':'assets/perks/steady_grip.svg',
+    'longshot':'assets/perks/longshot.svg',
+    'crit_repair':'assets/perks/crit_repair.svg',
+    'headshot_armor':'assets/perks/headshot_armor.svg',
+    'ballistic_lining':'assets/perks/ballistic_lining.svg',
+    'field_medic':'assets/perks/field_medic.svg',
+    'surplus_armor':'assets/perks/surplus_armor.svg',
+    'smoke_guard':'assets/perks/smoke_guard.svg',
+    'sprint_drive':'assets/perks/sprint_drive.svg',
+    'jump_servos':'assets/perks/jump_servos.svg',
+    'combat_momentum':'assets/perks/combat_momentum.svg',
+    'evasive_matrix':'assets/perks/evasive_matrix.svg',
+    'smoke_radius':'assets/perks/smoke_radius.svg',
+    'smoke_duration':'assets/perks/smoke_duration.svg',
+    'smoke_reload':'assets/perks/smoke_reload.svg',
+    'short_fuse':'assets/perks/short_fuse.svg',
+    'rocket_radius':'assets/perks/rocket_radius.svg',
+    'mine_radius':'assets/perks/mine_radius.svg'
+  }),
+  medals:Object.freeze({
+    'first-blood':'assets/medals/first-blood.svg',
+    'double-kill':'assets/medals/double-kill.svg',
+    'triple-kill':'assets/medals/triple-kill.svg',
+    'multikill':'assets/medals/multikill.svg',
+    'killing-spree':'assets/medals/killing-spree.svg',
+    'longshot':'assets/medals/longshot.svg',
+    'critical-kill':'assets/medals/critical-kill.svg',
+    'explosive-kill':'assets/medals/explosive-kill.svg'
+  }),
+  status:Object.freeze({
+    secondWind:'assets/status/second-wind.svg',
+    lifesteal:'assets/status/lifesteal.svg',
+    armorRegen:'assets/status/armor-regen.svg',
+    lowHealth:'assets/status/low-health.svg',
+    smokeGuard:'assets/status/smoke-guard.svg',
+    critReady:'assets/status/crit-ready.svg'
+  }),
+  impact:Object.freeze({
+    bullet:'assets/fx/bullet-hit.svg',
+    wall:'assets/fx/wall-impact.svg',
+    plasma:'assets/fx/plasma-impact.svg',
+    rocket:'assets/fx/rocket-impact.svg',
+    critical:'assets/fx/critical-hit.svg',
+    armorBreak:'assets/fx/armor-break.svg'
+  }),
   fx:Object.freeze({
     headshot:'assets/fx/headshot.svg',
     headshotKill:'assets/fx/headshot-kill.svg',
@@ -45,6 +125,10 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.environment),
   ...Object.values(GAME_ASSETS.characters),
   ...Object.values(GAME_ASSETS.perks),
+  ...Object.values(GAME_ASSETS.perkIcons),
+  ...Object.values(GAME_ASSETS.medals),
+  ...Object.values(GAME_ASSETS.status),
+  ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.ui)
 ]);
@@ -105,6 +189,6 @@ function makeAssetSprite(path,width,height,options={}){
   return sprite;
 }
 
-function perkAsset(path){
-  return GAME_ASSETS.perks[path]||GAME_ASSETS.perks.assault;
+function perkAsset(id,path){
+  return GAME_ASSETS.perkIcons[id]||GAME_ASSETS.perks[path]||GAME_ASSETS.perks.assault;
 }

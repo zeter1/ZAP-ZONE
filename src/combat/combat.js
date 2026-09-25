@@ -418,6 +418,7 @@ function shoot(){
         if(isCrit&&plr.critHeal>0){hp=Math.min(plr.maxHp,hp+plr.critHeal);markHUD();}
         if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
         if(p===0||w.key==='plasma'){spawnSpark(hitFx,tc);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
+        if(p===0)spawnCombatImpact(hitFx,w.key==='plasma'?'plasma':(isCrit?'critical':'bullet'));
         if(hd){
           spawnHeadshotFx(hitFx,lethalHeadshot);
           const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
@@ -437,6 +438,7 @@ function shoot(){
         if(!en.alive){
           addXP((en.type+1)*25+level*3);score+=(en.type+1)*100;kills++;grantPlayerKillRewards();
           combo++;comboT=3;if(combo>2)showCombo();
+          showKillMedal({distance:dist,isCrit,headshot:lethalHeadshot,explosive:false});
           markHUD();
           scorePop(lethalHeadshot?'HEADSHOT KILL · +'+(en.type+1)*100:'+'+(en.type+1)*100+(hd?' 🎯':'')+(isCrit?' КРИТ!':''));
           allyKills++;updateTeamScore();
@@ -451,7 +453,7 @@ function shoot(){
             const splash=dmg*.32*plr.explodeDamageM*(1-dd/exRadius);
             e2.hurt(splash,d.clone(),'ally');
             if(plr.lifeSteal>0)hp=Math.min(hp+splash*plr.lifeSteal,plr.maxHp);
-            if(!e2.alive){addXP((e2.type+1)*22);score+=(e2.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();scorePop('💥+'+(e2.type+1)*90);}
+            if(!e2.alive){addXP((e2.type+1)*22);score+=(e2.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();showKillMedal({explosive:true});scorePop('💥+'+(e2.type+1)*90);}
           }
         }
         if(plr.piercing){
@@ -465,7 +467,7 @@ function shoot(){
         }
         if(s===0&&p===0)spawnTracer(camera.position,d,dist,tc,w.key);
       } else {
-        if(wPos)wallImpact(wPos,tc);
+        if(wPos){wallImpact(wPos,tc);spawnCombatImpact(wPos,w.key==='plasma'?'plasma':'wall');}
         if(s===0&&p===0)spawnTracer(camera.position,d,wDist,tc,w.key);
       }
       if(w.key==='shotgun'&&p===1)spawnTracer(camera.position,d,Math.min(en&&dist<wDist?dist:wDist,28),tc,w.key);
@@ -569,6 +571,7 @@ function awardExplosionKill(victim,ownerType,ownerBot,kind){
     score+=(victim.type+1)*pts;
     kills++;grantPlayerKillRewards();allyKills++;
     markHUD();updateTeamScore();
+    showKillMedal({explosive:true});
     scorePop((kind==='bomb'?'🧨':kind==='mine'?'💣':'🚀')+'+'+(victim.type+1)*pts);
   }else{
     enemyKills++;
@@ -608,6 +611,7 @@ function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,k
 function detonateRocket(arr,index,r,pos){
   const ownerType=r.ownerType||'bot';
   const radius=r.blastRadius||6.5;
+  spawnCombatImpact(pos,'rocket');
   explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius);
   applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28);
   destroySceneObject(r.m);
