@@ -142,7 +142,7 @@ for(const token of [
   'const localForward=this.velX*fwdX+this.velZ*fwdZ',
   'if(this.pts[10])',
   'if(this.pts[12])',
-  "const combatPose=this.aiState==='engage'&&this.canSeeTarget"
+  "const combatPose=(this.aiState==='engage'||this.aiState==='flank'||this.aiState==='support')&&this.canSeeTarget"
 ]){
   if(!bots.includes(token))fail('bot locomotion integration missing: '+token);
 }
@@ -171,14 +171,13 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 integration missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
-
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
 }
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
+if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('activeW.scopeAsset||GAME_ASSETS.ui.sniperScope'))fail('per-weapon scope asset switching missing');

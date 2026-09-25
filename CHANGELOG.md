@@ -14,6 +14,7 @@
 
 ### Regression checks
 - validation закрепляет squad-plan, flank/support states, suppression semantics, suppressor-aware player pressure и отображение ролей;
+- после первого CI-run обновлены устаревший locomotion-token и порядок чтения runtime в validation script; gameplay-код при этом не ослаблялся;
 - версия интерфейса повышена до v22.4.
 
 ### Непрерывный бой и тактическое возрождение
