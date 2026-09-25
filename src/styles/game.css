@@ -37,7 +37,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #tb-enemy{color:#ff4444;}
 
 /* Frontline objective */
-#frontline-objective{position:absolute;top:92px;left:50%;transform:translateX(-50%);width:330px;padding:7px 11px 8px;border-radius:12px;background:linear-gradient(180deg,rgba(5,12,20,.78),rgba(0,0,0,.58));border:1px solid rgba(255,214,90,.30);box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 0 18px rgba(255,210,70,.035);text-align:center;pointer-events:none;z-index:11;transition:border-color .16s,box-shadow .16s;}
+#frontline-objective{position:absolute;top:118px;left:50%;transform:translateX(-50%);width:330px;padding:7px 11px 8px;border-radius:12px;background:linear-gradient(180deg,rgba(5,12,20,.78),rgba(0,0,0,.58));border:1px solid rgba(255,214,90,.30);box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 0 18px rgba(255,210,70,.035);text-align:center;pointer-events:none;z-index:11;transition:border-color .16s,box-shadow .16s;}
 #frontline-title{font-size:11px;font-weight:900;letter-spacing:1.6px;color:#ffe176;text-shadow:0 0 9px rgba(255,205,70,.28);display:flex;align-items:center;justify-content:center;gap:7px;}
 #frontline-bearing{display:inline-flex;width:15px;height:15px;align-items:center;justify-content:center;transform-origin:50% 50%;transition:transform .09s linear;color:#fff2a0;text-shadow:0 0 9px rgba(255,210,75,.72);}
 #frontline-objective.inside{background:linear-gradient(180deg,rgba(19,39,45,.86),rgba(0,10,13,.70));border-color:rgba(94,255,207,.56);box-shadow:0 8px 24px rgba(0,0,0,.28),0 0 18px rgba(70,255,196,.11);}
