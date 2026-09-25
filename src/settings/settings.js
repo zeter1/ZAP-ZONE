@@ -26,7 +26,7 @@ function byId(id){return document.getElementById(id);}
 function saveGameSettings(){try{localStorage.setItem(GAME_SETTINGS_KEY,JSON.stringify(gameSettings));}catch(e){}applyGameSettings();}
 function lookSensitivityMultiplier(zoomed=false){
   const w=typeof getW==='function'?getW():null;
-  const zoomMultiplier=zoomed?(w&&w.isSniper?.22:.55):1;
+  const zoomMultiplier=zoomed&&w&&w.aimMode==='scope'?.22:1;
   return gameSettings.sensitivity*zoomMultiplier;
 }
 
