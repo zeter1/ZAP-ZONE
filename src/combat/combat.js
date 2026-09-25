@@ -838,8 +838,17 @@ function tickProjectiles(dt){
         b.pos.copy(_hitPos).addScaledVector(_stepDir,.14);b.travel=travelDist+.14;
       }else{destroyPlayerBullet(i);continue;}
     }else if(wallDist<=stepDist){
+      const wallHit=_rcWallHits[0];
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
       wallImpact(_hitPos,b.color);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      if(w.key!=='plasma'&&wallHit?.face?.normal){
+        const n=wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld);
+        const incidence=Math.abs(_stepDir.dot(n));
+        if(incidence<.36&&Math.random()<.58){
+          playSfx('ricochet',Math.max(.35,1-incidence));
+          spawnP(_hitPos,0xffe3a1,.46);
+        }
+      }
       destroyPlayerBullet(i);continue;
     }else{
       b.travel+=stepDist;b.ignoreEnemy=null;
