@@ -182,6 +182,23 @@ for(const token of [
 ]){
   if(!bots.includes(token))fail('Combat AI 2.1 map tactics missing: '+token);
 }
+for(const token of [
+  'PLAYER_TACTICAL_PROFILE',
+  'function refreshPlayerTacticalProfile',
+  "doctrine==='breach'",
+  'plan.recoveryUntil=now+3800',
+  "this.commandDoctrine==='breach'",
+  'BOT_MOVE_CFG',
+  'function clampBotVelocity',
+  'function moveBotWithSubsteps',
+  'this.unstuckT=.48',
+  'const hardCap=total*1.10+.035',
+  'Math.min(.28,lvl*.012)'
+]){
+  if(!bots.includes(token))fail('Combat AI 2.2 / anti-teleport integration missing: '+token);
+}
+if(bots.includes('this.dodgeSpd=this.speed*(2.35+this.aimSkill*.65)'))fail('legacy teleport-like dodge multiplier returned');
+if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.triggerDodge()'))fail('stuck recovery must not trigger high-speed dodge');
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
@@ -216,5 +233,5 @@ for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weapon
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v22.5'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE v22.5 Combat AI 2.1 map tactics validation passed.');
+if(!html.includes('ZAP ZONE v22.6'))fail('index version is not v22.2');
+if(!process.exitCode)console.log('ZAP ZONE v22.6 Adaptive Commander and anti-teleport locomotion validation passed.');

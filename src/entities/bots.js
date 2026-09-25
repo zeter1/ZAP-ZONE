@@ -214,6 +214,37 @@ function steerBotAroundWalls(bot,mx,mz){
   if(best.ang!==0&&best.progress>straight.progress+.04)bot.sideBias=Math.sign(best.ang)||bot.sideBias;
   return{x:best.rx*speed,z:best.rz*speed};
 }
+const BOT_MOVE_CFG={normalMaxM:1.18,retreatMaxM:1.30,mineMaxM:1.38,dodgeMaxM:1.48,maxAccelM:4.4,urgentAccelM:6.2,substep:.16};
+function clampBotVelocity(vx,vz,maxSpeed){
+  const s=Math.hypot(vx,vz);
+  if(s<=maxSpeed||s<.0001)return{x:vx,z:vz};
+  const m=maxSpeed/s;return{x:vx*m,z:vz*m};
+}
+function moveBotWithSubsteps(startX,startZ,vx,vz,dt){
+  const dx=vx*dt,dz=vz*dt,total=Math.hypot(dx,dz);
+  const steps=Math.max(1,Math.ceil(total/BOT_MOVE_CFG.substep));
+  const sx=dx/steps,sz=dz/steps;
+  let x=startX,z=startZ;
+  for(let i=0;i<steps;i++){
+    const wantX=Math.max(-93,Math.min(93,x+sx));
+    const wantZ=Math.max(-93,Math.min(93,z+sz));
+    const coll=collideWalls(wantX,wantZ,BOT_R);
+    const jump=Math.hypot(coll.x-x,coll.z-z);
+    const intended=Math.max(.001,Math.hypot(sx,sz));
+    const correctionCap=intended*1.35+.035;
+    if(jump>correctionCap){
+      const m=correctionCap/jump;
+      x+=(coll.x-x)*m;z+=(coll.z-z)*m;
+    }else{x=coll.x;z=coll.z;}
+  }
+  const actual=Math.hypot(x-startX,z-startZ);
+  const hardCap=total*1.10+.035;
+  if(actual>hardCap&&actual>.0001){
+    const m=hardCap/actual;
+    x=startX+(x-startX)*m;z=startZ+(z-startZ)*m;
+  }
+  return{x,z};
+}
 
 const BOT_NOISE_EVENTS=[];
 let botLastPlayerShotSequence=0;
@@ -246,15 +277,43 @@ const BOT_MAP_ZONES=[
   {id:'west',label:'ЗАПАД',x:-34,z:0,r:19,weight:.94},
   {id:'east',label:'ВОСТОК',x:34,z:0,r:19,weight:.94}
 ];
+const PLAYER_TACTICAL_PROFILE={
+  time:-999,lastPos:new THREE.Vector3(),anchor:new THREE.Vector3(),stationaryMs:0,moveSpeed:0,lastShotAt:-999,
+  style:'balanced',campScore:0
+};
 const BOT_TEAM_TACTICS={
-  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999},
-  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999}
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999}
 };
 function botRoleLabel(role){
   return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
 }
 function botDoctrineLabel(doctrine){
-  return doctrine==='push'?'ШТУРМ':doctrine==='retake'?'ВОЗВРАТ':doctrine==='hold'?'УДЕРЖАНИЕ':'МАНЁВР';
+  return doctrine==='breach'?'ПРОРЫВ':doctrine==='push'?'ШТУРМ':doctrine==='retake'?'ВОЗВРАТ':doctrine==='hold'?'УДЕРЖАНИЕ':'МАНЁВР';
+}
+function refreshPlayerTacticalProfile(now){
+  const p=PLAYER_TACTICAL_PROFILE;
+  if(p.time<0){
+    p.time=now;p.lastPos.copy(camera.position);p.anchor.copy(camera.position);return p;
+  }
+  for(let i=BOT_NOISE_EVENTS.length-1;i>=0;i--){
+    const e=BOT_NOISE_EVENTS[i];
+    if(e.source==='player'){p.lastShotAt=Math.max(p.lastShotAt,e.time);break;}
+  }
+  const elapsed=now-p.time;
+  if(elapsed<220)return p;
+  const dist=Math.hypot(camera.position.x-p.lastPos.x,camera.position.z-p.lastPos.z);
+  const sampleSpeed=dist/Math.max(.05,elapsed/1000);
+  p.moveSpeed=p.moveSpeed*.72+sampleSpeed*.28;
+  const anchorDist=Math.hypot(camera.position.x-p.anchor.x,camera.position.z-p.anchor.z);
+  if(anchorDist>5.5){p.anchor.copy(camera.position);p.stationaryMs=Math.max(0,p.stationaryMs-1800);}
+  else if(dist<.72)p.stationaryMs+=elapsed;
+  else p.stationaryMs=Math.max(0,p.stationaryMs-elapsed*.75);
+  p.lastPos.copy(camera.position);p.time=now;
+  const recentFire=now-p.lastShotAt<2300;
+  p.campScore=Math.max(0,Math.min(1,(p.stationaryMs-3200)/5200+(recentFire?.24:0)));
+  p.style=p.campScore>.58?'camp':camera.position.x>18?'rushing':p.moveSpeed>4.4?'mobile':'balanced';
+  return p;
 }
 function botTeamAliveCount(team){
   let n=enemies.reduce((sum,b)=>sum+(b.alive&&b.team===team?1:0),0);
@@ -282,6 +341,14 @@ function refreshBotMapOrder(team,plan,now){
   const enemyTeam=team==='ally'?'enemy':'ally';
   const direction=team==='ally'?1:-1;
   const aliveDelta=botTeamAliveCount(team)-botTeamAliveCount(enemyTeam);
+  const profile=refreshPlayerTacticalProfile(now);
+  const scoreFor=team==='ally'?allyKills:enemyKills;
+  const scoreAgainst=team==='ally'?enemyKills:allyKills;
+  const forDelta=Math.max(0,scoreFor-plan.lastFor),againstDelta=Math.max(0,scoreAgainst-plan.lastAgainst);
+  if(againstDelta>forDelta&&(plan.doctrine==='push'||plan.doctrine==='breach'))plan.setbacks=Math.min(3,plan.setbacks+againstDelta);
+  if(forDelta>0)plan.setbacks=Math.max(0,plan.setbacks-forDelta);
+  if(plan.setbacks>=2){plan.recoveryUntil=now+3800;plan.setbacks=0;plan.orderUntil=-999;}
+  plan.lastFor=scoreFor;plan.lastAgainst=scoreAgainst;
   const samples=BOT_MAP_ZONES.map(zone=>{
     const friendly=botZonePresence(zone,team),hostile=botZonePresence(zone,enemyTeam);
     return{zone,friendly,hostile,control:friendly-hostile,depth:zone.x*direction};
@@ -289,10 +356,28 @@ function refreshBotMapOrder(team,plan,now){
   const ownIncursion=samples
     .filter(s=>s.depth<=4&&s.control<-.45)
     .sort((a,b)=>a.control-b.control||a.depth-b.depth)[0]||null;
-  let doctrine=aliveDelta>=2?'push':aliveDelta<=-2?'hold':ownIncursion?'retake':(plan.focus||plan.focusIsPlayer)?'push':'hold';
+  const playerZone=samples.slice().sort((a,b)=>{
+    const da=(a.zone.x-camera.position.x)**2+(a.zone.z-camera.position.z)**2;
+    const db=(b.zone.x-camera.position.x)**2+(b.zone.z-camera.position.z)**2;
+    return da-db;
+  })[0];
+  const enemyCounterRush=team==='enemy'&&!dying&&profile.style==='rushing'&&camera.position.x>14;
+  const enemyBreakCamp=team==='enemy'&&!dying&&profile.style==='camp'&&profile.campScore>.58&&aliveDelta>=-1&&(plan.focusIsPlayer||performance.now()-profile.lastShotAt<2600);
+  const allyFollowRush=team==='ally'&&!dying&&profile.style==='rushing'&&camera.position.x>8&&aliveDelta>=-1;
+  let doctrine=now<plan.recoveryUntil?'hold':
+    enemyBreakCamp?'breach':
+    enemyCounterRush?'retake':
+    aliveDelta>=2||allyFollowRush?'push':
+    aliveDelta<=-2?'hold':
+    ownIncursion?'retake':
+    (plan.focus||plan.focusIsPlayer)?'push':'hold';
   let ranked;
-  if(doctrine==='retake'){
-    ranked=samples.map(s=>({s,score:(-s.control)*4.4+s.zone.weight*2.2-Math.max(0,s.depth)*.08-Math.abs(s.depth)*.012}));
+  if(doctrine==='breach'){
+    ranked=samples.map(s=>({s,score:s.zone.weight*1.7-s.zone.x*.018+
+      (s.zone===playerZone?8:0)+s.hostile*1.8-s.friendly*.30}));
+  }else if(doctrine==='retake'){
+    ranked=samples.map(s=>({s,score:(-s.control)*4.4+s.zone.weight*2.2-Math.max(0,s.depth)*.08-Math.abs(s.depth)*.012+
+      (enemyCounterRush&&s.zone===playerZone?5.5:0)}));
   }else if(doctrine==='push'){
     ranked=samples.map(s=>({s,score:s.zone.weight*2.2+s.depth*.055+s.hostile*1.45-s.friendly*.42+(Math.abs(s.zone.z)>1?.22:0)}));
   }else{
@@ -304,7 +389,7 @@ function refreshBotMapOrder(team,plan,now){
   ranked.sort((a,b)=>b.score-a.score);
   const chosen=ranked[0]?.s||samples[0];
   const current=plan.zone?samples.find(s=>s.zone.id===plan.zone.id):null;
-  const emergency=aliveDelta<=-2||!!ownIncursion;
+  const emergency=aliveDelta<=-2||!!ownIncursion||enemyBreakCamp||enemyCounterRush;
   const canSwitch=now>=plan.orderUntil||!current||emergency&&plan.doctrine!==doctrine;
   if(canSwitch){
     plan.doctrine=doctrine;
@@ -312,7 +397,7 @@ function refreshBotMapOrder(team,plan,now){
     plan.zonePos.set(chosen.zone.x,0,chosen.zone.z);
     plan.zoneRadius=chosen.zone.r;
     plan.zoneControl=chosen.control;
-    plan.orderUntil=now+(doctrine==='push'?2800:doctrine==='retake'?2400:3200);
+    plan.orderUntil=now+(doctrine==='breach'?3400:doctrine==='push'?2800:doctrine==='retake'?2400:3200);
   }else if(current){
     plan.zoneControl=current.control;
   }
@@ -330,6 +415,11 @@ function botObjectivePoint(bot,plan){
   }[bot.role]||[0,0];
   let x=plan.zonePos.x+roleOffset[0],z=plan.zonePos.z+roleOffset[1];
   if(plan.doctrine==='hold'&&bot.role==='anchor')x-=2.0*dir;
+  if(plan.doctrine==='breach'){
+    if(bot.role==='flankL')z-=3.2;
+    else if(bot.role==='flankR')z+=3.2;
+    else if(bot.role==='assault')x+=2.0*dir;
+  }
   const coll=collideWalls(Math.max(-90,Math.min(90,x)),Math.max(-90,Math.min(90,z)),BOT_R);
   if(Math.hypot(coll.x-x,coll.z-z)>2.4){
     x=plan.zonePos.x;z=plan.zonePos.z;
@@ -421,6 +511,8 @@ class Enemy{
     this.burstPauseT=0;
     this.pickupTarget=null;
     this.stuckT=0;this.lastMoveX=x;this.lastMoveZ=z;
+    this.unstuckT=0;this.unstuckDir=Math.random()<.5?-1:1;
+    this.commandDoctrine='hold';
     this.sT=.18+Math.random()*.22;
     this.reloadT=0;
     this.mineCD=8+Math.random()*12;
@@ -503,7 +595,7 @@ class Enemy{
     this.aimSkill=Math.min(.97,.58+this.skillSeed+lvl*.013+Math.min(.13,kills*.0018));
     this.maxHp=this.baseHp*(1.08+lvl*.082+dominance)*roleHp;
     this.hp=force?this.maxHp:Math.min(this.maxHp,this.maxHp*hpRatio+Math.max(10,this.maxHp*.05));
-    this.speed=this.baseSpeed*(1.02+lvl*.016+Math.min(.20,kills*.0032))*roleSpd;
+    this.speed=this.baseSpeed*(1.02+Math.min(.28,lvl*.012)+Math.min(.12,kills*.0020))*roleSpd;
     this.baseDmgMul=(.86+this.type*.06)*(1+lvl*.038+combatGrowth)*roleDmg;
     this.curAcc=Math.max(.0075,this.baseAcc*(1.03-Math.min(lvl*.019,.58)-Math.min(.18,kills*.0022))*(this.role==='anchor'?.82:1));
     this.fireRateMul=Math.max(.62,1.08-lvl*.013-Math.min(.20,kills*.0025))*(this.role==='assault'?.92:1);
@@ -795,9 +887,9 @@ class Enemy{
   triggerDodge(preferredDir=0,urgency=1){
     if(this.dodgeCD>0||this.dodgeT>0)return;
     this.dodgeDir=preferredDir||(Math.random()<.5?-1:1);
-    this.dodgeT=(0.40+Math.random()*.30)*Math.max(.82,Math.min(1.22,urgency));
-    this.dodgeSpd=this.speed*(2.35+this.aimSkill*.65)*Math.max(1,Math.min(1.22,urgency));
-    this.dodgeCD=.78+Math.random()*.58;
+    this.dodgeT=(0.34+Math.random()*.24)*Math.max(.86,Math.min(1.14,urgency));
+    this.dodgeSpd=this.speed*(1.30+this.aimSkill*.16)*Math.max(.96,Math.min(1.08,urgency));
+    this.dodgeCD=.88+Math.random()*.62;
     if(Math.random()<0.16*urgency&&this.jV===0)this.jV=4.6+Math.random()*1.6;
   }
 
@@ -810,6 +902,8 @@ class Enemy{
     let chance=dist<6?.42:dist<9?.30:.18;
     if(this.role==='engineer')chance*=1.55;
     if(this.role==='anchor')chance*=0.65;
+    if(this.commandDoctrine==='hold'||this.commandDoctrine==='retake')chance*=1.22;
+    if(this.commandDoctrine==='breach')chance*=.72;
     if(Math.random()>chance)return false;
     const dir=new THREE.Vector3(Math.sin(this.group.rotation.y),0,Math.cos(this.group.rotation.y));
     const m=mkMine();
@@ -828,6 +922,8 @@ class Enemy{
     if(bombNearPoint(pos,24))return false;
     let chance=this.role==='engineer'?.19:this.role==='anchor'?.12:.075;
     chance*=1+Math.min(.65,level*.018+kills*.002);
+    if(this.commandDoctrine==='breach')chance*=this.role==='engineer'?1.48:1.22;
+    else if(this.commandDoctrine==='hold')chance*=.70;
     if(Math.random()>chance)return false;
     const dir=new THREE.Vector3(Math.sin(this.group.rotation.y),0,Math.cos(this.group.rotation.y));
     const m=mkBomb();
@@ -982,6 +1078,7 @@ class Enemy{
     if(this.suppressedT>0){this.suppressedT=Math.max(0,this.suppressedT-dt);if(this.suppressedT<=0)this.suppressionSource=null;}
     if(this.flankEvalT>0)this.flankEvalT-=dt;
     if(this.flankCommitT>0)this.flankCommitT-=dt;
+    if(this.unstuckT>0)this.unstuckT=Math.max(0,this.unstuckT-dt);
     if(this.nearMissCd>0)this.nearMissCd-=dt;
 
     if(this.flashT>0){this.flashT-=dt;if(this.flashT<=0)this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(0,0,0);});}
@@ -1050,6 +1147,7 @@ class Enemy{
     const localThreats=this.nearbyThreatCount(18);
     const opponentWeapon=this.currentTargetWeapon();
     const squadPlan=refreshBotTeamTactics(this.team);
+    this.commandDoctrine=squadPlan.doctrine;
     const mapObjective=botObjectivePoint(this,squadPlan);
     const objectiveDist=mapObjective?this.group.position.distanceTo(mapObjective):999;
     const focusMatches=botMatchesSquadFocus(this,squadPlan);
@@ -1061,13 +1159,13 @@ class Enemy{
     const mapOrderWanted=!!mapObjective&&(
       !targetPos||
       (squadPlan.doctrine==='hold'&&objectiveDist>squadPlan.zoneRadius*.62&&(!this.canSeeTarget||dist>24))||
-      ((squadPlan.doctrine==='push'||squadPlan.doctrine==='retake')&&!this.canSeeTarget&&this.lastSeenT>2.2&&objectiveDist>4.2)
+      ((squadPlan.doctrine==='push'||squadPlan.doctrine==='retake'||squadPlan.doctrine==='breach')&&!this.canSeeTarget&&this.lastSeenT>2.2&&objectiveDist>4.2)
     );
     if(this.flankEvalT<=0&&coordinatedFlank){
       const sign=this.role==='flankL'?-1:1;
       const nextFlank=this.findFlankPoint(squadPlan.focusPos,sign);
-      if(nextFlank){this.flankPoint=nextFlank;this.flankCommitT=2.6+Math.random()*1.2;}
-      this.flankEvalT=.82+Math.random()*.42;
+      if(nextFlank){this.flankPoint=nextFlank;this.flankCommitT=(squadPlan.doctrine==='breach'?3.5:2.6)+Math.random()*1.2;}
+      this.flankEvalT=(squadPlan.doctrine==='breach'?.58:.82)+Math.random()*.42;
     }
     if(!coordinatedFlank&&this.flankCommitT<=0)this.flankPoint=null;
     this.tacticalMode=squadPlan.suppressor===this&&focusMatches&&squadPlan.flankerCount>0?'suppress':
@@ -1107,9 +1205,15 @@ class Enemy{
       const awayX=this.group.position.x-mineThreat.mine.m.position.x;
       const awayZ=this.group.position.z-mineThreat.mine.m.position.z;
       const md=Math.max(.001,Math.hypot(awayX,awayZ));
-      mx=(awayX/md)*spd*1.55;
-      mz=(awayZ/md)*spd*1.55;
+      mx=(awayX/md)*spd*1.34;
+      mz=(awayZ/md)*spd*1.34;
       this.desiredYaw=Math.atan2(awayX,awayZ);
+    }else if(this.unstuckT>0){
+      const fwdX=Math.sin(this.group.rotation.y),fwdZ=Math.cos(this.group.rotation.y);
+      const rightX=Math.cos(this.group.rotation.y),rightZ=-Math.sin(this.group.rotation.y);
+      mx=rightX*this.unstuckDir*spd*.92-fwdX*spd*.22;
+      mz=rightZ*this.unstuckDir*spd*.92-fwdZ*spd*.22;
+      this.desiredYaw+=this.unstuckDir*dt*.85;
     }else if(this.dodgeT>0&&targetPos){
       this.dodgeT-=dt;
       const px=-dz/dist,pz=dx/dist;
@@ -1120,7 +1224,7 @@ class Enemy{
         if(mapObjective){
           const ox=mapObjective.x-myX,oz=mapObjective.z-myZ,od=Math.hypot(ox,oz)+.001;
           const stopR=squadPlan.doctrine==='hold'?(this.role==='anchor'?3.8:4.8):3.2;
-          const speedM=squadPlan.doctrine==='push'?(this.role==='assault'?1.12:1.02):squadPlan.doctrine==='retake'?1.08:.82;
+          const speedM=squadPlan.doctrine==='breach'?(this.role==='assault'?1.14:1.06):squadPlan.doctrine==='push'?(this.role==='assault'?1.12:1.02):squadPlan.doctrine==='retake'?1.08:.82;
           if(targetPos&&this.canSeeTarget)this.desiredYaw=Math.atan2(dx,dz);
           else this.desiredYaw=Math.atan2(ox||((this.team==='ally'?1:-1)*.01),oz);
           if(od>stopR){
@@ -1292,32 +1396,45 @@ class Enemy{
     const sep=separationVector(this,3.5);
     mx+=sep.x*spd*.75; mz+=sep.z*spd*.75;
     const steered=steerBotAroundWalls(this,mx,mz);
-    const desiredMoveX=steered.x,desiredMoveZ=steered.z;
+    const urgentMove=!!mineThreat||this.dodgeT>0||this.unstuckT>0;
+    const maxMoveM=mineThreat?BOT_MOVE_CFG.mineMaxM:this.dodgeT>0?BOT_MOVE_CFG.dodgeMaxM:
+      this.aiState==='retreat'?BOT_MOVE_CFG.retreatMaxM:BOT_MOVE_CFG.normalMaxM;
+    const cappedDesired=clampBotVelocity(steered.x,steered.z,spd*maxMoveM);
+    const desiredMoveX=cappedDesired.x,desiredMoveZ=cappedDesired.z;
     const desiredMoveSpeed=Math.hypot(desiredMoveX,desiredMoveZ);
     const currentMoveSpeed=Math.hypot(this.motionX,this.motionZ);
-    const urgentMove=!!mineThreat||this.dodgeT>0;
-    const response=urgentMove?15.5:(desiredMoveSpeed>currentMoveSpeed+.08?6.6:9.4);
+    const response=urgentMove?11.5:(desiredMoveSpeed>currentMoveSpeed+.08?5.6:8.2);
     const responseT=1-Math.exp(-response*dt);
-    this.motionX+=(desiredMoveX-this.motionX)*responseT;
-    this.motionZ+=(desiredMoveZ-this.motionZ)*responseT;
+    let nextMotionX=this.motionX+(desiredMoveX-this.motionX)*responseT;
+    let nextMotionZ=this.motionZ+(desiredMoveZ-this.motionZ)*responseT;
+    const dvx=nextMotionX-this.motionX,dvz=nextMotionZ-this.motionZ,dv=Math.hypot(dvx,dvz);
+    const maxDv=spd*(urgentMove?BOT_MOVE_CFG.urgentAccelM:BOT_MOVE_CFG.maxAccelM)*dt;
+    if(dv>maxDv&&dv>.0001){
+      const dm=maxDv/dv;nextMotionX=this.motionX+dvx*dm;nextMotionZ=this.motionZ+dvz*dm;
+    }
+    const cappedMotion=clampBotVelocity(nextMotionX,nextMotionZ,spd*maxMoveM);
+    this.motionX=cappedMotion.x;this.motionZ=cappedMotion.z;
     if(desiredMoveSpeed<.05&&Math.hypot(this.motionX,this.motionZ)<.08){
       this.motionX=0;this.motionZ=0;
     }
     mx=this.motionX;mz=this.motionZ;
 
-    let newX=myX+mx*dt,newZ=myZ+mz*dt;
-    newX=Math.max(-93,Math.min(93,newX));newZ=Math.max(-93,Math.min(93,newZ));
-    const coll=collideWalls(newX,newZ,BOT_R);
-    this.group.position.x=coll.x;this.group.position.z=coll.z;
+    const movedPos=moveBotWithSubsteps(myX,myZ,mx,mz,dt);
+    this.group.position.x=movedPos.x;this.group.position.z=movedPos.z;
     this.velX=(this.group.position.x-myX)/Math.max(dt,.001);
     this.velZ=(this.group.position.z-myZ)/Math.max(dt,.001);
+    const actualCap=clampBotVelocity(this.velX,this.velZ,spd*maxMoveM*1.04);
+    this.velX=actualCap.x;this.velZ=actualCap.z;
     this.motionX=this.velX;this.motionZ=this.velZ;
     this.group.rotation.y=lerpAngle(this.group.rotation.y,this.desiredYaw,Math.min(1,dt*(5.2+this.aimSkill*3.2)));
     const intended=Math.hypot(mx,mz);
     const moved=Math.hypot(this.group.position.x-myX,this.group.position.z-myZ);
     if(intended>.6&&moved<.015)this.stuckT+=dt;else this.stuckT=Math.max(0,this.stuckT-dt*2);
     if(this.stuckT>.55){
-      this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.triggerDodge();
+      this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;
+      this.unstuckDir=this.sideBias;this.unstuckT=.48+Math.random()*.18;
+      this.motionX*=.35;this.motionZ*=.35;
+      this.coverPoint=null;this.flankPoint=null;this.flankCommitT=0;
       const wp=WPTS[(Math.random()*WPTS.length)|0];this.ptgt.set(wp[0]+(Math.random()-.5)*6,0,wp[1]+(Math.random()-.5)*6);
     }
 

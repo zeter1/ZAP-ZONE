@@ -157,3 +157,29 @@ Support-state доступен `anchor` и `engineer`: при сильно ра�
 State `objective` не заменяет combat states. Mine dodge, retreat, resupply, cover, suppression/flank/support и видимая непосредственная угроза остаются выше по приоритету. Map-order в основном управляет repositioning между контактами. Для `hold` добавлен мягкий leash даже во время engage: он не телепортирует и не запрещает стрелять, а только постепенно возвращает бойца к назначенному сектору.
 
 HUD союзников показывает текущую doctrine, выбранную зону и разницу живой численности, чтобы поведение команды было объяснимо игроку, а не выглядело случайным.
+
+
+## Combat AI 2.2 / Adaptive Commander + locomotion stability v22.6
+
+Adaptive Commander работает поверх Map Tactics, не заменяя perception и локальный squad-plan. `PLAYER_TACTICAL_PROFILE` периодически семплирует положение игрока, сглаженную скорость перемещения и время недавнего огня. Длительное нахождение в радиусе небольшой anchor-зоны вместе с недавней стрельбой повышает `campScore`; глубокое продвижение по оси союзной→вражеской стороны классифицируется как rush. Это поведенческий сигнал для выбора командного приказа, а не скрытый debuff игрока.
+
+Для красной команды camping-сигнал может включить doctrine `breach`. Она нацеливает map-order на район игрока, дольше удерживает flank commit и делает assault более глубоким. Существующий suppressor/pincer слой Tactical AI 2.0 остаётся механизмом исполнения приказа. Deep rush игрока, наоборот, усиливает `retake` ближайшей зоны.
+
+Commander также отслеживает изменение team score. Потери во время `push` или `breach` увеличивают setback counter; после двух неудач включается короткий recovery window с `hold`. Это не rubber-band по HP/урону: меняется только тактический темп и позиционирование.
+
+Utility зависит от doctrine. Мины немного предпочтительнее при `hold/retake`, а бомбы — при `breach`, особенно у engineer. Базовые cooldown, лимиты активных устройств и friendly-team semantics не меняются.
+
+### Anti-teleport locomotion
+
+Root cause визуальных рывков был в сочетании трёх факторов: dodge до ~3× base speed, очень быстрый urgent velocity response и использование того же dodge как stuck recovery. На высоком уровне дополнительный speed growth усиливал эффект.
+
+v22.6 вводит:
+- `BOT_MOVE_CFG` с отдельными speed multipliers и acceleration limits;
+- более умеренный `triggerDodge()`;
+- отдельный `unstuckT/unstuckDir` вместо вызова dodge при блокировке;
+- `clampBotVelocity()` до и после velocity smoothing;
+- `moveBotWithSubsteps()`, который дробит displacement на короткие collision-шаги;
+- hard cap фактического displacement после collision push-out;
+- ограниченный progression multiplier для `this.speed`.
+
+Runtime всё ещё использует общий `dt <= 0.033`, поэтому новые caps дополняют существующий frame-time clamp и защищают именно AI locomotion/collision path. Mine avoidance, retreat и dodge остаются различимыми по скорости, но не должны превращаться в визуальную телепортацию.
