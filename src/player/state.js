@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── PLAYER STATE ────────────────────────
-let curW=0,ammo=STARTING_AMMO[0],uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
+let curW=0,lastW=0,ammo=STARTING_AMMO[0],uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
 const weaponAmmo=STARTING_AMMO.slice();
 let yaw=0,pitch=0,onGnd=true,jumpV=0;
 let hp=100,score=0,kills=0,xp=0,level=1,armor=0;
@@ -401,6 +401,7 @@ function switchW(idx){
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
   cycleT=0;cycleTot=0;cycleKind='';sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;
+  lastW=curW;
   curW=idx;
   const w=getW();
   ammo=weaponAmmoValue(idx);
@@ -412,6 +413,7 @@ function switchW(idx){
   G('mines-panel').style.display=(w.isMine||w.isBomb)?'block':'none';
   updateMineHUD();
 }
+function quickSwitchWeapon(){if(lastW!==curW)switchW(lastW);}
 
 
 function isLandscape(){return innerWidth>=innerHeight;}
