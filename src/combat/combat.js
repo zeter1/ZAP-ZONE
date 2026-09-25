@@ -390,9 +390,10 @@ function effectiveWeaponSpread(w,pelletIndex=0,extraShot=false,bloom=weaponBloom
   const airPenalty=onGnd?0:(w.airSpread||0);
   const pelletFactor=(w.pellets||1)>1?(pelletIndex===0?.35:1):1;
   const extraPenalty=extraShot?.035:0;
+  const suppressionPenalty=typeof playerSuppressionSpreadPenalty==='function'?playerSuppressionSpreadPenalty():0;
   const settledFirstShot=firstShot&&onGnd&&speed<1.2;
   const firstShotM=settledFirstShot?(w.firstShotM??1):1;
-  return Math.max(0,(base*pelletFactor*firstShotM+movePenalty+airPenalty+bloom+extraPenalty)*plr.spreadM);
+  return Math.max(0,(base*pelletFactor*firstShotM+movePenalty+airPenalty+bloom+extraPenalty+suppressionPenalty)*plr.spreadM);
 }
 function kickSniperScope(){
   const scope=G('sniper-scope');if(!scope||!zooming)return;
@@ -519,7 +520,7 @@ function weaponActionBlocked(){
 function finishPlayerReload(playDone=true,settle=true){
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   if(settle)weaponReadyT=Math.max(weaponReadyT,.08);
-  if(playDone)playSfx('reloadDone');
+  if(playDone)playWeaponMechanicSound('reloadDone',.82,getW().key);
   wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
 }
 function cancelPlayerReload(){
@@ -533,7 +534,7 @@ function completePlayerReloadStep(){
   const w=getW();
   if(reloadMode==='shell'){
     if(ammo<w.clip&&uAmmo>0){
-      ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playSfx('shell');
+      ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playWeaponMechanicSound('shell',1,w.key);
       G('rmsg').textContent=`ПАТРОН ${ammo} / ${w.clip} · ЛКМ — ПРЕРВАТЬ`;
     }
     if(ammo>=w.clip||uAmmo<=0){finishPlayerReload(true);return;}
@@ -613,8 +614,8 @@ function shoot(){
       else spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
     }
   }
-  if(w.isSniper)playSfx('bolt');
-  else if(w.key==='shotgun')playSfx('pump');
+  if(w.isSniper)playWeaponMechanicSound('bolt',1,w.key);
+  else if(w.key==='shotgun')playWeaponMechanicSound('pump',1,w.key);
   weaponBloom=Math.min(w.bloomMax??.03,weaponBloom+(w.bloomPerShot||0));
 
 }
@@ -643,7 +644,7 @@ function doReload(){
     reloadT=Math.max(.30,w.reload*mult);
   }
   reloadTot=reloadT;
-  playSfx('reload');
+  playWeaponMechanicSound('reload',1,w.key);
   G('rmsg').textContent=reloadMode==='shell'?'ЗАРЯДКА ПАТРОНОВ...':reloadMode==='empty'?'ПУСТОЙ МАГАЗИН...':'ТАКТИЧЕСКАЯ ПЕРЕЗАРЯДКА...';
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';
 }

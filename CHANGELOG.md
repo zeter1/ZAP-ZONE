@@ -2,6 +2,28 @@
 
 ## Unreleased — 2026-09-25
 
+### Combat Presence 1.2 — Suppression & Battlefield Life
+- случайный near-miss feedback заменён геометрией реального выстрела бота: для фактического tracer direction вычисляется closest approach к торсу игрока, дальность вдоль луча и проверка препятствий; whiz/suppression возникает только если пуля действительно проходит рядом;
+- добавлено накопительное состояние suppression: плотный близкий огонь мягко увеличивает реальный weapon spread, раскачивает оружие, расширяет/подсвечивает reticle и даёт короткую presentation-only camera reaction без фиктивного урона;
+- SR-9 использует усиленный supersonic crack только при реально близком пролёте.
+
+### Battlefield audio
+- добавлены ещё 10 оригинальных procedural WAV: distant battlefield loop, magazine reload, reload completion, shell insert, bolt, pump, equip и отдельные шаги по metal / gravel / water;
+- после первого пользовательского ввода запускается тихий low-pass battlefield ambience; он проходит через общий SFX master и не создаёт отдельной настройки громкости;
+- синтетические reload/equip/bolt/pump cues заменены WAV-механикой с сохранением synth fallback;
+- удалённые боты также слышимо перезаряжаются через spatial attenuation;
+- поверхность шага выбирается по геометрически осмысленным зонам карты: индустриальный центр — metal, внешний периметр — gravel, бассейн на западе — water, остальная арена — concrete.
+
+### Coordinated breach / retake + cover-to-cover
+- для доктрин breach и retake введены командные assault waves с короткой staging-фазой и общей active-фазой: роли сначала собираются в разнесённой формации, затем синхронно ускоряют заход на objective;
+- objective orders учитывают wave state, поэтому assault/flank/anchor/engineer меньше растягиваются по карте перед прорывом;
+- выбор укрытия во время breach/retake награждает реальное продвижение к objective;
+- бот, достигнув промежуточного укрытия в активной assault wave, может выбрать следующее более переднее укрытие вместо немедленного выхода в обычный engage — появился настоящий cover-to-cover chain.
+
+### Проверка
+- версия интерфейса повышена до v23.0;
+- validation проверяет 28 WAV-файлов, physical closest-approach near miss, suppression spread, sampled weapon mechanics, surface footsteps, battlefield ambience, assault wave state и cover-chain; legacy random near-miss запрещён.
+
 ### Combat Presence 1.1 — акустика пространства, шаги и impact layer
 - добавлены ещё 8 оригинальных procedural WAV: открытый и тесный acoustic tail, supersonic crack SR-9, шаг/бег, попадание в тело, бронепластину и голову;
 - выстрелы теперь получают геометрически выбранный хвост: четыре коротких raycast-пробы вокруг источника отличают открытое пространство от участков с близкими отражающими стенами; tail имеет cooldown, чтобы автоматический огонь не превращался в аудио-кашу;

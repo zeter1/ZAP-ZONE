@@ -49,11 +49,22 @@ const GAME_AUDIO_ASSETS=Object.freeze({
   footstepRun:'assets/audio/footstep-run.wav',
   hitBody:'assets/audio/hit-body.wav',
   hitArmor:'assets/audio/hit-armor.wav',
-  hitHead:'assets/audio/hit-head.wav'
+  hitHead:'assets/audio/hit-head.wav',
+  battlefield:'assets/audio/battlefield-loop.wav',
+  reloadMag:'assets/audio/reload-mag.wav',
+  reloadDone:'assets/audio/reload-done.wav',
+  shellInsert:'assets/audio/shell-insert.wav',
+  boltCycle:'assets/audio/bolt-cycle.wav',
+  pumpCycle:'assets/audio/pump-cycle.wav',
+  equipSample:'assets/audio/equip.wav',
+  footstepMetal:'assets/audio/footstep-metal.wav',
+  footstepGravel:'assets/audio/footstep-gravel.wav',
+  footstepWater:'assets/audio/footstep-water.wav'
 });
 const gameAudioBuffers=new Map(),gameAudioLoads=new Map();
 const acousticProfileCache=new Map(),acousticTailCooldowns=new Map();
-let playerFootstepDistance=0;
+let playerFootstepDistance=0,battlefieldAmbienceSource=null,battlefieldAmbienceGain=null,battlefieldAmbiencePending=false;
+let playerSuppression=0,playerSuppressionPulse=0;
 function combatSourcePosition(source){
   return source&&(source.group?.position||source.m?.position||source.position||source);
 }
@@ -165,11 +176,22 @@ function playObjectiveCaptureSound(team='ally'){
   if(playBufferSfx('objectiveCapture',.82,null,90,team==='enemy'?.86:1))return;
   playSfx(team==='enemy'?'hurt':'level',.72);
 }
-function playFootstepSound(source=null,running=false,isBot=false){
-  const key=running?'footstepRun':'footstepWalk';
-  const intensity=(running?.34:.25)*(isBot?.80:1);
-  const played=playBufferSfx(key,intensity,source,isBot?42:18,.92+Math.random()*.16);
-  if(!played&&!isBot)synthNoise(running?.055:.045,running?.018:.012,520);
+function footstepSurfaceAt(source=null){
+  const p=combatSourcePosition(source)||(typeof camera!=='undefined'?camera.position:null);
+  if(!p)return'concrete';
+  if(p.x>=-68&&p.x<=-52&&p.z>=10&&p.z<=20)return'water';
+  if(Math.hypot(p.x,p.z)>=58)return'gravel';
+  if(Math.abs(p.x)<=24&&Math.abs(p.z)<=24)return'metal';
+  return'concrete';
+}
+function playFootstepSound(source=null,running=false,isBot=false,surface=null){
+  const ground=surface||footstepSurfaceAt(source);
+  const key=ground==='water'?'footstepWater':ground==='gravel'?'footstepGravel':ground==='metal'?'footstepMetal':(running?'footstepRun':'footstepWalk');
+  const surfaceM=ground==='water'?.78:ground==='gravel'?.90:ground==='metal'?.86:1;
+  const intensity=(running?.34:.25)*(isBot?.80:1)*surfaceM;
+  const rate=(running?1.08:.94)*(.94+Math.random()*.12);
+  const played=playBufferSfx(key,intensity,source,isBot?42:18,rate);
+  if(!played&&!isBot)synthNoise(running?.055:.045,running?.018:.012,ground==='metal'?1500:ground==='gravel'?760:520);
 }
 function tickPlayerFootsteps(distance,running,onGround){
   const d=Math.max(0,Math.min(.65,Number(distance)||0));
@@ -178,7 +200,7 @@ function tickPlayerFootsteps(distance,running,onGround){
   const stride=running?1.62:2.12;
   if(playerFootstepDistance>=stride){
     playerFootstepDistance%=stride;
-    playFootstepSound(null,running,false);
+    playFootstepSound(null,running,false,footstepSurfaceAt(null));
   }
 }
 function playHitImpactSound(zone='body',source=null,intensity=1){
@@ -186,6 +208,49 @@ function playHitImpactSound(zone='body',source=null,intensity=1){
   const power=zone==='head'?.72:zone==='armor'?.58:.50;
   if(playBufferSfx(key,power*intensity,source,86,.94+Math.random()*.12))return;
   playSfx(zone==='head'?'crit':'hit',Math.min(1,power*intensity));
+}
+function playWeaponMechanicSound(name,intensity=1,weaponKey='',source=null){
+  const key={reload:'reloadMag',reloadDone:'reloadDone',shell:'shellInsert',bolt:'boltCycle',pump:'pumpCycle',equip:'equipSample'}[name];
+  const heavy=weaponKey==='sniper'||weaponKey==='shotgun'||weaponKey==='rocket';
+  const rate=(heavy?.94:1.02)*(.97+Math.random()*.06);
+  if(key&&playBufferSfx(key,Math.max(.12,Math.min(1.15,intensity)),source,source?38:18,rate))return;
+  playSfx(name,intensity,weaponKey);
+}
+function startBattlefieldAmbience(){
+  if(battlefieldAmbienceSource||battlefieldAmbiencePending||gameSettings.sfx<=0)return;
+  const ctx=ensureGameAudio();if(!ctx||!gameAudioMaster)return;
+  const buffer=gameAudioBuffers.get('battlefield');
+  if(!buffer){
+    battlefieldAmbiencePending=true;
+    loadGameAudioAsset('battlefield').then(()=>{battlefieldAmbiencePending=false;startBattlefieldAmbience();});
+    return;
+  }
+  const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  src.buffer=buffer;src.loop=true;src.loopStart=Math.min(.08,buffer.duration*.04);src.loopEnd=Math.max(src.loopStart+.25,buffer.duration-.08);
+  filter.type='lowpass';filter.frequency.value=1650;filter.Q.value=.35;
+  gain.gain.value=.095;
+  src.connect(filter);filter.connect(gain);gain.connect(gameAudioMaster);
+  src.onended=()=>{if(battlefieldAmbienceSource===src){battlefieldAmbienceSource=null;battlefieldAmbienceGain=null;}};
+  battlefieldAmbienceSource=src;battlefieldAmbienceGain=gain;src.start();
+}
+function playerSuppressionSpreadPenalty(){
+  return Math.min(.012,Math.max(0,playerSuppression)*.0065);
+}
+function registerPlayerSuppression(source,weapon=null,closestPoint=null,closestDistance=1,threshold=1.55){
+  const d=Math.max(0,Number(closestDistance)||0),limit=Math.max(.65,Number(threshold)||1.55);
+  if(d>limit)return 0;
+  const proximity=Math.max(0,Math.min(1,1-d/limit));
+  const sniper=!!weapon?.isSniper;
+  const pressure=Math.min(1.2,.36+proximity*.72+(sniper?.16:0));
+  playerSuppression=Math.min(1.45,playerSuppression+.16+pressure*.31);
+  playerSuppressionPulse=Math.max(playerSuppressionPulse,.16+pressure*.14);
+  playWhizSound(closestPoint||source,.42+proximity*.64);
+  if(sniper)playSniperCrack(null,.72+proximity*.46,true);
+  showThreatDirection(source,sniper?'sniper':'bullet',.55+proximity*.55);
+  if(typeof gunSwayX==='number')gunSwayX=Math.max(-.055,Math.min(.055,gunSwayX+(Math.random()-.5)*.010*pressure));
+  if(typeof gunSwayY==='number')gunSwayY=Math.max(-.045,Math.min(.045,gunSwayY+(Math.random()-.5)*.008*pressure));
+  triggerScreenShake(.045+pressure*.075,.065+pressure*.045);
+  return pressure;
 }
 function ensureGameAudio(){
   if(gameSettings.sfx<=0)return null;
@@ -288,6 +353,13 @@ function triggerScreenShake(power=.3,duration=.12){
 }
 function tickGamePresentation(dt,ts){
   const safeDt=Math.max(0,Math.min(.05,Number(dt)||0)),fps=byId('fps-counter');
+  playerSuppression=Math.max(0,playerSuppression-safeDt*(playerSuppression>.85?.34:.52));
+  playerSuppressionPulse=Math.max(0,playerSuppressionPulse-safeDt*1.35);
+  const suppressionReticle=byId('xhair');
+  if(suppressionReticle){
+    suppressionReticle.classList.toggle('suppressed',playerSuppression>.12);
+    suppressionReticle.style.setProperty('--suppression',Math.min(1,playerSuppression).toFixed(3));
+  }
   if(gameSettings.showFps&&fps){
     fps.style.display='block';fpsAccum+=safeDt;fpsFrames++;
     if(fpsAccum>=.45){fps.textContent='FPS '+Math.round(fpsFrames/Math.max(.001,fpsAccum));fpsAccum=0;fpsFrames=0;}
@@ -317,12 +389,12 @@ function openGameSettings(){const modal=byId('settings-modal');if(!modal)return;
 function closeGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=false;modal.classList.remove('on');modal.setAttribute('aria-hidden','true');saveGameSettings();playSfx('ui');}
 function bindGameSettings(){
   const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
-  const primeAudio=()=>{ensureGameAudio();preloadGameAudio();};
+  const primeAudio=()=>{ensureGameAudio();preloadGameAudio();startBattlefieldAmbience();};
   window.addEventListener('pointerdown',primeAudio,{once:true,capture:true});
   window.addEventListener('keydown',primeAudio,{once:true,capture:true});
   byId('menuSettingsBtn')?.addEventListener('click',openGameSettings);byId('pauseSettingsBtn')?.addEventListener('click',openGameSettings);byId('settingsCloseBtn')?.addEventListener('click',closeGameSettings);
   sens?.addEventListener('input',()=>{gameSettings.sensitivity=clampSetting(sens.value,.5,2,1);saveGameSettings();});
-  sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();preloadGameAudio();saveGameSettings();});
+  sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();preloadGameAudio();startBattlefieldAmbience();saveGameSettings();});
   shake?.addEventListener('change',()=>{gameSettings.screenShake=shake.checked;saveGameSettings();});
   crosshair?.addEventListener('change',()=>{gameSettings.dynamicCrosshair=crosshair.checked;saveGameSettings();});
   fps?.addEventListener('change',()=>{gameSettings.showFps=fps.checked;saveGameSettings();});

@@ -474,7 +474,7 @@ function switchW(idx){
   uAmmo=Math.max(0,Math.min(w.reserveCap??9999,weaponReserve[idx]??0));
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   weaponEquipTot=w.equipTime||.32;weaponEquipT=weaponEquipTot;weaponReadyT=weaponEquipTot;
-  playSfx('equip');
+  playWeaponMechanicSound('equip',.82,w.key);
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   buildGun(w);wHUD();updateWeaponBar();
   G('mines-panel').style.display=(w.isMine||w.isBomb)?'block':'none';

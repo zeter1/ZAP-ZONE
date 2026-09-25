@@ -451,6 +451,8 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 @keyframes hitMarkerPulse{0%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.35)}24%{opacity:1;transform:translate(-50%,-50%) rotate(45deg) scale(1.08)}100%{opacity:0;transform:translate(-50%,-50%) rotate(45deg) scale(.78)}}
 #xhair.dynamic-fire{transform:translate(-50%,-50%) scale(1.30);}
 #xhair.dynamic-hit{filter:drop-shadow(0 0 5px rgba(255,220,70,.95));}
+#xhair.suppressed .xh-arm{background:rgba(255,222,145,.96);box-shadow:0 0 calc(5px + var(--suppression)*7px) rgba(255,174,72,.56);}
+#xhair.suppressed .xh-dot{background:#fff0bd;box-shadow:0 0 calc(6px + var(--suppression)*8px) rgba(255,174,72,.62);}
 #damage-direction{position:absolute;left:50%;top:50%;width:1px;height:1px;z-index:17;pointer-events:none;opacity:0;transform:translate(-50%,-50%) rotate(0deg);}
 #damage-direction span{position:absolute;left:-17px;top:-145px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:1000;color:#ff4d3a;text-shadow:0 0 12px rgba(255,35,15,.95),0 2px 2px #210000;}
 #damage-direction.on{animation:damageDirectionPulse .72s ease-out forwards;}

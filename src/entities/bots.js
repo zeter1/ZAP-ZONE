@@ -285,6 +285,17 @@ function syncPlayerCombatNoise(){
     botLastPlayerShotSequence=shotSequence;
   }
 }
+const _BOT_NEAR_MISS_TO_PLAYER=new THREE.Vector3(),_BOT_NEAR_MISS_POINT=new THREE.Vector3();
+function botShotClosestApproachToPlayer(from,dir,maxRange=120){
+  const torso=_BOT_NEAR_MISS_TO_PLAYER.set(camera.position.x,camera.position.y-.28,camera.position.z);
+  const rel=torso.clone().sub(from);
+  const along=Math.max(0,Math.min(maxRange,rel.dot(dir)));
+  if(along<1.2)return null;
+  _BOT_NEAR_MISS_POINT.copy(from).addScaledVector(dir,along);
+  if(wallBetween(from,_BOT_NEAR_MISS_POINT,wallMeshes))return null;
+  const distance=_BOT_NEAR_MISS_POINT.distanceTo(torso);
+  return{distance,along,point:_BOT_NEAR_MISS_POINT.clone()};
+}
 
 const BOT_MAP_ZONES=[
   {id:'mid',label:'ЦЕНТР',x:0,z:0,r:21,weight:1.34},
@@ -472,14 +483,20 @@ const PLAYER_TACTICAL_PROFILE={
   style:'balanced',campScore:0
 };
 const BOT_TEAM_TACTICS={
-  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999},
-  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999}
+  ally:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0},
+  enemy:{time:-999,focus:null,focusIsPlayer:false,focusPos:new THREE.Vector3(),suppressor:null,flankerCount:0,wounded:null,doctrine:'hold',zone:null,zonePos:new THREE.Vector3(),zoneRadius:18,zoneControl:0,aliveDelta:0,orderUntil:-999,lastFor:0,lastAgainst:0,setbacks:0,recoveryUntil:-999,waveStart:-999,waveUntil:-999,waveId:0}
 };
 function botRoleLabel(role){
   return role==='assault'?'ШТУРМ':role==='flankL'?'ФЛАНГ Л':role==='flankR'?'ФЛАНГ П':role==='anchor'?'ОПОРА':role==='engineer'?'ИНЖЕНЕР':'БОЕЦ';
 }
 function botDoctrineLabel(doctrine){
   return doctrine==='breach'?'ПРОРЫВ':doctrine==='push'?'ШТУРМ':doctrine==='retake'?'ВОЗВРАТ':doctrine==='hold'?'УДЕРЖАНИЕ':'МАНЁВР';
+}
+function botAssaultWaveState(plan,now=performance.now()){
+  if(!plan||(plan.doctrine!=='breach'&&plan.doctrine!=='retake'))return'none';
+  if(now<plan.waveStart)return'staging';
+  if(now<plan.waveUntil)return'active';
+  return'expired';
 }
 function refreshPlayerTacticalProfile(now){
   const p=PLAYER_TACTICAL_PROFILE;
@@ -593,6 +610,15 @@ function refreshBotMapOrder(team,plan,now){
   }else if(current){
     plan.zoneControl=current.control;
   }
+  if(plan.doctrine==='breach'||plan.doctrine==='retake'){
+    if(now>=plan.waveUntil){
+      plan.waveStart=now+(plan.doctrine==='breach'?760:520);
+      plan.waveUntil=plan.waveStart+(plan.doctrine==='breach'?3200:2500);
+      plan.waveId=(plan.waveId||0)+1;
+    }
+  }else{
+    plan.waveStart=-999;plan.waveUntil=-999;
+  }
   plan.aliveDelta=aliveDelta;
 }
 function botObjectivePoint(bot,plan){
@@ -607,10 +633,19 @@ function botObjectivePoint(bot,plan){
   }[bot.role]||[0,0];
   let x=plan.zonePos.x+roleOffset[0],z=plan.zonePos.z+roleOffset[1];
   if(plan.doctrine==='hold'&&bot.role==='anchor')x-=2.0*dir;
-  if(plan.doctrine==='breach'){
+  const waveState=botAssaultWaveState(plan);
+  if(waveState==='staging'){
+    x-=(bot.role==='anchor'?5.5:bot.role==='engineer'?4.6:bot.role==='assault'?3.8:4.2)*dir;
+    if(bot.role==='flankL')z-=2.4;
+    else if(bot.role==='flankR')z+=2.4;
+  }else if(plan.doctrine==='breach'){
     if(bot.role==='flankL')z-=3.2;
     else if(bot.role==='flankR')z+=3.2;
     else if(bot.role==='assault')x+=2.0*dir;
+  }else if(plan.doctrine==='retake'&&waveState==='active'){
+    if(bot.role==='assault')x+=1.5*dir;
+    else if(bot.role==='flankL')z-=1.8;
+    else if(bot.role==='flankR')z+=1.8;
   }
   const coll=collideWalls(Math.max(-90,Math.min(90,x)),Math.max(-90,Math.min(90,z)),BOT_R);
   if(Math.hypot(coll.x-x,coll.z-z)>2.4){
@@ -713,7 +748,7 @@ class Enemy{
     this.cachedMineThreat=null;
     this.weaponSwitchT=2.2+Math.random()*2.0;
     this.coverEvalT=.38+Math.random()*.22;
-    this.coverPoint=null;
+    this.coverPoint=null;this.coverChainT=0;
     this.suppressedT=0;this.suppressionSource=null;
     this.flankPoint=null;this.flankEvalT=.25+Math.random()*.35;this.flankCommitT=0;
     this.tacticalMode='normal';
@@ -861,6 +896,9 @@ class Enemy{
         ?Math.max(0,objectiveDist-objective.r*.78)*.42
         :Math.max(0,objectiveDist-objective.r*1.10)*.12;
       let score=dFrom+Math.abs(targetDist-15)*.17+crowdPenalty+routePenalty+objectiveCoverPenalty;
+      const fromObjectiveDist=Math.hypot(from.x-objective.x,from.z-objective.z);
+      const objectiveAdvance=fromObjectiveDist-objectiveDist;
+      if(this.commandDoctrine==='breach'||this.commandDoctrine==='retake')score-=Math.max(-3,Math.min(10,objectiveAdvance))*.46;
       if(objectiveDist<objective.r*.78&&(this.commandDoctrine==='hold'||this.commandDoctrine==='retake'))score-=3.4;
       const side=((p.x-from.x)*(tz-from.z)-(p.z-from.z)*(tx-from.x));
       if(Math.sign(side)===Math.sign(this.sideBias))score-=2.4;
@@ -1094,8 +1132,16 @@ class Enemy{
     if(Math.random()<0.16*urgency&&this.jV===0)this.jV=4.6+Math.random()*1.6;
   }
 
-  startReload(){if(this.reloadT<=0)this.reloadT=this.weapon.reload*(0.86+Math.random()*.18);}
-  finishReload(){this.mag=this.weapon.clip;this.reloadT=0;}
+  startReload(){
+    if(this.reloadT<=0){
+      this.reloadT=this.weapon.reload*(0.86+Math.random()*.18);
+      playWeaponMechanicSound('reload',.32,this.weapon.key,this.group.position);
+    }
+  }
+  finishReload(){
+    this.mag=this.weapon.clip;this.reloadT=0;
+    playWeaponMechanicSound('reloadDone',.24,this.weapon.key,this.group.position);
+  }
 
   maybePlantMine(dist,tp){
     if(this.mineCD>0||!this.canSeeTarget||!tp||dist>BOT_MINE_CFG.triggerRange)return false;
@@ -1262,12 +1308,14 @@ class Enemy{
     if(this.targetEn&&this.targetEn.alive&&totalDmg<=0&&Math.random()<(suppressing?.74:.28)){
       this.targetEn.registerSuppression(this,suppressing?1.10:.55);
     }
-    if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>7&&(this.nearMissCd||0)<=0&&Math.random()<(suppressing?.56:.34)){
-      const whizStrength=Math.max(.28,Math.min(1,1-dist/120));
-      playWhizSound(from,whizStrength);
-      if(wp.isSniper)playSniperCrack(null,whizStrength*1.12,true);
-      showThreatDirection(this,wp.isSniper?'sniper':'bullet',whizStrength);
-      this.nearMissCd=.32+Math.random()*.28;
+    if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>5&&(this.nearMissCd||0)<=0&&wp.key!=='rocket'){
+      const traceRange=Math.max(6,Math.min(wp.range+10,dist+18));
+      const approach=botShotClosestApproachToPlayer(from,tracerDir,traceRange);
+      const threshold=wp.isSniper?1.78:wp.key==='shotgun'?1.92:wp.key==='plasma'?1.35:1.52;
+      if(approach&&approach.distance<=threshold){
+        const pressure=registerPlayerSuppression(this,wp,approach.point,approach.distance,threshold);
+        if(pressure>0)this.nearMissCd=Math.max(.16,.38-pressure*.11);
+      }
     }
     if(wp.hitscan)spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);
     else spawnTracer(from,tracerDir,Math.min(dist,wp.range+10),shotCol,wp.key);
@@ -1285,6 +1333,7 @@ class Enemy{
     if(this.flankCommitT>0)this.flankCommitT-=dt;
     if(this.unstuckT>0)this.unstuckT=Math.max(0,this.unstuckT-dt);
     if(this.nearMissCd>0)this.nearMissCd-=dt;
+    if(this.coverChainT>0)this.coverChainT=Math.max(0,this.coverChainT-dt);
 
     if(this.flashT>0){this.flashT-=dt;if(this.flashT<=0)this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(0,0,0);});}
 
@@ -1354,6 +1403,7 @@ class Enemy{
     const squadPlan=refreshBotTeamTactics(this.team);
     this.commandDoctrine=squadPlan.doctrine;
     const mapObjective=botObjectivePoint(this,squadPlan);
+    const assaultWaveState=botAssaultWaveState(squadPlan);
     const objectiveDist=mapObjective?this.group.position.distanceTo(mapObjective):999;
     const activeFrontline=frontlineZone();
     const frontlineDist=Math.hypot(this.group.position.x-activeFrontline.x,this.group.position.z-activeFrontline.z);
@@ -1372,6 +1422,8 @@ class Enemy{
     const coordinatedFlank=roleFlanker&&focusMatches&&!!squadPlan.suppressor&&hpPct>.38&&!this.reloadT&&targetPos&&dist>10;
     const mapOrderWanted=!!mapObjective&&(
       !targetPos||
+      (assaultWaveState==='staging'&&objectiveDist>squadPlan.zoneRadius*.42)||
+      (assaultWaveState==='active'&&(squadPlan.doctrine==='breach'||squadPlan.doctrine==='retake')&&objectiveDist>squadPlan.zoneRadius*.34&&(!this.canSeeTarget||dist>10))||
       (squadPlan.doctrine==='hold'&&objectiveDist>squadPlan.zoneRadius*.62&&(!this.canSeeTarget||dist>24))||
       (frontlineContested&&objectiveDist>squadPlan.zoneRadius*.48&&(!this.canSeeTarget||dist>18))||
       (frontlineBehind&&objectiveDist>squadPlan.zoneRadius*.55&&(!this.canSeeTarget||dist>16))||
@@ -1441,7 +1493,8 @@ class Enemy{
           const ox=mapObjective.x-myX,oz=mapObjective.z-myZ,od=Math.hypot(ox,oz)+.001;
           const stopR=squadPlan.doctrine==='hold'?(this.role==='anchor'?3.8:4.8):3.2;
           const baseSpeedM=squadPlan.doctrine==='breach'?(this.role==='assault'?1.14:1.06):squadPlan.doctrine==='push'?(this.role==='assault'?1.12:1.02):squadPlan.doctrine==='retake'?1.08:.82;
-          const speedM=baseSpeedM+objectiveUrgency*.12;
+          const waveSpeedM=assaultWaveState==='staging'?.78:assaultWaveState==='active'?1.10:1;
+          const speedM=(baseSpeedM+objectiveUrgency*.12)*waveSpeedM;
           if(targetPos&&this.canSeeTarget)this.desiredYaw=Math.atan2(dx,dz);
           else this.desiredYaw=Math.atan2(ox||((this.team==='ally'?1:-1)*.01),oz);
           if(od>stopR){
@@ -1473,8 +1526,16 @@ class Enemy{
           else{
             this.coverHoldT-=dt;
             if(this.reloadT<=0&&this.coverHoldT<=0){
-              this.coverPoint=null;this.coverCooldownT=.95+Math.random()*.70;
-              this.aiState=this.canSeeTarget?'engage':'hunt';this.stateCD=.32;
+              const canChain=(squadPlan.doctrine==='breach'||squadPlan.doctrine==='retake')&&assaultWaveState==='active'&&targetPos&&mapObjective&&this.coverChainT<=0;
+              const nextCover=canChain?this.findTacticalCover(targetPos):null;
+              const advances=nextCover&&nextCover.distanceToSquared(this.group.position)>6.25&&
+                nextCover.distanceTo(mapObjective)+1.2<this.group.position.distanceTo(mapObjective);
+              if(advances){
+                this.coverPoint=nextCover;this.coverHoldT=.16+Math.random()*.22;this.coverChainT=.72+Math.random()*.35;
+              }else{
+                this.coverPoint=null;this.coverCooldownT=.95+Math.random()*.70;
+                this.aiState=this.canSeeTarget?'engage':'hunt';this.stateCD=.32;
+              }
             }
           }
           if(targetPos)this.desiredYaw=Math.atan2(dx,dz);
