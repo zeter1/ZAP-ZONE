@@ -14,7 +14,7 @@ const visualAssets=[
   'assets/environment/foliage.svg','assets/environment/water.svg',
   'assets/characters/ally-emblem.svg','assets/characters/enemy-emblem.svg',
   'assets/perks/assault.svg','assets/perks/precision.svg','assets/perks/survival.svg','assets/perks/mobility.svg','assets/perks/demolition.svg',
-  'assets/fx/headshot.svg','assets/fx/headshot-kill.svg','assets/fx/levelup.svg','assets/fx/skull.svg',
+  'assets/fx/headshot.svg','assets/fx/headshot-kill.svg','assets/fx/explosion.svg','assets/fx/levelup.svg','assets/fx/skull.svg',
   'assets/ui/logo.svg','assets/ui/crosshair.svg','assets/ui/health.svg','assets/ui/armor.svg','assets/ui/xp.svg'
 ];
 const requiredAssets=[...weaponAssets,...visualAssets];
@@ -47,7 +47,7 @@ const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of [
   'GAME_ASSETS.environment.crate','GAME_ASSETS.environment.hazard','GAME_ASSETS.environment.terminal',
   'GAME_ASSETS.environment.foliage','GAME_ASSETS.environment.water',
-  'function spawnHeadshotFx','function tickHeadshotFx','function tickEnvironment'
+  'function spawnHeadshotFx','function tickHeadshotFx','function spawnExplosionFx','function tickExplosionFx','function tickEnvironment'
 ]){
   if(!engine.includes(token))fail('engine visual integration missing: '+token);
 }
@@ -61,7 +61,7 @@ const combat=readFileSync('src/combat/combat.js','utf8');
 if(!combat.includes('lethalHeadshot')||!combat.includes('spawnHeadshotFx(hitFx,lethalHeadshot)')||!combat.includes('HEADSHOT KILL'))fail('headshot kill finisher missing');
 
 const runtime=readFileSync('src/game/runtime.js','utf8');
-if(!runtime.includes('tickHeadshotFx(dt)')||!runtime.includes('tickEnvironment(dt)'))fail('visual runtime ticks missing');
+if(!runtime.includes('tickHeadshotFx(dt)')||!runtime.includes('tickExplosionFx(dt)')||!runtime.includes('tickEnvironment(dt)'))fail('visual runtime ticks missing');
 
 const css=readFileSync('src/styles/game.css','utf8');
 for(const asset of ['crosshair.svg','health.svg','armor.svg','xp.svg'])if(!css.includes(asset))fail('HUD asset not wired: '+asset);

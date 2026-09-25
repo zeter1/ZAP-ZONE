@@ -27,6 +27,7 @@ const GAME_ASSETS=Object.freeze({
   fx:Object.freeze({
     headshot:'assets/fx/headshot.svg',
     headshotKill:'assets/fx/headshot-kill.svg',
+    explosion:'assets/fx/explosion.svg',
     levelup:'assets/fx/levelup.svg',
     skull:'assets/fx/skull.svg'
   }),

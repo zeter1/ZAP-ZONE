@@ -109,3 +109,8 @@ GitHub Actions **Validate** имеет только `contents: read` и выпо
 - обычный headshot и смертельный **HEADSHOT KILL** визуально разделены;
 - HEADSHOT KILL создаёт world-space burst, shock ring, energy beam, частицы, вспышку и отдельную HUD-анимацию;
 - урон, hitbox и начисление очков при этом не изменены.
+
+
+### Explosion FX follow-up
+
+Общие взрывы ракет, мин и взрывных эффектов теперь используют отдельный `assets/fx/explosion.svg`, world-space flash и расширяющееся ударное кольцо. При этом деревьям сохранён прежний collision/LOS volume, поэтому визуальный апгрейд не меняет проходимость карты.

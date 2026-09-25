@@ -225,6 +225,8 @@ function crates(cx,cz){[[0,0,1.5],[2.5,0,1.2],[0,2.5,1.8],[2.5,2.5,1.4],[1.2,1.2
 const TREE_POS=[[-80,0],[80,0],[0,-80],[0,80],[-60,-60],[60,60],[-60,60],[60,-60],[-80,40],[80,-40],[-40,80],[40,-80],[-80,-40],[80,40],[-40,-80],[40,80],[-70,70],[-70,-70],[70,-70],[70,70]];
 const arenaFoliage=[];
 function createArenaTree(x,z,variant=0){
+  // Preserve the old trunk collision/LOS volume; the cylinder below is visual only.
+  box(.35,3.5,.35,0x3a281c,x,1.75,z);
   const g=new THREE.Group();
   g.position.set(x,0,z);
 
@@ -380,11 +382,37 @@ function tickParticles(dt){
 }
 
 const _eLights=[];
+const explosionFx=[];
+function spawnExplosionFx(pos,col,r=3){
+  const sprite=makeAssetSprite(GAME_ASSETS.fx.explosion,Math.min(4.2,1.15+r*.34),Math.min(4.2,1.15+r*.34),{depthTest:false,renderOrder:25});
+  sprite.position.copy(pos);sprite.position.y+=.20;scene.add(sprite);
+  const ring=new THREE.Mesh(
+    new THREE.RingGeometry(.18,.30,36),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.86,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending})
+  );
+  ring.position.copy(pos);ring.position.y+=.08;ring.rotation.x=Math.PI/2;scene.add(ring);
+  explosionFx.push({sprite,ring,t:0,dur:.42+Math.min(.30,r*.025),radius:Math.min(5.5,1.3+r*.28)});
+}
+function tickExplosionFx(dt){
+  for(let i=explosionFx.length-1;i>=0;i--){
+    const fx=explosionFx[i];fx.t+=dt;
+    const p=Math.min(1,fx.t/fx.dur),ease=1-Math.pow(1-p,3);
+    fx.ring.scale.setScalar(.5+ease*fx.radius);
+    fx.ring.material.opacity=(1-p)*.86;
+    fx.sprite.material.opacity=Math.max(0,1-p*1.10);
+    const s=.72+Math.sin(Math.min(1,p)*Math.PI)*.58;
+    fx.sprite.scale.multiplyScalar(1+(s-1)*dt*6);
+    if(p>=1){
+      destroySceneObject(fx.ring);destroySceneObject(fx.sprite);explosionFx.splice(i,1);
+    }
+  }
+}
 function explode(pos,col,r=3){
   const n=Math.min(6+Math.floor(r*1.2),MOBILE_LOW?6:11);
   for(let i=0;i<n;i++)spawnP(pos,col,1.18);
   for(let i=0;i<(MOBILE_LOW?1:2);i++)spawnSmoke(pos,0x664433);
   for(let i=0;i<(MOBILE_LOW?2:5);i++)spawnSpark(pos,col);
+  spawnExplosionFx(pos,col,r);
   if(!VISUAL_LIGHTS)return;
   let fl=_eLights.find(l=>!l._act);
   if(!fl){fl=new THREE.PointLight(0xff4400,0,10);fl._act=false;scene.add(fl);_eLights.push(fl);}
