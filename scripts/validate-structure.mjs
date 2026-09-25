@@ -140,7 +140,7 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 const bots=readFileSync('src/entities/bots.js','utf8');
 if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
 if(!bots.includes('function botShotClosestApproachToPlayer')||!bots.includes('registerPlayerSuppression(this,wp,approach.point'))fail('physical enemy near-miss suppression integration missing');
-if(!bots.includes('GAME_ASSETS.characters.allyMark')||!bots.includes('Extra readability'))fail('new bot armor markings/visor missing');
+if(!bots.includes('const addInsignia=')||!bots.includes('Extra readability'))fail('new procedural bot armor markings/visor missing');
 if(!bots.includes('this.weaponPivot.userData.pose||'))fail('locomotion must preserve per-weapon bot pose');
 for(const token of ['this.armRig=built.armRig','function solveBotTwoBoneArm','function updateBotWeaponHands','mesh.localToWorld(_BOT_GRIP_R)','updateBotWeaponHands(this);']){
   if(!bots.includes(token))fail('realistic two-hand bot weapon hold missing: '+token);
