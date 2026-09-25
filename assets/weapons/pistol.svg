@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96" role="img" aria-labelledby="t">
+<title id="t">ZAP ZONE — Пистолет</title>
+<defs>
+  <linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#d9e3eb"/><stop offset="0.45" stop-color="#596774"/><stop offset="1" stop-color="#121820"/></linearGradient>
+  <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4653"/><stop offset="1" stop-color="#0a0f15"/></linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+  <path d="M8 78H152" stroke="#17202a" stroke-width="2" opacity=".45"/>
+  <g filter="url(#glow)" opacity=".65"><ellipse cx="80" cy="72" rx="58" ry="8" fill="#ffd83d" opacity=".10"/></g>
+  
+  <path d="M35 36 L112 31 L124 37 L119 48 L73 51 L67 65 L54 66 L48 51 L31 50 Z" fill="url(#steel)" stroke="#e9f2f7" stroke-width="2"/>
+  <path d="M55 49 L75 50 L68 82 L51 80 Z" fill="url(#dark)" stroke="#7f91a1" stroke-width="2"/>
+  <path d="M104 34 L139 35 L139 42 L113 44 Z" fill="#171e26" stroke="#8c9aa7" stroke-width="1.7"/>
+  <rect x="75" y="27" width="17" height="6" rx="2" fill="#ffd83d"/>
+  <circle cx="141" cy="38.5" r="3" fill="#fff4a5" filter="url(#glow)"/>
+
+</g>
+</svg>

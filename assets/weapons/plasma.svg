@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96" role="img" aria-labelledby="t">
+<title id="t">ZAP ZONE — Плазма</title>
+<defs>
+  <linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#d9e3eb"/><stop offset="0.45" stop-color="#596774"/><stop offset="1" stop-color="#121820"/></linearGradient>
+  <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4653"/><stop offset="1" stop-color="#0a0f15"/></linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+  <path d="M8 78H152" stroke="#17202a" stroke-width="2" opacity=".45"/>
+  <g filter="url(#glow)" opacity=".65"><ellipse cx="80" cy="72" rx="58" ry="8" fill="#c76cff" opacity=".10"/></g>
+  
+  <path d="M24 45 L51 32 L104 34 L125 46 L111 61 L55 60 L38 69 L20 64 L31 56 Z" fill="#4b2576" stroke="#b783ff" stroke-width="2"/>
+  <path d="M60 58 L78 58 L73 82 L57 79 Z" fill="#1a1223" stroke="#7d5aa5" stroke-width="1.7"/>
+  <rect x="80" y="39" width="54" height="15" rx="7.5" fill="#2a1742" stroke="#8e5fc4" stroke-width="1.5"/>
+  <circle cx="101" cy="46.5" r="10" fill="#8c38d6" stroke="#e0b5ff" stroke-width="2"/>
+  <circle cx="101" cy="46.5" r="4.5" fill="#ffffff" filter="url(#glow)"/>
+  <path d="M130 43 L149 47 L132 55 Z" fill="#8d48bf" stroke="#d6a7ff" stroke-width="1.7"/>
+  <circle cx="149" cy="49" r="4" fill="#d98cff" filter="url(#glow)"/>
+
+</g>
+</svg>

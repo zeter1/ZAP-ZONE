@@ -15,13 +15,15 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .xh-dot{position:absolute;width:4px;height:4px;background:#fff;border-radius:50%;top:11px;left:11px;}
 
 /* Weapon bar at top */
-#weapon-bar{position:absolute;top:42px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:12;}
-.wb-slot{background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.2);border-radius:10px;padding:4px 10px;text-align:center;min-width:72px;cursor:default;transition:border-color .15s,background .15s;}
-.wb-slot.active{border-color:#ffd700;background:rgba(255,180,0,.18);box-shadow:0 0 12px rgba(255,200,0,.3);}
-.wb-key{font-size:9px;color:#888;letter-spacing:1px;font-weight:700;}
+#weapon-bar{position:absolute;top:38px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:12;}
+.wb-slot{background:linear-gradient(180deg,rgba(13,18,27,.90),rgba(0,0,0,.78));border:1px solid rgba(190,215,235,.22);border-radius:11px;padding:4px 7px 5px;text-align:center;min-width:78px;cursor:default;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;overflow:hidden;}
+.wb-slot.active{border-color:#ffd700;background:linear-gradient(180deg,rgba(80,61,0,.55),rgba(20,12,0,.82));box-shadow:0 0 15px rgba(255,200,0,.35),inset 0 0 18px rgba(255,205,0,.08);transform:translateY(1px);}
+.wb-asset{display:block;width:58px;height:30px;object-fit:contain;margin:0 auto 1px;opacity:.72;filter:drop-shadow(0 2px 3px rgba(0,0,0,.75));transition:opacity .15s,filter .15s,transform .15s;}
+.wb-slot.active .wb-asset{opacity:1;filter:drop-shadow(0 0 6px rgba(255,215,0,.52));transform:scale(1.06);}
+.wb-key{font-size:8px;color:#7d8792;letter-spacing:1px;font-weight:800;line-height:1;}
 .wb-slot.active .wb-key{color:#ffd700;}
-.wb-name{font-size:10px;color:#ccc;margin-top:1px;white-space:nowrap;}
-.wb-slot.active .wb-name{color:#fff;font-weight:700;}
+.wb-name{font-size:9px;color:#b8c0c9;margin-top:1px;white-space:nowrap;font-weight:700;letter-spacing:.25px;}
+.wb-slot.active .wb-name{color:#fff;}
 
 /* Team score bar */
 #team-bar{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;}
@@ -710,21 +712,33 @@ function tickCasings(dt){
 function tickMzLights(dt){for(const l of _mzLights){if(!l._act)continue;l._t-=dt;l.intensity=Math.max(0,l.intensity-dt*90);if(l._t<=0){l._act=false;l.visible=false;}}}
 
 // ─── WEAPONS ────────────────────────────
+// One catalog drives player balance, bot variants, ammo defaults and UI assets.
+const WEAPON_ASSET_DIR='assets/weapons';
+function weaponDef(key,label,icon,config){
+  return {key,label,icon,name:`${icon} ${label}`,asset:`${WEAPON_ASSET_DIR}/${key}.svg`,...config};
+}
 const WEAPONS=[
-  {key:'pistol', name:'🔫 ПИСТОЛЕТ', clip:20,reload:1.5,rate:.12,dmg:18,spread:.02, bCol:0xffffaa,gCol:0xf5c800,brlCol:0xcccccc,pellets:1,recoilX:.012,recoilY:.025},
-  {key:'shotgun',name:'💥 ДРОБОВИК', clip:10,reload:2.0,rate:.70,dmg:22,spread:.08, bCol:0xff8844,gCol:0x884422,brlCol:0x665533,pellets:7,recoilX:.03,recoilY:.06},
-  {key:'rifle',  name:'🎯 ВИНТОВКА', clip:35,reload:1.8,rate:.08,dmg:45,spread:.005,bCol:0x44ffaa,gCol:0x336644,brlCol:0x224433,pellets:1,recoilX:.008,recoilY:.018},
-  {key:'rocket', name:'🚀 РАКЕТНИЦА',clip:6, reload:2.5,rate:1.0,dmg:110,spread:.01,bCol:0xff4400,gCol:0x553300,brlCol:0x442200,pellets:1,isRocket:true,recoilX:.04,recoilY:.08},
-  {key:'plasma', name:'⚡ ПЛАЗМА',   clip:25,reload:1.2,rate:.09,dmg:28,spread:.03, bCol:0xcc44ff,gCol:0x6622cc,brlCol:0x9944ff,pellets:1,recoilX:.01,recoilY:.02},
-  {key:'mine',   name:'💣 МИНА',     clip:5, reload:3.0,rate:.80,dmg:125,spread:0,  bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0},
-  {key:'bomb',   name:'🧨 БОМБА',    clip:3, reload:0,  rate:1.2,dmg:240,spread:0,  bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0},
-  {key:'smoke',  name:'🌫️ ДЫМОВУХА', clip:1, reload:0,  rate:.55,dmg:0,spread:0, bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025},
+  weaponDef('pistol','ПИСТОЛЕТ','🔫',{clip:20,reload:1.5,rate:.12,dmg:18,spread:.02,bCol:0xffffaa,gCol:0xf5c800,brlCol:0xcccccc,pellets:1,recoilX:.012,recoilY:.025,startingAmmo:20,tracerColor:0xffd27a,tracerSpeed:20,viewPos:[.28,-.25,-.48],bot:{range:42,opt:22,hitBias:.92}}),
+  weaponDef('shotgun','ДРОБОВИК','💥',{clip:10,reload:2.0,rate:.70,dmg:22,spread:.08,bCol:0xff8844,gCol:0x884422,brlCol:0x665533,pellets:7,recoilX:.03,recoilY:.06,startingAmmo:10,tracerColor:0xffb06a,tracerSpeed:17,viewPos:[.30,-.27,-.54],bot:{range:18,opt:10,hitBias:.86}}),
+  weaponDef('rifle','ВИНТОВКА','🎯',{clip:35,reload:1.8,rate:.08,dmg:45,spread:.005,bCol:0x44ffaa,gCol:0x336644,brlCol:0x224433,pellets:1,recoilX:.008,recoilY:.018,startingAmmo:35,tracerColor:0xffe0a0,tracerSpeed:24,viewPos:[.30,-.27,-.55],bot:{range:62,opt:34,hitBias:.96}}),
+  weaponDef('rocket','РАКЕТНИЦА','🚀',{clip:6,reload:2.5,rate:1.0,dmg:110,spread:.01,bCol:0xff4400,gCol:0x553300,brlCol:0x442200,pellets:1,isRocket:true,recoilX:.04,recoilY:.08,startingAmmo:6,viewPos:[.31,-.28,-.58],bot:{range:52,opt:30,hitBias:.90,dmg:100}}),
+  weaponDef('plasma','ПЛАЗМА','⚡',{clip:25,reload:1.2,rate:.09,dmg:28,spread:.03,bCol:0xcc44ff,gCol:0x6622cc,brlCol:0x9944ff,pellets:1,recoilX:.01,recoilY:.02,startingAmmo:25,tracerColor:0xc47cff,tracerSpeed:14,viewPos:[.30,-.26,-.54],bot:{range:36,opt:20,hitBias:.90}}),
+  weaponDef('mine','МИНА','💣',{clip:5,reload:3.0,rate:.80,dmg:125,spread:0,bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0,startingAmmo:5,tracerColor:0xff8800,viewPos:[.29,-.27,-.52]}),
+  weaponDef('bomb','БОМБА','🧨',{clip:3,reload:0,rate:1.2,dmg:240,spread:0,bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0,startingAmmo:0,viewPos:[.29,-.27,-.52]}),
+  weaponDef('smoke','ДЫМОВУХА','🌫️',{clip:1,reload:0,rate:.55,dmg:0,spread:0,bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025,startingAmmo:1,tracerColor:0xcbd4d8,viewPos:[.30,-.27,-.56]}),
 ];
-const SMOKE_WEAPON_INDEX=7;
-const W_DEFAULTS={clips:[20,10,35,6,25,5,3,1],rates:[.12,.70,.08,1.0,.09,.80,1.2,.55],reloads:[1.5,2.0,1.8,2.5,1.2,3.0,0,0]};
-const STARTING_AMMO=[20,10,35,6,25,5,0,1];
-const PLR_TCOL={pistol:0xffd27a,shotgun:0xffb06a,rifle:0xffe0a0,plasma:0xc47cff,mine:0xff8800,smoke:0xcbd4d8};
-const TRACER_SPEED={pistol:20,shotgun:17,rifle:24,plasma:14,default:18};
+const WEAPON_BY_KEY=Object.fromEntries(WEAPONS.map(w=>[w.key,w]));
+const SMOKE_WEAPON_INDEX=WEAPONS.findIndex(w=>w.key==='smoke');
+const W_DEFAULTS={
+  clips:WEAPONS.map(w=>w.clip),
+  rates:WEAPONS.map(w=>w.rate),
+  reloads:WEAPONS.map(w=>w.reload)
+};
+const STARTING_AMMO=WEAPONS.map(w=>w.startingAmmo??w.clip);
+const PLR_TCOL=Object.fromEntries(WEAPONS.filter(w=>w.tracerColor!==undefined).map(w=>[w.key,w.tracerColor]));
+const TRACER_SPEED={...Object.fromEntries(WEAPONS.filter(w=>w.tracerSpeed!==undefined).map(w=>[w.key,w.tracerSpeed])),default:18};
+const BOT_PRIMARY_POOL=WEAPONS.flatMap((w,idx)=>w.bot?[{...w,...w.bot,idx,dmg:w.bot.dmg??w.dmg}]:[]);
+
 const PLAYER_ROCKET_SPEED=27.0;
 const BOT_ROCKET_SPEED=18.5;
 const BASE_FOV=75,ZOOM_FOV=24;
@@ -743,14 +757,6 @@ let hitSlowT=0,hitSlowDur=0,hitSlowMul=1;
 let damageFlashAlpha=0, damageFlashDecay=0;
 let deathReason='';
 let lastPlayerAttacker=null;
-const BOT_PRIMARY_POOL=[
-  {idx:0,key:'pistol',name:'🔫 ПИСТОЛЕТ',clip:20,reload:1.5,rate:.12,dmg:18,spread:.02,pellets:1,bCol:0xffffaa,range:42,opt:22,hitBias:.92},
-  {idx:1,key:'shotgun',name:'💥 ДРОБОВИК',clip:10,reload:2.0,rate:.70,dmg:22,spread:.08,pellets:7,bCol:0xff8844,range:18,opt:10,hitBias:.86},
-  {idx:2,key:'rifle',name:'🎯 ВИНТОВКА',clip:35,reload:1.8,rate:.08,dmg:45,spread:.005,pellets:1,bCol:0x44ffaa,range:62,opt:34,hitBias:.96},
-  {idx:3,key:'rocket',name:'🚀 РАКЕТНИЦА',clip:6,reload:2.5,rate:1.0,dmg:100,spread:.01,pellets:1,bCol:0xff4400,range:52,opt:30,hitBias:.90,isRocket:true},
-  {idx:4,key:'plasma',name:'⚡ ПЛАЗМА',clip:25,reload:1.2,rate:.09,dmg:28,spread:.03,pellets:1,bCol:0xcc44ff,range:36,opt:20,hitBias:.90},
-];
-
 const MINE_COOLDOWN_SECONDS=30;
 const BOMB_FUSE_SECONDS=45;
 const BOMB_COOLDOWN_SECONDS=60;
@@ -866,10 +872,7 @@ const gunBasePos=new THREE.Vector3(.28,-.25,-.48);
 let gunSwayX=0,gunSwayY=0;
 let gMs=[],flashM=null,beamM=null,beamT=0;
 function buildGun(w){
-  for(const child of [...gunGrp.children]){
-    gunGrp.remove(child);
-    child.traverse?.(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose&&m.dispose());}});
-  }
+  clearGroupChildren(gunGrp);
   gMs=[];flashM=null;beamM=null;
   const standard=(color,rough=.45,metal=.35,emissive=0x000000,ei=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal,emissive,emissiveIntensity:ei});
   const add=(geo,material,x,y,z,rx=0,ry=0,rz=0)=>{
@@ -954,23 +957,37 @@ function buildGun(w){
   beamM=new THREE.Mesh(new THREE.ConeGeometry(w.isRocket?.10:.065,w.isRocket?.34:.24,8,1,true),new THREE.MeshBasicMaterial({color:0xffa43a,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));
   beamM.rotation.x=-Math.PI/2;beamM.position.set(0,.02,muzzleZ-.12);gunGrp.add(beamM);
   gunGrp.userData.muzzleZ=muzzleZ;
-  const poses={
-    pistol:[.28,-.25,-.48],shotgun:[.30,-.27,-.54],rifle:[.30,-.27,-.55],
-    rocket:[.31,-.28,-.58],plasma:[.30,-.26,-.54],mine:[.29,-.27,-.52],bomb:[.29,-.27,-.52],smoke:[.30,-.27,-.56]
-  };
-  const p=poses[w.key]||poses.pistol;
+  const p=w.viewPos||WEAPONS[0].viewPos;
   gunBasePos.set(p[0],p[1],p[2]);
   gunGrp.position.copy(gunBasePos);
 }
 
 // ─── WEAPON BAR UI ──────────────────────
 function buildWeaponBar(){
-  const bar=G('weapon-bar');bar.innerHTML='';
+  const bar=G('weapon-bar');bar.replaceChildren();
   WEAPONS.forEach((w,i)=>{
     const slot=document.createElement('div');
     slot.className='wb-slot'+(i===curW?' active':'');
     slot.id='wb-'+i;
-    slot.innerHTML=`<div class="wb-key">${i+1}</div><div class="wb-name">${w.name}</div>`;
+    slot.title=w.name;
+
+    const asset=document.createElement('img');
+    asset.className='wb-asset';
+    asset.src=w.asset;
+    asset.alt='';
+    asset.decoding='async';
+    asset.draggable=false;
+    asset.addEventListener('error',()=>asset.remove(),{once:true});
+
+    const key=document.createElement('div');
+    key.className='wb-key';
+    key.textContent=String(i+1);
+
+    const name=document.createElement('div');
+    name.className='wb-name';
+    name.textContent=w.label;
+
+    slot.append(asset,key,name);
     slot.addEventListener('click',()=>switchW(i));
     bar.appendChild(slot);
   });
@@ -2337,7 +2354,7 @@ function clearGroupChildren(gr){
   }
 }
 function makeBotWeaponMesh(key,team){
-  const cfg=WEAPONS.find(w=>w.key===key)||WEAPONS[0];
+  const cfg=WEAPON_BY_KEY[key]||WEAPONS[0];
   const bodyCol=team==='ally'?0x73b6ff:(cfg.gCol||0x555555);
   const accent=cfg.bCol||0xffcc66;
   const metal=team==='ally'?0xe7f3ff:0xd0d0d0;
@@ -2481,7 +2498,7 @@ class Enemy{
   }
 
   updateBadge(){
-    const icon=this.weapon&&this.weapon.name?this.weapon.name.split(' ')[0]:'🔫';
+    const icon=this.weapon?.icon||'🔫';
     this.wEl.textContent=(this.team==='ally'?'🔵':'🔴')+' '+icon;
   }
 

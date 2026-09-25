@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96" role="img" aria-labelledby="t">
+<title id="t">ZAP ZONE — Дымовуха</title>
+<defs>
+  <linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#d9e3eb"/><stop offset="0.45" stop-color="#596774"/><stop offset="1" stop-color="#121820"/></linearGradient>
+  <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4653"/><stop offset="1" stop-color="#0a0f15"/></linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+  <path d="M8 78H152" stroke="#17202a" stroke-width="2" opacity=".45"/>
+  <g filter="url(#glow)" opacity=".65"><ellipse cx="80" cy="72" rx="58" ry="8" fill="#9de0d4" opacity=".10"/></g>
+  
+  <rect x="49" y="33" width="62" height="42" rx="12" fill="#34434a" stroke="#91a5ad" stroke-width="2"/>
+  <rect x="56" y="27" width="48" height="12" rx="5" fill="#202930" stroke="#798b94" stroke-width="1.6"/>
+  <path d="M99 28 C115 14 122 24 130 14 C137 6 145 10 148 19" fill="none" stroke="#b9dbd6" stroke-width="5" opacity=".65"/>
+  <circle cx="132" cy="18" r="9" fill="#cfe8e4" opacity=".16"/>
+  <circle cx="145" cy="27" r="12" fill="#d8efeb" opacity=".12"/>
+  <path d="M62 44H99M62 52H99M62 60H99" stroke="#9de0d4" stroke-width="2" opacity=".55"/>
+  <rect x="73" y="38" width="14" height="32" rx="5" fill="#9de0d4" opacity=".16"/>
+
+</g>
+</svg>

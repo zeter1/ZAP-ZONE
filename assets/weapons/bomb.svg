@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96" role="img" aria-labelledby="t">
+<title id="t">ZAP ZONE — Бомба</title>
+<defs>
+  <linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#d9e3eb"/><stop offset="0.45" stop-color="#596774"/><stop offset="1" stop-color="#121820"/></linearGradient>
+  <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4653"/><stop offset="1" stop-color="#0a0f15"/></linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+  <path d="M8 78H152" stroke="#17202a" stroke-width="2" opacity=".45"/>
+  <g filter="url(#glow)" opacity=".65"><ellipse cx="80" cy="72" rx="58" ry="8" fill="#ffd33d" opacity=".10"/></g>
+  
+  <circle cx="76" cy="55" r="28" fill="#17191c" stroke="#78838c" stroke-width="2.2"/>
+  <path d="M65 31 Q76 23 88 31" fill="none" stroke="#a6b2ba" stroke-width="5"/>
+  <rect x="70" y="23" width="14" height="10" rx="3" fill="#59646d" stroke="#aeb9c0" stroke-width="1.5"/>
+  <path d="M82 24 C93 15 102 20 109 12" fill="none" stroke="#c78335" stroke-width="3"/>
+  <circle cx="111" cy="10" r="4" fill="#ffd33d" filter="url(#glow)"/>
+  <path d="M60 48L92 62M92 48L60 62" stroke="#2b3035" stroke-width="5" opacity=".8"/>
+  <circle cx="76" cy="55" r="5" fill="#ff9c20" opacity=".75"/>
+
+</g>
+</svg>

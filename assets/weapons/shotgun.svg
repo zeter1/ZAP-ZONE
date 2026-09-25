@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96" role="img" aria-labelledby="t">
+<title id="t">ZAP ZONE — Дробовик</title>
+<defs>
+  <linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="#d9e3eb"/><stop offset="0.45" stop-color="#596774"/><stop offset="1" stop-color="#121820"/></linearGradient>
+  <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4653"/><stop offset="1" stop-color="#0a0f15"/></linearGradient>
+  <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g stroke-linejoin="round" stroke-linecap="round">
+  <path d="M8 78H152" stroke="#17202a" stroke-width="2" opacity=".45"/>
+  <g filter="url(#glow)" opacity=".65"><ellipse cx="80" cy="72" rx="58" ry="8" fill="#ff8a3d" opacity=".10"/></g>
+  
+  <path d="M19 46 L66 41 L80 44 L79 57 L58 58 L47 69 L28 67 L37 56 L17 55 Z" fill="#7b4a28" stroke="#c88a58" stroke-width="2"/>
+  <rect x="71" y="41" width="64" height="7" rx="3" fill="url(#steel)" stroke="#b9c6cf" stroke-width="1.6"/>
+  <rect x="71" y="52" width="60" height="6" rx="3" fill="#303b45" stroke="#8595a2" stroke-width="1.4"/>
+  <path d="M54 57 L68 58 L64 80 L50 79 Z" fill="url(#dark)" stroke="#7d8790" stroke-width="1.6"/>
+  <rect x="82" y="57" width="30" height="9" rx="3" fill="#8a5028" stroke="#d08b54" stroke-width="1.4"/>
+  <circle cx="138" cy="44.5" r="3" fill="#ffb06a" filter="url(#glow)"/>
+
+</g>
+</svg>
