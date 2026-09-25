@@ -561,7 +561,7 @@ function shoot(){
   recoilRecovery=w.recoilDelay??.3;
   shotSequence++;shotResetT=Math.max(.34,w.rate*2.4);
   if(w.cycleTime){
-    cycleTot=w.cycleTime;cycleT=cycleTot;cycleKind=w.fireMode;
+    cycleTot=w.cycleTime;cycleT=cycleTot;cycleKind=w.fireMode;cycleEjected=false;
     weaponReadyT=Math.max(weaponReadyT,cycleTot);
   }
 
@@ -573,9 +573,9 @@ function shoot(){
   // Muzzle flash
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
   trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1);
-  if(w.key!=='rocket'&&w.key!=='plasma'){
+  if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
-    ejectCasing(casingPos,camera.quaternion,w.key==='shotgun');
+    ejectCasing(casingPos,camera.quaternion,false);
   }
 
   if(w.isRocket){
