@@ -182,8 +182,22 @@ function flushHUD(){
   G('st-arm').textContent=Math.round(armor)+'/'+plr.maxArmor;
   updateStatusIcons();
 }
+function weaponModeLabel(w){
+  if(w.isMine||w.isBomb)return 'DEPLOY';
+  if(w.isSmoke)return 'THROW';
+  if(w.fireMode==='auto')return 'AUTO';
+  if(w.fireMode==='pump')return 'PUMP';
+  if(w.fireMode==='bolt')return 'BOLT';
+  if(w.fireMode==='launcher')return 'LAUNCHER';
+  return 'SEMI';
+}
 function wHUD(){
   const w=getW();G('wname').textContent=w.name;
+  const mode=G('wmode');
+  if(mode){
+    const velocity=w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
+    mode.textContent=weaponModeLabel(w)+(velocity?' · '+velocity:'');
+  }
   if(w.isSmoke){
     const ready=playerSmokeCD<=0;
     G('wammo').textContent=ready?'ГОТОВА':Math.ceil(playerSmokeCD)+'с';
