@@ -78,7 +78,8 @@ function loop(ts){
   const crosshair=G('xhair');
   if(crosshair){
     crosshair.classList.toggle('scope-hidden',scopeActive||scopedWeapon);
-    const reticleSpread=effectiveWeaponSpread(activeW,0,false,weaponBloom,shotSequence===0);
+    const reticlePellet=activeW.pellets>1?1:0;
+    const reticleSpread=effectiveWeaponSpread(activeW,reticlePellet,false,weaponBloom,shotSequence===0);
     const gap=5+Math.min(18,reticleSpread*260);
     crosshair.style.setProperty('--xh-gap',gap.toFixed(1)+'px');
   }
@@ -162,6 +163,11 @@ function loop(ts){
     const adsZ=gunBasePos.z-adsBlend*.075;
     const cycleP=cycleTot>0?1-cycleT/cycleTot:0;
     const cycleWave=cycleT>0?Math.sin(cycleP*Math.PI):0;
+    if(cycleT>0&&!cycleEjected&&cycleP>.38&&(cycleKind==='pump'||cycleKind==='bolt')){
+      const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
+      ejectCasing(casingPos,camera.quaternion,cycleKind==='pump');
+      cycleEjected=true;
+    }
     const pumpZ=cycleKind==='pump'?cycleWave*.11:0;
     const boltX=cycleKind==='bolt'?cycleWave*.055:0;
     const cycleRot=cycleKind==='bolt'?cycleWave*.10:(cycleKind==='pump'?cycleWave*.055:0);
