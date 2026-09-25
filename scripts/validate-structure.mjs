@@ -58,18 +58,29 @@ const weapons=readFileSync('src/weapons/system.js','utf8');
 const weaponDefs=[...weapons.matchAll(/weaponDef\('([^']+)'/g)].map(m=>m[1]);
 if(weaponDefs.length!==9)fail('expected 9 weapon definitions, found '+weaponDefs.length);
 if(!weaponDefs.includes('sniper'))fail('sniper weapon definition missing');
-for(const token of ["fireMode:'bolt'","isSniper:true","headshotMult:2.55","tracerSpeed:220","function weaponDamageScaleAtDistance"]){
+for(const token of ["fireMode:'bolt'","isSniper:true","aimMode:'scope'","hitscan:true","headshotMult:2.55","muzzleVelocity:85","bulletGravity:4.8","function weaponDamageScaleAtDistance"]){
   if(!weapons.includes(token))fail('weapon physics integration missing: '+token);
+}
+const sniperStart=weapons.indexOf("weaponDef('sniper'");
+const sniperEnd=weapons.indexOf('})',sniperStart);
+const sniperDef=sniperStart>=0&&sniperEnd>sniperStart?weapons.slice(sniperStart,sniperEnd):'';
+if(!sniperDef.includes("aimMode:'scope'")||!sniperDef.includes('hitscan:true'))fail('SR-9 must be scope-only hitscan');
+if(sniperDef.includes('muzzleVelocity:')||sniperDef.includes('bulletGravity:'))fail('SR-9 must not use projectile travel physics');
+for(const key of ['pistol','shotgun','rifle','plasma']){
+  const start=weapons.indexOf("weaponDef('"+key+"'");
+  const end=weapons.indexOf('})',start);
+  const def=start>=0&&end>start?weapons.slice(start,end):'';
+  if(!def.includes('muzzleVelocity:'))fail(key+' missing muzzleVelocity ballistic profile');
 }
 
 const settings=readFileSync('src/settings/settings.js','utf8');
-for(const token of ['function playSfx','function showHitMarker','function showDamageDirection','function tickGamePresentation','function lookSensitivityMultiplier']){
+for(const token of ['function playSfx','function showHitMarker','function showDamageDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'"]){
   if(!settings.includes(token))fail('settings/presentation integration missing: '+token);
 }
 
 const combat=readFileSync('src/combat/combat.js','utf8');
-for(const token of ['spawnCombatImpact(hitFx','showKillMedal({distance:dist','showKillMedal({explosive:true})',"spawnCombatImpact(pos,'rocket')",'showHitMarker(hitKind)',"playSfx('shoot'",'lookSensitivityMultiplier(zooming)','function effectiveWeaponSpread',"w.isSniper?'sniper'"]){
-  if(!combat.includes(token))fail('combat visual integration missing: '+token);
+for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread']){
+  if(!combat.includes(token))fail('combat ballistics/scope integration missing: '+token);
 }
 
 const engine=readFileSync('src/core/engine.js','utf8');
@@ -80,11 +91,13 @@ for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','
 const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('tickCombatImpactFx(dt)'))fail('combat impact runtime tick missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
-for(const token of ["fireW.automatic","activeW.zoomFov","activeW.isSniper","recoilReturn=activeW.recoilReturn"]){if(!runtime.includes(token))fail('runtime weapon handling missing: '+token);}
+for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0"]){if(!runtime.includes(token))fail('runtime weapon handling missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
 for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#settings-modal','#sniper-scope','sniperScopeKick']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 
-if(!process.exitCode)console.log('ZAP ZONE v22.0 weapon physics, sniper assets and combat feedback validation passed.');
+if(!progression.includes("w.hitscan?'МГНОВЕННО'"))fail('HUD must identify hitscan weapon');
+if(!html.includes('ZAP ZONE v22.1'))fail('index version is not v22.1');
+if(!process.exitCode)console.log('ZAP ZONE v22.1 ballistics, instant sniper and scope isolation validation passed.');
