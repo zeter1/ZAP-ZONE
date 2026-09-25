@@ -39,11 +39,15 @@ await send('Runtime.enable');
 const deadline=Date.now()+12000;
 let ready=false;
 while(Date.now()<deadline){
-  const r=await send('Runtime.evaluate',{expression:"document.documentElement.dataset.zapBoot||''",returnByValue:true});
-  if(r.result?.value==='ready'){ready=true;break;}
+  const r=await send('Runtime.evaluate',{
+    expression:"({boot:document.documentElement.dataset.zapBoot||'',loadingHidden:!!document.getElementById('loading')?.classList.contains('hidden')})",
+    returnByValue:true
+  });
+  const state=r.result?.value;
+  if(state?.boot==='ready'&&state.loadingHidden){ready=true;break;}
   await sleep(120);
 }
-if(!ready)throw new Error('file:// boot did not reach ready state');
+if(!ready)throw new Error('file:// boot/menu did not become interactive');
 
 async function evaluate(expression,awaitPromise=false){
   const result=await send('Runtime.evaluate',{expression,awaitPromise,returnByValue:true});
