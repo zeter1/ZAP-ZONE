@@ -445,9 +445,10 @@ function spawnPlayerBullet(from,dir,w,meta={}){
   const m=mkTracer(color,w.key);
   const pos=from.clone().addScaledVector(dir,.48);pos.y-=.04;
   m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);scene.add(m);
+  const life=(w.range||100)/speed+.40;
   pBullets.push({
     m,pos,vel:dir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
-    life:(w.range||100)/speed+.40,range:w.range||100,travel:0,wKey:w.key,color,
+    life,maxLife:life,range:w.range||100,travel:0,wKey:w.key,color,
     markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),
     penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null
   });
@@ -707,6 +708,52 @@ function tickProjectiles(dt){
   };
   processRockets(eRkts);
   processRockets(pRkts);
+
+  // Player firearm projectiles use swept segment collision, so fast rounds cannot tunnel through bots or walls.
+  const _stepDir=new THREE.Vector3(),_hitPos=new THREE.Vector3();
+  for(let i=pBullets.length-1;i>=0;i--){
+    const b=pBullets[i],w=WEAPON_BY_KEY[b.wKey]||WEAPONS[0];
+    b.life-=dt;
+    _prev.copy(b.pos);
+    if(b.gravity)b.vel.y-=b.gravity*dt;
+    b.pos.addScaledVector(b.vel,dt);
+    _stepDir.subVectors(b.pos,_prev);
+    const stepDist=_stepDir.length();
+    if(stepDist<=1e-5){if(b.life<=0)destroyPlayerBullet(i);continue;}
+    _stepDir.multiplyScalar(1/stepDist);
+
+    _rc.ray.origin.copy(_prev);_rc.ray.direction.copy(_stepDir);_rc.near=0;_rc.far=stepDist;
+    _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
+    const wallDist=_rcWallHits.length?_rcWallHits[0].distance:Infinity;
+    const hit=hitEnemy(_prev,_stepDir,'ally',b.ignoreEnemy,stepDist+1.2);
+    const enemyDist=hit.en?hit.dist:Infinity;
+
+    if(hit.en&&enemyDist<=stepDist&&enemyDist<wallDist){
+      _hitPos.copy(_prev).addScaledVector(_stepDir,enemyDist);
+      const travelDist=b.travel+enemyDist;
+      resolvePlayerBulletHit(b,hit.en,hit.hd,_hitPos.clone(),_stepDir,travelDist);
+      if(b.penetrationLeft>0){
+        b.penetrationLeft--;b.damageScale*=w.isSniper?.72:.64;b.ignoreEnemy=hit.en;
+        b.pos.copy(_hitPos).addScaledVector(_stepDir,.14);b.travel=travelDist+.14;
+      }else{destroyPlayerBullet(i);continue;}
+    }else if(wallDist<=stepDist){
+      _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
+      wallImpact(_hitPos,b.color);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      destroyPlayerBullet(i);continue;
+    }else{
+      b.travel+=stepDist;b.ignoreEnemy=null;
+    }
+
+    if(b.m){
+      b.m.position.copy(b.pos);b.m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),_stepDir);
+      const fade=Math.max(0,Math.min(1,b.life/Math.max(.001,b.maxLife)));
+      if(b.m.children[0])b.m.children[0].material.opacity=Math.min(1,fade*1.35);
+      if(b.m.children[1])b.m.children[1].material.opacity=Math.min(1,fade*1.25);
+      if(b.m.children[2])b.m.children[2].material.opacity=Math.min(.52,fade*.52);
+      if(b.m.children[3])b.m.children[3].material.opacity=Math.min(.34,fade*.34);
+    }
+    if(b.life<=0||b.travel>=b.range)destroyPlayerBullet(i);
+  }
 
   for(let i=pTrs.length-1;i>=0;i--){
     const tr=pTrs[i];tr.life-=dt;
