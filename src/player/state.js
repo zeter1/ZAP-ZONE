@@ -14,6 +14,7 @@ let playerSmokeCD=0;
 let mineHudSecond=-1,bombHudSecond=-1,smokeHudSecond=-1;
 // Camera recoil
 let recoilPitch=0,recoilYaw=0,recoilRecovery=0;
+let adsBlend=0,weaponBloom=0,shotSequence=0,shotResetT=0;
 const K={};
 const mobileInput={
   moveId:null,lookId:null,fire:false,run:false,jumpQueued:false,reloadQueued:false,mineQueued:false,
@@ -394,6 +395,7 @@ function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
+  adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
   curW=idx;
   const w=getW();
   ammo=weaponAmmoValue(idx);
