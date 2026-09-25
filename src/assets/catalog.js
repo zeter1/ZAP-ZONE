@@ -100,6 +100,7 @@ const GAME_ASSETS=Object.freeze({
     bullet:'assets/fx/bullet-hit.svg',
     wall:'assets/fx/wall-impact.svg',
     plasma:'assets/fx/plasma-impact.svg',
+    sniper:'assets/fx/sniper-shot.svg',
     rocket:'assets/fx/rocket-impact.svg',
     critical:'assets/fx/critical-hit.svg',
     armorBreak:'assets/fx/armor-break.svg'
@@ -116,7 +117,8 @@ const GAME_ASSETS=Object.freeze({
     crosshair:'assets/ui/crosshair.svg',
     health:'assets/ui/health.svg',
     armor:'assets/ui/armor.svg',
-    xp:'assets/ui/xp.svg'
+    xp:'assets/ui/xp.svg',
+    sniperScope:'assets/ui/sniper-scope.svg'
   })
 });
 
