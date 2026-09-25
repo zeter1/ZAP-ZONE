@@ -99,3 +99,30 @@ SR-9 намеренно является исключением: `hitscan:true` 
 RMB/ADS изолирован через `aimMode:'scope'`. Этот флаг есть только у SR-9. Input не меняет `zooming` у остальных профилей, а runtime дополнительно проверяет тот же `aimMode`, поэтому случайный `zoomFov` или stale state не может включить прицел другого оружия.
 
 У SR-9 обычный center crosshair скрыт и в hip state, и внутри scope. У остальных оружий динамический crosshair визуализирует текущий итоговый spread с учётом movement, air penalty и weapon bloom.
+
+
+## Weapon lifecycle v22.2
+
+Оружие теперь имеет отдельный runtime lifecycle поверх `rate` и `reload`:
+
+- `equipTime` блокирует огонь сразу после смены оружия;
+- `sprintRecover` задаёт sprint-to-fire delay;
+- `weaponReadyT`, `weaponEquipT`, `sprintExitT` и `cycleT` являются независимыми readiness-состояниями;
+- `cycleTime` моделирует pump/bolt action отдельно от fire cooldown;
+- `reloadStyle:'shell'` включает поштучную зарядку;
+- `tacticalReloadM` и `emptyReloadM` разделяют reload с патроном в оружии и reload после полного опустошения;
+- `firstShotM` влияет только на первый стабильный выстрел после сброса shot sequence.
+
+`weaponActionBlocked()` является центральным guard для огня/перезарядки и предотвращает обход handling через sprint, equip или cycle. Quick-switch по `Q` вызывает обычный `switchW()`, поэтому также проходит equip time.
+
+Shell reload использует `completePlayerReloadStep()`: каждый завершённый этап переносит ровно один патрон из reserve в shotgun. При наличии хотя бы одного патрона ЛКМ вызывает `cancelPlayerReload()` и затем разрешает выстрел без искусственного settle delay.
+
+Pump/bolt casing ejection синхронизирован с `cycleT`, а не с моментом muzzle flash.
+
+SR-9 имеет `oneShot:true`, но guaranteed lethal применяется только к primary hit через `oneShotEligible`. Penetration target получает обычный ослабленный damage scale.
+
+## Crosshair ownership v22.2
+
+Gameplay-reticle имеет один источник истины: DOM-элементы `.xh-arm` + `.xh-dot`. Старый `assets/ui/crosshair.svg` удалён. Это исключает одновременный static + dynamic overlay.
+
+SR-9 не использует gameplay-reticle: runtime скрывает `#xhair` для любого `aimMode:'scope'`, а sniper optic рендерится отдельно через `#sniper-scope`.
