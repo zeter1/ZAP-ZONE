@@ -15,6 +15,10 @@ let mineHudSecond=-1,bombHudSecond=-1,smokeHudSecond=-1;
 // Camera recoil
 let recoilPitch=0,recoilYaw=0,recoilRecovery=0;
 let adsBlend=0,weaponBloom=0,shotSequence=0,shotResetT=0;
+let weaponReadyT=0,weaponEquipT=0,weaponEquipTot=0;
+let sprintBlend=0,sprintExitT=0,wasWeaponSprinting=false;
+let cycleT=0,cycleTot=0,cycleKind='';
+let reloadMode='mag',reloadShellLoaded=0;
 const K={};
 const mobileInput={
   moveId:null,lookId:null,fire:false,run:false,jumpQueued:false,reloadQueued:false,mineQueued:false,
@@ -396,10 +400,13 @@ function switchW(idx){
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
+  cycleT=0;cycleTot=0;cycleKind='';sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;
   curW=idx;
   const w=getW();
   ammo=weaponAmmoValue(idx);
-  reloading=false;reloadT=0;reloadTot=0;
+  reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
+  weaponEquipTot=w.equipTime||.32;weaponEquipT=weaponEquipTot;weaponReadyT=weaponEquipTot;
+  playSfx('equip');
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   buildGun(w);wHUD();updateWeaponBar();
   G('mines-panel').style.display=(w.isMine||w.isBomb)?'block':'none';
