@@ -1,8 +1,10 @@
 'use strict';
 
 // ─── PLAYER STATE ────────────────────────
-let curW=0,lastW=0,ammo=STARTING_AMMO[0],uAmmo=999,reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
+let curW=0,lastW=0,ammo=STARTING_AMMO[0],uAmmo=STARTING_RESERVE[0],reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
 const weaponAmmo=STARTING_AMMO.slice();
+const weaponReserve=STARTING_RESERVE.slice();
+const weaponOwned=STARTING_OWNED.slice();
 let yaw=0,pitch=0,onGnd=true,jumpV=0;
 let hp=100,score=0,kills=0,xp=0,level=1,armor=0;
 let running=false,paused=false,dying=false,inited=false;
@@ -86,12 +88,12 @@ function increaseClips(mult,includeBomb=false){
     const old=w.clip;
     w.clip=Math.max(old+1,Math.round(old*mult));
     const gain=w.clip-old;
-    weaponAmmo[i]=Math.min(w.clip,(weaponAmmo[i]??old)+gain);
+    if(ownsWeapon(i))weaponAmmo[i]=Math.min(w.clip,(weaponAmmo[i]??0)+gain);
   });
   ammo=weaponAmmo[curW];
 }
 function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isMine||w.isBomb||w.isSmoke)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
-function accelerateReload(mult){WEAPONS.forEach(w=>{if(!w.isBomb&&!w.isSmoke)w.reload=Math.max(.48,w.reload*mult);});}
+function accelerateReload(mult){WEAPONS.forEach(w=>{w.reload=Math.max(.32,w.reload*mult);});}
 
 const ALL_PERKS=[
   {id:'damage',ic:'⚔️',nm:'Калибровка урона',path:'assault',rarity:'common',maxRank:5,minLevel:2,ds:'+18% к урону всего оружия.',fn:()=>plr.dmgM+=.18},
@@ -126,7 +128,7 @@ const ALL_PERKS=[
   {id:'explosive_payload',ic:'💥',nm:'Усиленный заряд',path:'demolition',rarity:'common',maxRank:5,minLevel:2,ds:'+18% урон и +8% радиус всех взрывов.',fn:()=>{plr.explosiveDamageM+=.18;plr.explosiveRadiusM+=.08;}},
   {id:'rockettech',ic:'🚀',nm:'Ракетный ускоритель',path:'demolition',rarity:'rare',maxRank:4,minLevel:4,ds:'+18% скорость полёта и +15% урон ракет.',fn:()=>{plr.rocketSpeedM+=.18;plr.rocketDamageM+=.15;}},
   {id:'minetech',ic:'💣',nm:'Инженер мин',path:'demolition',rarity:'rare',maxRank:3,minLevel:4,ds:'Перезарядка мины быстрее на 20%, урон мин +20%.',fn:()=>{plr.mineCooldownM*=.80;plr.mineDamageM+=.20;}},
-  {id:'bombtech',ic:'🧨',nm:'Тяжёлая бомба',path:'demolition',rarity:'epic',maxRank:2,minLevel:7,ds:'+25% урон, +15% радиус бомбы и +1 к переносимому запасу.',fn:()=>{plr.bombDamageM+=.25;plr.bombRadiusM+=.15;WEAPONS[6].clip+=1;weaponAmmo[6]=Math.min(WEAPONS[6].clip,(weaponAmmo[6]||0)+1);}},
+  {id:'bombtech',ic:'🧨',nm:'Тяжёлая бомба',path:'demolition',rarity:'epic',maxRank:2,minLevel:7,ds:'+25% урон, +15% радиус бомбы и +1 к переносимому запасу.',fn:()=>{plr.bombDamageM+=.25;plr.bombRadiusM+=.15;WEAPONS[6].clip+=1;if(ownsWeapon(6))weaponAmmo[6]=Math.min(WEAPONS[6].clip,(weaponAmmo[6]||0)+1);}},
   {id:'explosive_rounds',ic:'💫',nm:'Разрывные боеприпасы',path:'demolition',rarity:'epic',maxRank:1,minLevel:8,ds:'Прямые попадания пуль создают дополнительный малый взрыв по соседним ботам.',fn:()=>plr.explode=true},
   {id:'warmachine',ic:'☢️',nm:'Машина разрушения',path:'demolition',rarity:'legendary',maxRank:1,minLevel:13,ds:'+50% урон и +25% радиус взрывов, +25% скорость ракет, мина готовится на 25% быстрее.',fn:()=>{plr.explosiveDamageM+=.50;plr.explosiveRadiusM+=.25;plr.rocketSpeedM+=.25;plr.mineCooldownM*=.75;}},
 
@@ -212,26 +214,50 @@ function rollPerkChoices(count=4){
 }
 function getW(){return WEAPONS[curW];}
 
-function syncCurrentAmmo(){weaponAmmo[curW]=Math.max(0,Math.min(getW().clip,ammo));}
+function ownsWeapon(idx){return Number.isInteger(idx)&&idx>=0&&idx<WEAPONS.length&&!!weaponOwned[idx];}
+function weaponReserveValue(idx){
+  if(idx===curW)return uAmmo;
+  const w=WEAPONS[idx],val=weaponReserve[idx];
+  return Math.max(0,Math.min(w.reserveCap??9999,Number.isFinite(val)?val:0));
+}
+function syncCurrentAmmo(){
+  weaponAmmo[curW]=Math.max(0,Math.min(getW().clip,ammo));
+  weaponReserve[curW]=Math.max(0,Math.min(getW().reserveCap??9999,uAmmo));
+}
 function weaponAmmoValue(idx){
+  if(!ownsWeapon(idx))return 0;
   if(idx===curW)return ammo;
-  const w=WEAPONS[idx];
-  const val=weaponAmmo[idx];
-  return Math.max(0,Math.min(w.clip,Number.isFinite(val)?val:w.clip));
+  const w=WEAPONS[idx],val=weaponAmmo[idx];
+  return Math.max(0,Math.min(w.clip,Number.isFinite(val)?val:0));
 }
 function setWeaponAmmo(idx,value){
-  const w=WEAPONS[idx];
+  const w=WEAPONS[idx];if(!w)return 0;
   const val=Math.max(0,Math.min(w.clip,Number(value)||0));
-  weaponAmmo[idx]=val;
-  if(idx===curW)ammo=val;
+  weaponAmmo[idx]=val;if(idx===curW)ammo=val;return val;
+}
+function setWeaponReserve(idx,value){
+  const w=WEAPONS[idx];if(!w)return 0;
+  const val=Math.max(0,Math.min(w.reserveCap??9999,Math.floor(Number(value)||0)));
+  weaponReserve[idx]=val;if(idx===curW)uAmmo=val;return val;
+}
+function grantWeapon(idx,reserveGrant=0){
+  if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length)return null;
+  syncCurrentAmmo();
+  const w=WEAPONS[idx],first=!weaponOwned[idx];
+  weaponOwned[idx]=true;
+  if(first)weaponAmmo[idx]=w.clip;
+  const before=weaponReserveValue(idx),after=setWeaponReserve(idx,before+Math.max(0,Math.floor(reserveGrant||0)));
+  if(first&&idx!==curW)switchW(idx);else{if(idx===curW){ammo=weaponAmmo[idx];uAmmo=weaponReserve[idx];}updateWeaponBar();wHUD();}
+  return{first,added:after-before,total:after};
 }
 
-const SAVE_KEY='zap_zone_autosave_v25';
-const LEGACY_SAVE_KEY='zap_zone_autosave_v24';
-const OLDER_SAVE_KEY='zap_zone_autosave_v23';
-const OLDEST_SAVE_KEY='zap_zone_autosave_v22';
-const ANCIENT_SAVE_KEY='zap_zone_autosave_v21';
-const PREHISTORIC_SAVE_KEY='zap_zone_autosave_v20';
+const SAVE_KEY='zap_zone_autosave_v26';
+const LEGACY_SAVE_KEY='zap_zone_autosave_v25';
+const OLDER_SAVE_KEY='zap_zone_autosave_v24';
+const OLDEST_SAVE_KEY='zap_zone_autosave_v23';
+const ANCIENT_SAVE_KEY='zap_zone_autosave_v22';
+const PREHISTORIC_SAVE_KEY='zap_zone_autosave_v21';
+const PRIMITIVE_SAVE_KEY='zap_zone_autosave_v20';
 let pendingResumeSave=null;
 let saveTick=8;
 let preloadStarted=false,preloadDone=false,gameSessionActivated=false,preparedSaveLoaded=false;
@@ -251,7 +277,12 @@ function hardResetPlayerBuild(){
   perksGot.length=0;
   WEAPONS.forEach((w,i)=>{w.clip=W_DEFAULTS.clips[i];w.rate=W_DEFAULTS.rates[i];w.reload=W_DEFAULTS.reloads[i];w.cycleTime=W_DEFAULTS.cycleTimes[i]||undefined;});
   weaponAmmo.splice(0,weaponAmmo.length,...STARTING_AMMO);
-  ammo=weaponAmmo[curW]??WEAPONS[curW].clip;
+  weaponReserve.splice(0,weaponReserve.length,...STARTING_RESERVE);
+  weaponOwned.splice(0,weaponOwned.length,...STARTING_OWNED);
+  if(!ownsWeapon(curW))curW=0;
+  if(!ownsWeapon(lastW))lastW=curW;
+  ammo=weaponAmmo[curW]??0;
+  uAmmo=weaponReserve[curW]??0;
 }
 const LEGACY_PERK_MAP={
   attack:'damage',attack2:'damage',vitality:'vitality',hpfury:'vitality',triple:'doubletap',dblshot:'doubletap',
@@ -265,11 +296,14 @@ function applySavedPerk(id){
   if(perk&&canTakePerk(perk,true)){perk.fn();perksGot.push({...perk});}
 }
 function captureSave(){
-  const mags=weaponAmmo.map((value,i)=>Math.max(0,Math.min(WEAPONS[i].clip,i===curW?ammo:value)));
+  syncCurrentAmmo();
+  const mags=weaponAmmo.map((value,i)=>ownsWeapon(i)?Math.max(0,Math.min(WEAPONS[i].clip,value)):0);
+  const reserves=weaponReserve.map((value,i)=>ownsWeapon(i)?Math.max(0,Math.min(WEAPONS[i].reserveCap??9999,value)):0);
   return {
-    v:25,t:Date.now(),
+    v:26,t:Date.now(),
     level,xp,score,kills,allyKills,enemyKills,
-    hp,armor,uAmmo,curW,ammo,weaponAmmo:mags,playerMineCD,playerBombCD,playerSmokeCD,
+    hp,armor,uAmmo,curW,ammo,weaponAmmo:mags,weaponReserve:reserves,weaponOwned:weaponOwned.slice(),
+    playerMineCD,playerBombCD,playerSmokeCD,
     perks:perksGot.map(p=>p.id),
     player:{x:camera.position.x,z:camera.position.z,yaw,pitch}
   };
@@ -284,10 +318,16 @@ function saveProgress(force=false){
 }
 function loadProgress(){
   try{
-    const raw=localStorage.getItem(SAVE_KEY)||sessionStorage.getItem(SAVE_KEY)||localStorage.getItem(LEGACY_SAVE_KEY)||sessionStorage.getItem(LEGACY_SAVE_KEY)||localStorage.getItem(OLDER_SAVE_KEY)||sessionStorage.getItem(OLDER_SAVE_KEY)||localStorage.getItem(OLDEST_SAVE_KEY)||sessionStorage.getItem(OLDEST_SAVE_KEY)||localStorage.getItem(ANCIENT_SAVE_KEY)||sessionStorage.getItem(ANCIENT_SAVE_KEY)||localStorage.getItem(PREHISTORIC_SAVE_KEY)||sessionStorage.getItem(PREHISTORIC_SAVE_KEY);
+    const raw=localStorage.getItem(SAVE_KEY)||sessionStorage.getItem(SAVE_KEY)||
+      localStorage.getItem(LEGACY_SAVE_KEY)||sessionStorage.getItem(LEGACY_SAVE_KEY)||
+      localStorage.getItem(OLDER_SAVE_KEY)||sessionStorage.getItem(OLDER_SAVE_KEY)||
+      localStorage.getItem(OLDEST_SAVE_KEY)||sessionStorage.getItem(OLDEST_SAVE_KEY)||
+      localStorage.getItem(ANCIENT_SAVE_KEY)||sessionStorage.getItem(ANCIENT_SAVE_KEY)||
+      localStorage.getItem(PREHISTORIC_SAVE_KEY)||sessionStorage.getItem(PREHISTORIC_SAVE_KEY)||
+      localStorage.getItem(PRIMITIVE_SAVE_KEY)||sessionStorage.getItem(PRIMITIVE_SAVE_KEY);
     if(!raw)return null;
     const data=JSON.parse(raw);
-    if(!data||(data.v<20||data.v>25))return null;
+    if(!data||(data.v<20||data.v>26))return null;
     return data;
   }catch(e){return null;}
 }
@@ -357,6 +397,7 @@ async function preloadGameContent(){
 }
 function applyRuntimeSave(data){
   if(!data)return;
+  const requestedW=Math.max(0,Math.min(WEAPONS.length-1,Number(data.curW)||0));
   hardResetPlayerBuild();
   (data.perks||[]).forEach(applySavedPerk);
   applyPathMilestones();
@@ -364,25 +405,40 @@ function applyRuntimeSave(data){
   xp=Math.max(xpFor(level),data.xp||0);
   score=Math.max(0,data.score||0);
   kills=Math.max(0,data.kills||0);
-  // v25 changes these counters from FFA bookkeeping to actual blue/red team score.
   allyKills=data.v>=25?Math.max(0,data.allyKills||0):0;
   enemyKills=data.v>=25?Math.max(0,data.enemyKills||0):0;
   armor=Math.max(0,Math.min(plr.maxArmor,data.armor||0));
   hp=Math.max(1,Math.min(data.hp==null?plr.maxHp:data.hp,plr.maxHp));
-  uAmmo=Math.max(0,Math.min(9999,data.uAmmo==null?uAmmo:data.uAmmo));
   playerMineCD=Math.max(0,Math.min(MINE_COOLDOWN_SECONDS,Number(data.playerMineCD)||0));
   playerBombCD=Math.max(0,Math.min(BOMB_COOLDOWN_SECONDS,Number(data.playerBombCD)||0));
   playerSmokeCD=Math.max(0,Math.min(SMOKE_COOLDOWN_SECONDS,Number(data.playerSmokeCD)||0));
   mineHudSecond=-1;bombHudSecond=-1;smokeHudSecond=-1;
-  curW=Math.max(0,Math.min(WEAPONS.length-1,data.curW||0));
-  for(let i=0;i<WEAPONS.length;i++){
-    const saved=Array.isArray(data.weaponAmmo)?data.weaponAmmo[i]:undefined;
-    weaponAmmo[i]=Math.max(0,Math.min(WEAPONS[i].clip,saved==null?STARTING_AMMO[i]:saved));
+
+  weaponOwned.fill(false);
+  if(data.v>=26&&Array.isArray(data.weaponOwned)){
+    for(let i=0;i<WEAPONS.length;i++)weaponOwned[i]=!!data.weaponOwned[i];
+  }else{
+    weaponOwned[0]=true;
+    weaponOwned[requestedW]=true;
   }
-  ammo=Math.max(0,Math.min(getW().clip,data.ammo==null?weaponAmmo[curW]:data.ammo));
-  weaponAmmo[SMOKE_WEAPON_INDEX]=playerSmokeCD>0?0:1;
-  if(curW===SMOKE_WEAPON_INDEX)ammo=weaponAmmo[SMOKE_WEAPON_INDEX];
+  weaponOwned[0]=true;
+
+  const legacyReserve=Math.max(50,Math.min(400,Math.floor(Number(data.uAmmo)||120)));
+  for(let i=0;i<WEAPONS.length;i++){
+    if(!weaponOwned[i]){weaponAmmo[i]=0;weaponReserve[i]=0;continue;}
+    const savedMag=Array.isArray(data.weaponAmmo)?data.weaponAmmo[i]:undefined;
+    const fallbackMag=i===0?(STARTING_AMMO[0]||WEAPONS[0].clip):WEAPONS[i].clip;
+    weaponAmmo[i]=Math.max(0,Math.min(WEAPONS[i].clip,savedMag==null?fallbackMag:savedMag));
+    const savedReserve=data.v>=26&&Array.isArray(data.weaponReserve)?data.weaponReserve[i]:undefined;
+    const fallbackReserve=i===requestedW?legacyReserve:(i===0?STARTING_RESERVE[0]:0);
+    weaponReserve[i]=Math.max(0,Math.min(WEAPONS[i].reserveCap??9999,savedReserve==null?fallbackReserve:savedReserve));
+  }
+
+  curW=ownsWeapon(requestedW)?requestedW:0;
+  lastW=curW;
+  ammo=Math.max(0,Math.min(getW().clip,data.v>=26&&requestedW===curW&&data.ammo!=null?data.ammo:weaponAmmo[curW]));
   weaponAmmo[curW]=ammo;
+  uAmmo=weaponReserve[curW];
   buildGun(getW());
   if(data.player){
     const px=Math.max(-89,Math.min(89,Number(data.player.x)||0));
@@ -393,12 +449,12 @@ function applyRuntimeSave(data){
     pitch=Number.isFinite(data.player.pitch)?data.player.pitch:0;
     prevPX=camera.position.x;prevPZ=camera.position.z;
   }
-  updatePerkPanel();updateStats();updateWeaponBar();wHUD();markHUD();flushHUD();xpHUD();updateTeamScore();
+  updatePerkPanel();updateStats();buildWeaponBar();updateWeaponBar();wHUD();markHUD();flushHUD();xpHUD();updateTeamScore();
   saveProgress(true);
 }
-
 function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;
+  if(!ownsWeapon(idx)){showMsg('🔒 '+WEAPONS[idx].label+' ещё не найдено — подберите его на карте');return;}
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
@@ -406,7 +462,8 @@ function switchW(idx){
   lastW=curW;
   curW=idx;
   const w=getW();
-  ammo=weaponAmmoValue(idx);
+  ammo=Math.max(0,Math.min(w.clip,weaponAmmo[idx]??0));
+  uAmmo=Math.max(0,Math.min(w.reserveCap??9999,weaponReserve[idx]??0));
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   weaponEquipTot=w.equipTime||.32;weaponEquipT=weaponEquipTot;weaponReadyT=weaponEquipTot;
   playSfx('equip');
@@ -415,7 +472,11 @@ function switchW(idx){
   G('mines-panel').style.display=(w.isMine||w.isBomb)?'block':'none';
   updateMineHUD();
 }
-function quickSwitchWeapon(){if(lastW!==curW)switchW(lastW);}
+function quickSwitchWeapon(){
+  if(lastW!==curW&&ownsWeapon(lastW)){switchW(lastW);return;}
+  const idx=weaponOwned.findIndex((owned,i)=>owned&&i!==curW);
+  if(idx>=0)switchW(idx);
+}
 
 
 function isLandscape(){return innerWidth>=innerHeight;}

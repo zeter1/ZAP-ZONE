@@ -67,14 +67,20 @@ function loop(ts){
 
   const scopeActive=!IS_TOUCH&&scopedWeapon&&adsBlend>.88;
   const scopedFov=scopedWeapon?(activeW.zoomFov||ZOOM_FOV):BASE_FOV;
-  const scopeBreath=scopedWeapon?Math.sin(ts*.00145)*.10*adsBlend:0;
+  const scopeBreath=activeW.isSniper?Math.sin(ts*.00145)*.10*adsBlend:0;
   const targetFov=BASE_FOV+(scopedFov-BASE_FOV)*adsBlend+scopeBreath;
   if(Math.abs(camera.fov-targetFov)>.025){
     camera.fov+=(targetFov-camera.fov)*Math.min(1,dt*13);
     camera.updateProjectionMatrix();
   }
   const sniperScope=G('sniper-scope');
-  if(sniperScope)sniperScope.classList.toggle('on',scopeActive);
+  if(sniperScope){
+    const scopeImg=sniperScope.querySelector('img');
+    const wantedAsset=activeW.scopeAsset||GAME_ASSETS.ui.sniperScope;
+    if(scopeImg&&scopeImg.getAttribute('src')!==wantedAsset)scopeImg.setAttribute('src',wantedAsset);
+    sniperScope.classList.toggle('rifle-scope',activeW.key==='rifle');
+    sniperScope.classList.toggle('on',scopeActive);
+  }
   const crosshair=G('xhair');
   if(crosshair){
     crosshair.classList.toggle('scope-hidden',scopeActive||scopedWeapon);
@@ -196,7 +202,7 @@ function loop(ts){
     playerSmokeCD=Math.max(0,playerSmokeCD-dt);
     const sec=Math.ceil(playerSmokeCD);
     if(sec!==smokeHudSecond){smokeHudSecond=sec;if(getW().isSmoke)wHUD();}
-    if(playerSmokeCD<=0){setWeaponAmmo(SMOKE_WEAPON_INDEX,1);if(getW().isSmoke)wHUD();showMsg('🌫️ Дымовуха снова готова');}
+    if(playerSmokeCD<=0&&getW().isSmoke)showMsg('🌫️ Кулдаун дымовухи завершён');
   }
   if(plr.regen>0){hp=Math.min(hp+plr.regen*dt,plr.maxHp);markHUD();}
   if(plr.armorRegen>0&&armor<plr.maxArmor){armor=Math.min(plr.maxArmor,armor+plr.armorRegen*dt);markHUD();}

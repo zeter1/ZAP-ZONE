@@ -212,16 +212,13 @@ function wHUD(){
     const velocity=w.hitscan?'МГНОВЕННО':w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
     mode.textContent=weaponModeLabel(w)+(velocity?' · '+velocity:'');
   }
-  if(w.isSmoke){
-    const ready=playerSmokeCD<=0;
-    G('wammo').textContent=ready?'ГОТОВА':Math.ceil(playerSmokeCD)+'с';
-    G('wammo').style.color=ready?'#d8fff5':'#aab4b9';
-    G('wtot').textContent='Дым: '+Math.round(SMOKE_DURATION_SECONDS*plr.smokeDurationM)+' сек.';
-  }else{
-    G('wammo').textContent=ammo+' / '+w.clip;
-    G('wammo').style.color=ammo<=Math.ceil(w.clip*.25)?'#ff4444':ammo<=Math.ceil(w.clip*.5)?'#ffaa00':'#fff';
-    G('wtot').textContent=w.isBomb?'Только подбор на карте':'Запас: '+uAmmo;
-  }
+  G('wammo').textContent=ammo+' / '+w.clip;
+  G('wammo').style.color=ammo<=Math.ceil(w.clip*.25)?'#ff4444':ammo<=Math.ceil(w.clip*.5)?'#ffaa00':'#fff';
+  let extra='';
+  if(w.isSmoke)extra=playerSmokeCD>0?' · кулдаун '+Math.ceil(playerSmokeCD)+'с':' · готова';
+  else if(w.isBomb)extra=playerBombCD>0?' · кулдаун '+Math.ceil(playerBombCD)+'с':'';
+  else if(w.isMine)extra=playerMineCD>0?' · кулдаун '+Math.ceil(playerMineCD)+'с':'';
+  G('wtot').textContent='Запас '+w.label+': '+uAmmo+extra;
   updateMineHUD();
 }
 function xpHUD(){
@@ -415,10 +412,11 @@ function doRespawn(){
   hp=plr.maxHp;
   armor=0;
   reloading=false;reloadT=0;reloadTot=0;sCD=0;recoil=0;
-  WEAPONS.forEach((w,i)=>weaponAmmo[i]=STARTING_AMMO[i]);
-  weaponAmmo[SMOKE_WEAPON_INDEX]=playerSmokeCD>0?0:1;
-  ammo=weaponAmmo[curW];
-  uAmmo=Math.max(uAmmo,120);
+  // Death does not magically unlock or refill the arsenal. Keep the weapons
+  // and type-specific reserves the player actually earned from world pickups.
+  if(!ownsWeapon(curW))curW=0;
+  ammo=Math.max(0,Math.min(getW().clip,weaponAmmo[curW]??0));
+  uAmmo=Math.max(0,Math.min(getW().reserveCap??9999,weaponReserve[curW]??0));
   recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;weaponReadyT=0;weaponEquipT=0;weaponEquipTot=0;sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;cycleT=0;cycleTot=0;cycleKind='';cycleEjected=false;reloadMode='mag';reloadShellLoaded=0;
   dying=false;paused=false;perkPickOpen=false;pendingLevels=0;lvlAnnOpen=false;lvlAnnT=0;
   combo=0;comboT=0;spawnT=0;plrVx=0;plrVz=0;zooming=false;
@@ -449,7 +447,8 @@ function doRespawn(){
 }
 
 function clearStoredProgress(){
-  for(const key of [SAVE_KEY,LEGACY_SAVE_KEY,OLDER_SAVE_KEY,OLDEST_SAVE_KEY,ANCIENT_SAVE_KEY,'zap_zone_autosave_v19']){
+  const keys=[SAVE_KEY,LEGACY_SAVE_KEY,OLDER_SAVE_KEY,OLDEST_SAVE_KEY,ANCIENT_SAVE_KEY,PREHISTORIC_SAVE_KEY,PRIMITIVE_SAVE_KEY,'zap_zone_autosave_v19'];
+  for(const key of keys){
     try{localStorage.removeItem(key);sessionStorage.removeItem(key);}catch(e){}
   }
 }
@@ -476,7 +475,7 @@ function restartGameFromScratch(){
   clearWorldForFreshGame();
   curW=0;hardResetPlayerBuild();
   level=1;xp=0;score=0;kills=0;allyKills=0;enemyKills=0;
-  hp=plr.maxHp;armor=0;uAmmo=999;ammo=weaponAmmo[0];
+  hp=plr.maxHp;armor=0;uAmmo=STARTING_RESERVE[0];ammo=weaponAmmo[0];
   playerMineCD=0;playerBombCD=0;playerSmokeCD=0;mineHudSecond=-1;bombHudSecond=-1;smokeHudSecond=-1;
   reloading=false;reloadT=0;reloadTot=0;sCD=0;recoil=0;recoilPitch=0;recoilYaw=0;recoilRecovery=0;
   dying=false;dyingT=0;paused=false;running=true;lvlAnnOpen=false;perkPickOpen=false;pendingLevels=0;

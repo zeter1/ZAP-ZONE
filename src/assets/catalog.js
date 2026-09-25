@@ -15,7 +15,9 @@ const GAME_ASSETS=Object.freeze({
   }),
   characters:Object.freeze({
     ally:'assets/characters/ally-emblem.svg',
-    enemy:'assets/characters/enemy-emblem.svg'
+    enemy:'assets/characters/enemy-emblem.svg',
+    allyMark:'assets/characters/ally-armor-mark.svg',
+    enemyMark:'assets/characters/enemy-armor-mark.svg'
   }),
   perks:Object.freeze({
     assault:'assets/perks/assault.svg',
@@ -117,7 +119,8 @@ const GAME_ASSETS=Object.freeze({
     health:'assets/ui/health.svg',
     armor:'assets/ui/armor.svg',
     xp:'assets/ui/xp.svg',
-    sniperScope:'assets/ui/sniper-scope.svg'
+    sniperScope:'assets/ui/sniper-scope.svg',
+    rifleScope:'assets/ui/rifle-scope.svg'
   })
 });
 

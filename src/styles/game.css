@@ -21,6 +21,13 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .wb-slot.active .wb-key{color:#ffd700;}
 .wb-name{font-size:9px;color:#b8c0c9;margin-top:1px;white-space:nowrap;font-weight:700;letter-spacing:.25px;}
 .wb-slot.active .wb-name{color:#fff;}
+.wb-slot.locked{opacity:.42;filter:saturate(.35);border-color:rgba(110,125,140,.16);background:linear-gradient(180deg,rgba(8,12,18,.72),rgba(0,0,0,.82));}
+.wb-slot.locked .wb-asset{opacity:.24;filter:grayscale(1) brightness(.55);}
+.wb-slot.locked .wb-name{color:#68737e;font-size:8px;}
+.wb-slot.locked .wb-key{color:#59626b;}
+.wb-reserve{margin-top:2px;min-height:9px;font:800 8px/1 Consolas,'Courier New',monospace;color:#6ee7ff;letter-spacing:.35px;}
+.wb-slot.locked .wb-reserve{color:#4b535b;}
+
 
 /* Team score bar */
 #team-bar{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;}
@@ -458,6 +465,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 }
 #sniper-scope.on{opacity:1;visibility:visible;}
 #sniper-scope img{display:block;width:100%;height:100%;object-fit:cover;}
+#sniper-scope.rifle-scope img{filter:saturate(1.08) contrast(1.04);}
 #sniper-scope.kick img{animation:sniperScopeKick .26s cubic-bezier(.15,.72,.22,1);}
 #xhair.scope-hidden{opacity:0!important;}
 @keyframes sniperScopeKick{

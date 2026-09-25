@@ -53,80 +53,115 @@ function mkHpMesh(){
   return g;
 }
 
-const BOMB_PTS=[[-28,0],[28,0],[0,-28],[0,28],[-42,-24],[42,24],[-42,24],[42,-24]];
-function mkBombPickupMesh(){
-  const g=new THREE.Group();
-  const model=createWorldWeaponModel('bomb');model.position.y=.08;g.add(model);
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(.66,.06,7,18),new THREE.MeshBasicMaterial({color:0xffcc22}));
-  ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
-  const sp=makeAssetSprite(WEAPON_BY_KEY.bomb.asset,.96,.60,{depthTest:false});
-  sp.position.y=1.10;g.add(sp);return g;
-}
-const WORLD_WEAPON_PICKUPS=[
-  ['pistol',-18,24],['shotgun',18,-24],['rifle',-33,7],['rocket',33,-7],
-  ['plasma',7,33],['mine',-7,-33],['smoke',28,28],['sniper',0,-52]
-];
+const WEAPON_SPAWN_PTS=AMO_PTS.slice();
+const WORLD_WEAPON_KEYS=WEAPONS.map(w=>w.key);
 function mkWeaponPickupMesh(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0],g=new THREE.Group();
   const model=createWorldWeaponModel(w.key);model.position.y=.16;g.add(model);
   const haloColor=w.bCol||w.gCol||0xffcc33;
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(.72,.045,7,20),new THREE.MeshBasicMaterial({color:haloColor,transparent:true,opacity:.92}));
+  const ring=new THREE.Mesh(
+    new THREE.TorusGeometry(.72,.045,7,20),
+    new THREE.MeshBasicMaterial({color:haloColor,transparent:true,opacity:.94})
+  );
   ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
-  const base=new THREE.Mesh(new THREE.CylinderGeometry(.52,.62,.07,18),new THREE.MeshStandardMaterial({color:0x111820,roughness:.62,metalness:.52,emissive:haloColor,emissiveIntensity:.10}));
+  const base=new THREE.Mesh(
+    new THREE.CylinderGeometry(.52,.62,.07,18),
+    new THREE.MeshStandardMaterial({color:0x111820,roughness:.62,metalness:.52,emissive:haloColor,emissiveIntensity:.15})
+  );
   base.position.y=-.31;g.add(base);
-  const sp=makeAssetSprite(w.asset,1.02,.64,{depthTest:false});
-  sp.position.y=1.08;g.add(sp);g.userData.weaponKey=w.key;return g;
+  const sp=makeAssetSprite(w.asset,1.02,.64,{depthTest:false});sp.position.y=1.08;g.add(sp);
+  g.userData.weaponKey=w.key;return g;
+}
+function randomWeaponReserve(w){
+  const min=Math.max(50,Math.floor(w.pickupAmmoMin??50));
+  const max=Math.max(min,Math.min(400,Math.floor(w.pickupAmmoMax??400)));
+  return min+Math.floor(Math.random()*(max-min+1));
+}
+function chooseWeaponSpawnPoint(pk=null,seedIndex=-1){
+  const candidates=WEAPON_SPAWN_PTS;
+  if(seedIndex>=0&&candidates[seedIndex%candidates.length])return candidates[seedIndex%candidates.length];
+  let fallback=candidates[Math.floor(Math.random()*candidates.length)];
+  for(let attempt=0;attempt<18;attempt++){
+    const pt=candidates[Math.floor(Math.random()*candidates.length)];
+    const dx=pt[0]-camera.position.x,dz=pt[1]-camera.position.z;
+    if(dx*dx+dz*dz<64)continue;
+    let crowded=false;
+    for(const other of pickups){
+      if(other===pk||other.type!=='weapon'||!other.m.visible)continue;
+      const ox=other.m.position.x-pt[0],oz=other.m.position.z-pt[1];
+      if(ox*ox+oz*oz<49){crowded=true;break;}
+    }
+    if(!crowded)return pt;
+    fallback=pt;
+  }
+  return fallback;
+}
+function relocateWeaponPickup(pk,seedIndex=-1){
+  const pt=chooseWeaponSpawnPoint(pk,seedIndex);
+  pk.m.position.set(pt[0],.62,pt[1]);
+  pk.bob=Math.random()*Math.PI*2;
 }
 
 function spawnPickups(){
-  const ammoPts=MOBILE_LOW?AMO_PTS.filter((_,i)=>i%2===0):AMO_PTS;
   const hpPts=MOBILE_LOW?HP_PTS.filter((_,i)=>i%2===0):HP_PTS;
-  ammoPts.forEach(([x,z])=>{const m=mkAmmoMesh();m.position.set(x,.6,z);scene.add(m);pickups.push({m,type:'ammo',bob:Math.random()*Math.PI*2,respawn:0,cd:0});});
-  hpPts.forEach(([x,z])=>{const m=mkHpMesh();m.position.set(x,.6,z);scene.add(m);pickups.push({m,type:'hp',bob:Math.random()*Math.PI*2,respawn:0,cd:0});});
-  BOMB_PTS.forEach(([x,z])=>{const m=mkBombPickupMesh();m.position.set(x,.6,z);scene.add(m);pickups.push({m,type:'bomb',bob:Math.random()*Math.PI*2,respawn:0,cd:0});});
-  const weaponPts=MOBILE_LOW?WORLD_WEAPON_PICKUPS.filter((_,i)=>i%2===0):WORLD_WEAPON_PICKUPS;
-  weaponPts.forEach(([weaponKey,x,z])=>{
-    const m=mkWeaponPickupMesh(weaponKey);m.position.set(x,.62,z);scene.add(m);
-    pickups.push({m,type:'weapon',weaponKey,bob:Math.random()*Math.PI*2,respawn:0,cd:0});
+  hpPts.forEach(([x,z])=>{
+    const m=mkHpMesh();m.position.set(x,.6,z);scene.add(m);
+    pickups.push({m,type:'hp',bob:Math.random()*Math.PI*2,respawn:0,cd:0});
   });
-}
-let pickupTickAcc=0;
+
+  const keys=WORLD_WEAPON_KEYS;
+  keys.forEach((weaponKey,i)=>{
+    const m=mkWeaponPickupMesh(weaponKey);scene.add(m);
+    const pk={m,type:'weapon',weaponKey,bob:Math.random()*Math.PI*2,respawn:0,cd:0};
+    pickups.push(pk);relocateWeaponPickup(pk,i*5+2);
+  });
+}let pickupTickAcc=0;
 function tickPickups(dt){
   pickupTickAcc+=dt;
   if(pickupTickAcc<1/30)return;
   const step=Math.min(.08,pickupTickAcc);pickupTickAcc=0;
   const px=camera.position.x,pz=camera.position.z;
   for(const pk of pickups){
-    if(!pk.m.visible){pk.respawn-=step;if(pk.respawn<=0)pk.m.visible=true;continue;}
-    pk.bob+=step*1.8;pk.m.position.y=.55+Math.sin(pk.bob)*.18;pk.m.rotation.y+=step*1.2;
+    if(!pk.m.visible){
+      pk.respawn-=step;
+      if(pk.respawn<=0){
+        if(pk.type==='weapon')relocateWeaponPickup(pk);
+        pk.m.visible=true;pk.cd=.30;
+      }
+      continue;
+    }
+
+    pk.bob+=step*(pk.type==='weapon'?1.45:1.8);
+    pk.m.position.y=(pk.type==='weapon'?.62:.55)+Math.sin(pk.bob)*(pk.type==='weapon'?.14:.18);
+    pk.m.rotation.y+=step*(pk.type==='weapon'?.82:1.2);
     if(pk.cd>0){pk.cd-=step;continue;}
-    const dx=px-pk.m.position.x,dz=pz-pk.m.position.z;if(dx*dx+dz*dz>5)continue;
-    pk.cd=.8;pk.m.visible=false;
+
+    const dx=px-pk.m.position.x,dz=pz-pk.m.position.z;
+    if(dx*dx+dz*dz>5)continue;
+
     if(pk.type==='weapon'){
       const idx=WEAPONS.findIndex(w=>w.key===pk.weaponKey),w=WEAPONS[idx];
-      if(idx<0||!w){pk.m.visible=true;pk.cd=0;continue;}
-      const current=weaponAmmoValue(idx);
-      if(idx===curW&&current>=w.clip&&!w.isSmoke&&!w.isMine){pk.m.visible=true;pk.cd=.45;continue;}
-      if(w.isSmoke){playerSmokeCD=0;setWeaponAmmo(idx,1);smokeHudSecond=-1;}
-      else if(w.isMine){
-        if(current>=w.clip){pk.m.visible=true;pk.cd=.45;continue;}
-        setWeaponAmmo(idx,Math.min(w.clip,current+2));
-      }else setWeaponAmmo(idx,w.clip);
-      switchW(idx);wHUD();updateMineHUD();showMsg(w.icon+' '+w.label+' подобрано!');pk.respawn=w.isRocket?24:18;
+      if(idx<0||!w)continue;
+      const reserveGrant=randomWeaponReserve(w);
+      const result=grantWeapon(idx,reserveGrant);
+      if(!result)continue;
+      pk.cd=.8;pk.m.visible=false;
+      pk.respawn=(w.isRocket||w.isBomb||w.isSniper?20:14)+Math.random()*14;
+      updateMineHUD();updateWeaponBar();wHUD();
+      if(result.first)showMsg(w.icon+' НОВОЕ ОРУЖИЕ: '+w.label+' · +'+result.added+' патронов');
+      else showMsg(w.icon+' +'+result.added+' патронов для '+w.label+' · запас '+result.total);
+      saveProgress(true);
+      continue;
     }
-    else if(pk.type==='ammo'){uAmmo=Math.min(uAmmo+30,9999);wHUD();showMsg('📦 +30 патронов!');pk.respawn=7;}
-    else if(pk.type==='bomb'){
-      const cur=weaponAmmoValue(6);
-      if(cur>=WEAPONS[6].clip){pk.m.visible=true;pk.cd=0;continue;}
-      setWeaponAmmo(6,cur+1);wHUD();updateMineHUD();showMsg('🧨 Бомба подобрана!');pk.respawn=24;
+
+    const heal=Math.round(50*plr.medkitM);
+    if(hp>=plr.maxHp){
+      if(plr.overhealArmor<=0||armor>=plr.maxArmor){pk.cd=.35;continue;}
+      const gain=Math.min(plr.overhealArmor,plr.maxArmor-armor);
+      armor+=gain;markHUD();showMsg('🛡️ Аптечка преобразована: +'+Math.round(gain)+' брони');
     }else{
-      const heal=Math.round(50*plr.medkitM);
-      if(hp>=plr.maxHp){
-        if(plr.overhealArmor<=0||armor>=plr.maxArmor){pk.m.visible=true;pk.cd=0;continue;}
-        const gain=Math.min(plr.overhealArmor,plr.maxArmor-armor);armor+=gain;markHUD();showMsg('🛡️ Аптечка преобразована: +'+Math.round(gain)+' брони');pk.respawn=14;
-      }else{
-        const before=hp;hp=Math.min(hp+heal,plr.maxHp);markHUD();showMsg('❤️ +'+Math.round(hp-before)+' HP!');pk.respawn=14;
-      }
+      const before=hp;hp=Math.min(hp+heal,plr.maxHp);markHUD();showMsg('❤️ +'+Math.round(hp-before)+' HP!');
     }
+    pk.cd=.8;pk.m.visible=false;pk.respawn=14;
   }
 }

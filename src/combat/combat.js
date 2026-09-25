@@ -552,7 +552,7 @@ function shoot(){
   const shakePower=w.isRocket?1.15:w.isSniper?.98:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22;
   const shakeDuration=w.isRocket?.22:w.isSniper?.20:.11;
   triggerScreenShake(shakePower,shakeDuration);
-  if(w.isSniper)kickSniperScope();
+  if(w.aimMode==='scope')kickSniperScope();
 
   // Camera recoil: repeatable pattern + small jitter gives each weapon a learnable cadence.
   const firstShot=shotSequence===0;
@@ -615,9 +615,9 @@ function spawnTracer(from,dir,dist,col,key='default'){
   pTrs.push({m,vx:dir.x*speed,vy:dir.y*speed,vz:dir.z*speed,life:maxLife,maxLife});
 }
 function doReload(){
-  const w=getW();if(w.isBomb||w.isSmoke)return;
+  const w=getW();
   if(reloading||ammo===w.clip||uAmmo===0||weaponActionBlocked())return;
-  if(w.isSniper&&zooming)zooming=false;
+  if(w.aimMode==='scope'&&zooming)zooming=false;
   reloading=true;reloadShellLoaded=0;
   if(w.reloadStyle==='shell'){
     reloadMode='shell';
@@ -636,12 +636,15 @@ function doReload(){
 function throwMine(){
   const mineIdx=5,mineW=WEAPONS[mineIdx];
   if(reloading||sCD>0)return;
+  if(!ownsWeapon(mineIdx)){showMsg('💣 Сначала найдите МИНУ на карте');return;}
   if(playerMineCD>0){showMsg('💣 Новую мину можно поставить через '+Math.ceil(playerMineCD)+' сек.');return;}
   if(playerMineCount()>=MAX_PLAYER_MINES||mines.length>=MAX_MINES){showMsg('Лимит активных мин достигнут!');return;}
   const mineAmmo=weaponAmmoValue(mineIdx);
   if(mineAmmo<=0){
-    if(curW===mineIdx)doReload();
-    else showMsg('💣 Мины закончились — выберите оружие 6 и перезарядите');
+    if(weaponReserveValue(mineIdx)>0){
+      if(curW===mineIdx)doReload();
+      else showMsg('💣 В запасе есть мины — выберите слот 6 и перезарядите');
+    }else showMsg('💣 Боезапас мин пуст — подберите ещё МИНУ на карте');
     return;
   }
   setWeaponAmmo(mineIdx,mineAmmo-1);
@@ -652,16 +655,20 @@ function throwMine(){
   const vv=dir.clone().multiplyScalar(9);vv.y+=5;
   mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z,fall:true,life:Infinity,armed:false,aT:1.5,checkT:.08,ph:0,team:'player',owner:'player',dmg:mineW.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.mineDamageM*plr.explosiveDamageM,radius:9*plr.explosiveRadiusM*plr.mineRadiusM});
   playerMineCD=MINE_COOLDOWN_SECONDS*plr.mineCooldownM;
-  mineHudSecond=-1;
-  updateMineHUD();
+  mineHudSecond=-1;updateMineHUD();
 }
-
 function placeBomb(){
   const bombIdx=6,bombW=WEAPONS[bombIdx];
   if(reloading||sCD>0)return;
+  if(!ownsWeapon(bombIdx)){showMsg('🧨 Сначала найдите БОМБУ на карте');return;}
   if(playerBombCD>0){showMsg('🧨 Новую бомбу можно поставить через '+Math.ceil(playerBombCD)+' сек.');return;}
   const bombAmmo=weaponAmmoValue(bombIdx);
-  if(bombAmmo<=0){showMsg('🧨 Сначала подберите бомбу на карте');return;}
+  if(bombAmmo<=0){
+    if(weaponReserveValue(bombIdx)>0){
+      if(curW===bombIdx)doReload();else showMsg('🧨 В запасе есть бомбы — выберите слот 7 и перезарядите');
+    }else showMsg('🧨 Боезапас бомб пуст — подберите ещё БОМБУ на карте');
+    return;
+  }
   if(mines.length>=MAX_MINES){showMsg('Лимит активной взрывчатки достигнут');return;}
   setWeaponAmmo(bombIdx,bombAmmo-1);
   sCD=bombW.rate;
@@ -669,11 +676,8 @@ function placeBomb(){
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   dir.y=0;if(dir.lengthSq()<.01)dir.set(0,0,-1);dir.normalize();
   const m=mkBomb();
-  const pos=camera.position.clone().addScaledVector(dir,1.15);
-  pos.y=.34;
-  const coll=collideWalls(pos.x,pos.z,.42);
-  m.position.set(coll.x,.34,coll.z);
-  scene.add(m);
+  const pos=camera.position.clone().addScaledVector(dir,1.15);pos.y=.34;
+  const coll=collideWalls(pos.x,pos.z,.42);m.position.set(coll.x,.34,coll.z);scene.add(m);
   mines.push({
     m,vx:0,vy:0,vz:0,fall:false,life:Infinity,armed:true,aT:0,checkT:0,ph:0,
     team:'player',owner:'player',src:null,kind:'bomb',fuseT:BOMB_FUSE_SECONDS*plr.bombFuseM,fuseTotal:BOMB_FUSE_SECONDS*plr.bombFuseM,
@@ -684,25 +688,31 @@ function placeBomb(){
   bombHudSecond=-1;updateMineHUD();
   showMsg('🧨 Фитиль зажжён: мощный взрыв через 45 секунд!');
 }
-
-
 function throwSmokeGrenade(){
-  const smokeW=WEAPONS[SMOKE_WEAPON_INDEX];
+  const smokeIdx=SMOKE_WEAPON_INDEX,smokeW=WEAPONS[smokeIdx];
   if(reloading||sCD>0)return;
+  if(!ownsWeapon(smokeIdx)){showMsg('🌫️ Сначала найдите ДЫМОВУХУ на карте');return;}
   if(playerSmokeCD>0){showMsg('🌫️ Дымовуха будет готова через '+Math.ceil(playerSmokeCD)+' сек.');return;}
   if(smokeGrenades.length>=2){showMsg('🌫️ Дождитесь раскрытия предыдущей дымовухи');return;}
+  const smokeAmmo=weaponAmmoValue(smokeIdx);
+  if(smokeAmmo<=0){
+    if(weaponReserveValue(smokeIdx)>0){
+      if(curW===smokeIdx)doReload();else showMsg('🌫️ В запасе есть дымовухи — выберите слот 8 и перезарядите');
+    }else showMsg('🌫️ Боезапас дымовух пуст — подберите ещё ДЫМОВУХУ на карте');
+    return;
+  }
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
   const m=mkSmokeGrenade();
   m.position.copy(camera.position).addScaledVector(dir,.72);m.position.y-=.12;scene.add(m);
   const v=dir.clone().multiplyScalar(12.5);v.y+=5.2;
   smokeGrenades.push({m,vx:v.x,vy:v.y,vz:v.z,rx:7+Math.random()*5,rz:6+Math.random()*5,age:0,life:3,grounded:false,trailT:.02});
-  setWeaponAmmo(SMOKE_WEAPON_INDEX,0);
+  setWeaponAmmo(smokeIdx,smokeAmmo-1);
   sCD=smokeW.rate;recoil=.45;
   recoilPitch+=(smokeW.recoilY||.02)*plr.recoilM;
   trigMuzzle(camera.position.clone().addScaledVector(dir,.62),0xcbd4d8,.72);
   playerSmokeCD=SMOKE_COOLDOWN_SECONDS*plr.smokeCooldownM;
   smokeHudSecond=-1;wHUD();
-  showMsg('🌫️ Дымовуха запущена · перезарядка '+Math.ceil(playerSmokeCD)+' сек.');
+  showMsg('🌫️ Дымовуха запущена · следующая через '+Math.ceil(playerSmokeCD)+' сек.');
 }
 
 // ─── UPDATE PROJECTILES ─────────────────

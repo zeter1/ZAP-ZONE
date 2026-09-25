@@ -76,6 +76,19 @@ function mkHuman(et,team){
   V(new THREE.BoxGeometry(.15,.10,.27),armorMat,-.15,.10,-.02);
   V(new THREE.BoxGeometry(.15,.10,.27),armorMat,.15,.10,-.02);
 
+  // Extra readability: visor, guards, antenna and a rear team armor mark.
+  V(new THREE.BoxGeometry(.30,.065,.035),glowMat,0,1.84,-.235,.02);
+  V(new THREE.BoxGeometry(.11,.20,.16),darkMat,-.365,1.03,-.02,0,0,.12);
+  V(new THREE.BoxGeometry(.11,.20,.16),darkMat,.365,1.03,-.02,0,0,-.12);
+  V(new THREE.BoxGeometry(.055,.24,.055),armorMat,.18,2.055,.02,0,0,-.10);
+  V(new THREE.SphereGeometry(.04,7,5),glowMat,.19,2.175,.01);
+
+  const teamMark=makeAssetPlane(
+    ally?GAME_ASSETS.characters.allyMark:GAME_ASSETS.characters.enemyMark,
+    .24,.24,{opacity:.96,depthTest:true,renderOrder:8}
+  );
+  teamMark.position.set(0,1.31,.281);teamMark.rotation.y=Math.PI;g.add(teamMark);
+
   const emblem=makeAssetPlane(
     ally?GAME_ASSETS.characters.ally:GAME_ASSETS.characters.enemy,
     .25,.25,{opacity:.98,depthTest:true,renderOrder:8}
@@ -91,8 +104,8 @@ function mkHuman(et,team){
   ring.rotation.x=Math.PI/2;ring.position.y=.02;g.add(ring);
 
   const weaponPivot=new THREE.Group();
-  weaponPivot.position.set(.42,1.20,-.02);
-  weaponPivot.rotation.set(.10,.12,-.42);
+  weaponPivot.position.set(.39,1.23,-.07);
+  weaponPivot.rotation.set(.05,.07,-.35);
   g.add(weaponPivot);
   return{g,pts,weaponPivot};
 }
@@ -1005,12 +1018,13 @@ class Enemy{
     if(this.weaponPivot){
       const idleBreath=Math.sin(this.ph*.55)*(1-Math.min(1,gaitNorm))*.008;
       const stepBob=Math.sin(this.gaitPhase*2)*.012*gaitNorm;
-      this.weaponPivot.position.x=.42+Math.sin(this.gaitPhase)*.008*gaitNorm;
-      this.weaponPivot.position.y=1.20+stepBob;
-      this.weaponPivot.position.z=-.02;
-      this.weaponPivot.rotation.x=.06+idleBreath+stepBob*1.8+(combatPose?.05:0);
-      this.weaponPivot.rotation.y=.10+(combatPose?.14*this.strafeDir:0)+sideRatio*.025*gaitNorm;
-      this.weaponPivot.rotation.z=-.42+(combatPose?-.05*this.strafeDir:0)-strafeRoll*.35;
+      const pose=this.weaponPivot.userData.pose||{p:[.39,1.23,-.07],r:[.05,.07,-.35]};
+      this.weaponPivot.position.x=pose.p[0]+Math.sin(this.gaitPhase)*.008*gaitNorm;
+      this.weaponPivot.position.y=pose.p[1]+stepBob;
+      this.weaponPivot.position.z=pose.p[2];
+      this.weaponPivot.rotation.x=pose.r[0]+idleBreath+stepBob*1.8+(combatPose?.05:0);
+      this.weaponPivot.rotation.y=pose.r[1]+(combatPose?.14*this.strafeDir:0)+sideRatio*.025*gaitNorm;
+      this.weaponPivot.rotation.z=pose.r[2]+(combatPose?-.05*this.strafeDir:0)-strafeRoll*.35;
     }
 
     if(this.canSeeTarget&&targetPos&&dist<=this.weapon.range*1.08){
