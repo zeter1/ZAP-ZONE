@@ -445,6 +445,7 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
     showKillMedal({distance:travelDist,isCrit,headshot:lethalHeadshot,explosive:false});
     markHUD();scorePop(lethalHeadshot?'HEADSHOT KILL · +'+(en.type+1)*100:'+'+(en.type+1)*100+(hd?' 🎯':'')+(isCrit?' КРИТ!':''));
     allyKills++;updateTeamScore();
+    pushKillFeed('ally','ВЫ','enemy','ВРАЖЕСКИЙ БОТ',lethalHeadshot?'headshot':w.key);
   }
   if(plr.explode){
     const center=en.group.position.clone();center.y+=1.0;explode(center,0xff8800,2.6*plr.explodeRadiusM);
@@ -455,7 +456,7 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist){
       const splash=dmg*.32*plr.explodeDamageM*(1-dd/exRadius);
       e2.hurt(splash,dir.clone(),'ally');
       if(plr.lifeSteal>0)hp=Math.min(hp+splash*plr.lifeSteal,plr.maxHp);
-      if(!e2.alive){addXP((e2.type+1)*22);score+=(e2.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();showKillMedal({explosive:true});scorePop('💥+'+(e2.type+1)*90);}
+      if(!e2.alive){addXP((e2.type+1)*22);score+=(e2.type+1)*90;kills++;grantPlayerKillRewards();allyKills++;markHUD();updateTeamScore();pushKillFeed('ally','ВЫ','enemy','ВРАЖЕСКИЙ БОТ','bomb');showKillMedal({explosive:true});scorePop('💥+'+(e2.type+1)*90);}
     }
   }
   return dmg;
@@ -739,6 +740,7 @@ function awardExplosionKill(victim,ownerType,ownerBot,kind,ownerTeam=null){
     score+=(victim.type+1)*pts;
     kills++;grantPlayerKillRewards();allyKills++;
     markHUD();updateTeamScore();
+    pushKillFeed('ally','ВЫ','enemy','ВРАЖЕСКИЙ БОТ',kind);
     showHitMarker('kill');playSfx('kill');
     showKillMedal({explosive:true});
     scorePop((kind==='bomb'?'🧨':kind==='mine'?'💣':'🚀')+'+'+(victim.type+1)*pts);
@@ -747,6 +749,15 @@ function awardExplosionKill(victim,ownerType,ownerBot,kind,ownerTeam=null){
     if(team==='ally')allyKills++;else enemyKills++;
     if(ownerBot)ownerBot.kills=(ownerBot.kills||0)+1;
     updateTeamScore();
+    if(typeof pushKillFeed==='function'){
+      pushKillFeed(
+        team,
+        team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
+        victim.team,
+        victim.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
+        kind
+      );
+    }
   }
 }
 function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,kind='rocket',playerSelfScale=.35,ownerTeamOverride=null){

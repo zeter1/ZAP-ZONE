@@ -170,6 +170,22 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
 
 // ─── HUD ────────────────────────────────
 function G(id){return document.getElementById(id);}
+function pushKillFeed(killerTeam,killerLabel,victimTeam,victimLabel,kind='bullet'){
+  const root=G('kill-feed');if(!root)return;
+  const row=document.createElement('div');row.className='kf-row';
+  const killer=document.createElement('span');
+  killer.className='kf-name '+(killerLabel==='ВЫ'?'player':killerTeam);
+  killer.textContent=killerLabel;
+  const icon=document.createElement('span');icon.className='kf-icon';
+  icon.textContent=kind==='headshot'?'🎯':kind==='rocket'?'🚀':kind==='mine'?'💣':kind==='bomb'?'🧨':kind==='melee'?'⚡':'✦';
+  const victim=document.createElement('span');
+  victim.className='kf-name '+(victimLabel==='ВЫ'?'player':victimTeam);
+  victim.textContent=victimLabel;
+  row.append(killer,icon,victim);root.prepend(row);
+  while(root.children.length>5)root.lastElementChild.remove();
+  setTimeout(()=>{if(!row.isConnected)return;row.classList.add('out');setTimeout(()=>row.remove(),260);},4200);
+}
+function clearKillFeed(){const root=G('kill-feed');if(root)root.replaceChildren();}
 let _hudD=false;function markHUD(){_hudD=true;}
 function flushHUD(){
   if(!_hudD)return;_hudD=false;
@@ -378,7 +394,10 @@ function tickDeathWorld(dt){
 function checkDeath(){
   if(dying||hp>0)return;
   const killer=lastPlayerAttacker&&lastPlayerAttacker.alive?lastPlayerAttacker:null;
-  if(killer){killer.kills=(killer.kills||0)+1;enemyKills++;updateTeamScore();}
+  if(killer){
+    killer.kills=(killer.kills||0)+1;enemyKills++;updateTeamScore();
+    pushKillFeed('enemy','ВРАЖЕСКИЙ БОТ','ally','ВЫ',deathReason||'bullet');
+  }
   zooming=false;
   G('sniper-scope')?.classList.remove('on','kick');
   dying=true;running=false;paused=false;lvlAnnOpen=false;perkPickOpen=false;refreshMobileHUD();playSfx('death');
@@ -398,17 +417,8 @@ function doRespawn(){
   G('death-flash').style.opacity='1';
   const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ';
   G('death-msg').style.opacity='0';
-  enemies.forEach(e=>e.destroy());enemies.length=0;
-  pickups.forEach(p=>destroySceneObject(p.m));pickups.length=0;
-  _gibs.forEach(g=>destroySceneObject(g.m));_gibs.length=0;
-  casings.forEach(c=>scene.remove(c.m));casings.length=0;
-  impactMarks.forEach(d=>{scene.remove(d.m);d.m.geometry.dispose();d.m.material.dispose();});impactMarks.length=0;
-  [...eRkts,...pRkts,...pTrs,...pBullets].forEach(r=>{if(r.m)destroySceneObject(r.m);});
-  eRkts.length=0;pRkts.length=0;pTrs.length=0;pBullets.length=0;
-  for(const mn of mines)mn.src=null;
-  updateMineHUD();
-  for(let i=0;i<P_MAX;i++){_pm[i].visible=false;_pp[i].life=0;}_pHead=0;_pCount=0;
-
+  // Keep the live battlefield intact across player deaths. Existing bots,
+  // pickups, mines and projectiles remain part of the same 5×5 fight.
   hp=plr.maxHp;
   armor=0;
   reloading=false;reloadT=0;reloadTot=0;sCD=0;recoil=0;
@@ -427,13 +437,22 @@ function doRespawn(){
   deathReason='';lastPlayerAttacker=null;plr.secondWindReady=true;
   camera.fov=BASE_FOV;camera.updateProjectionMatrix();
 
-  camera.position.set(0,1.75,0);
-  yaw=0;pitch=0;onGnd=true;jumpV=0;
+  const respawn=pickPlayerRespawnPoint();
+  applyPlayerSpawn(respawn);
+  const nearestEnemy=enemies.filter(e=>e.alive&&e.team==='enemy').sort((a,b)=>
+    Math.hypot(a.group.position.x-respawn[0],a.group.position.z-respawn[1])-
+    Math.hypot(b.group.position.x-respawn[0],b.group.position.z-respawn[1])
+  )[0];
+  if(nearestEnemy){
+    const dx=nearestEnemy.group.position.x-respawn[0],dz=nearestEnemy.group.position.z-respawn[1];
+    yaw=Math.atan2(-dx,-dz);
+  }else yaw=Math.atan2(respawn[0],respawn[1]);
+  pitch=0;onGnd=true;jumpV=0;
   buildGun(getW());wHUD();markHUD();flushHUD();xpHUD();updateStats();updateWeaponBar();updateTeamScore();
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   setDamageOverlay(0);G('rwarn').style.opacity='0';G('mines-panel').style.display=(getW().isMine||getW().isBomb)?'block':'none';
 
-  spawnPickups();spawnInitial();showAnn('ВОЗРОЖДЕНИЕ · УРОВЕНЬ СОХРАНЁН');
+  showAnn('ТАКТИЧЕСКОЕ ВОЗРОЖДЕНИЕ · БОЙ ПРОДОЛЖАЕТСЯ');
   saveProgress(true);
   lastT=performance.now();
   if(IS_TOUCH){paused=false;running=true;}
@@ -471,6 +490,7 @@ function clearWorldForFreshGame(){
 function restartGameFromScratch(){
   if(!confirm('Начать игру заново? Текущий уровень, улучшения, счёт и автосохранение будут удалены.'))return;
   cleanupDeathCamera();
+  clearKillFeed();
   clearStoredProgress();
   clearWorldForFreshGame();
   curW=0;hardResetPlayerBuild();

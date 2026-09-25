@@ -659,6 +659,15 @@ class Enemy{
         this.kills=(this.kills||0)+1;
         if(this.team==='ally')allyKills++;else enemyKills++;
         updateTeamScore();
+        if(typeof pushKillFeed==='function'){
+          pushKillFeed(
+            this.team,
+            this.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
+            this.targetEn.team,
+            this.targetEn.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
+            'bullet'
+          );
+        }
       }
       return;
     }
@@ -1300,6 +1309,32 @@ function pickSpawnSet(pool,count,used,minDist,opts={}){
 function applyPlayerSpawn(pos){
   camera.position.set(pos[0],1.75,pos[1]);
   prevPX=camera.position.x;prevPZ=camera.position.z;
+}
+function pickPlayerRespawnPoint(){
+  const living=enemies.filter(e=>e.alive);
+  const hostiles=living.filter(e=>e.team==='enemy').map(e=>[e.group.position.x,e.group.position.z]);
+  const friendlies=living.filter(e=>e.team==='ally').map(e=>[e.group.position.x,e.group.position.z]);
+  const occupied=living.map(e=>[e.group.position.x,e.group.position.z]);
+  const candidates=shuffle(ALLY_SPAWN_POOL.length?ALLY_SPAWN_POOL:VALID_SPAWN_POINTS);
+  let best=null,bestScore=-Infinity;
+  for(const base of candidates){
+    const pt=tryJitterSpawn(base,occupied,5.5,.52);
+    if(!pt)continue;
+    const enemyMin=hostiles.length?Math.min(...hostiles.map(p=>dist2D(pt,p))):99;
+    const allyMin=friendlies.length?Math.min(...friendlies.map(p=>dist2D(pt,p))):14;
+    let score=Math.min(enemyMin,70)*2.8-Math.min(allyMin,28)*.22+Math.random()*3;
+    if(enemyMin<18)score-=(18-enemyMin)*18;
+    if(enemyMin<10)score-=160;
+    if(score>bestScore){bestScore=score;best=pt;}
+  }
+  if(best)return best;
+  let fallback=null,fallbackEnemy=-1;
+  for(const base of ALLY_SPAWN_POOL){
+    if(!isSpawnWalkable(base[0],base[1],.52))continue;
+    const enemyMin=hostiles.length?Math.min(...hostiles.map(p=>dist2D(base,p))):99;
+    if(enemyMin>fallbackEnemy){fallbackEnemy=enemyMin;fallback=base.slice();}
+  }
+  return fallback||[-46,0];
 }
 function generateSpawnPlan(){
   const used=[];

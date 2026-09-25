@@ -491,3 +491,33 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #xhair{background:none!important;margin-left:0!important;margin-top:0!important;filter:none;}
 #xhair .xh-dot{display:block!important;}
 #xhair.dynamic-hit{filter:drop-shadow(0 0 5px rgba(255,220,70,.95));}
+
+
+/* v22.3 — continuous battlefield respawn + tactical kill feed */
+#kill-feed{
+  position:absolute;right:14px;bottom:122px;z-index:16;
+  width:min(330px,36vw);display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+  pointer-events:none;
+}
+.kf-row{
+  display:flex;align-items:center;justify-content:flex-end;gap:7px;
+  max-width:100%;padding:5px 9px;border-radius:9px;
+  background:linear-gradient(90deg,rgba(3,8,14,.68),rgba(3,8,14,.90));
+  border:1px solid rgba(210,225,240,.14);
+  box-shadow:0 5px 18px rgba(0,0,0,.22);
+  color:#dce7f2;font:800 10px/1.15 'Segoe UI',sans-serif;letter-spacing:.35px;
+  animation:killFeedIn .18s ease-out both;
+  transition:opacity .24s ease,transform .24s ease;
+}
+.kf-row.out{opacity:0;transform:translateX(18px);}
+.kf-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:118px;}
+.kf-name.ally{color:#72d8ff;text-shadow:0 0 8px rgba(60,185,255,.32);}
+.kf-name.enemy{color:#ff7187;text-shadow:0 0 8px rgba(255,65,90,.30);}
+.kf-name.player{color:#ffe16b;text-shadow:0 0 8px rgba(255,215,50,.35);}
+.kf-icon{min-width:20px;text-align:center;color:#fff;font-size:12px;filter:drop-shadow(0 0 5px rgba(255,255,255,.22));}
+@keyframes killFeedIn{from{opacity:0;transform:translateX(18px) scale(.96);}to{opacity:1;transform:none;}}
+@media (max-width:900px){
+  #kill-feed{right:10px;bottom:118px;width:min(300px,44vw);gap:4px;}
+  .kf-row{font-size:9px;padding:4px 7px;}
+  .kf-name{max-width:92px;}
+}

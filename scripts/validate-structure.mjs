@@ -115,6 +115,7 @@ if(pickups.includes("type:'ammo'"))fail('standalone ammo pickups must not spawn'
 if(pickups.includes("type:'bomb'"))fail('bomb must use the same weapon pickup/reserve economy');
 
 const combat=readFileSync('src/combat/combat.js','utf8');
+const progression=readFileSync('src/progression/progression.js','utf8');
 for(const token of ['function spawnPlayerBullet','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible',"playSfx('ricochet'"]){
   if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
@@ -147,6 +148,17 @@ for(const token of [
   if(!bots.includes(token))fail('bot locomotion integration missing: '+token);
 }
 
+for(const token of ['function pickPlayerRespawnPoint()',"pushKillFeed(","this.targetEn.team"]){
+  if(!bots.includes(token))fail('continuous team battle/kill feed bot integration missing: '+token);
+}
+for(const token of ['function pushKillFeed(','function clearKillFeed()','const respawn=pickPlayerRespawnPoint();','ТАКТИЧЕСКОЕ ВОЗРОЖДЕНИЕ · БОЙ ПРОДОЛЖАЕТСЯ']){
+  if(!progression.includes(token))fail('continuous player respawn/kill feed integration missing: '+token);
+}
+for(const token of ["pushKillFeed('ally','ВЫ'","victim.team"]){
+  if(!combat.includes(token))fail('combat kill feed integration missing: '+token);
+}
+if(!html.includes('id="kill-feed"'))fail('kill feed HUD root missing');
+
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx']){
   if(!engine.includes(token))fail('engine FX missing: '+token);
@@ -177,5 +189,5 @@ for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weapon
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
-if(!html.includes('ZAP ZONE v22.2'))fail('index version is not v22.2');
-if(!process.exitCode)console.log('ZAP ZONE premium all-weapon first-person visual pass and gameplay validation passed.');
+if(!html.includes('ZAP ZONE v22.3'))fail('index version is not v22.2');
+if(!process.exitCode)console.log('ZAP ZONE v22.3 continuous battlefield respawn and kill-feed validation passed.');
