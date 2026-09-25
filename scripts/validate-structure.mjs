@@ -179,7 +179,7 @@ for(const token of [
   "case 'flank'",
   "case 'support'",
   "this.tacticalMode==='suppress'",
-  'botRoleLabel(this.role)'
+  'function botRoleLabel'
 ]){
   if(!bots.includes(token))fail('Tactical AI 2.0 integration missing: '+token);
 }
@@ -222,6 +222,12 @@ for(const token of ['const insigniaMat=','const addInsignia=','addInsignia(.281,
   if(!bots.includes(token))fail('procedural bot insignia missing: '+token);
 }
 if(bots.includes('makeAssetPlane('))fail('bot scene must not depend on SVG texture planes');
+if(bots.includes('this.wEl')||bots.includes('updateBadge()')||bots.includes("ally?'СВОЙ':'ВРАГ'")){
+  fail('bot overhead text badges must stay removed; only health bars are allowed above bots');
+}
+for(const token of ["this.hEl=document.createElement('div')","this.hFill=document.createElement('div')","this.hEl.style.display=this.uiVis?'block':'none'","this.hFill.style.width=(this.hp/this.maxHp*100)+'%'"]){
+  if(!bots.includes(token))fail('bot overhead health bar missing: '+token);
+}
 for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke','function nearestHostileGrenade','cachedGrenadeThreat','suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
   if(!bots.includes(token))fail('Combat Presence 1.4 tactical awareness missing: '+token);
 }
@@ -294,5 +300,5 @@ const minimap=readFileSync('src/ui/minimap.js','utf8');
 for(const token of ['MINIMAP_WORLD_HALF=92','minimapStaticGeometry','BOT_MAP_ZONES','frontlineZoneOwners','camera.position',"team!=='ally'","pk.type!=='weapon'",'MINIMAP_HZ=10',"ctx.strokeStyle='rgba(3,10,16,.92)'","performance.now()*.006","minimapDrawTriangle(pos.x,pos.z,bot.group.rotation.y,'#5fc9ff'"]){
   if(!minimap.includes(token))fail('polished tactical minimap integration missing: '+token);
 }
-if(!html.includes('ZAP ZONE v23.7'))fail('index version is not v23.7');
-if(!process.exitCode)console.log('ZAP ZONE v23.7 Visual Polish 2.0 validation passed.');
+if(!html.includes('ZAP ZONE v23.8'))fail('index version is not v23.8');
+if(!process.exitCode)console.log('ZAP ZONE v23.8 health-only bot HUD validation passed.');

@@ -881,22 +881,11 @@ class Enemy{
     this.hFill=document.createElement('div');
     this.hFill.style.cssText='height:100%;border-radius:2px;width:100%;background:'+(team==='ally'?'#45d5ff':'#ff3655')+';';
     this.hEl.appendChild(this.hFill);document.getElementById('ui').appendChild(this.hEl);
-    this.wEl=document.createElement('div');
-    this.wEl.style.cssText='position:fixed;font-size:11px;font-weight:800;letter-spacing:.35px;pointer-events:none;z-index:5;display:none;background:'+(team==='ally'?'rgba(0,48,95,.86)':'rgba(95,0,20,.86)')+';color:'+(team==='ally'?'#a9efff':'#ffc0ca')+';padding:2px 5px;border:1px solid '+(team==='ally'?'#40d4ff':'#ff4260')+';border-radius:4px;box-shadow:0 0 8px '+(team==='ally'?'rgba(64,212,255,.52)':'rgba(255,66,96,.52)')+';';
-    document.getElementById('ui').appendChild(this.wEl);
 
     this.weapon=chooseBotWeaponByDistance(22,-1,true,this.role);
     this.mag=this.weapon.clip;
     this.syncScale(true);
-    this.updateBadge();
     refreshBotWeaponVisual(this);
-  }
-
-  updateBadge(){
-    const icon=this.weapon?.icon||'🔫';
-    const ally=this.team==='ally';
-    const badge=ally?GAME_ASSETS.characters.ally:GAME_ASSETS.characters.enemy;
-    this.wEl.innerHTML='<img class="bot-badge-icon" src="'+badge+'" alt=""><strong>'+(ally?'СВОЙ':'ВРАГ')+' · '+botRoleLabel(this.role)+'</strong><span>'+icon+'</span>';
   }
 
   syncScale(force=false){
@@ -944,7 +933,6 @@ class Enemy{
     this.weapon=candidate;
     if(force||this.mag<=0||this.mag>this.weapon.clip)this.mag=this.weapon.clip;
     this.weaponSwitchT=4.5+Math.random()*4.0;
-    this.updateBadge();
     refreshBotWeaponVisual(this);
   }
 
@@ -2010,7 +1998,6 @@ class Enemy{
     }
 
     this.hEl.style.display=this.uiVis?'block':'none';
-    this.wEl.style.display=this.uiVis?'block':'none';
     if(this.uiVis){
       const sx=this.uiX,sy=this.uiY;
       this.hEl.style.left=(sx-24)+'px';this.hEl.style.top=(sy-10)+'px';
@@ -2018,7 +2005,6 @@ class Enemy{
       const pct=this.hp/this.maxHp;
       if(this.team==='ally')this.hFill.style.background=pct>.6?'#45d5ff':pct>.3?'#2f9dff':'#5d72ff';
       else this.hFill.style.background=pct>.6?'#ff3655':pct>.3?'#ff6a3d':'#ff1744';
-      this.wEl.style.left=(sx+20)+'px';this.wEl.style.top=(sy-14)+'px';
     }
 
     if(this.team==='enemy'&&dist<1.02&&!this.targetEn&&!wallBetween(this.group.position.clone().setY(1.1),camera.position.clone(),losMeshes))return true;
@@ -2073,13 +2059,13 @@ class Enemy{
     disposeObject3D(this.group);
     const gp=this.group.position;
     for(let i=0;i<5;i++)spawnP({x:gp.x,y:gp.y+1,z:gp.z},0xff5533);
-    try{this.hEl.remove();this.wEl.remove();}catch(e){}
+    try{this.hEl.remove();}catch(e){}
   }
 
   destroy(){
     try{
       if(this.alive){scene.remove(this.group);disposeObject3D(this.group);}
-      this.hEl.remove();this.wEl.remove();
+      this.hEl.remove();
     }catch(e){}
   }
 }
