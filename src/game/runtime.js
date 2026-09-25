@@ -140,13 +140,13 @@ function loop(ts){
     const p=1-(reloadT/reloadTot);
     const shellReload=reloadMode==='shell';
     gunGrp.position.set(
-      gunBasePos.x+bobSide+Math.sin(p*Math.PI)*(shellReload?.045:.08),
+      gunBasePos.x+bobSide+Math.sin(p*Math.PI)*(shellReload ? .045 : .08),
       gunBasePos.y+bob+Math.sin(p*Math.PI)*(shellReload?-.12:-.22),
-      gunBasePos.z+(shellReload?.01:.03)
+      gunBasePos.z+(shellReload ? .01 : .03)
     );
-    gunGrp.rotation.x=Math.sin(p*Math.PI)*(shellReload?.30:.62);
+    gunGrp.rotation.x=Math.sin(p*Math.PI)*(shellReload ? .30 : .62);
     gunGrp.rotation.y=-gunSwayX*.9;
-    gunGrp.rotation.z=Math.sin(p*Math.PI*2)*(shellReload?.08:.16);
+    gunGrp.rotation.z=Math.sin(p*Math.PI*2)*(shellReload ? .08 : .16);
     G('reload-fill').style.width=(p*100).toFixed(1)+'%';
   } else if(weaponEquipT>0&&weaponEquipTot>0){
     const p=1-weaponEquipT/weaponEquipTot,ease=1-Math.pow(1-p,3);
