@@ -37,6 +37,10 @@ function loop(ts){
   // Camera recoil recovery follows the current weapon mass/handling profile.
   const activeW=getW();
   const recoilReturn=activeW.recoilReturn||12;
+  if(weaponReadyT>0)weaponReadyT=Math.max(0,weaponReadyT-dt);
+  if(weaponEquipT>0)weaponEquipT=Math.max(0,weaponEquipT-dt);
+  if(sprintExitT>0)sprintExitT=Math.max(0,sprintExitT-dt);
+  if(cycleT>0){cycleT=Math.max(0,cycleT-dt);if(cycleT<=0){cycleKind='';cycleTot=0;}}
   const scopedWeapon=activeW.aimMode==='scope';
   const adsWanted=!IS_TOUCH&&scopedWeapon&&zooming?1:0;
   const adsTime=adsWanted>adsBlend?(activeW.adsIn||.18):(activeW.adsOut||.12);
@@ -74,7 +78,7 @@ function loop(ts){
   const crosshair=G('xhair');
   if(crosshair){
     crosshair.classList.toggle('scope-hidden',scopeActive||scopedWeapon);
-    const reticleSpread=effectiveWeaponSpread(activeW,0,false,weaponBloom);
+    const reticleSpread=effectiveWeaponSpread(activeW,0,false,weaponBloom,shotSequence===0);
     const gap=5+Math.min(18,reticleSpread*260);
     crosshair.style.setProperty('--xh-gap',gap.toFixed(1)+'px');
   }
@@ -91,6 +95,13 @@ function loop(ts){
   if(K['KeyA'])_mv.addScaledVector(_rgt,-spd);if(K['KeyD'])_mv.addScaledVector(_rgt,spd);
   if(Math.abs(mobileInput.moveY)>.05)_mv.addScaledVector(_fwd,-mobileInput.moveY*spd);
   if(Math.abs(mobileInput.moveX)>.05)_mv.addScaledVector(_rgt,mobileInput.moveX*spd);
+  const sprintingNow=!!runHeld&&_mv.lengthSq()>.05&&onGnd&&!reloading&&!scopedWeapon&&weaponEquipT<=0;
+  if(sprintingNow&&zooming)zooming=false;
+  const sprintTarget=sprintingNow?1:0;
+  const sprintStep=dt*(sprintingNow?8.5:11.5);
+  sprintBlend+=Math.max(-sprintStep,Math.min(sprintStep,sprintTarget-sprintBlend));
+  if(wasWeaponSprinting&&!sprintingNow)sprintExitT=Math.max(sprintExitT,activeW.sprintRecover||.15);
+  wasWeaponSprinting=sprintingNow;
   if((K['Space']||mobileInput.jumpQueued)&&onGnd){jumpV=6*plr.jumpM;onGnd=false;mobileInput.jumpQueued=false;}
   jumpV-=22*dt;camera.position.y+=jumpV*dt;
   if(camera.position.y<=1.75){camera.position.y=1.75;onGnd=true;jumpV=0;}
@@ -110,7 +121,7 @@ function loop(ts){
 
   // Only true automatic weapons repeat while fire is held.
   const fireW=getW();
-  if((mouseDown||mobileInput.fire)&&fireW.automatic&&!reloading&&sCD<=0){
+  if((mouseDown||mobileInput.fire)&&fireW.automatic&&!reloading&&sCD<=0&&!weaponActionBlocked()){
     autoFireT-=dt;
     if(autoFireT<=0){shoot();autoFireT=fireW.rate;}
   } else {autoFireT=0;}
@@ -123,21 +134,41 @@ function loop(ts){
   gunSwayX*=Math.max(0,1-dt*7.5);gunSwayY*=Math.max(0,1-dt*7.5);
   if(reloading&&reloadTot>0){
     const p=1-(reloadT/reloadTot);
-    gunGrp.position.set(gunBasePos.x+bobSide+Math.sin(p*Math.PI)*.08,gunBasePos.y+bob+Math.sin(p*Math.PI)*(-.22),gunBasePos.z+.03);
-    gunGrp.rotation.x=Math.sin(p*Math.PI)*.62;gunGrp.rotation.y=-gunSwayX*.9;gunGrp.rotation.z=Math.sin(p*Math.PI*2)*.16;
+    const shellReload=reloadMode==='shell';
+    gunGrp.position.set(
+      gunBasePos.x+bobSide+Math.sin(p*Math.PI)*(shellReload?.045:.08),
+      gunBasePos.y+bob+Math.sin(p*Math.PI)*(shellReload?-.12:-.22),
+      gunBasePos.z+(shellReload?.01:.03)
+    );
+    gunGrp.rotation.x=Math.sin(p*Math.PI)*(shellReload?.30:.62);
+    gunGrp.rotation.y=-gunSwayX*.9;
+    gunGrp.rotation.z=Math.sin(p*Math.PI*2)*(shellReload?.08:.16);
     G('reload-fill').style.width=(p*100).toFixed(1)+'%';
+  } else if(weaponEquipT>0&&weaponEquipTot>0){
+    const p=1-weaponEquipT/weaponEquipTot,ease=1-Math.pow(1-p,3);
+    gunGrp.position.set(gunBasePos.x+.16*(1-ease),gunBasePos.y-.30*(1-ease),gunBasePos.z+.15*(1-ease));
+    gunGrp.rotation.x=.42*(1-ease);gunGrp.rotation.y=-.22*(1-ease);gunGrp.rotation.z=.18*(1-ease);
+  } else if(sprintBlend>.01){
+    const sb=sprintBlend;
+    gunGrp.position.set(gunBasePos.x+.15*sb,gunBasePos.y-.18*sb,gunBasePos.z+.10*sb);
+    gunGrp.rotation.x=.38*sb;gunGrp.rotation.y=-.30*sb;gunGrp.rotation.z=.14*sb;
   } else {
     const swayM=1-adsBlend*.72,bobM=1-adsBlend*.70;
     const adsX=gunBasePos.x*(1-adsBlend*.94);
     const adsY=gunBasePos.y+adsBlend*.035;
     const adsZ=gunBasePos.z-adsBlend*.075;
-    gunGrp.position.set(adsX+bobSide*bobM-gunSwayX*swayM,adsY+bob*bobM-gunSwayY*swayM,adsZ+recoil*.08);
-    gunGrp.rotation.x=recoil*.16+gunSwayY*.8*swayM;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM;
+    const cycleP=cycleTot>0?1-cycleT/cycleTot:0;
+    const cycleWave=cycleT>0?Math.sin(cycleP*Math.PI):0;
+    const pumpZ=cycleKind==='pump'?cycleWave*.11:0;
+    const boltX=cycleKind==='bolt'?cycleWave*.055:0;
+    const cycleRot=cycleKind==='bolt'?cycleWave*.10:(cycleKind==='pump'?cycleWave*.055:0);
+    gunGrp.position.set(adsX+bobSide*bobM-gunSwayX*swayM+boltX,adsY+bob*bobM-gunSwayY*swayM,adsZ+recoil*.08+pumpZ);
+    gunGrp.rotation.x=recoil*.16+gunSwayY*.8*swayM+cycleRot;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM+(cycleKind==='bolt'?cycleWave*.08:0);
   }
   if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/.065)*.85;if(flashM)flashM.material.opacity=beamT/.065;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
 
   if(sCD>0)sCD-=dt;
-  if(reloading){reloadT-=dt;if(reloadT<=0){const w=getW(),need=w.clip-ammo,take=Math.min(need,uAmmo);ammo+=take;uAmmo-=take;syncCurrentAmmo();reloading=false;reloadTot=0;playSfx('reloadDone');wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';}}
+  if(reloading){reloadT-=dt;if(reloadT<=0)completePlayerReloadStep();}
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}
