@@ -318,7 +318,8 @@ for(const token of ['class Enemy{','const WPTS=','const BOT_MOVE_CFG=','function
 for(const token of ['const built=mkHuman(et,team);','this.armRig=built.armRig','this.weaponPivot.userData.pose||','updateBotWeaponHands(this);']){
   if(!bots.includes(token))fail('bot presentation consumer contract missing: '+token);
 }
-for(const token of ['pose.elbowR','const strideBob','const hipSway','this.pts[0].position.y=1.82+strideBob*.55']){
+if(!presentation.includes('pose.elbowR'))fail('bot presentation elbow-hint contract missing');
+for(const token of ['const strideBob','const hipSway','this.pts[0].position.y=1.82+strideBob*.55']){
   if(!bots.includes(token))fail('advanced bot walk/weapon pose refinement missing: '+token);
 }
 for(const token of [
@@ -425,9 +426,9 @@ for(const token of ["this.tacticalMode=squadPlan.suppressor===this","breachRole?
   if(!bots.includes(token))fail('Combat Presence 1.3 bot/ballistic integration missing: '+token);
 }
 for(const token of ['const insigniaMat=','const addInsignia=','addInsignia(.281,Math.PI)','addInsignia(-.219,0)']){
-  if(!bots.includes(token))fail('procedural bot insignia missing: '+token);
+  if(!presentation.includes(token))fail('procedural bot insignia missing from presentation owner: '+token);
 }
-if(bots.includes('makeAssetPlane('))fail('bot scene must not depend on SVG texture planes');
+if(presentation.includes('makeAssetPlane(')||bots.includes('makeAssetPlane('))fail('bot scene must not depend on SVG texture planes');
 if(bots.includes('this.wEl')||bots.includes('updateBadge()')||bots.includes("ally?'СВОЙ':'ВРАГ'")){
   fail('bot overhead text badges must stay removed; only health bars are allowed above bots');
 }
