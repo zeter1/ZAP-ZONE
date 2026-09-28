@@ -110,6 +110,8 @@ index.html
 
 ## Визуальные assets
 
+Подробный контракт создания, оптимизации, подключения, проверки и публикации ассетов: **[docs/ASSETS.md](docs/ASSETS.md)**. Короткая карта каталогов для AI/разработчика: **[assets/README.md](assets/README.md)**.
+
 Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость. На HTTP/HTTPS raster-pack активируется автоматически; при прямом file:// запуске остаются лёгкие SVG/gradient fallbacks, чтобы не замедлять первый клик меню.
 
 - `assets/ui/backgrounds/menu-bg-arena-01.jpg` — фон главного меню;
@@ -123,8 +125,14 @@ index.html
 - `assets/ui/objective/frontline-beacon-01.png` — значок текущей Frontline-цели;
 - `assets/ui/pickups/weapon-crate-tech-01.png` — визуальный маркер weapon-pickup/crate в стартовых подсказках.
 - `assets/ui/medals/{first-blood,double-kill,triple-kill,killing-spree,longshot,critical-kill,explosive-kill,headshot}-tech-01.png` — generated combat-medal pack для kill/precision feedback.
+- `assets/ui/medals/multikill-tech-02.webp` — отдельная generated-эмблема MULTI KILL, закрывающая прежний SVG-only gap;
+- `assets/ui/feedback/{levelup-core-tech-01,death-skull-tech-01,armor-break-tech-01}.webp` — level-up, death и armor-break feedback;
+- `assets/ui/objective/frontline-capture-tech-01.webp` — новый компактный знак активной Frontline-цели;
+- `assets/ui/perks/defender-tech-01.webp` — общий generated crest для defensive perk-карточек с индивидуальными SVG fallback.
 
-Combat medal PNG используются только в DOM HUD: `showCombatMedal(...)` подставляет raster на HTTP/HTTPS и автоматически откатывается на соответствующий `assets/medals/*.svg`, а headshot popup использует `headshot-tech-01.png` с fallback на `assets/fx/headshot.svg` / `headshot-kill.svg`. `multikill.svg` сохраняется как SVG-only, потому что отдельный raster для MULTI KILL в этом пакете не генерировался.
+Combat medal PNG используются только в DOM HUD: `showCombatMedal(...)` подставляет raster на HTTP/HTTPS и автоматически откатывается на соответствующий `assets/medals/*.svg`, а headshot popup использует `headshot-tech-01.png` с fallback на `assets/fx/headshot.svg` / `headshot-kill.svg`. `multikill.svg` сохраняется как fallback, а HTTP/HTTPS использует отдельный `multikill-tech-02.webp`.
+
+Pack 3 хранится в оптимизированных 256×256 WebP с alpha. На HTTP/HTTPS MULTI KILL, level-up, death, armor-break, Frontline и defensive perks получают новые изображения; file:// сохраняет SVG/текстовые fallback, а Frontline decorative icon не является обязательным для понимания цели.
 
 Все generated raster-packs остаются presentation-only: они включаются только через DOM/CSS на HTTP/HTTPS, не попадают в Three.js texture planes/sprites и при отсутствии файла не могут превратить 3D-поверхность в чёрный прямоугольник.
 

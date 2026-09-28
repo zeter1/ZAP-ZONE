@@ -16,15 +16,11 @@
 
 ## Asset layer
 
-`GAME_ASSETS` — единый каталог неоружейных визуальных ресурсов. `gameTexture()` кеширует Three.js textures. `makeAssetPlane()` используется для environment decals, `makeAssetSprite()` — для billboard icons над pickups.
+`GAME_ASSETS` — единый каталог визуальных ресурсов и их presentation/fallback identity. Generated raster/WebP для HUD подключаются только через DOM/CSS и не должны возвращаться в `src/core/engine.js` как `gameTexture()`, `makeAssetPlane()` или `makeAssetSprite()`: постоянная WebGL-сцена сохраняет procedural/material-only invariant для совместимости с uCoz.
 
-Каталог разделён на:
+Каталог разделён по владельцам: gameplay SVG/fallback, UI/presentation, medals/status/fx, first-person weapon assets и generated presentation packs. Оружейные SVG остаются привязаны к `WEAPONS[].asset`, чтобы баланс и визуальная идентичность оружия оставались в одном источнике данных.
 
-- `pickups`;
-- `environment`;
-- `ui`.
-
-Оружейные SVG остаются привязаны к `WEAPONS[].asset`, чтобы баланс и визуальная идентичность оружия оставались в одном источнике данных.
+Полный operational contract для генерации, именования, оптимизации, wiring, CI и публикации находится в **[ASSETS.md](ASSETS.md)**; локальная карта дерева — в **[../assets/README.md](../assets/README.md)**.
 
 ## Arena visuals
 

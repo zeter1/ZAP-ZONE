@@ -2,6 +2,14 @@
 
 ## Unreleased — 2026-09-25
 
+### Generated Gameplay Feedback Pack 3 — six semantic UI assets
+- добавлены 6 оптимизированных 256×256 WebP с прозрачностью: MULTI KILL, level-up energy core, death skull, armor-break crest, Frontline capture beacon и defender crest;
+- `multikill-tech-02.webp` закрывает прежний SVG-only gap в combat medals; `multikill.svg` остаётся fallback;
+- level-up, death и armor-break DOM images используют новые WebP только на HTTP/HTTPS через общий `data-generated-src` activation path и автоматически возвращаются к прежним SVG при ошибке;
+- Frontline получает новый CSS-only decorative WebP, а смысл цели остаётся в bearing/state text; defensive perks `armor`, `armorregen`, `blastshield`, `ballistic_lining`, `surplus_armor`, `smoke_guard` используют defender crest с per-id SVG fallback;
+- добавлены `docs/ASSETS.md` и `assets/README.md`: правила генерации, оптимизации, naming/ownership, fallback, WebGL-safety, GitHub atomic upload, CI evidence и порядок ручной публикации на uCoz;
+- validation теперь проверяет WebP envelope, catalog/DOM/CSS wiring и по-прежнему запрещает generated raster/WebP внутри 3D engine scene.
+
 ### Generated Combat Medals Pack — kill/precision feedback
 - добавлен согласованный набор из 8 оптимизированных прозрачных PNG: First Blood, Double Kill, Triple Kill, Killing Spree, Longshot, Critical Kill, Explosive Kill и Headshot;
 - combat medal HUD на HTTP/HTTPS использует новые raster icons, а при ошибке загрузки автоматически возвращается к прежним `assets/medals/*.svg`; существующий `multikill.svg` остаётся SVG-only;

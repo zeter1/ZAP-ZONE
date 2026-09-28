@@ -26,14 +26,20 @@ function versionDomAssetUrls(){
     if(img.dataset.fallbackSrc)img.dataset.fallbackSrc=gameAssetUrl(img.dataset.fallbackSrc);
   });
 }
+function activateGeneratedDomAssets(){
+  document.querySelectorAll('img[data-generated-src]').forEach(img=>{
+    const generated=img.dataset.generatedSrc||'';
+    const fallback=img.dataset.fallbackSrc||img.getAttribute('src')||'';
+    if(generated&&fallback)imageAssetWithFallback(img,generated,fallback);
+  });
+}
 
 // Generated raster presentation art is enabled only for normal HTTP(S) hosting.
 // file:// keeps the lightweight SVG/gradient fallbacks so first interaction stays responsive.
 if(GAME_HOSTED_HTTP_MODE){
   document.documentElement.classList.add('generated-art-enabled');
   versionDomAssetUrls();
-  const generatedLogo=G('brand-logo');
-  if(generatedLogo?.dataset.generatedSrc)generatedLogo.src=generatedLogo.dataset.generatedSrc;
+  activateGeneratedDomAssets();
 }
 
 // Centralized visual asset catalog. Paths are root-relative to the game URL.
@@ -132,6 +138,7 @@ const GAME_ASSETS=versionAssetTree({
     'first-blood':'assets/ui/medals/first-blood-tech-01.png',
     'double-kill':'assets/ui/medals/double-kill-tech-01.png',
     'triple-kill':'assets/ui/medals/triple-kill-tech-01.png',
+    'multikill':'assets/ui/medals/multikill-tech-02.webp',
     'killing-spree':'assets/ui/medals/killing-spree-tech-01.png',
     'longshot':'assets/ui/medals/longshot-tech-01.png',
     'critical-kill':'assets/ui/medals/critical-kill-tech-01.png',
@@ -209,7 +216,12 @@ const GAME_ASSETS=versionAssetTree({
     damagePerk:'assets/ui/perks/damage-tech-01.png',
     speedPerk:'assets/ui/perks/speed-tech-01.png',
     reloadPerk:'assets/ui/perks/reload-tech-01.png',
+    defenderPerk:'assets/ui/perks/defender-tech-01.webp',
+    levelUp:'assets/ui/feedback/levelup-core-tech-01.webp',
+    death:'assets/ui/feedback/death-skull-tech-01.webp',
+    armorBreak:'assets/ui/feedback/armor-break-tech-01.webp',
     frontline:'assets/ui/objective/frontline-beacon-01.png',
+    frontlineCapture:'assets/ui/objective/frontline-capture-tech-01.webp',
     weaponCrate:'assets/ui/pickups/weapon-crate-tech-01.png'
   })
 });
@@ -304,6 +316,7 @@ function perkAsset(id,path){
     if(id==='damage')return GAME_ASSETS.presentation.damagePerk;
     if(id==='reload')return GAME_ASSETS.presentation.reloadPerk;
     if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
+    if(['armor','armorregen','blastshield','ballistic_lining','surplus_armor','smoke_guard'].includes(id))return GAME_ASSETS.presentation.defenderPerk;
   }
   return perkFallbackAsset(id,path);
 }

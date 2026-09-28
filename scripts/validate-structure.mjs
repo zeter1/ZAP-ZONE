@@ -42,6 +42,12 @@ const combatMedalRasterAssets=[
   'assets/ui/medals/longshot-tech-01.png','assets/ui/medals/critical-kill-tech-01.png',
   'assets/ui/medals/explosive-kill-tech-01.png','assets/ui/medals/headshot-tech-01.png'
 ];
+const generatedFeedbackWebpAssets=[
+  'assets/ui/medals/multikill-tech-02.webp',
+  'assets/ui/feedback/levelup-core-tech-01.webp','assets/ui/feedback/death-skull-tech-01.webp',
+  'assets/ui/feedback/armor-break-tech-01.webp','assets/ui/objective/frontline-capture-tech-01.webp',
+  'assets/ui/perks/defender-tech-01.webp'
+];
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
@@ -50,7 +56,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -58,7 +64,7 @@ const presentationCssRasterAssets=[
   'assets/environment/hazard-panel-01.jpg','assets/environment/terminal-screen-01.jpg',
   'assets/ui/teams/blue-team-emblem-01.png','assets/ui/teams/red-team-emblem-01.png',
   'assets/ui/icons/ammo-tech-01.png','assets/ui/perks/reload-tech-01.png',
-  'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png'
+  'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
@@ -94,14 +100,23 @@ for(const file of presentationRasterAssets){
   if(bytes.length<2048)fail('generated presentation asset is unexpectedly small: '+file);
   if(file.endsWith('.png')&&bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')fail('invalid PNG signature: '+file);
   if(file.endsWith('.jpg')&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[bytes.length-2]===0xff&&bytes[bytes.length-1]===0xd9))fail('invalid JPEG envelope: '+file);
+  if(file.endsWith('.webp')&&!(bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP'))fail('invalid WebP envelope: '+file);
 }
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
+for(const token of [
+  'data-generated-src="assets/ui/feedback/levelup-core-tech-01.webp"',
+  'data-generated-src="assets/ui/feedback/death-skull-tech-01.webp"',
+  'data-generated-src="assets/ui/feedback/armor-break-tech-01.webp"',
+  'id="frontline-art"'
+]){
+  if(!html.includes(token))fail('generated feedback DOM wiring missing: '+token);
+}
 for(const file of presentationCssRasterAssets){
   if(!gameCss.includes('../../'+file))fail('generated presentation asset missing from CSS: '+file);
 }
 for(const fallback of ['../../assets/ui/health.svg','../../assets/ui/armor.svg','../../assets/ui/xp.svg'])if(!gameCss.includes(fallback))fail('file-mode UI fallback missing: '+fallback);
 if(!gameCss.includes('.generated-art-enabled #menu')||!gameCss.includes('.generated-art-enabled #loading'))fail('hosted presentation-art gate missing');
-for(const token of ['#tb-ally::before','#tb-enemy::before','#wammo::before','#reload-lbl::before','#frontline-title::before','#menu .hints::after']){
+for(const token of ['#tb-ally::before','#tb-enemy::before','#wammo::before','#reload-lbl::before','#frontline-art','#menu .hints::after']){
   if(!gameCss.includes(token))fail('generated gameplay UI CSS wiring missing: '+token);
 }
 for(const file of audioAssets){
@@ -116,10 +131,21 @@ for(const token of ["id==='damage'","id==='reload'","id==='mobility'||id==='spri
   if(!catalog.includes(token))fail('generated perk presentation mapping missing: '+token);
 }
 for(const token of [
+  "defenderPerk:'assets/ui/perks/defender-tech-01.webp'",
+  "['armor','armorregen','blastshield','ballistic_lining','surplus_armor','smoke_guard'].includes(id)",
+  "levelUp:'assets/ui/feedback/levelup-core-tech-01.webp'",
+  "death:'assets/ui/feedback/death-skull-tech-01.webp'",
+  "armorBreak:'assets/ui/feedback/armor-break-tech-01.webp'",
+  "frontlineCapture:'assets/ui/objective/frontline-capture-tech-01.webp'"
+]){
+  if(!catalog.includes(token))fail('generated feedback pack mapping missing: '+token);
+}
+for(const token of [
   "presentationMedals:Object.freeze",
   "'first-blood':'assets/ui/medals/first-blood-tech-01.png'",
   "'double-kill':'assets/ui/medals/double-kill-tech-01.png'",
   "'triple-kill':'assets/ui/medals/triple-kill-tech-01.png'",
+  "'multikill':'assets/ui/medals/multikill-tech-02.webp'",
   "'killing-spree':'assets/ui/medals/killing-spree-tech-01.png'",
   "'longshot':'assets/ui/medals/longshot-tech-01.png'",
   "'critical-kill':'assets/ui/medals/critical-kill-tech-01.png'",
@@ -142,7 +168,7 @@ for(const token of [
 ]){
   if(!catalog.includes(token))fail('combat medal/headshot SVG fallback missing: '+token);
 }
-for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
+for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','function activateGeneratedDomAssets','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
   if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
 }
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');
