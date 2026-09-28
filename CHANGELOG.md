@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-28
 
+### Bot presentation / arm-rig ownership
+- procedural bot body, stable gameplay hit-mesh construction, visual armor/readability, weapon pivot и two-hand arm-rig solver вынесены из `src/entities/bots.js` в отдельный canonical owner `src/entities/bot-presentation.js`;
+- `bots.js` остаётся consumer-ом presentation seam и владельцем FSM/perception/locomotion/combat execution; geometry, grip positions, arm constants, hit-mesh order и gameplay balance в pure extraction не менялись;
+- добавлены direct `node:test` regressions для grip coordinate conversion/hand pinning и structural owner/consumer guards, запрещающие возврат presentation implementation в AI owner;
+- AI routing, architecture/spec и classic-script graph обновлены так, чтобы задачи по модели/arm rig открывали узкий owner вместо повторного чтения всего bot runtime.
+
+
 ### Frontline objective ownership + regression contract
 - Frontline objective/game-mode orchestration вынесена из большого `src/entities/bots.js` в отдельный canonical owner `src/game/frontline.js`: state, capture/rotation, control scores, save/restore, marker и HUD теперь имеют одну границу ответственности;
 - gameplay semantics сохранены без balance change: rotation/capture constants, rewards, thresholds, announcements/audio/save ordering не менялись; bots остаётся consumer-ом active objective для tactical execution;
