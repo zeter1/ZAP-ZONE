@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-25
 
+### Generated Visual Pack — hosting-safe UI integration
+- добавлен оптимизированный набор из 8 сгенерированных ассетов: отдельные фоны меню и загрузки, логотип ZAP ZONE, HUD-эмблемы HP/armor/XP, hazard-панель и terminal-screen;
+- исходные крупные изображения подготовлены для браузера: фоны/панели сохранены как оптимизированные JPEG, прозрачные эмблемы — как уменьшенные PNG; общий вес набора около 1.84 MiB;
+- все новые raster assets подключены только в HTML/CSS presentation layer: постоянная Three.js/WebGL-сцена по-прежнему не использует image texture-quads, поэтому сохраняется защита от прежних чёрных прямоугольников на uCoz;
+- меню и loading screen имеют CSS gradient fallback, новый логотип автоматически откатывается на прежний SVG при ошибке загрузки, а HUD сохраняет текстовые значения и полосы даже без картинок;
+- validation проверяет наличие и сигнатуры PNG/JPEG, catalog + CSS/HTML wiring и отдельно запрещает попадание нового raster pack в 3D engine scene.
+
 ### Hosting Compatibility 3.0 — без texture-quads в 3D-сцене
 - устранён оставшийся эпизодический источник чёрных квадратов на uCoz: временные explosion/headshot/impact эффекты больше не создают SVG Sprite billboards;
 - explosion, headshot/headshot-kill и bullet/wall/plasma/sniper/rocket/critical impacts переведены на procedural Three.js burst geometry: additive ring + core + radial rays;

@@ -146,6 +146,18 @@ const GAME_ASSETS=Object.freeze({
     xp:'assets/ui/xp.svg',
     sniperScope:'assets/ui/sniper-scope.svg',
     rifleScope:'assets/ui/rifle-scope.svg'
+  }),
+  // Generated raster presentation art is intentionally DOM/CSS-only. Do not use
+  // these assets as persistent Three.js texture planes/sprites on uCoz-hosted scenes.
+  presentation:Object.freeze({
+    menuBackground:'assets/ui/backgrounds/menu-bg-arena-01.jpg',
+    loadingBackground:'assets/ui/backgrounds/loading-bg-arena-01.jpg',
+    logo:'assets/ui/zap-zone-logo-01.png',
+    health:'assets/ui/health-icon-tech-01.png',
+    armor:'assets/ui/armor-icon-01.png',
+    xp:'assets/ui/xp-star-01.png',
+    hazardPanel:'assets/environment/hazard-panel-01.jpg',
+    terminalScreen:'assets/environment/terminal-screen-01.jpg'
   })
 });
 
@@ -161,7 +173,8 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.firstPersonSkins),
-  ...Object.values(GAME_ASSETS.ui)
+  ...Object.values(GAME_ASSETS.ui),
+  ...Object.values(GAME_ASSETS.presentation)
 ]);
 
 const _gameTextureLoader=new THREE.TextureLoader();

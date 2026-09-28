@@ -36,10 +36,16 @@ const visualAssets=[
   'assets/weapons/fp/rocket-skin.svg','assets/weapons/fp/plasma-skin.svg','assets/weapons/fp/mine-skin.svg',
   'assets/weapons/fp/bomb-skin.svg','assets/weapons/fp/smoke-skin.svg','assets/weapons/fp/sniper-skin.svg'
 ];
+const presentationRasterAssets=[
+  'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
+  'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
+  'assets/environment/hazard-panel-01.jpg','assets/environment/terminal-screen-01.jpg'
+];
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
+const gameCss=readFileSync('src/styles/game.css','utf8');
 
-for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
 if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
 for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"']){
@@ -53,13 +59,23 @@ for(const file of requiredAssets){
   const svg=readFileSync(file,'utf8');
   if(!/<svg\b/i.test(svg)||!/<\/svg>\s*$/i.test(svg))fail('invalid SVG envelope: '+file);
 }
+for(const file of presentationRasterAssets){
+  const bytes=readFileSync(file);
+  if(bytes.length<2048)fail('generated presentation asset is unexpectedly small: '+file);
+  if(file.endsWith('.png')&&bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')fail('invalid PNG signature: '+file);
+  if(file.endsWith('.jpg')&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[bytes.length-2]===0xff&&bytes[bytes.length-1]===0xd9))fail('invalid JPEG envelope: '+file);
+}
+if(!html.includes('src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
+for(const file of presentationRasterAssets.filter(file=>!file.endsWith('zap-zone-logo-01.png'))){
+  if(!gameCss.includes('../../'+file))fail('generated presentation asset missing from CSS: '+file);
+}
 for(const file of audioAssets){
   const wav=readFileSync(file);
   if(wav.length<44||wav.subarray(0,4).toString()!=='RIFF'||wav.subarray(8,12).toString()!=='WAVE')fail('invalid WAV asset: '+file);
 }
 
 const catalog=readFileSync('src/assets/catalog.js','utf8');
-for(const file of [...visualAssets,...perkIconAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
+for(const file of [...visualAssets,...perkIconAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
 for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
   if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
@@ -237,6 +253,7 @@ for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function 
   if(!bots.includes(token))fail('Frontline objective/map integration missing: '+token);
 }
 const engine=readFileSync('src/core/engine.js','utf8');
+for(const file of presentationRasterAssets)if(engine.includes(file))fail('generated raster presentation asset must stay out of WebGL engine scene: '+file);
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
   if(!engine.includes(token))fail('polished engine FX/material/cover integration missing: '+token);
 }

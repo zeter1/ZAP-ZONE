@@ -110,7 +110,15 @@ index.html
 
 ## Визуальные assets
 
-Все новые SVG имеют прозрачность там, где она нужна, и используются непосредственно игрой:
+Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость.
+
+- `assets/ui/backgrounds/menu-bg-arena-01.jpg` — фон главного меню;
+- `assets/ui/backgrounds/loading-bg-arena-01.jpg` — фон загрузочного экрана;
+- `assets/ui/zap-zone-logo-01.png` — новый логотип с fallback на `assets/ui/logo.svg`;
+- `assets/ui/{health-icon-tech-01,armor-icon-01,xp-star-01}.png` — новые HUD-эмблемы;
+- `assets/environment/{hazard-panel-01,terminal-screen-01}.jpg` — декоративные UI-панели, не используемые как WebGL surfaces.
+
+Существующие SVG сохраняются как fallback и для тех UI/asset-contracts, где они уже используются:
 
 - `assets/pickups/medkit.svg` — sprite аптечки; боезапас теперь выдаётся только подбором оружия соответствующего типа;
 - `assets/environment/crate.svg` — декаль supply crates;
