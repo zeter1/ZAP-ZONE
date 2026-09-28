@@ -190,7 +190,15 @@ const GAME_ASSETS=versionAssetTree({
     armor:'assets/ui/armor-icon-01.png',
     xp:'assets/ui/xp-star-01.png',
     hazardPanel:'assets/environment/hazard-panel-01.jpg',
-    terminalScreen:'assets/environment/terminal-screen-01.jpg'
+    terminalScreen:'assets/environment/terminal-screen-01.jpg',
+    blueTeam:'assets/ui/teams/blue-team-emblem-01.png',
+    redTeam:'assets/ui/teams/red-team-emblem-01.png',
+    ammo:'assets/ui/icons/ammo-tech-01.png',
+    damagePerk:'assets/ui/perks/damage-tech-01.png',
+    speedPerk:'assets/ui/perks/speed-tech-01.png',
+    reloadPerk:'assets/ui/perks/reload-tech-01.png',
+    frontline:'assets/ui/objective/frontline-beacon-01.png',
+    weaponCrate:'assets/ui/pickups/weapon-crate-tech-01.png'
   })
 });
 
@@ -275,6 +283,14 @@ function makeAssetSprite(path,width,height,options={}){
   return sprite;
 }
 
-function perkAsset(id,path){
+function perkFallbackAsset(id,path){
   return GAME_ASSETS.perkIcons[id]||GAME_ASSETS.perks[path]||GAME_ASSETS.perks.assault;
+}
+function perkAsset(id,path){
+  if(GAME_HOSTED_HTTP_MODE){
+    if(id==='damage')return GAME_ASSETS.presentation.damagePerk;
+    if(id==='reload')return GAME_ASSETS.presentation.reloadPerk;
+    if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
+  }
+  return perkFallbackAsset(id,path);
 }

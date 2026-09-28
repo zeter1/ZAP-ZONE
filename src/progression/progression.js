@@ -38,7 +38,8 @@ function renderPerkChoices(lvl){
     const rarity=PERK_RARITIES[p.rarity]||PERK_RARITIES.common;
     const d=document.createElement('div');
     d.className='pcard rarity-'+p.rarity;
-    d.innerHTML=`<img class="pcard-ic" src="${perkAsset(p.id,p.path)}" alt=""><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
+    const perkIcon=perkAsset(p.id,p.path),perkIconFallback=perkFallbackAsset(p.id,p.path);
+    d.innerHTML=`<img class="pcard-ic" src="${perkIcon}" data-fallback-src="${perkIconFallback}" alt="" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc"><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
     d.addEventListener('click',()=>pickPerk(p));
     cards.appendChild(d);
   });
@@ -91,7 +92,8 @@ function updatePerkPanel(){
     shown.push(perk.id);
     const d=document.createElement('div');d.className='ptag';
     const cnt=counts.get(perk.id)||1;
-    d.innerHTML='<img class="ptag-ic" src="'+perkAsset(perk.id,perk.path)+'" alt=""><span>'+perk.ic+' '+perk.nm+' '+cnt+'/'+(perk.maxRank||1)+'</span>';
+    const perkIcon=perkAsset(perk.id,perk.path),perkIconFallback=perkFallbackAsset(perk.id,perk.path);
+    d.innerHTML='<img class="ptag-ic" src="'+perkIcon+'" data-fallback-src="'+perkIconFallback+'" alt="" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc"><span>'+perk.ic+' '+perk.nm+' '+cnt+'/'+(perk.maxRank||1)+'</span>';
     p.appendChild(d);
     if(shown.length>=8)break;
   }

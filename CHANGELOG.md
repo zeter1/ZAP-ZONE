@@ -2,6 +2,14 @@
 
 ## Unreleased — 2026-09-25
 
+### Generated Gameplay UI Pack — team/perk/objective integration
+- добавлен второй набор из 8 оптимизированных PNG-ассетов: эмблемы синей/красной команд, ammo, damage/speed/reload, Frontline beacon и weapon crate;
+- scoreboard, ammo HUD, reload HUD, Frontline objective и стартовые подсказки используют новые изображения через `.generated-art-enabled` только на HTTP/HTTPS;
+- perk-карточки `damage`, `reload`, `mobility` и `sprint_drive` получают новые PNG-иконки, но при ошибке загрузки автоматически откатываются на прежние SVG;
+- новые изображения остаются DOM/CSS presentation-only и не используются как Three.js/WebGL texture planes, чтобы не возвращать uCoz-проблему с чёрными прямоугольниками;
+- validation проверяет PNG-сигнатуры, catalog/CSS/perk wiring, fallback и запрет попадания raster presentation assets в 3D engine.
+
+
 ### Static deploy cache-busting — обновление без Ctrl+F5
 - перенесён проверенный pattern из ZeTer Photo Editor: `version.json` + build identity + guarded bootstrap;
 - HTTP/HTTPS startup запрашивает manifest через `cache: 'no-store'` и timestamp query, сравнивает remote build с build текущего HTML и при необходимости один раз открывает URL с `?zap_build=<id>`;

@@ -117,6 +117,13 @@ index.html
 - `assets/ui/zap-zone-logo-01.png` — новый логотип с fallback на `assets/ui/logo.svg`;
 - `assets/ui/{health-icon-tech-01,armor-icon-01,xp-star-01}.png` — новые HUD-эмблемы;
 - `assets/environment/{hazard-panel-01,terminal-screen-01}.jpg` — декоративные UI-панели, не используемые как WebGL surfaces.
+- `assets/ui/teams/{blue-team-emblem-01,red-team-emblem-01}.png` — командные эмблемы в верхнем scoreboard;
+- `assets/ui/icons/ammo-tech-01.png` — боезапас в weapon HUD;
+- `assets/ui/perks/{damage-tech-01,speed-tech-01,reload-tech-01}.png` — сгенерированные иконки ключевых perk-карточек с fallback на старые SVG;
+- `assets/ui/objective/frontline-beacon-01.png` — значок текущей Frontline-цели;
+- `assets/ui/pickups/weapon-crate-tech-01.png` — визуальный маркер weapon-pickup/crate в стартовых подсказках.
+
+Второй raster-pack также остаётся presentation-only: он включается только через DOM/CSS на HTTP/HTTPS, не попадает в Three.js texture planes и при отсутствии файла не может превратить 3D-поверхность в чёрный прямоугольник.
 
 Существующие SVG сохраняются как fallback и для тех UI/asset-contracts, где они уже используются:
 

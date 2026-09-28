@@ -39,7 +39,19 @@ const visualAssets=[
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
-  'assets/environment/hazard-panel-01.jpg','assets/environment/terminal-screen-01.jpg'
+  'assets/environment/hazard-panel-01.jpg','assets/environment/terminal-screen-01.jpg',
+  'assets/ui/teams/blue-team-emblem-01.png','assets/ui/teams/red-team-emblem-01.png',
+  'assets/ui/icons/ammo-tech-01.png',
+  'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
+  'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png'
+];
+const presentationCssRasterAssets=[
+  'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
+  'assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
+  'assets/environment/hazard-panel-01.jpg','assets/environment/terminal-screen-01.jpg',
+  'assets/ui/teams/blue-team-emblem-01.png','assets/ui/teams/red-team-emblem-01.png',
+  'assets/ui/icons/ammo-tech-01.png','assets/ui/perks/reload-tech-01.png',
+  'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
@@ -77,11 +89,14 @@ for(const file of presentationRasterAssets){
   if(file.endsWith('.jpg')&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[bytes.length-2]===0xff&&bytes[bytes.length-1]===0xd9))fail('invalid JPEG envelope: '+file);
 }
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
-for(const file of presentationRasterAssets.filter(file=>!file.endsWith('zap-zone-logo-01.png'))){
+for(const file of presentationCssRasterAssets){
   if(!gameCss.includes('../../'+file))fail('generated presentation asset missing from CSS: '+file);
 }
 for(const fallback of ['../../assets/ui/health.svg','../../assets/ui/armor.svg','../../assets/ui/xp.svg'])if(!gameCss.includes(fallback))fail('file-mode UI fallback missing: '+fallback);
 if(!gameCss.includes('.generated-art-enabled #menu')||!gameCss.includes('.generated-art-enabled #loading'))fail('hosted presentation-art gate missing');
+for(const token of ['#tb-ally::before','#tb-enemy::before','#wammo::before','#reload-lbl::before','#frontline-title::before','#menu .hints::after']){
+  if(!gameCss.includes(token))fail('generated gameplay UI CSS wiring missing: '+token);
+}
 for(const file of audioAssets){
   const wav=readFileSync(file);
   if(wav.length<44||wav.subarray(0,4).toString()!=='RIFF'||wav.subarray(8,12).toString()!=='WAVE')fail('invalid WAV asset: '+file);
@@ -89,7 +104,10 @@ for(const file of audioAssets){
 
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
-if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
+if(!catalog.includes('function perkAsset(id,path)')||!catalog.includes('function perkFallbackAsset(id,path)'))fail('per-id perk asset resolver/fallback missing');
+for(const token of ["id==='damage'","id==='reload'","id==='mobility'||id==='sprint_drive'"]){
+  if(!catalog.includes(token))fail('generated perk presentation mapping missing: '+token);
+}
 for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
   if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
 }
@@ -100,7 +118,7 @@ if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair 
 
 const progression=readFileSync('src/progression/progression.js','utf8');
 if(progression.includes('function G(id)'))fail('G helper must be available before progression.js loads');
-for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
+for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','perkFallbackAsset(p.id,p.path)','perkFallbackAsset(perk.id,perk.path)','data-fallback-src','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
   if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
 
