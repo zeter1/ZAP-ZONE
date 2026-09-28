@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -301,15 +301,25 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 
 const tactics=readFileSync('src/ai/tactics.js','utf8');
 const frontline=readFileSync('src/game/frontline.js','utf8');
+const presentation=readFileSync('src/entities/bot-presentation.js','utf8');
 const bots=readFileSync('src/entities/bots.js','utf8');
 if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
 if(!bots.includes('function botShotClosestApproachToPlayer')||!bots.includes('registerPlayerSuppression(this,wp,approach.point'))fail('physical enemy near-miss suppression integration missing');
-if(!bots.includes('const addInsignia=')||!bots.includes('Extra readability'))fail('new procedural bot armor markings/visor missing');
-if(!bots.includes('this.weaponPivot.userData.pose||'))fail('locomotion must preserve per-weapon bot pose');
-for(const token of ['this.armRig=built.armRig','function solveBotTwoBoneArm','function updateBotWeaponHands','mesh.localToWorld(_BOT_GRIP_R)','updateBotWeaponHands(this);']){
-  if(!bots.includes(token))fail('realistic two-hand bot weapon hold missing: '+token);
+if(!presentation.includes('const addInsignia=')||!presentation.includes('Extra readability'))fail('bot presentation owner must preserve procedural armor markings/visor');
+for(const token of ['function mkHuman(et,team){','const armRig={','function setBotLimbBetween(','function solveBotTwoBoneArm(','function updateBotWeaponHands(','mesh.localToWorld(_BOT_GRIP_R)']){
+  if(!presentation.includes(token))fail('bot presentation owner contract missing: '+token);
 }
-for(const token of ['pose.elbowR','const strideBob','const hipSway','this.pts[0].position.y=1.82+strideBob*.55']){
+for(const token of ['function mkHuman(et,team){','const _BOT_ARM_UP=','function setBotLimbBetween(','function solveBotTwoBoneArm(','function updateBotWeaponHands(','const addInsignia=']){
+  if(bots.includes(token))fail('bot presentation owner leaked back into bots.js: '+token);
+}
+for(const token of ['class Enemy{','const WPTS=','const BOT_MOVE_CFG=','function steerBotAroundWalls(','function botShotClosestApproachToPlayer(']){
+  if(presentation.includes(token))fail('AI/movement implementation leaked into bot presentation owner: '+token);
+}
+for(const token of ['const built=mkHuman(et,team);','this.armRig=built.armRig','this.weaponPivot.userData.pose||','updateBotWeaponHands(this);']){
+  if(!bots.includes(token))fail('bot presentation consumer contract missing: '+token);
+}
+if(!presentation.includes('pose.elbowR'))fail('bot presentation elbow-hint contract missing');
+for(const token of ['const strideBob','const hipSway','this.pts[0].position.y=1.82+strideBob*.55']){
   if(!bots.includes(token))fail('advanced bot walk/weapon pose refinement missing: '+token);
 }
 for(const token of [
@@ -356,6 +366,9 @@ for(const token of [
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
 if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
   fail('classic-script order must load combat -> tactics -> frontline -> bots');
+}
+if(!(html.indexOf("'src/entities/bot-presentation.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load bot presentation owner before bots');
 }
 for(const token of ['const BOT_MAP_ZONES=','const BOT_TEAM_TACTICS=','const PLAYER_TACTICAL_PROFILE=','function refreshBotMapOrder(','function refreshBotTeamTactics(','function botObjectivePoint(','function maybeCoordinateBotUtility(']){
   if(bots.includes(token))fail('team/map tactics owner leaked back into bots.js: '+token);
@@ -413,9 +426,9 @@ for(const token of ["this.tacticalMode=squadPlan.suppressor===this","breachRole?
   if(!bots.includes(token))fail('Combat Presence 1.3 bot/ballistic integration missing: '+token);
 }
 for(const token of ['const insigniaMat=','const addInsignia=','addInsignia(.281,Math.PI)','addInsignia(-.219,0)']){
-  if(!bots.includes(token))fail('procedural bot insignia missing: '+token);
+  if(!presentation.includes(token))fail('procedural bot insignia missing from presentation owner: '+token);
 }
-if(bots.includes('makeAssetPlane('))fail('bot scene must not depend on SVG texture planes');
+if(presentation.includes('makeAssetPlane(')||bots.includes('makeAssetPlane('))fail('bot scene must not depend on SVG texture planes');
 if(bots.includes('this.wEl')||bots.includes('updateBadge()')||bots.includes("ally?'СВОЙ':'ВРАГ'")){
   fail('bot overhead text badges must stay removed; only health bars are allowed above bots');
 }
