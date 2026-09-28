@@ -20,8 +20,9 @@
 | Player/save/weapon state | `src/player/state.js` | Pointer Lock listeners |
 | Audio / presentation settings | `src/settings/settings.js` | combat authority |
 | Input / combat / projectiles | `src/combat/combat.js` | map-level AI planning |
-| Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM, locomotion, Frontline UI/state |
-| Individual bot AI / Frontline execution | `src/entities/bots.js` | browser/session lifecycle; map-level doctrine ownership |
+| Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM, locomotion, Frontline capture/state |
+| Frontline objective / capture / save / HUD / marker | `src/game/frontline.js` | map doctrine; individual bot FSM |
+| Individual bot AI / execution | `src/entities/bots.js` | browser/session lifecycle; map-level doctrine and Frontline ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
 | Browser game session | `src/game/session.js` | per-frame simulation |
@@ -30,7 +31,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Для AI обязателен порядок `combat.js → ai/tactics.js → entities/bots.js`, потому что Frontline state в `bots.js` использует `BOT_MAP_ZONES` при инициализации.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Для AI/Frontline обязателен порядок `combat.js → ai/tactics.js → game/frontline.js → entities/bots.js`: Frontline создаёт zone-owned state из `BOT_MAP_ZONES`, а bot execution затем потребляет objective state.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -42,6 +43,7 @@
 
 - assets / generated art / uCoz / fallback → `docs/ASSETS.md`;
 - architecture ownership / session / weapon lifecycle / AI invariants → нужный раздел `docs/ARCHITECTURE.md`;
+- Frontline objective/capture/save/HUD/marker → `docs/specs/FRONTLINE.md` → `src/game/frontline.js` → конкретный consumer;
 - cache-busting / ручная публикация → README + `scripts/stamp-web-build.mjs`;
 - CI failure → `.github/workflows/validate.yml`, затем failed job/step/log;
 - следующий небольшой кусок работы → `task/`.
@@ -67,6 +69,7 @@
 | session/menu | structure owner guard + HTTP boot + реальный `file://` Chrome/CDP smoke |
 | assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
+| Frontline objective | `node --test scripts/frontline-owner.test.mjs` + structure owner guards + build stamp + dual-runtime smoke |
 | workflow | YAML intent + least privilege + один новый run и его logs при failure |
 
 ## Task discipline
