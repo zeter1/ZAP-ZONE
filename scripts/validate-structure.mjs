@@ -399,8 +399,10 @@ for(const token of [
 }
 if(bots.includes('this.dodgeSpd=this.speed*(2.35+this.aimSkill*.65)'))fail('legacy teleport-like dodge multiplier returned');
 if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.triggerDodge()'))fail('stuck recovery must not trigger high-speed dodge');
-if(!tactics.includes('function botAssaultWaveState'))fail('Combat Presence 1.2 assault-wave owner missing');
-for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','playObjectiveCaptureSound(team)','function botRoutePenalty','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','waveStart:-999','assaultWaveState===\'staging\'','coverChainT','objectiveAdvance','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
+for(const token of ['function botAssaultWaveState','waveStart:-999']){
+  if(!tactics.includes(token))fail('Combat Presence 1.2 assault-wave owner missing: '+token);
+}
+for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','playObjectiveCaptureSound(team)','function botRoutePenalty','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','assaultWaveState===\'staging\'','coverChainT','objectiveAdvance','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
   if(!bots.includes(token))fail('Combat Presence 1.2 / Frontline bot integration missing: '+token);
 }
 for(const token of ['breachReady:false','smokeWaveId:-1','smokeDecisionWaveId:-1','smokeDecisionUse:false','smokeReadyAt:-999','Math.random()<.30','plan.smokeReadyAt=now+14000+Math.random()*8000','fragWaveId:-1','function maybeCoordinateBotUtility','spawnBotSmokeGrenade(bot.getMuzzlePos()','spawnBotFragGrenade(bot.getMuzzlePos()']){
@@ -419,8 +421,11 @@ if(bots.includes('this.wEl')||bots.includes('updateBadge()')||bots.includes("all
 for(const token of ["this.hEl=document.createElement('div')","this.hFill=document.createElement('div')","this.hEl.style.display=this.uiVis?'block':'none'","this.hFill.style.width=(this.hp/this.maxHp*100)+'%'"]){
   if(!bots.includes(token))fail('bot overhead health bar missing: '+token);
 }
-for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke','function nearestHostileGrenade','cachedGrenadeThreat','suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
-  if(!bots.includes(token))fail('Combat Presence 1.4 tactical awareness missing: '+token);
+for(const token of ['suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor']){
+  if(!tactics.includes(token))fail('Combat Presence 1.4 suppressor coordination owner missing: '+token);
+}
+for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke','function nearestHostileGrenade','cachedGrenadeThreat','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
+  if(!bots.includes(token))fail('Combat Presence 1.4 bot awareness integration missing: '+token);
 }
 if(!bots.includes('if(wp.hitscan){')||!bots.includes('spawnInstantSniperTrace(from,tracerDir'))fail('bot sniper must remain hitscan while normal guns use travelling bullets');
 if(bots.includes("Math.random()<(suppressing?.56:.34)"))fail('legacy random player near-miss whiz returned');
