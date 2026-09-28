@@ -9,6 +9,7 @@
 - Frontline получает новый CSS-only decorative WebP, а смысл цели остаётся в bearing/state text; defensive perks `armor`, `armorregen`, `blastshield`, `ballistic_lining`, `surplus_armor`, `smoke_guard` используют defender crest с per-id SVG fallback;
 - добавлены `docs/ASSETS.md` и `assets/README.md`: правила генерации, оптимизации, naming/ownership, fallback, WebGL-safety, GitHub atomic upload, CI evidence и порядок ручной публикации на uCoz;
 - validation теперь проверяет WebP envelope, catalog/DOM/CSS wiring и по-прежнему запрещает generated raster/WebP внутри 3D engine scene.
+- corrective CI follow-up: web build stamp пересчитан с учётом нового `assets/README.md`, потому что текущий stamp contract хеширует всё дерево `assets/**`.
 
 ### Generated Combat Medals Pack — kill/precision feedback
 - добавлен согласованный набор из 8 оптимизированных прозрачных PNG: First Blood, Double Kill, Triple Kill, Killing Spree, Longshot, Critical Kill, Explosive Kill и Headshot;
