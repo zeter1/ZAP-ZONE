@@ -4,7 +4,7 @@
 
 1. Откройте `task/README.md` и один текущий `task/*.md`.
 2. Прочитайте `docs/AI_WORKFLOW.md`.
-3. По задаче откройте нужный owner/spec в `docs/ARCHITECTURE.md` или `docs/ASSETS.md`.
+3. По задаче откройте нужный owner/spec в `docs/ARCHITECTURE.md`, `docs/ASSETS.md` или узком `docs/specs/*.md`.
 4. Затем читайте только актуальные owner-файлы, callers, validation и `.github/workflows/validate.yml`.
 
 Главные owner-ы:
@@ -13,7 +13,8 @@
 - player/save/weapon ownership → `src/player/state.js`;
 - combat/input/projectiles → `src/combat/combat.js`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
-- individual bot FSM/perception/locomotion/combat execution + Frontline objective state → `src/entities/bots.js`;
+- Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
+- individual bot FSM/perception/locomotion/combat execution → `src/entities/bots.js`;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
