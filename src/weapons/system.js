@@ -477,14 +477,14 @@ const FP_MODEL_TUNING={
   sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]}
 };
 const FP_GENERATED_ART_TUNING=Object.freeze({
-  // V2 renders already contain the final FPS tilt and baked player hands.
-  // Keep the image mostly inside the lower-right quadrant instead of poster-scaling it.
-  pistol:{width:'46vw',right:'-2vw',bottom:'-8vh',muzzleX:'8%',muzzleY:'13%'},
-  shotgun:{width:'58vw',right:'-4vw',bottom:'-8vh',muzzleX:'4%',muzzleY:'9%'},
-  rifle:{width:'59vw',right:'-5vw',bottom:'-10vh',muzzleX:'5%',muzzleY:'12%'},
-  rocket:{width:'57vw',right:'-4vw',bottom:'-8vh',muzzleX:'4%',muzzleY:'10%'},
-  plasma:{width:'58vw',right:'-4vw',bottom:'-9vh',muzzleX:'4%',muzzleY:'11%'},
-  sniper:{width:'63vw',right:'-7vw',bottom:'-11vh',muzzleX:'2%',muzzleY:'10%'}
+  // V3 assets contain the final FPS tilt, baked hands and intentional transparent headroom.
+  // Widths are tuned against HUD safe zones so the visible silhouette stays in the lower-right sector.
+  pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%'},
+  shotgun:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'28%',muzzleY:'39%'},
+  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%'},
+  rocket:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'31%'},
+  plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%'},
+  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'33%',muzzleY:'38%'}
 });
 function setProceduralFirstPersonRigVisible(visible){
   for(const child of gunGrp.children)child.visible=visible;
@@ -539,13 +539,16 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   const show=Boolean(visible);
   wrap.classList.toggle('shown',show);wrap.classList.toggle('scope-hidden',!visible);
   if(!show){if(flash)flash.style.opacity='0';return;}
-  const dx=(gunGrp.position.x-gunBasePos.x)*310;
-  const dy=-(gunGrp.position.y-gunBasePos.y)*270;
-  const rot=gunGrp.rotation.z*40-gunGrp.rotation.y*9+gunGrp.rotation.x*4;
+  // Preserve the baked first-person angle: gameplay sway/recoil may move the art,
+  // but must not drag it across the center-bottom HUD or rotate it into a poster-like pose.
+  const dx=Math.max(-14,Math.min(14,(gunGrp.position.x-gunBasePos.x)*220));
+  const dy=Math.max(-10,Math.min(16,-(gunGrp.position.y-gunBasePos.y)*190));
+  const rawRot=gunGrp.rotation.z*16-gunGrp.rotation.y*3+gunGrp.rotation.x*2;
+  const rot=Math.max(-1.6,Math.min(1.6,rawRot));
   stage.style.setProperty('--fp-dx',dx.toFixed(1)+'px');
   stage.style.setProperty('--fp-dy',dy.toFixed(1)+'px');
   stage.style.setProperty('--fp-rot',rot.toFixed(2)+'deg');
-  stage.style.setProperty('--fp-scale',(1-Math.min(.045,Math.abs(gunGrp.rotation.x)*.02)).toFixed(3));
+  stage.style.setProperty('--fp-scale',(1-Math.min(.025,Math.abs(gunGrp.rotation.x)*.01)).toFixed(3));
   if(flash)flash.style.opacity=visible&&beamT>0?String(Math.min(1,beamT/.065)):'0';
 }
 function buildGun(w){

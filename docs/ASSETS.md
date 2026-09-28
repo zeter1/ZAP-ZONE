@@ -89,7 +89,7 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 1. `baked-hands` — изображение уже содержит финальные руки/предплечья; при успешной загрузке скрывается **весь procedural first-person rig** (weapon body + procedural hands), иначе появятся двойные/блочные руки;
 2. `weapon-only` — изображение не содержит рук; procedural hands могут остаться только после отдельной проверки совпадения grip/scale/perspective.
 
-Текущий pack pistol/shotgun/rifle/plasma/rocket/sniper — **baked-hands**.
+Текущий pack pistol/shotgun/rifle/plasma/rocket/sniper — **baked-hands**. V3 дополнительно использует intentional transparent headroom/left-space, уменьшенный runtime silhouette и HUD-safe positioning.
 
 Runtime contract:
 - runtime derivative: прозрачный WebP в `assets/ui/weapons/fp/**`, сейчас 960×720 и <=250 KiB;
@@ -105,8 +105,15 @@ Runtime contract:
 - сравнить с утверждённым reference montage, а не только с соседними generated картинками;
 - проверить 16:9 desktop screenshot: оружие визуально сидит в нижнем правом секторе, а muzzle уходит к левому/верхнему направлению;
 - руки анатомически держат grip/fore-end, нет второго procedural комплекта рук;
+- generated canvas должен сохранять осмысленное прозрачное пространство слева/сверху: tight crop вокруг оружия запрещён, потому что он заставляет раздувать poster-scale в runtime;
 - weapon silhouette не занимает чрезмерно весь экран и не закрывает HUD/reticle;
+- в idle-состоянии видимая часть оружия должна оставаться в правом секторе экрана: ориентир — левый край основного силуэта не левее ~58% viewport на desktop 16:9;
+- центральная safe-zone reticle и нижняя центральная safe-zone HP/Score/Kills не должны пересекаться основным силуэтом оружия;
+- `#hp-wrap`, `#hud`, `#whud` и reticle всегда имеют stacking priority выше decorative weapon art; это страховка, а не замена правильной композиции;
+- right-bottom weapon HUD может находиться поверх силуэта только как читаемый HUD-слой; generated art не должен визуально уничтожать его контраст;
 - отдельные `width/right/bottom/muzzleX/muzzleY` tuning значения задаются по weapon key, а не одной глобальной трансформацией;
+- dynamic sway/recoil для raster weapon art должен быть ограничен clamp-ами: baked first-person angle не вращать на большие углы и не таскать через HUD;
+- desktop runtime stage ограничивать по абсолютному размеру (сейчас max 980 px), чтобы ultra-wide/high-DPI viewport не превращал оружие в огромный постер;
 - если визуальная посадка не проверена screenshot-ом, итог маркировать `NOT VERIFIED: visual framing`, даже если CI зелёный.
 
 ## 6. Catalog и cache identity

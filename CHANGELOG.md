@@ -3,6 +3,10 @@
 ## Unreleased — 2026-09-25
 
 ### Generated First-Person Weapon Pack — player-held firearms
+- V3 pack перегенерирован с дополнительным transparent headroom/left-space и более компактной FPS-композицией: оружие занимает меньшую долю viewport и сохраняет нормальный baked first-person угол;
+- per-weapon runtime tuning уменьшен и сдвинут в lower-right safe sector; muzzle anchors пересчитаны под новую композицию;
+- sway/recoil/rotation raster overlay ограничены clamp-ами, чтобы оружие не уезжало в центр, HP, Score/Kills и reticle;
+- critical HUD слои (reticle, HP, Score/Kills, weapon HUD) получили явный stacking priority выше decorative weapon art; weapon stage ограничен max 980 px;
 - V2 pack перегенерирован по утверждённому reference montage: first-person угол теперь задаёт оружие из нижнего правого сектора влево/вверх, с корректно встроенными руками/предплечьями вместо showroom/profile-композиции;
 - 6 runtime WebP заменены на 960×720 alpha derivatives (pistol, shotgun, rifle, rocket, plasma, sniper), каждый ограничен 250 KiB;
 - добавлены 6 оптимизированных прозрачных WebP для оружия, которое видит и держит локальный игрок: pistol, shotgun, rifle, rocket, plasma и sniper;
