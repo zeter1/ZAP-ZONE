@@ -20,11 +20,12 @@
 | Player/save/weapon state | `src/player/state.js` | Pointer Lock listeners |
 | Audio / presentation settings | `src/settings/settings.js` | combat authority |
 | Input / combat / projectiles | `src/combat/combat.js` | map-level AI planning |
+| Bot perception / threat sensing | `src/ai/bot-perception.js` | FSM transitions; shooting; navigation physics; squad doctrine |
 | Bot navigation / collision-limited locomotion | `src/ai/bot-navigation.js` | grenade/mine/noise perception; squad doctrine / target policy |
-| Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM/perception/combat execution; Frontline capture/state |
+| Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM/combat execution; perception ownership; Frontline capture/state |
 | Frontline objective / capture / save / HUD / marker | `src/game/frontline.js` | map doctrine; individual bot FSM |
 | Bot model / hit meshes / weapon arm rig | `src/entities/bot-presentation.js` | AI decisions; locomotion policy; weapon data |
-| Individual bot perception / FSM / combat execution | `src/entities/bots.js` | browser/session lifecycle; navigation implementation, map-level doctrine, Frontline and presentation ownership |
+| Individual bot FSM / combat execution | `src/entities/bots.js` | perception implementation; browser/session lifecycle; navigation implementation, map-level doctrine, Frontline and presentation ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
 | Browser game session | `src/game/session.js` | per-frame simulation |
@@ -33,7 +34,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Navigation, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-perception.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Perception, navigation, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -46,6 +47,7 @@
 - assets / generated art / uCoz / fallback → `docs/ASSETS.md`;
 - architecture ownership / session / weapon lifecycle / AI invariants → нужный раздел `docs/ARCHITECTURE.md`;
 - Frontline objective/capture/save/HUD/marker → `docs/specs/FRONTLINE.md` → `src/game/frontline.js` → конкретный consumer;
+- bot perception / combat-noise hearing / target acquisition / LOS memory / grenade+mine+rocket sensing → `docs/specs/BOT_PERCEPTION.md` → `src/ai/bot-perception.js` → `src/entities/bots.js` consumer;
 - bot navigation / collision micro-steps / smoke route / speed caps → `docs/specs/BOT_NAVIGATION.md` → `src/ai/bot-navigation.js` → `src/entities/bots.js` consumer;
 - bot geometry / hit meshes / weapon grips / two-hand arm rig → `docs/specs/BOT_PRESENTATION.md` → `src/entities/bot-presentation.js` → `src/entities/bots.js` consumer;
 - cache-busting / ручная публикация → README + `scripts/stamp-web-build.mjs`;
@@ -75,6 +77,7 @@
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
 | Frontline objective | `node --test scripts/frontline-owner.test.mjs` + structure owner guards + build stamp + dual-runtime smoke |
 | Bot presentation / arm rig | `node --test scripts/bot-presentation-owner.test.mjs` + owner/consumer guards + build stamp + dual-runtime smoke |
+| Bot perception / threat sensing | `node --test scripts/bot-perception-owner.test.mjs` + owner/consumer/reverse guards + build stamp + dual-runtime smoke |
 | Bot navigation / locomotion | `node --test scripts/bot-navigation-owner.test.mjs` + reverse-owner guards + build stamp + dual-runtime smoke |
 | workflow | YAML intent + least privilege + один новый run и его logs при failure |
 

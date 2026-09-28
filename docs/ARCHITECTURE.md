@@ -9,22 +9,35 @@
 5. `src/player/state.js` — player state, perks, save/resume.
 6. `src/settings/settings.js` — user settings, Web Audio SFX и presentation feedback.
 7. `src/combat/combat.js` — input и combat.
-8. `src/ai/bot-navigation.js` — patrol points, wall/smoke steering, movement caps и collision substeps.
-9. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
-10. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
-11. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
-12. `src/entities/bots.js` — per-bot perception/FSM и combat execution; navigation owner используется как consumer dependency.
-13. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-14. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-15. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
-16. `src/ui/minimap.js` — тактическая миникарта.
-17. `src/game/runtime.js` — frame simulation/render loop и boot.
+8. `src/ai/bot-perception.js` — combat-noise bus, hearing, target acquisition, LOS memory и explosive/rocket sensing.
+9. `src/ai/bot-navigation.js` — patrol points, wall/smoke steering, movement caps и collision substeps.
+10. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
+11. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
+12. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
+13. `src/entities/bots.js` — per-bot FSM, tactical execution и combat execution; perception/navigation owners используются как consumer dependencies.
+14. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+15. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+16. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+17. `src/ui/minimap.js` — тактическая миникарта.
+18. `src/game/runtime.js` — frame simulation/render loop и boot.
+
+## Bot perception / threat-sensing owner
+
+**Canonical owner:** `src/ai/bot-perception.js`. Узкий контракт — **[specs/BOT_PERCEPTION.md](specs/BOT_PERCEPTION.md)**. Owner владеет сбором и интерпретацией сенсорных сигналов: bounded combat-noise bus, hearing attenuation/uncertainty, target acquisition/scoring, LOS memory refresh, hostile grenade/mine scan cadence и incoming-rocket prediction.
+
+Граница проходит по схеме **sense → decide → execute**. `src/combat/combat.js` и `src/weapons/system.js` остаются producer-ами projectile/mine/grenade/shot state. Perception читает эти данные и обновляет per-bot sensory memory. `src/entities/bots.js` остаётся owner-ом FSM-переходов (`hunt`, `retreat`, dodge), tactical execution, shooting и damage reaction. `src/ai/tactics.js` может читать canonical `BOT_NOISE_EVENTS` для team-level awareness, но не владеет его lifecycle.
+
+Хранение `targetEn`, `lastKnown`, `heardT`, scan timers и cached threat на объекте `Enemy` не делает `bots.js` owner-ом алгоритма perception: это per-entity state, которым canonical sensing functions управляют через явный bot argument. Такой seam уменьшает context cost без создания второго AI object model.
+
+Pure extraction сохраняет прежние thresholds и cadence буквально: noise queue cap 36, stale prune 2200 ms, hearing age 1.75 s, wall attenuation ×0.52, heard memory 1.65 s, target visibility 72/76 m, mine scan 0.16–0.28 s, grenade scan 0.10–0.18 s и rocket scan 0.12–0.18 s. Target weights, reaction/lock timers и LOS semantics не являются balance change в этом refactor.
+
+Structural validation требует одного perception owner-а, consumer calls в `bots.js`, canonical noise-bus consumption в tactics и запрещает FSM/combat/navigation/tactics implementation внутри perception. `scripts/bot-perception-owner.test.mjs` отдельно проверяет grenade ranking, bounded noise bus, hearing/FSM boundary, target selection и incoming rocket sensing.
 
 ## Bot navigation / locomotion owner
 
 **Canonical owner:** `src/ai/bot-navigation.js`. Здесь живут patrol points, локальный wall/smoke steering, route penalty, movement speed caps и collision micro-steps. Узкий контракт — **[specs/BOT_NAVIGATION.md](specs/BOT_NAVIGATION.md)**.
 
-`src/core/engine.js` остаётся единственным владельцем collision primitives, `src/combat/combat.js` — producer-ом smoke state, а `src/entities/bots.js` выбирает AI state/intention и потребляет navigation helpers. Grenade/mine threat perception, noise/hearing и target acquisition остаются в `bots.js`; squad doctrine — в `src/ai/tactics.js`. `nearestHostileGrenade()` намеренно не переносится сюда только из-за того, что угроза вызывает retreat.
+`src/core/engine.js` остаётся единственным владельцем collision primitives, `src/combat/combat.js` — producer-ом smoke state, а `src/entities/bots.js` выбирает AI state/intention и потребляет navigation helpers. Grenade/mine/rocket threat perception, noise/hearing и target acquisition принадлежат `src/ai/bot-perception.js`; squad doctrine — `src/ai/tactics.js`. `nearestHostileGrenade()` намеренно не относится к navigation только из-за того, что его результат может вызвать retreat.
 
 Pure extraction сохраняет `WPTS`, movement multipliers, smoke thresholds/weights, `substep=.16`, correction cap `intended*1.35+.035` и final cap `total*1.10+.035`. Structural validation запрещает возврат реализации в `bots.js`, а `scripts/bot-navigation-owner.test.mjs` проверяет behavior отдельно от расположения кода.
 
@@ -163,9 +176,9 @@ SR-9 не использует gameplay-reticle: runtime скрывает `#xhai
 
 ## Tactical AI 2.0 v22.4
 
-**Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального perception/FSM, cover/flank/combat execution и стрельбы, а locomotion mechanics принадлежат `src/ai/bot-navigation.js`. Это граница policy → execution: командный слой выбирает общий plan, bot FSM формирует intent, navigation owner безопасно исполняет movement intent.
+**Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального FSM, cover/flank/combat execution и стрельбы, а locomotion mechanics принадлежат `src/ai/bot-navigation.js`. Это граница policy → execution: командный слой выбирает общий plan, bot FSM формирует intent, navigation owner безопасно исполняет movement intent.
 
-Classic-script порядок `combat.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js` является частью runtime-контракта. Navigation должен существовать до bot consumer, `BOT_MAP_ZONES` — до инициализации Frontline state, а bot-presentation — до создания `Enemy`; функции этих owners могут обращаться к invocation-time bot/runtime globals только после завершения последовательного bootstrap.
+Classic-script порядок `combat.js → ai/bot-perception.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js` является частью runtime-контракта. Navigation должен существовать до bot consumer, `BOT_MAP_ZONES` — до инициализации Frontline state, а bot-presentation — до создания `Enemy`; функции этих owners могут обращаться к invocation-time bot/runtime globals только после завершения последовательного bootstrap.
 
 Поверх индивидуального state machine введён командный слой `BOT_TEAM_TACTICS`. Он не заменяет perception/target selection, а агрегирует уже полученную информацию: текущие цели ботов, LOS, память и `TEAM_INTEL`. План пересчитывается с небольшим cache-window и выбирает общий focus, suppressor, число доступных flankers и наиболее раненого союзника.
 
@@ -232,7 +245,7 @@ Runtime всё ещё использует общий `dt <= 0.033`, поэто�
 
 Граница намеренно не совпадает с «всё, где упоминается Frontline». `src/ai/tactics.js` остаётся owner-ом `BOT_MAP_ZONES` и doctrine/map policy; `src/entities/bots.js` остаётся owner-ом индивидуального bot FSM и только читает active objective/presence для tactical execution; `src/ui/minimap.js` только визуализирует objective/zone ownership; `src/player/state.js` вызывает публичный save/restore contract; `src/game/runtime.js` только вызывает tick и boot HUD/marker.
 
-Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-navigation → tactics → frontline → bot-presentation → bots`; navigation, Frontline и presentation являются отдельными prerequisites `bots.js`, при этом presentation не зависит от Frontline. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
+Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-perception → bot-navigation → tactics → frontline → bot-presentation → bots`; navigation, Frontline и presentation являются отдельными prerequisites `bots.js`, при этом presentation не зависит от Frontline. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
 
 Pure extraction сохраняет буквально `rotateSeconds:44`, `captureSeconds:8.5`, `capturePoints:3`, clamp/restore semantics, capture reward `+150 score / +35 XP`, UI copy и side-effect order. Эти значения нельзя «заодно улучшать» в ownership-refactor; balance/UX change требует отдельной задачи и отдельного evidence.
 
@@ -243,7 +256,7 @@ Regression contract состоит из двух независимых слоё
 
 **Canonical owner:** `src/entities/bot-presentation.js`. Он владеет procedural body construction, стабильным gameplay `pts[]` hit-mesh order, decorative armor/readability, `weaponPivot`, real body hands/`armRig` и two-bone grip solver. Полный узкий контракт — `docs/specs/BOT_PRESENTATION.md`.
 
-Граница намеренно не совпадает со всем visual code внутри `Enemy`. `src/entities/bots.js` остаётся owner-ом FSM, perception, gait/combat motion и health-bar lifecycle: он создаёт presentation через `mkHuman()`, потребляет `src/ai/bot-navigation.js` для locomotion mechanics, двигает `weaponPivot` по уже выбранной gait/combat pose и затем вызывает `updateBotWeaponHands(this)`. `src/weapons/system.js` остаётся owner-ом weapon data и per-weapon `gripR/gripL/elbowR/elbowL` metadata.
+Граница намеренно не совпадает со всем visual code внутри `Enemy`. `src/entities/bots.js` остаётся owner-ом FSM, gait/combat motion и health-bar lifecycle: он создаёт presentation через `mkHuman()`, потребляет `src/ai/bot-navigation.js` для locomotion mechanics, двигает `weaponPivot` по уже выбранной gait/combat pose и затем вызывает `updateBotWeaponHands(this)`. `src/weapons/system.js` остаётся owner-ом weapon data и per-weapon `gripR/gripL/elbowR/elbowL` metadata.
 
 Evaluation-time dependency presentation owner-а — глобальный `THREE`, потому что scratch vectors создаются при загрузке script. Поэтому `bot-presentation.js` обязан быть раньше `bots.js`. `MOBILE_LOW` и bot/weapon runtime objects используются только при вызове функций после bootstrap. Текущий canonical load sequence содержит `frontline → bot-presentation → bots`, но presentation не зависит от Frontline; оба являются независимыми prerequisites consumer-а.
 

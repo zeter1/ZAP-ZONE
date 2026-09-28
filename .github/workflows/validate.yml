@@ -45,6 +45,8 @@ jobs:
           node --check scripts/frontline-owner.test.mjs
           node --check scripts/bot-presentation-owner.test.mjs
           node --check scripts/bot-navigation-owner.test.mjs
+          node --check scripts/bot-perception-owner.test.mjs
+          node --check scripts/browser-boot-smoke.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
       - name: Project structure
@@ -53,6 +55,8 @@ jobs:
         run: node --test scripts/frontline-owner.test.mjs
       - name: Bot presentation regressions
         run: node --test scripts/bot-presentation-owner.test.mjs
+      - name: Bot perception regressions
+        run: node --test scripts/bot-perception-owner.test.mjs
       - name: Bot navigation regressions
         run: node --test scripts/bot-navigation-owner.test.mjs
 
@@ -61,7 +65,9 @@ jobs:
         run: |
           python3 -m http.server 8000 > /tmp/zap-http.log 2>&1 &
           server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          profile_dir="$(mktemp -d)"
+          chrome_pid=''
+          trap 'kill "$chrome_pid" "$server_pid" 2>/dev/null || true; wait "$chrome_pid" "$server_pid" 2>/dev/null || true; rm -rf "$profile_dir" 2>/dev/null || true' EXIT
 
           for attempt in {1..20}; do
             if curl -fsS http://127.0.0.1:8000/ >/dev/null; then
@@ -76,35 +82,24 @@ jobs:
             exit 1
           fi
 
-          boot_ready=false
-          for browser_attempt in 1 2 3; do
-            : > /tmp/zap-dom.html
-            : > /tmp/zap-chrome.log
-            timeout 20s "$chrome" \
-              --headless=new \
-              --no-sandbox \
-              --disable-dev-shm-usage \
-              --enable-webgl \
-              --enable-unsafe-swiftshader \
-              --ignore-gpu-blocklist \
-              --virtual-time-budget=15000 \
-              --dump-dom http://127.0.0.1:8000/ \
-              > /tmp/zap-dom.html 2> /tmp/zap-chrome.log || true
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-dev-shm-usage \
+            --enable-webgl \
+            --enable-unsafe-swiftshader \
+            --ignore-gpu-blocklist \
+            --window-size=1280,900 \
+            --remote-debugging-port=9222 \
+            --remote-allow-origins='*' \
+            --user-data-dir="$profile_dir" \
+            "http://127.0.0.1:8000/" \
+            > /tmp/zap-http-chrome.out 2> /tmp/zap-http-chrome.log &
+          chrome_pid=$!
 
-            if grep -q 'data-zap-boot="ready"' /tmp/zap-dom.html; then
-              boot_ready=true
-              break
-            fi
-            echo "Browser boot smoke attempt $browser_attempt did not reach the ready marker; retrying."
-            sleep 0.4
-          done
-
-          if [ "$boot_ready" != "true" ]; then
-            echo "Game did not reach the boot-ready marker after 3 attempts."
-            echo "--- Chrome log ---"
-            cat /tmp/zap-chrome.log
-            echo "--- DOM tail ---"
-            tail -n 80 /tmp/zap-dom.html
+          if ! timeout 25s node scripts/browser-boot-smoke.mjs; then
+            echo "--- HTTP Chrome log ---"
+            tail -n 120 /tmp/zap-http-chrome.log || true
             exit 1
           fi
 
