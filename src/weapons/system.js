@@ -497,7 +497,8 @@ function hideGeneratedFirstPersonWeaponArt(){
 function setGeneratedFirstPersonWeaponArt(w,model){
   hideGeneratedFirstPersonWeaponArt();
   const wrap=G('fp-weapon-art-wrap'),asset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
-  if(!GAME_HOSTED_HTTP_MODE||!wrap||!asset)return;
+  // file:// can load sibling WebP assets directly; HTTP cache versioning stays in gameAssetUrl().
+  if(!wrap||!asset)return;
   const tune=FP_GENERATED_ART_TUNING[w.key]||FP_GENERATED_ART_TUNING.rifle;
   wrap.style.setProperty('--fp-width',tune.width);wrap.style.setProperty('--fp-right',tune.right);
   wrap.style.setProperty('--fp-bottom',tune.bottom);wrap.style.setProperty('--fp-muzzle-x',tune.muzzleX);

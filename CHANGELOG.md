@@ -4,12 +4,13 @@
 
 ### Generated First-Person Weapon Pack — player-held firearms
 - добавлены 6 оптимизированных прозрачных WebP для оружия, которое видит и держит локальный игрок: pistol, shotgun, rifle, rocket, plasma и sniper;
-- generated FPS-art подключён как DOM presentation поверх canvas только на HTTP/HTTPS; procedural first-person weapon остаётся fallback для file://, 404/decode error и оружия без нового art;
+- generated FPS-art подключён как DOM presentation поверх canvas и работает как на HTTP/HTTPS, так и при прямом `file://` запуске; procedural first-person weapon остаётся fallback для 404/decode error и оружия без нового art;
 - при успешной загрузке скрывается только procedural корпус текущего player weapon, а существующие руки, gameplay/ballistics, bots и world pickups остаются на прежней Three.js логике;
 - overlay получает позу из текущего gunGrp: equip/reload/sprint/recoil/cycle визуально двигают новый art; для выстрела добавлен отдельный DOM muzzle flash;
 - generated weapon WebP не передаются в TextureLoader/gameTexture/makeAssetPlane/makeAssetSprite, сохраняя uCoz anti-black-quad invariant;
 - catalog, structural validation, README и asset contract обновлены под новый player-held pipeline;
 - browser/preload safety: generated player weapon остаётся `visibility:hidden` до фактического старта матча; сам WebP также lazy-loadится только после `running`, поэтому menu/preload и browser boot не декодируют player weapon заранее.
+- исправлен локальный `file://` path: прежний `GAME_HOSTED_HTTP_MODE` guard полностью блокировал generated weapon loader, поэтому локальная копия всегда показывала старую procedural модель; protocol gate удалён только из player-held loader, а lazy-load/fallback сохранены.
 
 
 ### Generated Gameplay Feedback Pack 3 — six semantic UI assets

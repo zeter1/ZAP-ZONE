@@ -224,6 +224,8 @@ for(const token of ['FP_GENERATED_ART_TUNING','function setGeneratedFirstPersonW
 if(weapons.includes('gameTexture(GAME_ASSETS.generatedFirstPersonWeapons')||weapons.includes('makeAssetPlane(GAME_ASSETS.generatedFirstPersonWeapons')){
   fail('generated player-held weapon art must stay DOM-only');
 }
+if(weapons.includes('if(!GAME_HOSTED_HTTP_MODE||!wrap||!asset)return;'))fail('generated player-held weapon art must not be disabled in file:// mode');
+if(!weapons.includes('if(!wrap||!asset)return;'))fail('generated player-held weapon loader protocol-neutral guard missing');
 if(!weapons.includes("el.style.display=owned&&!selectable?'none':''"))fail('empty owned weapons must disappear from the weapon bar');
 const rifleStart=weapons.indexOf("weaponDef('rifle'");
 const rifleEnd=weapons.indexOf('})',rifleStart);

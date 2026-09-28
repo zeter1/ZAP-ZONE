@@ -78,7 +78,7 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 - consumer: `#fp-weapon-art` / `#fp-weapon-art-stage` поверх canvas только для локального игрока;
 - на успешной загрузке скрывается только procedural first-person корпус текущего оружия; руки, gameplay state, ballistics, hitboxes, bots и pickups не меняются;
 - recoil/equip/reload/sprint/cycle поза DOM-art синхронизируется с существующим `gunGrp`, а muzzle flash имеет отдельный DOM feedback;
-- `file://`, 404 или decode error обязаны автоматически оставить procedural first-person модель;
+- для этого player-only pack `file://` поддерживается: WebP лениво загружается только после `running` по локальному `assets/...` пути; 404/decode error обязаны автоматически оставить procedural first-person модель;
 - mine/bomb/smoke остаются procedural, пока для них не создан отдельный утверждённый FPS pack;
 - запрещено загружать generated weapon WebP через `TextureLoader`, `gameTexture`, `makeAssetPlane` или `makeAssetSprite`.
 
