@@ -110,7 +110,7 @@ index.html
 
 ## Визуальные assets
 
-Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость.
+Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость. На HTTP/HTTPS raster-pack активируется автоматически; при прямом file:// запуске остаются лёгкие SVG/gradient fallbacks, чтобы не замедлять первый клик меню.
 
 - `assets/ui/backgrounds/menu-bg-arena-01.jpg` — фон главного меню;
 - `assets/ui/backgrounds/loading-bg-arena-01.jpg` — фон загрузочного экрана;

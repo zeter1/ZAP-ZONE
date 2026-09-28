@@ -65,10 +65,12 @@ for(const file of presentationRasterAssets){
   if(file.endsWith('.png')&&bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')fail('invalid PNG signature: '+file);
   if(file.endsWith('.jpg')&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[bytes.length-2]===0xff&&bytes[bytes.length-1]===0xd9))fail('invalid JPEG envelope: '+file);
 }
-if(!html.includes('src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
+if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const file of presentationRasterAssets.filter(file=>!file.endsWith('zap-zone-logo-01.png'))){
   if(!gameCss.includes('../../'+file))fail('generated presentation asset missing from CSS: '+file);
 }
+for(const fallback of ['../../assets/ui/health.svg','../../assets/ui/armor.svg','../../assets/ui/xp.svg'])if(!gameCss.includes(fallback))fail('file-mode UI fallback missing: '+fallback);
+if(!gameCss.includes('.generated-art-enabled #menu')||!gameCss.includes('.generated-art-enabled #loading'))fail('hosted presentation-art gate missing');
 for(const file of audioAssets){
   const wav=readFileSync(file);
   if(wav.length<44||wav.subarray(0,4).toString()!=='RIFF'||wav.subarray(8,12).toString()!=='WAVE')fail('invalid WAV asset: '+file);
@@ -77,7 +79,7 @@ for(const file of audioAssets){
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
-for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
+for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
   if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
 }
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');

@@ -143,7 +143,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .pcard-path{color:#8fc8ff;}
 
 
-#loading{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,6,15,.48),rgba(0,0,0,.76)),url('../../assets/ui/backgrounds/loading-bg-arena-01.jpg') center/cover no-repeat,radial-gradient(circle at 50% 35%,#0b2038 0,#03070d 55%,#000 100%);color:#fff;pointer-events:all;}
+#loading{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:#05070b;color:#fff;pointer-events:all;}
 #loading.hidden{display:none;}
 #loading-box{width:min(430px,86vw);text-align:center;}
 #loading-title{font-size:31px;font-weight:900;color:#ffd700;letter-spacing:3px;text-shadow:0 0 24px rgba(255,190,0,.55);}
@@ -154,7 +154,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.35);}
 
 .fs{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;color:#fff;pointer-events:auto;isolation:isolate;}
-#menu{background:linear-gradient(180deg,rgba(1,5,12,.24),rgba(1,4,10,.70)),url('../../assets/ui/backgrounds/menu-bg-arena-01.jpg') center/cover no-repeat,radial-gradient(circle at 50% 30%,#12233d 0,#050912 48%,#000 100%);}
+#menu{background:rgba(0,0,0,.94);}
 #pause{background:rgba(0,5,20,.90);display:none;}
 #menu .btn,#pause .btn,#settings-modal .btn{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation;-moz-user-select:none;}
 #pause.on{display:flex;}
@@ -251,7 +251,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #hp-txt::before{
   content:'';
   width:19px;height:19px;display:inline-block;flex:0 0 auto;
-  background:url('../../assets/ui/health-icon-tech-01.png') center/contain no-repeat;
+  background:url('../../assets/ui/health.svg') center/contain no-repeat;
   filter:drop-shadow(0 0 6px rgba(255,55,80,.55));
 }
 #armor-row{position:relative;}
@@ -259,14 +259,14 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   content:'';
   position:absolute;left:-27px;top:50%;transform:translateY(-50%);
   width:20px;height:20px;
-  background:url('../../assets/ui/armor-icon-01.png') center/contain no-repeat;
+  background:url('../../assets/ui/armor.svg') center/contain no-repeat;
   filter:drop-shadow(0 0 6px rgba(70,170,255,.55));
 }
 #xp-wrap::before{
   content:'';
   position:absolute;left:-30px;top:50%;transform:translateY(-50%);
   width:22px;height:22px;
-  background:url('../../assets/ui/xp-star-01.png') center/contain no-repeat;
+  background:url('../../assets/ui/xp.svg') center/contain no-repeat;
   filter:drop-shadow(0 0 7px rgba(255,205,45,.55));
 }
 @media (max-width:900px){
@@ -560,16 +560,26 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 }
 
 
-/* v24 presentation art — DOM/CSS only.
-   Keep these raster assets out of persistent Three.js/WebGL texture quads:
-   if hosting cannot serve an image, the CSS/HTML fallback remains usable instead of
-   turning a 3D surface into a black rectangle. */
-#restartBtn::before{
+/* v24 presentation art — hosted HTTP(S) DOM/CSS only.
+   Raster art is activated by catalog.js only on http:/https: hosting. file:// keeps
+   the lightweight SVG/gradient fallbacks, so local startup does not decode ~2 MiB
+   of presentation art during the first menu click. Persistent Three.js/WebGL
+   surfaces never use these images, preserving the uCoz anti-black-quad invariant. */
+.generated-art-enabled #loading{
+  background:linear-gradient(180deg,rgba(0,6,15,.48),rgba(0,0,0,.76)),url('../../assets/ui/backgrounds/loading-bg-arena-01.jpg') center/cover no-repeat,radial-gradient(circle at 50% 35%,#0b2038 0,#03070d 55%,#000 100%);
+}
+.generated-art-enabled #menu{
+  background:linear-gradient(180deg,rgba(1,5,12,.24),rgba(1,4,10,.70)),url('../../assets/ui/backgrounds/menu-bg-arena-01.jpg') center/cover no-repeat,radial-gradient(circle at 50% 30%,#12233d 0,#050912 48%,#000 100%);
+}
+.generated-art-enabled #hp-txt::before{background:url('../../assets/ui/health-icon-tech-01.png') center/contain no-repeat;}
+.generated-art-enabled #armor-row::before{background:url('../../assets/ui/armor-icon-01.png') center/contain no-repeat;}
+.generated-art-enabled #xp-wrap::before{background:url('../../assets/ui/xp-star-01.png') center/contain no-repeat;}
+.generated-art-enabled #restartBtn::before{
   content:'';display:inline-block;width:24px;height:24px;margin-right:9px;vertical-align:-7px;border-radius:6px;
   background:url('../../assets/environment/hazard-panel-01.jpg') center/cover no-repeat,linear-gradient(135deg,#ff9b18,#2c1600);
   box-shadow:0 0 10px rgba(255,137,25,.32);pointer-events:none;
 }
-#settings-title::before{
+.generated-art-enabled #settings-title::before{
   content:'';display:inline-block;width:34px;height:34px;margin-right:10px;vertical-align:-10px;border-radius:8px;
   background:url('../../assets/environment/terminal-screen-01.jpg') center/cover no-repeat,linear-gradient(135deg,#063461,#05101b);
   box-shadow:0 0 12px rgba(40,190,255,.30);pointer-events:none;

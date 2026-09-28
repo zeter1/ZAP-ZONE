@@ -2,6 +2,15 @@
 
 function G(id){return document.getElementById(id);}
 const GAME_LOCAL_FILE_MODE=location.protocol==='file:';
+const GAME_HOSTED_HTTP_MODE=/^https?:$/.test(location.protocol);
+
+// Generated raster presentation art is enabled only for normal HTTP(S) hosting.
+// file:// keeps the lightweight SVG/gradient fallbacks so first interaction stays responsive.
+if(GAME_HOSTED_HTTP_MODE){
+  document.documentElement.classList.add('generated-art-enabled');
+  const generatedLogo=G('brand-logo');
+  if(generatedLogo?.dataset.generatedSrc)generatedLogo.src=generatedLogo.dataset.generatedSrc;
+}
 
 // Centralized visual asset catalog. Paths are root-relative to the game URL.
 const GAME_ASSETS=Object.freeze({
