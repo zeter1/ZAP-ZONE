@@ -174,6 +174,7 @@ Acceptance gate:
 Для каждого нового generated image проверить:
 - файл существует и не пуст;
 - magic/envelope соответствует PNG/JPEG/WebP;
+- для binary upload через API/base64 до commit сверить Git blob SHA с локальным исходным файлом; после commit повторно проверить, что GitHub blob начинается с ожидаемого binary envelope (для WebP — RIFF....WEBP), а не с UTF-8/base64-текста;
 - размер разумный для callsite;
 - catalog содержит путь;
 - реальный HTML/CSS/JS consumer содержит wiring;
@@ -196,9 +197,10 @@ Acceptance gate:
 1. re-fetch exact `main` SHA;
 2. прочитать `.github/workflows/**` и оценить push-runs;
 3. re-fetch изменяемые файлы/blob SHA;
-4. подготовить все binary blobs + code/docs/changelog;
-5. собрать один Git tree/commit;
-6. fast-forward `main` с `force=false`.
+4. подготовить все binary blobs + code/docs/changelog; для WebP/PNG/JPEG использовать binary-safe base64 upload и записывать в tree только SHA проверенного Git blob;
+5. перед сборкой tree сравнить каждый созданный binary blob SHA с SHA, рассчитанным из локальных bytes; mismatch = STOP, не коммитить;
+6. собрать один Git tree/commit;
+7. fast-forward `main` с `force=false`.
 
 Не загружать шесть картинок шестью отдельными commits через Contents API: это создаёт лишние Actions runs и временно неконсистентный catalog.
 

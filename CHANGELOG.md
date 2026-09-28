@@ -8,6 +8,7 @@
 - размер изображения меняется по дистанции, off-screen/far pickups скрываются, а wall Raycaster occlusion не даёт generated art просвечивать сквозь стены;
 - после успешной загрузки скрывается только procedural weapon body; pedestal/ring/beacon, respawn, pickup radius, reserve grant и minimap semantics остаются прежними; при 404/decode error 3D-модель автоматически остаётся fallback;
 - catalog, asset contract, README и structural validation обновлены под отдельный world-pickup DOM pipeline.
+- исправлен binary upload world-pickup WebP: предыдущий bridge записал текстовые UTF-8 payloads вместо RIFF/WebP bytes; 8 файлов перезалиты через binary-safe base64 blobs с предварительной SHA-проверкой, а правила upload/validation усилены.
 
 ### Generated First-Person Weapon Pack — player-held firearms
 - approved V3 framing зафиксирован в asset contract как проверенный success baseline: 960×720 alpha, transparent headroom/left-space, baked angle, HUD-safe composition и screenshot-driven tuning;

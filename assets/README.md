@@ -36,3 +36,5 @@
 15. Generated world weapon pickups use 512×384 alpha WebP <=120 KiB in `ui/pickups/weapons`; project the real 3D pickup position into DOM screen space, keep pedestal/beacon/gameplay geometry in Three.js.
 16. World pickup DOM art must use distance scaling + viewport clipping + wall Raycaster occlusion and fall back to `createWorldWeaponModel()` on image error.
 17. Never route generated world pickup WebP through `gameTexture`, `makeAssetPlane` or `makeAssetSprite`; bomb stays procedural until it has its own approved asset.
+18. Binary-safe upload invariant: WebP/PNG/JPEG must be uploaded as base64-decoded Git blobs, never as UTF-8 text. Verify the created Git blob SHA against the local file bytes before putting it in a tree.
+19. After a binary asset commit, validate magic/envelope from GitHub (WebP must be RIFF…WEBP) and let `scripts/validate-structure.mjs` fail hard on corrupted or text-wrapped payloads.
