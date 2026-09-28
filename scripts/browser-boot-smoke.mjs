@@ -1,6 +1,6 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 
-const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9223/json/list';
+const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
 let page=null;
 for(let i=0;i<60;i++){
   try{
