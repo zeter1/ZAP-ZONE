@@ -4,7 +4,7 @@ const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
   'src/settings/settings.js','src/combat/combat.js','src/entities/bots.js','src/entities/pickups.js',
-  'src/progression/progression.js','src/ui/minimap.js','src/game/runtime.js'
+  'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
   .map(name=>'assets/weapons/'+name);
@@ -411,6 +411,25 @@ for(const token of ['function makeProceduralBurst','function setProceduralFxOpac
 }
 if(engine.includes('waterTex')||engine.includes('map:waterTex')||engine.includes('GAME_ASSETS.fx.')||engine.includes('GAME_ASSETS.impact[')){
   fail('hosting-sensitive external FX/water texture reference returned to engine');
+}
+
+const session=readFileSync('src/game/session.js','utf8');
+for(const token of [
+  'let lastT=0;',
+  'function tryFullscreen()','function setGameCursorHidden(','function clearPointerLockRequest()',
+  'function showPauseUI()','function requestGamePointerLock()','function resumeGameFromPause()','function startOrResumeGame()',
+  "G('startBtn').addEventListener('click',startOrResumeGame)","document.addEventListener('pointerlockchange'",
+  "document.addEventListener('pointerlockerror'","document.addEventListener('visibilitychange'",
+  "window.addEventListener('pagehide'","window.addEventListener('beforeunload'",'let escapeResumePending=false'
+]){if(!session.includes(token))fail('session lifecycle owner missing: '+token);}
+for(const token of ['function tryFullscreen()','function setGameCursorHidden(','function clearPointerLockRequest()','function showPauseUI()','function requestGamePointerLock()','function resumeGameFromPause()','function startOrResumeGame()']){
+  if(state.includes(token))fail('session lifecycle owner leaked back into player state: '+token);
+}
+for(const token of ["document.addEventListener('pointerlockchange'","document.addEventListener('pointerlockerror'","document.addEventListener('visibilitychange'","G('startBtn').addEventListener",'let escapeResumePending=false']){
+  if(runtime.includes(token))fail('runtime must not own session lifecycle wiring: '+token);
+}
+if(!(html.indexOf("'src/progression/progression.js'")<html.indexOf("'src/game/session.js'")&&html.indexOf("'src/game/session.js'")<html.indexOf("'src/game/runtime.js'"))){
+  fail('session.js must load after progression and before runtime');
 }
 
 const runtime=readFileSync('src/game/runtime.js','utf8');

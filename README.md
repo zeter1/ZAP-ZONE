@@ -98,6 +98,8 @@ index.html
 │   ├── combat/combat.js
 │   ├── entities/{bots,pickups}.js
 │   ├── progression/progression.js
+│   ├── game/session.js
+│   ├── ui/minimap.js
 │   └── game/runtime.js
 ├── assets/
 │   ├── weapons/*.svg
@@ -105,16 +107,25 @@ index.html
 │   ├── environment/*.svg
 │   └── ui/*.svg
 ├── scripts/validate-structure.mjs
-├── docs/ARCHITECTURE.md
+├── docs/{AI_WORKFLOW,ARCHITECTURE,ASSETS}.md
+├── AGENTS.md
+├── task/README.md
 ├── CHANGELOG.md
 └── .github/workflows/validate.yml
 ```
+
+## Для ChatGPT / Codex / AI-разработки
+
+Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**, asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
+
+Правило проекта: refactor переносит **ownership + invariants + verification oracle**, а не просто строки кода. После source/runtime-изменения обязательны build-stamp check, structural validation и browser smoke; полезные проверки не отключаются ради зелёного CI.
+
 
 ## Визуальные assets
 
 Подробный контракт создания, оптимизации, подключения, проверки и публикации ассетов: **[docs/ASSETS.md](docs/ASSETS.md)**. Короткая карта каталогов для AI/разработчика: **[assets/README.md](assets/README.md)**.
 
-Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость. На HTTP/HTTPS raster-pack активируется автоматически; при прямом file:// запуске остаются лёгкие SVG/gradient fallbacks, чтобы не замедлять первый клик меню.
+Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость. Generated presentation art активируется и на HTTP/HTTPS, и при прямом `file://` запуске; cache-key добавляется только в hosted mode, а SVG/gradient fallback используется при реальной ошибке загрузки/декодирования.
 
 - `assets/ui/backgrounds/menu-bg-arena-01.jpg` — фон главного меню;
 - `assets/ui/backgrounds/loading-bg-arena-01.jpg` — фон загрузочного экрана;

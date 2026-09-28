@@ -12,7 +12,32 @@
 8. `src/entities/bots.js` — AI.
 9. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
 10. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-11. `src/game/runtime.js` — main loop и boot.
+11. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+12. `src/ui/minimap.js` — тактическая миникарта.
+13. `src/game/runtime.js` — frame simulation/render loop и boot.
+
+## Session lifecycle owner
+
+`src/game/session.js` — единственный владелец переходов между меню/паузой/активной игрой и состоянием браузера. Здесь живут Pointer Lock request/change/error, start/resume, Escape sequencing, blur/focus/visibility/pagehide persistence и общий `lastT`, который сбрасывается после lifecycle-переходов.
+
+**Не-владельцы:**
+
+- `src/player/state.js` хранит player/save/weapon/mobile state и helpers, но не должен регистрировать браузерные session listeners;
+- `src/game/runtime.js` владеет симуляцией кадра и boot; он может вызывать `showPauseUI()` как публичную session-команду, но не должен повторно регистрировать Pointer Lock/visibility/Escape handlers.
+
+**Инварианты:**
+
+- активная desktop-игра начинается только после успешного Pointer Lock и завершённого preload;
+- потеря Pointer Lock во время матча переводит симуляцию в паузу, кроме специально обработанных death/perk/level состояний;
+- `visibilitychange` в hidden-state сохраняет прогресс и останавливает активную сессию; `focus` только сбрасывает frame clock;
+- Escape-resume выполняется на `keyup`, чтобы браузер не снял только что полученный Pointer Lock тем же Escape;
+- `file://` и HTTP(S) должны сохранять один и тот же session contract;
+- lifecycle listeners не дублируются между `state.js`, `session.js` и `runtime.js`.
+
+**Verification oracle:** `scripts/validate-structure.mjs` проверяет ownership/load-order; CI дополнительно выполняет HTTP boot smoke и настоящий `file://` Chrome/CDP menu smoke.
+
+При рефакторинге сохраняйте порядок browser events, а не только итоговые boolean-флаги. Для browser semantics сверяйтесь с MDN Pointer Lock API и Page Visibility API.
+
 
 ## Asset layer
 

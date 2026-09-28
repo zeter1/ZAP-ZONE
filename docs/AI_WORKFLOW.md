@@ -1,0 +1,73 @@
+# AI / Codex workflow — ZAP ZONE
+
+Цель документа — дать нейросети карту, а не энциклопедию. Подробности живут у доменных owner-ов и в узких specs.
+
+## Старт проходки
+
+1. Fresh `main`: подтвердить branch/head и прочитать текущий task.
+2. Actions preflight: `.github/workflows/validate.yml`, triggers, permissions, последний run.
+3. Определить semantic owner и его соседние границы.
+4. Прочитать owner + прямые callers + validation/oracles + релевантный раздел документации.
+5. Сформулировать behavior invariants и только затем менять код.
+
+## Карта owner-ов
+
+| Домен | Canonical owner | Что не тянуть сюда |
+|---|---|---|
+| Asset identity / fallback | `src/assets/catalog.js` | gameplay logic |
+| Arena / renderer / collision | `src/core/engine.js` | UI/session policy |
+| Weapon data / 3D factory | `src/weapons/system.js` | browser lifecycle |
+| Player/save/weapon state | `src/player/state.js` | Pointer Lock listeners |
+| Audio / presentation settings | `src/settings/settings.js` | combat authority |
+| Input / combat / projectiles | `src/combat/combat.js` | map-level AI planning |
+| Bot AI | `src/entities/bots.js` | browser/session lifecycle |
+| Pickups | `src/entities/pickups.js` | player save schema ownership |
+| XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
+| Browser game session | `src/game/session.js` | per-frame simulation |
+| Tactical minimap | `src/ui/minimap.js` | collision authority |
+| Frame simulation / boot | `src/game/runtime.js` | browser lifecycle listeners |
+
+## Ключевые invariants
+
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer.
+- Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
+- Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
+- `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
+- Generated raster/WebP presentation assets остаются DOM/CSS-only; persistent Three.js surfaces не должны снова получать hosting-sensitive image texture-quads.
+- Любое изменение `src/**`, `assets/**` или script graph требует актуального `version.json`/cache build через canonical `scripts/stamp-web-build.mjs`.
+- Source-regex/structural oracle после extraction должен переехать к новому owner-у; не возвращайте старую реализацию ради regex.
+
+## Маршрутизация документации
+
+- assets / generated art / uCoz / fallback → `docs/ASSETS.md`;
+- architecture ownership / session / weapon lifecycle / AI invariants → нужный раздел `docs/ARCHITECTURE.md`;
+- cache-busting / ручная публикация → README + `scripts/stamp-web-build.mjs`;
+- CI failure → `.github/workflows/validate.yml`, затем failed job/step/log;
+- следующий небольшой кусок работы → `task/`.
+
+## Рабочий цикл
+
+`INSPECT → DIAGNOSE → PLAN → CHANGE → VERIFY → REVIEW → DELIVER`
+
+- **INSPECT:** fresh provider state, owner, callers, workflow, task.
+- **DIAGNOSE:** root cause / architectural seam / behavioral invariants.
+- **PLAN:** один bounded diff и явные non-goals.
+- **CHANGE:** минимальный перенос/исправление + oracle migration + docs.
+- **VERIFY:** syntax/structural/build-stamp → browser runtime → GitHub Actions.
+- **REVIEW:** duplicate owners, stale docs/tests, accidental behavior/balance changes, cache/build parity.
+- **DELIVER:** только после evidence; если слой не проверен — отметить `NOT VERIFIED`.
+
+## Verification matrix
+
+| Изменение | Минимум проверки |
+|---|---|
+| docs/task only | ссылки/пути/актуальность owner map |
+| `src/**` | Node syntax + build stamp + structure validation + browser smoke |
+| session/menu | structure owner guard + HTTP boot + реальный `file://` Chrome/CDP smoke |
+| assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
+| AI behavior | focused invariants + structure + runtime smoke; не маскировать balance change как refactor |
+| workflow | YAML intent + least privilege + один новый run и его logs при failure |
+
+## Task discipline
+
+`task/README.md` — инструкция очереди. Каждый pending task — отдельный `.md`; выполненный task удаляется в той же проходке. В конце создаётся только evidence-based следующий bounded task, а не длинный wishlist.

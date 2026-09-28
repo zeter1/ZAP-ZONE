@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-28
 
+### Session lifecycle ownership + AI navigation
+- браузерный lifecycle матча вынесен из `player/state.js` и `game/runtime.js` в новый canonical owner `src/game/session.js`: Pointer Lock, start/resume/pause, Escape sequencing, blur/focus/visibility/pagehide и frame-clock reset теперь собраны в одном месте;
+- `runtime.js` снова отвечает за frame simulation/render + boot, а `player/state.js` — за player/save/weapon/mobile state; gameplay balance и combat semantics не менялись;
+- structural validation закрепляет owner boundary и порядок загрузки `progression → session → runtime`, а существующие HTTP boot + реальный `file://` Chrome/CDP smoke остаются runtime proof;
+- добавлены `AGENTS.md`, `docs/AI_WORKFLOW.md` и управляемая очередь `task/`, чтобы ChatGPT/Codex начинали с карты owner-ов и читали только релевантные спецификации;
+- README исправлен под фактический dual-runtime generated-art contract: HTTP(S) и `file://` используют один presentation pack с fallback только при реальной ошибке загрузки.
 ### Generated Asset Pack 4 — bomb, pickups, scopes and combat feedback
 - загружены 8 новых WebP: player-held bomb, world bomb pickup, medkit pickup, ammo crate, sniper scope, rifle scope, Frontline capture burst и battle/death result frame;
 - bomb теперь закрывает прежний generated-art gap и в first-person, и среди world weapon pickups, сохраняя procedural fallback;

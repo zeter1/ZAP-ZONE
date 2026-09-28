@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── MAIN LOOP ──────────────────────────
-let lastT=0,idleRenderAt=0;
+let idleRenderAt=0;
 const _euler=new THREE.Euler(0,0,0,'YXZ');
 const _fwd=new THREE.Vector3(),_rgt=new THREE.Vector3(),_mv=new THREE.Vector3();
 let prevPX=0,prevPZ=0;
@@ -270,102 +270,6 @@ function updateAllyPanel(dt){
     return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><img class="leader-bot-icon" src="${GAME_ASSETS.characters.ally}" alt=""> СВОЙ ${i+1} · ${botRoleLabel(e.role)}: ${e.kills||0} ☠ · ${pct}%</div>`;
   }).join('');
 }
-
-// ─── POINTER LOCK / TOUCH START ─────────
-G('startBtn').addEventListener('click',startOrResumeGame);
-G('resumeBtn').addEventListener('click',resumeGameFromPause);
-G('fullscreenBtn').addEventListener('click',tryFullscreen);
-G('restartBtn').addEventListener('click',restartGameFromScratch);
-G('perk-reroll').addEventListener('click',rerollPerks);
-window.addEventListener('keydown',e=>{
-  if(!perkPickOpen)return;
-  const n=parseInt(e.key);
-  if(n>=1&&n<=currentPerkChoices.length){e.preventDefault();pickPerk(currentPerkChoices[n-1]);}
-});
-
-document.addEventListener('pointerlockchange',()=>{
-  if(IS_TOUCH)return;
-  clearPointerLockRequest();
-  if(document.pointerLockElement===canvas){
-    if(!preloadDone){document.exitPointerLock();return;}
-    const firstStart=!gameSessionActivated;
-    setGameCursorHidden(true);
-    G('menu').style.display='none';G('pause').classList.remove('on');
-    paused=false;running=true;lastT=performance.now();
-    if(firstStart){
-      activatePreparedGame();
-      wHUD();markHUD();flushHUD();xpHUD();updateStats();
-      respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
-    }
-  }else{
-    mouseDown=false;zooming=false;
-    if(dying){
-      // Киллкамера остаётся без видимого курсора. После неё respawn сам проверит,
-      // сохранился ли pointer lock, и при необходимости откроет меню паузы.
-      setGameCursorHidden(true);
-    }else if(perkPickOpen){
-      setGameCursorHidden(false);
-    }else if(lvlAnnOpen){
-      setGameCursorHidden(true);
-    }else if(gameSessionActivated||running||paused){
-      showPauseUI();
-    }else{
-      setGameCursorHidden(false);
-    }
-  }
-  refreshMobileHUD();
-});
-document.addEventListener('pointerlockerror',()=>{
-  if(IS_TOUCH)return;
-  clearPointerLockRequest();
-  if(!dying&&!perkPickOpen&&!lvlAnnOpen)showPauseUI();
-});
-window.addEventListener('blur',()=>{
-  if(IS_TOUCH||dying)return;
-  if(running&&!paused&&!perkPickOpen&&!lvlAnnOpen){
-    saveProgress(true);
-    if(document.pointerLockElement===canvas)document.exitPointerLock();
-    else showPauseUI();
-  }
-});
-window.addEventListener('focus',()=>{lastT=performance.now();});
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden)lastT=performance.now();
-  if(document.hidden){
-    saveProgress(true);
-    if(running&&!dying&&!lvlAnnOpen&&!perkPickOpen){
-      if(IS_TOUCH)showPauseUI();
-      else document.exitPointerLock();
-    }
-  }
-});
-window.addEventListener('pagehide',()=>saveProgress(true));
-window.addEventListener('beforeunload',()=>saveProgress(true));
-let escapeResumePending=false;
-window.addEventListener('keydown',e=>{
-  if(e.code!=='Escape'||e.repeat||dying||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
-  e.preventDefault();
-  e.stopImmediatePropagation();
-  if(paused){
-    // Не запрашиваем Pointer Lock на keydown: браузер обрабатывает Escape после
-    // события и мог сразу повторно снять только что полученный захват мыши.
-    escapeResumePending=true;
-    return;
-  }
-  escapeResumePending=false;
-  if(document.pointerLockElement===canvas){
-    document.exitPointerLock();
-  }else if(running){
-    showPauseUI();
-  }
-},true);
-window.addEventListener('keyup',e=>{
-  if(e.code!=='Escape'||!escapeResumePending||dying||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
-  e.preventDefault();
-  e.stopImmediatePropagation();
-  escapeResumePending=false;
-  resumeGameFromPause();
-},true);
 
 // ─── BOOT ───────────────────────────────
 setGameCursorHidden(false);
