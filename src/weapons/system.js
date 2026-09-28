@@ -477,20 +477,25 @@ const FP_MODEL_TUNING={
   sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]}
 };
 const FP_GENERATED_ART_TUNING=Object.freeze({
-  pistol:{width:'48vw',right:'-5vw',bottom:'-29vh',muzzleX:'5%',muzzleY:'20%'},
-  shotgun:{width:'57vw',right:'-6vw',bottom:'-36vh',muzzleX:'5%',muzzleY:'19%'},
-  rifle:{width:'58vw',right:'-6vw',bottom:'-36vh',muzzleX:'3%',muzzleY:'18%'},
-  rocket:{width:'50vw',right:'-5vw',bottom:'-34vh',muzzleX:'8%',muzzleY:'22%'},
-  plasma:{width:'56vw',right:'-6vw',bottom:'-36vh',muzzleX:'5%',muzzleY:'18%'},
-  sniper:{width:'61vw',right:'-7vw',bottom:'-39vh',muzzleX:'2%',muzzleY:'18%'}
+  // V2 renders already contain the final FPS tilt and baked player hands.
+  // Keep the image mostly inside the lower-right quadrant instead of poster-scaling it.
+  pistol:{width:'46vw',right:'-2vw',bottom:'-8vh',muzzleX:'8%',muzzleY:'13%'},
+  shotgun:{width:'58vw',right:'-4vw',bottom:'-8vh',muzzleX:'4%',muzzleY:'9%'},
+  rifle:{width:'59vw',right:'-5vw',bottom:'-10vh',muzzleX:'5%',muzzleY:'12%'},
+  rocket:{width:'57vw',right:'-4vw',bottom:'-8vh',muzzleX:'4%',muzzleY:'10%'},
+  plasma:{width:'58vw',right:'-4vw',bottom:'-9vh',muzzleX:'4%',muzzleY:'11%'},
+  sniper:{width:'63vw',right:'-7vw',bottom:'-11vh',muzzleX:'2%',muzzleY:'10%'}
 });
+function setProceduralFirstPersonRigVisible(visible){
+  for(const child of gunGrp.children)child.visible=visible;
+}
 let fpGeneratedWeaponModel=null,fpGeneratedWeaponPending=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoading=false,fpGeneratedWeaponLoadId=0;
 function hideGeneratedFirstPersonWeaponArt(){
   const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash'),img=G('fp-weapon-art');
   if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');}
   if(flash)flash.style.opacity='0';
   if(img){img.onload=null;img.onerror=null;img.removeAttribute('src');delete img.dataset.weaponKey;}
-  if(fpGeneratedWeaponModel)fpGeneratedWeaponModel.visible=true;
+  setProceduralFirstPersonRigVisible(true);
   fpGeneratedWeaponLoadId+=1;fpGeneratedWeaponModel=null;fpGeneratedWeaponPending=null;
   fpGeneratedWeaponActive=false;fpGeneratedWeaponLoading=false;
 }
@@ -514,11 +519,13 @@ function ensureGeneratedFirstPersonWeaponArtLoaded(){
   img.onload=()=>{
     if(img.dataset.loadId!==loadId||img.dataset.weaponKey!==pending.key||fpGeneratedWeaponPending?.key!==pending.key)return;
     fpGeneratedWeaponLoading=false;fpGeneratedWeaponModel=pending.model;fpGeneratedWeaponActive=true;
-    pending.model.visible=false;wrap.classList.add('on');
+    // V2 art includes its own correctly posed hands/forearms, so never double-render
+    // the procedural weapon body or blocky fallback hands underneath it.
+    setProceduralFirstPersonRigVisible(false);wrap.classList.add('on');
   };
   img.onerror=()=>{
     if(img.dataset.loadId!==loadId)return;
-    fpGeneratedWeaponLoading=false;pending.model.visible=true;wrap.classList.remove('on');
+    fpGeneratedWeaponLoading=false;setProceduralFirstPersonRigVisible(true);wrap.classList.remove('on');
     console.warn('Не удалось загрузить first-person weapon art:',pending.asset);
   };
   img.src=pending.asset;

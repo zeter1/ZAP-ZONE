@@ -3,9 +3,11 @@
 ## Unreleased — 2026-09-25
 
 ### Generated First-Person Weapon Pack — player-held firearms
+- V2 pack перегенерирован по утверждённому reference montage: first-person угол теперь задаёт оружие из нижнего правого сектора влево/вверх, с корректно встроенными руками/предплечьями вместо showroom/profile-композиции;
+- 6 runtime WebP заменены на 960×720 alpha derivatives (pistol, shotgun, rifle, rocket, plasma, sniper), каждый ограничен 250 KiB;
 - добавлены 6 оптимизированных прозрачных WebP для оружия, которое видит и держит локальный игрок: pistol, shotgun, rifle, rocket, plasma и sniper;
 - generated FPS-art подключён как DOM presentation поверх canvas и работает как на HTTP/HTTPS, так и при прямом `file://` запуске; procedural first-person weapon остаётся fallback для 404/decode error и оружия без нового art;
-- при успешной загрузке скрывается только procedural корпус текущего player weapon, а существующие руки, gameplay/ballistics, bots и world pickups остаются на прежней Three.js логике;
+- текущий V2 pack использует baked-hands: при успешной загрузке скрывается весь procedural first-person rig (корпус + blocky procedural hands), а при 404/decode error он полностью восстанавливается; gameplay/ballistics, bots и world pickups остаются на прежней Three.js логике;
 - overlay получает позу из текущего gunGrp: equip/reload/sprint/recoil/cycle визуально двигают новый art; для выстрела добавлен отдельный DOM muzzle flash;
 - generated weapon WebP не передаются в TextureLoader/gameTexture/makeAssetPlane/makeAssetSprite, сохраняя uCoz anti-black-quad invariant;
 - catalog, structural validation, README и asset contract обновлены под новый player-held pipeline;

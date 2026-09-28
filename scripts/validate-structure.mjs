@@ -179,7 +179,11 @@ for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MO
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');
 if(!catalog.includes('firstPersonSkins:Object.freeze'))fail('first-person weapon skin catalog missing');
 if(!catalog.includes('generatedFirstPersonWeapons:Object.freeze'))fail('generated first-person weapon catalog missing');
-for(const file of generatedFirstPersonWebpAssets)if(!catalog.includes(file))fail('generated first-person weapon missing from catalog: '+file);
+for(const file of generatedFirstPersonWebpAssets){
+  if(!catalog.includes(file))fail('generated first-person weapon missing from catalog: '+file);
+  const bytes=readFileSync(file);
+  if(bytes.length>250*1024)fail('generated first-person weapon runtime derivative exceeds 250 KiB: '+file);
+}
 if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must not be catalogued');
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
@@ -218,9 +222,10 @@ for(const token of ['FP_HAND_POSES','FP_DECAL_TUNING','FP_MODEL_TUNING','functio
 if(weapons.includes('makeAssetPlane(')||weapons.includes('GAME_ASSETS.firstPersonWeapons')||weapons.includes('GAME_ASSETS.firstPersonSkins')){
   fail('first-person weapon scene must not depend on SVG texture planes');
 }
-for(const token of ['FP_GENERATED_ART_TUNING','function setGeneratedFirstPersonWeaponArt','function ensureGeneratedFirstPersonWeaponArtLoaded','function syncGeneratedFirstPersonWeaponArt','GAME_ASSETS.generatedFirstPersonWeapons','model.visible=false',"G('fp-weapon-art-wrap')","wrap.classList.toggle('shown',show)"]){
+for(const token of ['FP_GENERATED_ART_TUNING','function setProceduralFirstPersonRigVisible','function setGeneratedFirstPersonWeaponArt','function ensureGeneratedFirstPersonWeaponArtLoaded','function syncGeneratedFirstPersonWeaponArt','GAME_ASSETS.generatedFirstPersonWeapons','setProceduralFirstPersonRigVisible(false)',"G('fp-weapon-art-wrap')","wrap.classList.toggle('shown',show)"]){
   if(!weapons.includes(token))fail('generated player-held weapon presentation missing: '+token);
 }
+if(weapons.includes('pending.model.visible=false'))fail('baked-hand generated weapon art must hide the whole procedural first-person rig, not only the weapon body');
 if(weapons.includes('gameTexture(GAME_ASSETS.generatedFirstPersonWeapons')||weapons.includes('makeAssetPlane(GAME_ASSETS.generatedFirstPersonWeapons')){
   fail('generated player-held weapon art must stay DOM-only');
 }

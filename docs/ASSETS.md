@@ -26,7 +26,9 @@
 4. сохранить прозрачность;
 5. подготовить runtime derivative.
 
-Текущий ориентир для компактных эмблем — 256×256 WebP с alpha. PNG допустим, когда lossless edge fidelity действительно нужна. Большой raster >512 px или >250 KiB в HUD требует отдельного обоснования.
+Текущий ориентир для компактных эмблем — 256×256 WebP с alpha. PNG допустим, когда lossless edge fidelity действительно нужна. Большой raster >512 px или >250 KiB в обычном HUD требует отдельного обоснования.
+
+Для player-held FPS weapon art действует отдельный envelope: текущий целевой runtime derivative — **960×720 WebP с alpha, до 250 KiB на файл**. Такой размер нужен потому, что оружие занимает значительную часть 16:9 viewport; уменьшать его до icon-resolution нельзя.
 
 Background/photo-like art: WebP/JPEG. Простые векторные fallback: SVG. Не конвертировать SVG в тяжёлый raster без пользы.
 
@@ -73,14 +75,39 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 
 ### Player-held generated weapons
 
-Сгенерированные FPS-рендеры оружия не являются 3D-моделями и не должны подменять bot/world geometry. Контракт:
-- runtime derivative: прозрачный WebP в `assets/ui/weapons/fp/**`;
+Сгенерированные FPS-рендеры оружия не являются 3D-моделями и не должны подменять bot/world geometry.
+
+**Reference lock перед генерацией.** Если пользователь дал пример посадки оружия, он является обязательным composition contract, а не просто style reference. До генерации зафиксировать:
+- камера — first-person, оружие выходит из нижнего правого сектора и направлено влево/вверх в глубину сцены;
+- видна правильная ведущая рука на рукояти; для двуручного оружия видна supporting hand/forearm;
+- ствол не должен смотреть фронтально в камеру и не должен быть боковым showroom/profile render;
+- оружие не центрируется как постер и не перекрывает центральный reticle;
+- muzzle должен оставаться читаемым и иметь стабильную экранную anchor-точку;
+- фон обязательно прозрачный, без baked black rectangle/scene/background.
+
+**Hand ownership mode — нельзя смешивать.** Для каждого pack заранее выбрать ровно один режим:
+1. `baked-hands` — изображение уже содержит финальные руки/предплечья; при успешной загрузке скрывается **весь procedural first-person rig** (weapon body + procedural hands), иначе появятся двойные/блочные руки;
+2. `weapon-only` — изображение не содержит рук; procedural hands могут остаться только после отдельной проверки совпадения grip/scale/perspective.
+
+Текущий pack pistol/shotgun/rifle/plasma/rocket/sniper — **baked-hands**.
+
+Runtime contract:
+- runtime derivative: прозрачный WebP в `assets/ui/weapons/fp/**`, сейчас 960×720 и <=250 KiB;
 - consumer: `#fp-weapon-art` / `#fp-weapon-art-stage` поверх canvas только для локального игрока;
-- на успешной загрузке скрывается только procedural first-person корпус текущего оружия; руки, gameplay state, ballistics, hitboxes, bots и pickups не меняются;
+- при `baked-hands` успешная загрузка скрывает все children текущего procedural `gunGrp`; fallback/error возвращает весь rig;
+- gameplay state, ballistics, hitboxes, recoil logic, bots и world pickups не меняются;
 - recoil/equip/reload/sprint/cycle поза DOM-art синхронизируется с существующим `gunGrp`, а muzzle flash имеет отдельный DOM feedback;
-- для этого player-only pack `file://` поддерживается: WebP лениво загружается только после `running` по локальному `assets/...` пути; 404/decode error обязаны автоматически оставить procedural first-person модель;
+- для player-only pack `file://` поддерживается: WebP лениво загружается только после `running` по локальному `assets/...` пути; 404/decode error обязаны автоматически вернуть procedural first-person rig;
 - mine/bomb/smoke остаются procedural, пока для них не создан отдельный утверждённый FPS pack;
 - запрещено загружать generated weapon WebP через `TextureLoader`, `gameTexture`, `makeAssetPlane` или `makeAssetSprite`.
+
+**Framing/acceptance gate перед upload.** Для каждого FPS weapon:
+- сравнить с утверждённым reference montage, а не только с соседними generated картинками;
+- проверить 16:9 desktop screenshot: оружие визуально сидит в нижнем правом секторе, а muzzle уходит к левому/верхнему направлению;
+- руки анатомически держат grip/fore-end, нет второго procedural комплекта рук;
+- weapon silhouette не занимает чрезмерно весь экран и не закрывает HUD/reticle;
+- отдельные `width/right/bottom/muzzleX/muzzleY` tuning значения задаются по weapon key, а не одной глобальной трансформацией;
+- если визуальная посадка не проверена screenshot-ом, итог маркировать `NOT VERIFIED: visual framing`, даже если CI зелёный.
 
 ## 6. Catalog и cache identity
 
@@ -104,6 +131,8 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 - fallback/degradation path существует;
 - generated presentation path отсутствует в WebGL engine;
 - для player-held weapon art проверены DOM consumer, procedural fallback, pose sync и отсутствие влияния на bots/world pickups;
+- для baked-hands pack проверено, что procedural weapon **и procedural hands** скрываются одновременно, а на fallback возвращаются вместе;
+- FPS framing сопоставлен с утверждённым reference screenshot/montage; CI не заменяет визуальную проверку композиции;
 - `node --check` проходит;
 - `node scripts/stamp-web-build.mjs --check` проходит после stamp;
 - `node scripts/validate-structure.mjs` проходит;

@@ -18,10 +18,12 @@
 
 ## Critical invariants
 
-1. Generated raster/WebP UI art is DOM/CSS presentation-only; do not route it into persistent WebGL texture planes/sprites. Generated player-held weapons follow the same rule: DOM overlay for the local player, while procedural Three.js remains the fallback and still drives bots/world pickups.
+1. Generated raster/WebP UI art is DOM/CSS presentation-only; do not route it into persistent WebGL texture planes/sprites. Generated player-held weapons follow the same rule: DOM overlay for the local player, while procedural Three.js remains the fallback and still drives bots/world pickups. Current FPS weapon pack is **baked-hands**: when its image is active, hide the entire local procedural first-person rig so blocky fallback hands are never double-rendered.
 2. Critical information keeps SVG/text/DOM fallback; decorative art may degrade to absence only when meaning remains intact.
 3. Runtime generated filenames are semantic ASCII kebab-case, not generator filenames.
 4. Add every runtime asset to `GAME_ASSETS` and `scripts/validate-structure.mjs`.
 5. After runtime asset change, restamp web build and commit `CHANGELOG.md` in the same logical change.
 6. Upload a pack atomically when possible; do not create one push/CI run per image.
 7. For manual static/uCoz publication upload `version.json` last.
+8. FPS weapon generation must match the approved first-person reference angle/framing; a side-profile/poster weapon is not an acceptable replacement even if the art itself is high quality.
+9. Current FPS runtime derivative target: 960×720 transparent WebP, <=250 KiB, per-weapon framing/muzzle tuning, visual screenshot check before calling the integration complete.
