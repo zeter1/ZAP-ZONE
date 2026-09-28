@@ -45,6 +45,7 @@ jobs:
           node --check scripts/frontline-owner.test.mjs
           node --check scripts/bot-presentation-owner.test.mjs
           node --check scripts/bot-navigation-owner.test.mjs
+          node --check scripts/bot-perception-owner.test.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
       - name: Project structure
@@ -53,6 +54,8 @@ jobs:
         run: node --test scripts/frontline-owner.test.mjs
       - name: Bot presentation regressions
         run: node --test scripts/bot-presentation-owner.test.mjs
+      - name: Bot perception regressions
+        run: node --test scripts/bot-perception-owner.test.mjs
       - name: Bot navigation regressions
         run: node --test scripts/bot-navigation-owner.test.mjs
 
