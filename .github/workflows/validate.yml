@@ -43,12 +43,15 @@ jobs:
           node --check scripts/validate-structure.mjs
           node --check scripts/stamp-web-build.mjs
           node --check scripts/frontline-owner.test.mjs
+          node --check scripts/bot-presentation-owner.test.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
       - name: Project structure
         run: node scripts/validate-structure.mjs
       - name: Frontline owner regressions
         run: node --test scripts/frontline-owner.test.mjs
+      - name: Bot presentation regressions
+        run: node --test scripts/bot-presentation-owner.test.mjs
 
       - name: Browser boot smoke test
         shell: bash
