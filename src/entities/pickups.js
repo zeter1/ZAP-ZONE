@@ -50,28 +50,32 @@ function mkAmmoMesh(){
   return g;
 }
 function mkHpMesh(){
-  const g=new THREE.Group();
-  const body=new THREE.Mesh(new THREE.BoxGeometry(.70,.50,.28),PICKUP_MATS.med);g.add(body);
-  const rim=new THREE.Mesh(new THREE.BoxGeometry(.75,.10,.32),PICKUP_MATS.dark);rim.position.y=.25;g.add(rim);
+  const g=new THREE.Group(),model=new THREE.Group();g.add(model);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.70,.50,.28),PICKUP_MATS.med);model.add(body);
+  const rim=new THREE.Mesh(new THREE.BoxGeometry(.75,.10,.32),PICKUP_MATS.dark);rim.position.y=.25;model.add(rim);
   const handle=new THREE.Mesh(new THREE.TorusGeometry(.15,.035,6,14,Math.PI),PICKUP_MATS.steel);
-  handle.rotation.x=Math.PI/2;handle.position.set(0,.39,0);g.add(handle);
-  const crossH=new THREE.Mesh(new THREE.BoxGeometry(.39,.105,.31),PICKUP_MATS.medWhite);crossH.position.z=.025;g.add(crossH);
-  const crossV=new THREE.Mesh(new THREE.BoxGeometry(.105,.39,.31),PICKUP_MATS.medWhite);crossV.position.z=.025;g.add(crossV);
+  handle.rotation.x=Math.PI/2;handle.position.set(0,.39,0);model.add(handle);
+  const crossH=new THREE.Mesh(new THREE.BoxGeometry(.39,.105,.31),PICKUP_MATS.medWhite);crossH.position.z=.025;model.add(crossH);
+  const crossV=new THREE.Mesh(new THREE.BoxGeometry(.105,.39,.31),PICKUP_MATS.medWhite);crossV.position.z=.025;model.add(crossV);
   const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.medGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.33;g.add(ring);
   addPickupPedestal(g,0xff4058);
   addPickupBeacon(g,0xff4058,.86,.94);
+  g.userData.proceduralPickupModel=model;
+  attachWorldMedkitPickupArt(g,model);
   return g;
 }
 
 const WORLD_PICKUP_ART_TUNING=Object.freeze({
   pistol:{maxPx:118,minPx:30,y:.18},shotgun:{maxPx:148,minPx:34,y:.20},rifle:{maxPx:154,minPx:34,y:.20},
   rocket:{maxPx:158,minPx:36,y:.20},plasma:{maxPx:150,minPx:34,y:.20},mine:{maxPx:100,minPx:28,y:.15},
-  smoke:{maxPx:84,minPx:26,y:.18},sniper:{maxPx:166,minPx:36,y:.20}
+  bomb:{maxPx:112,minPx:30,y:.16},smoke:{maxPx:84,minPx:26,y:.18},sniper:{maxPx:166,minPx:36,y:.20}
 });
+const WORLD_MEDKIT_PICKUP_ART_TUNING=Object.freeze({maxPx:92,minPx:26,y:.16});
 const _worldPickupArtPos=new THREE.Vector3(),_worldPickupArtDir=new THREE.Vector3(),_worldPickupArtScreen=new THREE.Vector3();
 const _worldPickupArtRaycaster=new THREE.Raycaster();
 let worldPickupArtLastSync=0;
 function worldWeaponPickupAsset(key){return GAME_ASSETS.generatedWorldWeaponPickups?.[key]||'';}
+function worldMedkitPickupAsset(){return GAME_ASSETS.presentation.medkitPickup||'';}
 function hideWorldPickupArt(entry){
   if(entry?.img)entry.img.style.visibility='hidden';
 }
@@ -87,6 +91,18 @@ function attachWorldWeaponPickupArt(group,key,model){
   img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
   layer.append(img);return entry;
 }
+function attachWorldMedkitPickupArt(group,model){
+  const layer=G('world-pickup-art-layer'),asset=worldMedkitPickupAsset();
+  if(!layer||!asset)return null;
+  const img=document.createElement('img');
+  img.className='world-health-pickup-art';img.alt='';img.decoding='async';img.draggable=false;
+  img.dataset.pickupKind='medkit';img.style.visibility='hidden';img.src=asset;
+  const entry={img,model,key:'medkit',ready:false,failed:false};
+  group.userData.worldPickupArt=entry;
+  img.onload=()=>{entry.ready=true;entry.failed=false;model.visible=false;};
+  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
+  layer.append(img);return entry;
+}
 function syncWorldWeaponPickupArt(){
   const layer=G('world-pickup-art-layer');
   if(!layer)return;
@@ -96,10 +112,9 @@ function syncWorldWeaponPickupArt(){
   if(now-worldPickupArtLastSync<interval)return;
   worldPickupArtLastSync=now;
   for(const pk of pickups){
-    if(pk.type!=='weapon')continue;
     const entry=pk.m.userData.worldPickupArt;
     if(!entry?.ready||!pk.m.visible){hideWorldPickupArt(entry);continue;}
-    const tune=WORLD_PICKUP_ART_TUNING[pk.weaponKey];
+    const tune=pk.type==='weapon'?WORLD_PICKUP_ART_TUNING[pk.weaponKey]:pk.type==='hp'?WORLD_MEDKIT_PICKUP_ART_TUNING:null;
     if(!tune){hideWorldPickupArt(entry);continue;}
     _worldPickupArtPos.set(pk.m.position.x,pk.m.position.y+tune.y,pk.m.position.z);
     _worldPickupArtDir.subVectors(_worldPickupArtPos,camera.position);

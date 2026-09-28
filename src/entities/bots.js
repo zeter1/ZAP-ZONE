@@ -485,6 +485,12 @@ function updateFrontlineHUD(force=false){
   root.classList.toggle('contested',contested);
   root.classList.toggle('inside',inside);
 }
+function showFrontlineCaptureBurst(team){
+  const el=G('frontline-capture-burst');if(!el)return;
+  el.classList.remove('on','ally','enemy');void el.offsetWidth;
+  el.classList.add(team==='ally'?'ally':'enemy','on');
+  el.onanimationend=()=>el.classList.remove('on','ally','enemy');
+}
 function captureFrontline(team,zone){
   if(frontlineObjective.owner===team)return;
   frontlineObjective.owner=team;
@@ -499,6 +505,7 @@ function captureFrontline(team,zone){
     showMsg('⌖ Захват зоны: +150 очков · +35 XP');
   }
   playObjectiveCaptureSound(team);
+  showFrontlineCaptureBurst(team);
   showAnn((team==='ally'?'🔵 СИНИЕ':'🔴 КРАСНЫЕ')+' ЗАХВАТИЛИ · '+zone.label);
   saveProgress(true);
 }

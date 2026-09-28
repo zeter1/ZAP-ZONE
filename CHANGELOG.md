@@ -2,6 +2,16 @@
 
 ## Unreleased — 2026-09-28
 
+### Generated Asset Pack 4 — bomb, pickups, scopes and combat feedback
+- загружены 8 новых WebP: player-held bomb, world bomb pickup, medkit pickup, ammo crate, sniper scope, rifle scope, Frontline capture burst и battle/death result frame;
+- bomb теперь закрывает прежний generated-art gap и в first-person, и среди world weapon pickups, сохраняя procedural fallback;
+- health pickups получили DOM-projected medkit art поверх реальной 3D-позиции; procedural medkit body остаётся fallback при load/decode error;
+- rifle/sniper scope используют новые WebP overlays с явным SVG fallback, поэтому ошибка raster asset не ломает прицеливание;
+- Frontline capture запускает краткий presentation-only burst, а killcam/death feedback получает result frame; gameplay state и scoring не меняются;
+- ammo crate используется в ammo HUD; все новые raster assets остаются DOM/CSS-only и не возвращают постоянные Three.js texture-quads;
+- runtime теперь явно синхронизирует DOM-projected world pickup art каждый кадр; validation закрепляет новые consumers и binary WebP envelope.
+
+
 ### Asset runtime parity — uCoz + local file
 - исправлена причина пропажи generated background/логотипа и части UI assets при локальном запуске: `catalog.js` больше не включает generated presentation art только для HTTP(S);
 - menu/loading backgrounds, generated logo, perk icons, combat medals, headshot art и другие DOM/CSS presentation assets теперь активируются и на uCoz/static HTTP(S), и при прямом `file://` запуске; HTTP cache-busting остаётся только для hosted mode;

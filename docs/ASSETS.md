@@ -1,5 +1,17 @@
 # Asset pipeline — ZAP ZONE
 
+## Generated Asset Pack 4 (2026-09-28)
+Runtime paths:
+- `assets/ui/weapons/fp/player-bomb-fps-01.webp` — baked-hands FPS bomb, DOM overlay.
+- `assets/ui/pickups/weapons/world-bomb-pickup-01.webp` — projected world bomb pickup.
+- `assets/ui/pickups/world-medkit-pickup-01.webp` — projected health pickup with procedural fallback.
+- `assets/ui/pickups/ammo-crate-tech-02.webp` — ammo HUD presentation.
+- `assets/ui/scopes/{sniper,rifle}-scope-tech-01.webp` — scope overlays; original SVG files are mandatory fallbacks.
+- `assets/ui/objective/frontline-capture-burst-tech-01.webp` — transient capture feedback.
+- `assets/ui/feedback/battle-result-frame-tech-01.webp` — death/killcam result shell.
+
+All eight files are presentation-only raster art. They must never be passed to `TextureLoader`, `makeAssetPlane` or `makeAssetSprite`. World pickup art is screen-projected from the authoritative 3D pickup position, while procedural geometry remains the failure fallback.
+
 Этот документ — обязательный operational contract для человека, ChatGPT/Codex и других AI-агентов при создании, изменении и публикации игровых ассетов.
 
 ## 1. Сначала определить владельца ассета

@@ -191,6 +191,7 @@ const GAME_ASSETS=versionAssetTree({
     rocket:'assets/ui/weapons/fp/player-rocket-fps-01.webp',
     plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp',
     mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
+    bomb:'assets/ui/weapons/fp/player-bomb-fps-01.webp',
     smoke:'assets/ui/weapons/fp/player-smoke-fps-01.webp',
     sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp'
   }),
@@ -203,6 +204,7 @@ const GAME_ASSETS=versionAssetTree({
     rocket:'assets/ui/pickups/weapons/world-rocket-pickup-01.webp',
     plasma:'assets/ui/pickups/weapons/world-plasma-pickup-01.webp',
     mine:'assets/ui/pickups/weapons/world-mine-pickup-01.webp',
+    bomb:'assets/ui/pickups/weapons/world-bomb-pickup-01.webp',
     smoke:'assets/ui/pickups/weapons/world-smoke-pickup-01.webp',
     sniper:'assets/ui/pickups/weapons/world-sniper-pickup-01.webp'
   }),
@@ -223,7 +225,9 @@ const GAME_ASSETS=versionAssetTree({
     armor:'assets/ui/armor.svg',
     xp:'assets/ui/xp.svg',
     sniperScope:'assets/ui/sniper-scope.svg',
-    rifleScope:'assets/ui/rifle-scope.svg'
+    rifleScope:'assets/ui/rifle-scope.svg',
+    generatedSniperScope:'assets/ui/scopes/sniper-scope-tech-01.webp',
+    generatedRifleScope:'assets/ui/scopes/rifle-scope-tech-01.webp'
   }),
   // Generated raster presentation art is intentionally DOM/CSS-only. Do not use
   // these assets as persistent Three.js texture planes/sprites on uCoz-hosted scenes.
@@ -248,7 +252,11 @@ const GAME_ASSETS=versionAssetTree({
     armorBreak:'assets/ui/feedback/armor-break-tech-01.webp',
     frontline:'assets/ui/objective/frontline-beacon-01.png',
     frontlineCapture:'assets/ui/objective/frontline-capture-tech-01.webp',
-    weaponCrate:'assets/ui/pickups/weapon-crate-tech-01.png'
+    frontlineCaptureBurst:'assets/ui/objective/frontline-capture-burst-tech-01.webp',
+    weaponCrate:'assets/ui/pickups/weapon-crate-tech-01.png',
+    ammoCrate:'assets/ui/pickups/ammo-crate-tech-02.webp',
+    medkitPickup:'assets/ui/pickups/world-medkit-pickup-01.webp',
+    battleResultFrame:'assets/ui/feedback/battle-result-frame-tech-01.webp'
   })
 });
 

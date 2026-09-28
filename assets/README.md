@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 4 consumers
+The 2026-09-28 pack adds eight generated WebP assets. Consumer ownership is explicit: bomb FPS art → `src/weapons/system.js`; bomb/medkit world art → `src/entities/pickups.js`; scope overlays → `src/game/runtime.js`; Frontline burst → `src/entities/bots.js`; result frame → `src/progression/progression.js`; ammo crate → `src/styles/game.css`.
+
+Do not add a generated file without a consumer and fallback. WebP upload must be binary-safe; CI verifies RIFF/WEBP envelopes and size caps.
+
 Главный контракт: **[../docs/ASSETS.md](../docs/ASSETS.md)**.
 
 ## Ownership

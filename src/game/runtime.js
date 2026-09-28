@@ -82,7 +82,11 @@ function loop(ts){
   if(sniperScope){
     const scopeImg=sniperScope.querySelector('img');
     const wantedAsset=activeW.scopeAsset||GAME_ASSETS.ui.sniperScope;
-    if(scopeImg&&scopeImg.getAttribute('src')!==wantedAsset)scopeImg.setAttribute('src',wantedAsset);
+    const fallbackAsset=activeW.scopeFallback||(activeW.key==='rifle'?GAME_ASSETS.ui.rifleScope:GAME_ASSETS.ui.sniperScope);
+    if(scopeImg&&scopeImg.dataset.scopeAsset!==wantedAsset){
+      scopeImg.dataset.scopeAsset=wantedAsset;
+      imageAssetWithFallback(scopeImg,wantedAsset,fallbackAsset);
+    }
     sniperScope.classList.toggle('rifle-scope',activeW.key==='rifle');
     sniperScope.classList.toggle('on',scopeActive);
   }
@@ -243,7 +247,7 @@ function loop(ts){
   tickFrontlineObjective(dt,ts);
   tickTacticalMinimap(dt,ts);
   flushHUD();
-  tickProjectiles(dt);tickMines(dt);tickSmoke(dt);tickPickups(dt);
+  tickProjectiles(dt);tickMines(dt);tickSmoke(dt);tickPickups(dt);syncWorldWeaponPickupArt();
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickCombatImpactFx(dt);tickEnvironment(dt);
 
   // Update ally panel

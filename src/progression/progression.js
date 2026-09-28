@@ -413,6 +413,7 @@ function checkDeath(){
   G('death-flash').style.opacity='1';
   const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ'+(deathReason?' · '+deathReason.toUpperCase():'');
   G('death-msg').style.opacity='1';
+  G('battle-result-frame')?.classList.add('on');
   dyingT=deathCamDuration;
 }
 function doRespawn(){
@@ -421,6 +422,7 @@ function doRespawn(){
   G('death-flash').style.opacity='1';
   const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ';
   G('death-msg').style.opacity='0';
+  G('battle-result-frame')?.classList.remove('on');
   // Keep the live battlefield intact across player deaths. Existing bots,
   // pickups, mines and projectiles remain part of the same 5×5 fight.
   hp=plr.maxHp;
@@ -513,7 +515,7 @@ function restartGameFromScratch(){
   yaw=0;pitch=0;onGnd=true;jumpV=0;prevPX=0;prevPZ=0;
   G('pause').classList.remove('on');G('menu').style.display='none';
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');
-  G('death-flash').style.background='rgba(255,0,0,0)';G('death-flash').style.opacity='1';G('death-msg').style.opacity='0';
+  G('death-flash').style.background='rgba(255,0,0,0)';G('death-flash').style.opacity='1';G('death-msg').style.opacity='0';G('battle-result-frame')?.classList.remove('on');
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';G('rwarn').style.opacity='0';
   setDamageOverlay(0);
   buildGun(getW());buildWeaponBar();updateWeaponBar();updatePerkPanel();updateStats();
