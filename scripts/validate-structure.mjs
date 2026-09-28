@@ -127,7 +127,7 @@ for(const file of presentationCssRasterAssets){
   if(!gameCss.includes('../../'+file))fail('generated presentation asset missing from CSS: '+file);
 }
 for(const fallback of ['../../assets/ui/health.svg','../../assets/ui/armor.svg','../../assets/ui/xp.svg'])if(!gameCss.includes(fallback))fail('file-mode UI fallback missing: '+fallback);
-if(!gameCss.includes('.generated-art-enabled #menu')||!gameCss.includes('.generated-art-enabled #loading'))fail('hosted presentation-art gate missing');
+if(!gameCss.includes('.generated-art-enabled #menu')||!gameCss.includes('.generated-art-enabled #loading'))fail('presentation-art CSS gate missing');
 for(const token of ['#tb-ally::before','#tb-enemy::before','#wammo::before','#reload-lbl::before','#frontline-art','#menu .hints::after']){
   if(!gameCss.includes(token))fail('generated gameplay UI CSS wiring missing: '+token);
 }
@@ -180,9 +180,15 @@ for(const token of [
 ]){
   if(!catalog.includes(token))fail('combat medal/headshot SVG fallback missing: '+token);
 }
-for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','function activateGeneratedDomAssets','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
-  if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
+for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_PRESENTATION_ASSETS_ENABLED','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','function activateGeneratedDomAssets',"if(GAME_PRESENTATION_ASSETS_ENABLED)","if(GAME_HOSTED_HTTP_MODE)versionDomAssetUrls()",'generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
+  if(!catalog.includes(token))fail('dual-runtime asset contract missing: '+token);
 }
+for(const forbidden of [
+  '// Generated raster presentation art is enabled only for normal HTTP(S) hosting.',
+  "return GAME_HOSTED_HTTP_MODE?(GAME_ASSETS.presentationMedals[type]||fallback):fallback;",
+  "return GAME_HOSTED_HTTP_MODE?(GAME_ASSETS.presentationMedals.headshot||fallback):fallback;"
+])if(catalog.includes(forbidden))fail('generated presentation art must not be disabled in file:// mode: '+forbidden);
+if(/function perkAsset\(id,path\)\{\s*if\(GAME_HOSTED_HTTP_MODE\)/.test(catalog))fail('generated perk art must not be gated off in file:// mode');
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');
 if(!catalog.includes('firstPersonSkins:Object.freeze'))fail('first-person weapon skin catalog missing');
 if(!catalog.includes('generatedFirstPersonWeapons:Object.freeze'))fail('generated first-person weapon catalog missing');
@@ -448,6 +454,9 @@ if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick s
 const menuSmoke=readFileSync('scripts/browser-menu-smoke.mjs','utf8');
 for(const token of ['menuSettingsBtn','fileAudioEnabled','pendingLoads','settingsOpen','settingsClosed']){
   if(!menuSmoke.includes(token))fail('local file menu regression smoke missing: '+token);
+}
+for(const token of ['generated-art-enabled','zap-zone-logo-01.png','menu-bg-arena-01.jpg','loading-bg-arena-01.jpg','localGeneratedAssetsReady']){
+  if(!menuSmoke.includes(token))fail('local file generated-asset parity smoke missing: '+token);
 }
 const pickupsSrc=readFileSync('src/entities/pickups.js','utf8');
 for(const token of ['WORLD_WEAPON_COPIES','rifle:3','sniper:2','WEAPONS.flatMap']){

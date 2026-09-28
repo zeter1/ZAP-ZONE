@@ -38,3 +38,6 @@
 17. Never route generated world pickup WebP through `gameTexture`, `makeAssetPlane` or `makeAssetSprite`; bomb stays procedural until it has its own approved asset.
 18. Binary-safe upload invariant: WebP/PNG/JPEG must be uploaded as base64-decoded Git blobs, never as UTF-8 text. Verify the created Git blob SHA against the local file bytes before putting it in a tree.
 19. After a binary asset commit, validate magic/envelope from GitHub (WebP must be RIFF…WEBP) and let `scripts/validate-structure.mjs` fail hard on corrupted or text-wrapped payloads.
+20. Dual-runtime invariant: every visual/runtime asset must work both from uCoz/static HTTP(S) hosting and from a direct local `file://.../index.html` launch. Do not gate generated visual art off merely because the protocol is `file:`.
+21. HTTP(S) may add the current build query for cache busting; local file mode must use plain relative paths. Generated menu backgrounds, logos, HUD/perk/medal/feedback art and weapon/pickup DOM art must remain available in both modes with fallback only on real load/decode failure.
+22. Asset work is not complete until both hosted validation and the local-file browser smoke prove the relevant generated presentation path is active.

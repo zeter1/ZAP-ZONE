@@ -50,13 +50,21 @@ Runtime-файлы используют ASCII kebab-case и смысловое �
 
 Каталог определяется владельцем UI, а не сессией генерации.
 
-## 4. Fallback и graceful degradation
+## 4. Fallback, graceful degradation и обязательный dual-runtime
+
+**Жёсткое правило проекта:** каждый runtime asset и каждый его consumer должны работать в двух режимах:
+1. после загрузки файлов в файловый менеджер uCoz / другой обычный HTTP(S) static hosting;
+2. при прямом запуске локального `index.html` с компьютера через `file://`.
+
+Нельзя считать asset интегрированным, если он виден только на uCoz или только локально. Нельзя специально отключать generated visual art только потому, что `location.protocol==='file:'`.
 
 Generated presentation art не должно быть единственной формой критической информации.
 
-- DOM image: `src` = стабильный fallback, `data-generated-src` = hosted art, `data-fallback-src` = явный fallback.
-- `catalog.js` на HTTP/HTTPS versioning-ит оба URL и активирует generated image через `imageAssetWithFallback()`.
-- file:// сохраняет лёгкий SVG/text/gradient path.
+- DOM image: `src` = стабильный fallback, `data-generated-src` = generated art, `data-fallback-src` = явный fallback.
+- `catalog.js` активирует generated DOM/CSS art и на HTTP/HTTPS, и на `file://`; build query `?v=<build>` добавляется только на HTTP(S), а local file использует обычный относительный путь.
+- CSS generated backgrounds/icons обязаны использовать относительные пути, которые разрешаются и на uCoz, и из локального `src/styles/game.css`.
+- Perk/medal/headshot generated art выбирается protocol-neutral и всегда имеет SVG fallback на реальную ошибку загрузки/декодирования.
+- Если браузерное ограничение не позволяет какой-то категории файлов использовать один и тот же loader в `file://`, должен существовать отдельный local consumer или функциональный fallback; молча выключать asset/feature нельзя.
 - Perk generated art всегда имеет per-id SVG fallback.
 - Чисто декоративный CSS asset может исчезнуть при 404, только если текст/shape рядом полностью сохраняет смысл.
 
@@ -172,6 +180,8 @@ Acceptance gate:
 ## 7. Validation перед commit
 
 Для каждого нового generated image проверить:
+- он реально загружается и на uCoz/HTTP(S), и при прямом `file://` запуске;
+- локальный режим использует generated visual asset, а fallback включается только при фактической ошибке load/decode;
 - файл существует и не пуст;
 - magic/envelope соответствует PNG/JPEG/WebP;
 - для binary upload через API/base64 до commit сверить Git blob SHA с локальным исходным файлом; после commit повторно проверить, что GitHub blob начинается с ожидаемого binary envelope (для WebP — RIFF....WEBP), а не с UTF-8/base64-текста;
@@ -231,7 +241,9 @@ Green run другого SHA не является доказательство�
 - открыть сайт обычным reload без Ctrl+F5;
 - проверить новый build;
 - проверить menu + один generated HUD asset + fallback-sensitive flow;
-- проверить DevTools Network/Console на 404/decoding ошибки.
+- проверить DevTools Network/Console на 404/decoding ошибки;
+- отдельно открыть локальный `index.html` через `file://` и подтвердить тот же menu background/logo/generated HUD art;
+- отсутствие asset только в одном из двух режимов (uCoz HTTP(S) или local file) = regression и блокирует завершение задачи.
 
 ## 11. AI handoff checklist
 

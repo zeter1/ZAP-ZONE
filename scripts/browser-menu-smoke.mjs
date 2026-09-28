@@ -60,6 +60,42 @@ async function mouseClick(x,y){
   await send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',buttons:0,clickCount:1});
 }
 
+const localGeneratedAssetsReady=await evaluate(`(async()=>{
+  const root=document.documentElement;
+  const logo=document.getElementById('brand-logo');
+  const generatedImgs=[...document.querySelectorAll('img[data-generated-src]')];
+  const waitImage=src=>new Promise(resolve=>{
+    const probe=new Image();
+    const done=ok=>resolve({ok,src:probe.src,naturalWidth:probe.naturalWidth,naturalHeight:probe.naturalHeight});
+    probe.onload=()=>done(probe.naturalWidth>0&&probe.naturalHeight>0);
+    probe.onerror=()=>done(false);
+    probe.src=src;
+  });
+  const menuBg=await waitImage(new URL('assets/ui/backgrounds/menu-bg-arena-01.jpg',location.href).href);
+  const loadingBg=await waitImage(new URL('assets/ui/backgrounds/loading-bg-arena-01.jpg',location.href).href);
+  const generatedStates=generatedImgs.map(img=>({
+    id:img.id||'',
+    src:img.getAttribute('src')||'',
+    generated:img.dataset.generatedSrc||'',
+    complete:img.complete,
+    naturalWidth:img.naturalWidth
+  }));
+  return {
+    enabled:root.classList.contains('generated-art-enabled'),
+    logoSrc:logo?.getAttribute('src')||'',
+    logoReady:!!(logo?.complete&&logo.naturalWidth>0),
+    menuBackground:getComputedStyle(document.getElementById('menu')).backgroundImage,
+    loadingBackground:getComputedStyle(document.getElementById('loading')).backgroundImage,
+    menuBg,loadingBg,generatedStates
+  };
+})()`,true);
+if(!localGeneratedAssetsReady?.enabled)throw new Error('file:// generated presentation art is not enabled: '+JSON.stringify(localGeneratedAssetsReady));
+if(!localGeneratedAssetsReady.logoSrc.includes('zap-zone-logo-01.png')||!localGeneratedAssetsReady.logoReady)throw new Error('file:// generated logo did not load: '+JSON.stringify(localGeneratedAssetsReady));
+if(!localGeneratedAssetsReady.menuBackground.includes('menu-bg-arena-01.jpg')||!localGeneratedAssetsReady.menuBg?.ok)throw new Error('file:// menu background did not load: '+JSON.stringify(localGeneratedAssetsReady));
+if(!localGeneratedAssetsReady.loadingBackground.includes('loading-bg-arena-01.jpg')||!localGeneratedAssetsReady.loadingBg?.ok)throw new Error('file:// loading background did not load: '+JSON.stringify(localGeneratedAssetsReady));
+const brokenGenerated=localGeneratedAssetsReady.generatedStates.filter(x=>x.generated&&(!x.src.includes(x.generated)||!x.complete||x.naturalWidth<=0));
+if(brokenGenerated.length)throw new Error('file:// generated DOM assets did not load: '+JSON.stringify(brokenGenerated));
+
 const prep=await evaluate(`(()=>{
   const settings=document.getElementById('menuSettingsBtn');
   const start=document.getElementById('startBtn');
@@ -115,4 +151,4 @@ const settingsClosed=await evaluate("!document.getElementById('settings-modal')?
 ws.close();
 
 if(!settingsClosed)throw new Error('real CDP click did not close settings');
-console.log('Local file menu smoke passed:',JSON.stringify({...prep,...opened,settingsClosed}));
+console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady}));

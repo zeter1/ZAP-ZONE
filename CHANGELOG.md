@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-28
 
+### Asset runtime parity — uCoz + local file
+- исправлена причина пропажи generated background/логотипа и части UI assets при локальном запуске: `catalog.js` больше не включает generated presentation art только для HTTP(S);
+- menu/loading backgrounds, generated logo, perk icons, combat medals, headshot art и другие DOM/CSS presentation assets теперь активируются и на uCoz/static HTTP(S), и при прямом `file://` запуске; HTTP cache-busting остаётся только для hosted mode;
+- local-file browser smoke усилен: проверяет `generated-art-enabled`, реальную загрузку generated logo, menu/loading backgrounds и всех стартовых `data-generated-src` images;
+- asset documentation закрепляет обязательный dual-runtime invariant: любой runtime asset/consumer должен работать в обоих режимах, а fallback применяется только при реальной ошибке загрузки/декодирования.
+
+
 ### Generated World Weapon Pickup Pack — arena pickup presentation
 - добавлены 8 компактных 512×384 alpha WebP для оружия/снаряжения, лежащего на карте: pistol, shotgun, rifle, rocket, plasma, mine, smoke и sniper; bomb пока остаётся procedural;
 - world pickup art рендерится через отдельный DOM layer, привязанный к настоящей 3D-позиции pickup; generated raster не передаётся в TextureLoader/plane/sprite и сохраняет uCoz anti-black-quad invariant;

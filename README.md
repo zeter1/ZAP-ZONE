@@ -37,6 +37,7 @@
 - Реальные SVG assets оружия в `assets/weapons/`.
 - Новый asset catalog: `src/assets/catalog.js`.
 - World weapon pickups получили отдельный generated WebP pack: 8 типов (pistol/shotgun/rifle/rocket/plasma/mine/smoke/sniper) проецируются из реальной 3D-позиции в DOM, масштабируются по дистанции и скрываются стенами через Raycaster; pedestal/beacon и procedural 3D-модель остаются gameplay/fallback, bomb пока procedural. Аптечки остаются отдельными pickups.
+- Generated visual assets имеют обязательный dual-runtime contract: одинаково используются после загрузки проекта в uCoz/HTTP(S) и при прямом локальном запуске `index.html` через `file://`; локальный запуск больше не отключает menu/loading background, generated logo, perk/medal/headshot/HUD presentation art.
 - Улучшенная арена:
   - supply crates с декалями;
   - hazard-панели на барьерах;

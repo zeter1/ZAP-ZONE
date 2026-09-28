@@ -3,6 +3,7 @@
 function G(id){return document.getElementById(id);}
 const GAME_LOCAL_FILE_MODE=location.protocol==='file:';
 const GAME_HOSTED_HTTP_MODE=/^https?:$/.test(location.protocol);
+const GAME_PRESENTATION_ASSETS_ENABLED=GAME_HOSTED_HTTP_MODE||GAME_LOCAL_FILE_MODE;
 const GAME_BUILD_ID=typeof window.ZAP_BUILD_ID==='string'?window.ZAP_BUILD_ID:'';
 const GAME_BUILD_ID_PATTERN=/^[0-9a-f]{16}$/;
 
@@ -34,11 +35,12 @@ function activateGeneratedDomAssets(){
   });
 }
 
-// Generated raster presentation art is enabled only for normal HTTP(S) hosting.
-// file:// keeps the lightweight SVG/gradient fallbacks so first interaction stays responsive.
-if(GAME_HOSTED_HTTP_MODE){
+// Generated DOM/CSS presentation art must work both on uCoz/static HTTP(S) hosting
+// and when index.html is opened directly from disk. Only HTTP(S) gets cache-busting
+// query parameters; file:// keeps plain relative paths and the same generated art.
+if(GAME_PRESENTATION_ASSETS_ENABLED){
+  if(GAME_HOSTED_HTTP_MODE)versionDomAssetUrls();
   document.documentElement.classList.add('generated-art-enabled');
-  versionDomAssetUrls();
   activateGeneratedDomAssets();
 }
 
@@ -133,7 +135,7 @@ const GAME_ASSETS=versionAssetTree({
     'explosive-kill':'assets/medals/explosive-kill.svg'
   }),
   // Generated combat medals are presentation-only DOM images. SVG medal/fx assets
-  // above remain the fallback path for file:// and failed HTTP(S) image loads.
+  // above remain the fallback path for decode/load failures in either runtime mode.
   presentationMedals:Object.freeze({
     'first-blood':'assets/ui/medals/first-blood-tech-01.png',
     'double-kill':'assets/ui/medals/double-kill-tech-01.png',
@@ -338,12 +340,10 @@ function perkFallbackAsset(id,path){
   return GAME_ASSETS.perkIcons[id]||GAME_ASSETS.perks[path]||GAME_ASSETS.perks.assault;
 }
 function perkAsset(id,path){
-  if(GAME_HOSTED_HTTP_MODE){
-    if(id==='damage')return GAME_ASSETS.presentation.damagePerk;
-    if(id==='reload')return GAME_ASSETS.presentation.reloadPerk;
-    if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
-    if(['armor','armorregen','blastshield','ballistic_lining','surplus_armor','smoke_guard'].includes(id))return GAME_ASSETS.presentation.defenderPerk;
-  }
+  if(id==='damage')return GAME_ASSETS.presentation.damagePerk;
+  if(id==='reload')return GAME_ASSETS.presentation.reloadPerk;
+  if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
+  if(['armor','armorregen','blastshield','ballistic_lining','surplus_armor','smoke_guard'].includes(id))return GAME_ASSETS.presentation.defenderPerk;
   return perkFallbackAsset(id,path);
 }
 
@@ -356,10 +356,10 @@ function imageAssetWithFallback(img,source,fallback){
 function combatMedalFallbackAsset(type){return GAME_ASSETS.medals[type]||'';}
 function combatMedalAsset(type){
   const fallback=combatMedalFallbackAsset(type);
-  return GAME_HOSTED_HTTP_MODE?(GAME_ASSETS.presentationMedals[type]||fallback):fallback;
+  return GAME_ASSETS.presentationMedals[type]||fallback;
 }
 function headshotFallbackAsset(lethal=false){return lethal?GAME_ASSETS.fx.headshotKill:GAME_ASSETS.fx.headshot;}
 function headshotAsset(lethal=false){
   const fallback=headshotFallbackAsset(lethal);
-  return GAME_HOSTED_HTTP_MODE?(GAME_ASSETS.presentationMedals.headshot||fallback):fallback;
+  return GAME_ASSETS.presentationMedals.headshot||fallback;
 }
