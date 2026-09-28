@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-28
 
+### Bot navigation / locomotion ownership
+- patrol points, wall/smoke steering, route penalty, speed caps и collision substeps вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-navigation.js`;
+- pure extraction сохраняет `BOT_MOVE_CFG`, `substep=.16`, correction/final displacement caps, smoke thresholds/weights и `WPTS` без balance change;
+- `nearestHostileGrenade()`, mine/noise/hearing и individual FSM остаются в `bots.js`, squad doctrine — в `src/ai/tactics.js`; structural guards закрепляют границу;
+- добавлены direct `node:test` regressions, `docs/specs/BOT_NAVIGATION.md` и AI routing для быстрого поиска owner-а.
+
 ### Bot presentation / arm-rig ownership
 - procedural bot body, stable gameplay hit-mesh construction, visual armor/readability, weapon pivot и two-hand arm-rig solver вынесены из `src/entities/bots.js` в отдельный canonical owner `src/entities/bot-presentation.js`;
 - `bots.js` остаётся consumer-ом presentation seam и владельцем FSM/perception/locomotion/combat execution; geometry, grip positions, arm constants, hit-mesh order и gameplay balance в pure extraction не менялись;

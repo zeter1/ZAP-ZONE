@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-navigation.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -97,7 +97,7 @@ for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:
 }
 
 
-for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
@@ -299,6 +299,7 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 }
 
 
+const navigation=readFileSync('src/ai/bot-navigation.js','utf8');
 const tactics=readFileSync('src/ai/tactics.js','utf8');
 const frontline=readFileSync('src/game/frontline.js','utf8');
 const presentation=readFileSync('src/entities/bot-presentation.js','utf8');
@@ -364,8 +365,8 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 bot execution missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
-  fail('classic-script order must load combat -> tactics -> frontline -> bots');
+if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load combat -> bot navigation -> tactics -> frontline -> bots');
 }
 if(!(html.indexOf("'src/entities/bot-presentation.js'")<html.indexOf("'src/entities/bots.js'"))){
   fail('classic-script order must load bot presentation owner before bots');
@@ -401,15 +402,24 @@ for(const token of [
   if(!tactics.includes(token))fail('Combat AI 2.2 Adaptive Commander owner missing: '+token);
 }
 for(const token of [
-  "this.commandDoctrine==='breach'",
-  'BOT_MOVE_CFG',
-  'function clampBotVelocity',
-  'function moveBotWithSubsteps',
-  'this.unstuckT=.48',
-  'const hardCap=total*1.10+.035',
-  'Math.min(.28,lvl*.012)'
+  'const WPTS=','function steerBotAroundWalls(','const BOT_MOVE_CFG=','function clampBotVelocity(',
+  'function smokeRoutePenalty(','function botRoutePenalty(','function steerBotAroundSmoke(',
+  'function moveBotWithSubsteps(','const hardCap=total*1.10+.035'
 ]){
-  if(!bots.includes(token))fail('Combat AI 2.2 bot locomotion integration missing: '+token);
+  if(!navigation.includes(token))fail('bot navigation owner contract missing: '+token);
+}
+for(const token of [
+  'const WPTS=','function steerBotAroundWalls(','const BOT_MOVE_CFG=','function clampBotVelocity(',
+  'function smokeRoutePenalty(','function botRoutePenalty(','function steerBotAroundSmoke(','function moveBotWithSubsteps('
+]){
+  if(bots.includes(token))fail('bot navigation owner leaked back into bots.js: '+token);
+}
+if(!bots.includes('function nearestHostileGrenade(')||navigation.includes('function nearestHostileGrenade('))fail('grenade threat perception must remain in bots.js');
+for(const token of [
+  "this.commandDoctrine==='breach'",'BOT_MOVE_CFG','clampBotVelocity(','moveBotWithSubsteps(',
+  'steerBotAroundWalls(','steerBotAroundSmoke(','this.unstuckT=.48','Math.min(.28,lvl*.012)'
+]){
+  if(!bots.includes(token))fail('Combat AI 2.2 bot locomotion consumer integration missing: '+token);
 }
 if(bots.includes('this.dodgeSpd=this.speed*(2.35+this.aimSkill*.65)'))fail('legacy teleport-like dodge multiplier returned');
 if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.triggerDodge()'))fail('stuck recovery must not trigger high-speed dodge');

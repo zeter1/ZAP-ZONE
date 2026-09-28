@@ -9,15 +9,24 @@
 5. `src/player/state.js` — player state, perks, save/resume.
 6. `src/settings/settings.js` — user settings, Web Audio SFX и presentation feedback.
 7. `src/combat/combat.js` — input и combat.
-8. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
-9. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
-10. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
-11. `src/entities/bots.js` — per-bot perception/FSM, locomotion и combat execution.
-12. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-13. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-14. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
-15. `src/ui/minimap.js` — тактическая миникарта.
-16. `src/game/runtime.js` — frame simulation/render loop и boot.
+8. `src/ai/bot-navigation.js` — patrol points, wall/smoke steering, movement caps и collision substeps.
+9. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
+10. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
+11. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
+12. `src/entities/bots.js` — per-bot perception/FSM и combat execution; navigation owner используется как consumer dependency.
+13. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+14. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+15. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+16. `src/ui/minimap.js` — тактическая миникарта.
+17. `src/game/runtime.js` — frame simulation/render loop и boot.
+
+## Bot navigation / locomotion owner
+
+**Canonical owner:** `src/ai/bot-navigation.js`. Здесь живут patrol points, локальный wall/smoke steering, route penalty, movement speed caps и collision micro-steps. Узкий контракт — **[specs/BOT_NAVIGATION.md](specs/BOT_NAVIGATION.md)**.
+
+`src/core/engine.js` остаётся единственным владельцем collision primitives, `src/combat/combat.js` — producer-ом smoke state, а `src/entities/bots.js` выбирает AI state/intention и потребляет navigation helpers. Grenade/mine threat perception, noise/hearing и target acquisition остаются в `bots.js`; squad doctrine — в `src/ai/tactics.js`. `nearestHostileGrenade()` намеренно не переносится сюда только из-за того, что угроза вызывает retreat.
+
+Pure extraction сохраняет `WPTS`, movement multipliers, smoke thresholds/weights, `substep=.16`, correction cap `intended*1.35+.035` и final cap `total*1.10+.035`. Structural validation запрещает возврат реализации в `bots.js`, а `scripts/bot-navigation-owner.test.mjs` проверяет behavior отдельно от расположения кода.
 
 ## Session lifecycle owner
 
@@ -234,7 +243,7 @@ Regression contract состоит из двух независимых слоё
 
 **Canonical owner:** `src/entities/bot-presentation.js`. Он владеет procedural body construction, стабильным gameplay `pts[]` hit-mesh order, decorative armor/readability, `weaponPivot`, real body hands/`armRig` и two-bone grip solver. Полный узкий контракт — `docs/specs/BOT_PRESENTATION.md`.
 
-Граница намеренно не совпадает со всем visual code внутри `Enemy`. `src/entities/bots.js` остаётся owner-ом FSM, perception, locomotion, gait/combat motion и health-bar lifecycle: он создаёт presentation через `mkHuman()`, двигает `weaponPivot` по уже выбранной gait/combat pose и затем вызывает `updateBotWeaponHands(this)`. `src/weapons/system.js` остаётся owner-ом weapon data и per-weapon `gripR/gripL/elbowR/elbowL` metadata.
+Граница намеренно не совпадает со всем visual code внутри `Enemy`. `src/entities/bots.js` остаётся owner-ом FSM, perception, gait/combat motion и health-bar lifecycle: он создаёт presentation через `mkHuman()`, потребляет `src/ai/bot-navigation.js` для locomotion mechanics, двигает `weaponPivot` по уже выбранной gait/combat pose и затем вызывает `updateBotWeaponHands(this)`. `src/weapons/system.js` остаётся owner-ом weapon data и per-weapon `gripR/gripL/elbowR/elbowL` metadata.
 
 Evaluation-time dependency presentation owner-а — глобальный `THREE`, потому что scratch vectors создаются при загрузке script. Поэтому `bot-presentation.js` обязан быть раньше `bots.js`. `MOBILE_LOW` и bot/weapon runtime objects используются только при вызове функций после bootstrap. Текущий canonical load sequence содержит `frontline → bot-presentation → bots`, но presentation не зависит от Frontline; оба являются независимыми prerequisites consumer-а.
 
