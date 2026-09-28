@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/tactics.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -97,7 +97,7 @@ for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:
 }
 
 
-for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
@@ -300,6 +300,7 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 
 
 const tactics=readFileSync('src/ai/tactics.js','utf8');
+const frontline=readFileSync('src/game/frontline.js','utf8');
 const bots=readFileSync('src/entities/bots.js','utf8');
 if(!bots.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
 if(!bots.includes('function botShotClosestApproachToPlayer')||!bots.includes('registerPlayerSuppression(this,wp,approach.point'))fail('physical enemy near-miss suppression integration missing');
@@ -353,8 +354,8 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 bot execution missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/entities/bots.js'"))){
-  fail('classic-script order must load combat -> tactics -> bots');
+if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load combat -> tactics -> frontline -> bots');
 }
 for(const token of ['const BOT_MAP_ZONES=','const BOT_TEAM_TACTICS=','const PLAYER_TACTICAL_PROFILE=','function refreshBotMapOrder(','function refreshBotTeamTactics(','function botObjectivePoint(','function maybeCoordinateBotUtility(']){
   if(bots.includes(token))fail('team/map tactics owner leaked back into bots.js: '+token);
@@ -402,7 +403,7 @@ if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.trigge
 for(const token of ['function botAssaultWaveState','waveStart:-999']){
   if(!tactics.includes(token))fail('Combat Presence 1.2 assault-wave owner missing: '+token);
 }
-for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','playObjectiveCaptureSound(team)','function botRoutePenalty','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','assaultWaveState===\'staging\'','coverChainT','objectiveAdvance','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
+for(const token of ['playWeaponShotSound(wp.key','objectiveCoverPenalty','objectivePenalty=Math.max','function botRoutePenalty','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','assaultWaveState===\'staging\'','coverChainT','objectiveAdvance','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
   if(!bots.includes(token))fail('Combat Presence 1.2 / Frontline bot integration missing: '+token);
 }
 for(const token of ['breachReady:false','smokeWaveId:-1','smokeDecisionWaveId:-1','smokeDecisionUse:false','smokeReadyAt:-999','Math.random()<.30','plan.smokeReadyAt=now+14000+Math.random()*8000','fragWaveId:-1','function maybeCoordinateBotUtility','spawnBotSmokeGrenade(bot.getMuzzlePos()','spawnBotFragGrenade(bot.getMuzzlePos()']){
@@ -429,8 +430,42 @@ for(const token of ['function smokeRoutePenalty','function steerBotAroundSmoke',
 }
 if(!bots.includes('if(wp.hitscan){')||!bots.includes('spawnInstantSniperTrace(from,tracerDir'))fail('bot sniper must remain hitscan while normal guns use travelling bullets');
 if(bots.includes("Math.random()<(suppressing?.56:.34)"))fail('legacy random player near-miss whiz returned');
-for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function serializeFrontlineObjective','function restoreFrontlineObjective','function ensureFrontlineMarker','const frontlineZoneOwners=','zoneOwners:{...frontlineZoneOwners}','frontlineZoneOwners[zone.id]=team','frontline-map-hint','allyControlScore','enemyControlScore']){
-  if(!bots.includes(token))fail('Frontline objective integration missing: '+token);
+for(const token of [
+  'let allyControlScore=0,enemyControlScore=0;',
+  'const FRONTLINE_CFG=',
+  'const frontlineObjective=',
+  'const frontlineZoneOwners=',
+  'function frontlineZone()',
+  'function serializeFrontlineObjective()',
+  'function resetFrontlineObjective(',
+  'function restoreFrontlineObjective(',
+  'function ensureFrontlineMarker()',
+  'function updateFrontlineHUD(',
+  'function captureFrontline(',
+  'function rotateFrontlineObjective()',
+  'function tickFrontlineObjective(',
+  'zoneOwners:{...frontlineZoneOwners}',
+  'frontlineZoneOwners[zone.id]=team',
+  'playObjectiveCaptureSound(team)',
+  'frontline-map-hint'
+]){
+  if(!frontline.includes(token))fail('Frontline objective owner missing: '+token);
+}
+for(const token of [
+  'let allyControlScore=0,enemyControlScore=0;',
+  'const FRONTLINE_CFG=',
+  'const frontlineObjective=',
+  'const frontlineZoneOwners=',
+  'function serializeFrontlineObjective()',
+  'function restoreFrontlineObjective(',
+  'function ensureFrontlineMarker()',
+  'function captureFrontline(',
+  'function tickFrontlineObjective('
+]){
+  if(bots.includes(token))fail('Frontline objective owner leaked back into bots.js: '+token);
+}
+for(const token of ['const activeFrontline=frontlineZone();','frontlineContested','objectiveUrgency','allyControlScore*FRONTLINE_CFG.capturePoints']){
+  if(!bots.includes(token))fail('Frontline bot consumer contract missing: '+token);
 }
 if(!tactics.includes('const frontlineBias=s=>'))fail('Frontline map bias must stay owned by tactics');
 const engine=readFileSync('src/core/engine.js','utf8');

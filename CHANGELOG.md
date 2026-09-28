@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-28
 
+### Frontline objective ownership + regression contract
+- Frontline objective/game-mode orchestration вынесена из большого `src/entities/bots.js` в отдельный canonical owner `src/game/frontline.js`: state, capture/rotation, control scores, save/restore, marker и HUD теперь имеют одну границу ответственности;
+- gameplay semantics сохранены без balance change: rotation/capture constants, rewards, thresholds, announcements/audio/save ordering не менялись; bots остаётся consumer-ом active objective для tactical execution;
+- classic-script graph закреплён как `combat → tactics → frontline → bots`; structural validation запрещает drift извлечённого owner обратно в `bots.js` и проверяет consumer contracts;
+- добавлен прямой `node:test` regression suite для restore/reset/capture semantics и новый `docs/specs/FRONTLINE.md`, чтобы fresh AI открывала точный contract вместо поиска по 90k+ `bots.js`.
+
 ### AI ownership extraction — Map Tactics / Adaptive Commander
 - командный tactical layer вынесен из 2200+ строкового `src/entities/bots.js` в новый canonical owner `src/ai/tactics.js`: map zones, squad plan, doctrine selection, Adaptive Commander profile, assault-wave planning и coordinated smoke/frag policy;
 - индивидуальный bot FSM/perception, cover/flank execution, suppression effects, locomotion, стрельба и Frontline objective state остаются в `src/entities/bots.js`; gameplay constants, probabilities, timers и balance не менялись;
