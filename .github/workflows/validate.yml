@@ -90,7 +90,7 @@ jobs:
             --enable-unsafe-swiftshader \
             --ignore-gpu-blocklist \
             --window-size=1280,900 \
-            --remote-debugging-port=9223 \
+            --remote-debugging-port=9222 \
             --remote-allow-origins='*' \
             --user-data-dir="$profile_dir" \
             "http://127.0.0.1:8000/" \
