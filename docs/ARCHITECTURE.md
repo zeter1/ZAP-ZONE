@@ -154,7 +154,7 @@ SR-9 не использует gameplay-reticle: runtime скрывает `#xhai
 
 **Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального perception/FSM, cover/flank execution, suppression effects, locomotion и стрельбы. Это граница policy → execution: командный слой выбирает общий план, а каждый бот исполняет его через собственный state machine.
 
-Classic-script порядок `combat.js → ai/tactics.js → entities/bots.js` является частью runtime-контракта. `BOT_MAP_ZONES` должен существовать до инициализации Frontline state в `bots.js`; функции tactics могут обращаться к bot/runtime globals только во время матча, после завершения последовательной загрузки bootstrap.
+Classic-script порядок `combat.js → ai/tactics.js → game/frontline.js → entities/bots.js` является частью runtime-контракта. `BOT_MAP_ZONES` должен существовать до инициализации Frontline state в `frontline.js`; функции tactics и Frontline могут обращаться к bot/runtime globals только во время матча, после завершения последовательной загрузки bootstrap.
 
 Поверх индивидуального state machine введён командный слой `BOT_TEAM_TACTICS`. Он не заменяет perception/target selection, а агрегирует уже полученную информацию: текущие цели ботов, LOS, память и `TEAM_INTEL`. План пересчитывается с небольшим cache-window и выбирает общий focus, suppressor, число доступных flankers и наиболее раненого союзника.
 
@@ -169,7 +169,7 @@ Support-state доступен `anchor` и `engineer`: при сильно ра�
 
 ## Combat AI 2.1 / Map Tactics v22.5
 
-`BOT_MAP_ZONES`, `refreshBotMapOrder()` и `botObjectivePoint()` принадлежат `src/ai/tactics.js`. Frontline capture/save/HUD state пока остаётся в `src/entities/bots.js`; он использует zone model как consumer, но не владеет doctrine selection. Такой split не меняет gameplay numbers и не создаёт второго source of truth.
+`BOT_MAP_ZONES`, `refreshBotMapOrder()` и `botObjectivePoint()` принадлежат `src/ai/tactics.js`. Frontline capture/save/HUD state принадлежит `src/game/frontline.js`; он использует zone model как consumer, но не владеет doctrine selection. `src/entities/bots.js` потребляет active objective для tactical execution, не создавая второго source of truth.
 
 Тактический слой теперь имеет два уровня: Tactical AI 2.0 отвечает за локальную координацию вокруг общей цели, а Map Tactics отвечает за то, **где** команда в целом должна вести бой. Карта представлена небольшим набором логических зон `BOT_MAP_ZONES`: центр и четыре основных направления арены. Это намеренно data-driven слой поверх существующей геометрии, без ложного предположения о высотах или navmesh, которых в текущей карте нет.
 
@@ -213,3 +213,16 @@ v22.6 вводит:
 - ограниченный progression multiplier для `this.speed`.
 
 Runtime всё ещё использует общий `dt <= 0.033`, поэтому новые caps дополняют существующий frame-time clamp и защищают именно AI locomotion/collision path. Mine avoidance, retreat и dodge остаются различимыми по скорости, но не должны превращаться в визуальную телепортацию.
+
+
+## Frontline objective ownership v23.9
+
+**Canonical owner:** `src/game/frontline.js`. Он владеет `FRONTLINE_CFG`, `frontlineObjective`, `frontlineZoneOwners`, control-score state, serialize/reset/restore, capture/rotation tick, world marker и objective HUD. Полный узкий контракт — `docs/specs/FRONTLINE.md`.
+
+Граница намеренно не совпадает с «всё, где упоминается Frontline». `src/ai/tactics.js` остаётся owner-ом `BOT_MAP_ZONES` и doctrine/map policy; `src/entities/bots.js` остаётся owner-ом индивидуального bot FSM и только читает active objective/presence для tactical execution; `src/ui/minimap.js` только визуализирует objective/zone ownership; `src/player/state.js` вызывает публичный save/restore contract; `src/game/runtime.js` только вызывает tick и boot HUD/marker.
+
+Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому classic-script graph фиксирован как `combat → tactics → frontline → bots`. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
+
+Pure extraction сохраняет буквально `rotateSeconds:44`, `captureSeconds:8.5`, `capturePoints:3`, clamp/restore semantics, capture reward `+150 score / +35 XP`, UI copy и side-effect order. Эти значения нельзя «заодно улучшать» в ownership-refactor; balance/UX change требует отдельной задачи и отдельного evidence.
+
+Regression contract состоит из двух независимых слоёв: `scripts/frontline-owner.test.mjs` напрямую проверяет restore/reset/capture semantics через публичные classic-script функции, а `scripts/validate-structure.mjs` проверяет одного owner-а, consumer markers и load graph. HTTP Chrome boot и реальный `file://` Chrome/CDP smoke доказывают wiring/runtime parity.
