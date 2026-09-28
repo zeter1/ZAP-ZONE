@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="application-version" content="23.9">
-<meta name="application-build" content="47749b71014ac2e7">
-<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=47749b71014ac2e7">
+<meta name="application-build" content="4aa8dc9068037ea6">
+<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=4aa8dc9068037ea6">
 
 </head>
 <body>
@@ -189,7 +189,7 @@
   const currentBuild=document.querySelector('meta[name="application-build"]')?.content?.trim()||'';
   const localScripts=[
     'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-    'src/settings/settings.js','src/combat/combat.js','src/entities/bots.js','src/entities/pickups.js',
+    'src/settings/settings.js','src/combat/combat.js','src/ai/tactics.js','src/entities/bots.js','src/entities/pickups.js',
     'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
   ];
   const versioned=(path,build,useCacheKey)=>useCacheKey&&BUILD_ID_PATTERN.test(build)?path+(path.includes('?')?'&':'?')+'v='+encodeURIComponent(build):path;

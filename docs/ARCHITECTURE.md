@@ -9,12 +9,13 @@
 5. `src/player/state.js` — player state, perks, save/resume.
 6. `src/settings/settings.js` — user settings, Web Audio SFX и presentation feedback.
 7. `src/combat/combat.js` — input и combat.
-8. `src/entities/bots.js` — AI.
-9. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-10. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-11. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
-12. `src/ui/minimap.js` — тактическая миникарта.
-13. `src/game/runtime.js` — frame simulation/render loop и boot.
+8. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
+9. `src/entities/bots.js` — per-bot perception/FSM, locomotion, combat execution и Frontline objective state.
+10. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+11. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+12. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+13. `src/ui/minimap.js` — тактическая миникарта.
+14. `src/game/runtime.js` — frame simulation/render loop и boot.
 
 ## Session lifecycle owner
 
@@ -151,6 +152,10 @@ SR-9 не использует gameplay-reticle: runtime скрывает `#xhai
 
 ## Tactical AI 2.0 v22.4
 
+**Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального perception/FSM, cover/flank execution, suppression effects, locomotion и стрельбы. Это граница policy → execution: командный слой выбирает общий план, а каждый бот исполняет его через собственный state machine.
+
+Classic-script порядок `combat.js → ai/tactics.js → entities/bots.js` является частью runtime-контракта. `BOT_MAP_ZONES` должен существовать до инициализации Frontline state в `bots.js`; функции tactics могут обращаться к bot/runtime globals только во время матча, после завершения последовательной загрузки bootstrap.
+
 Поверх индивидуального state machine введён командный слой `BOT_TEAM_TACTICS`. Он не заменяет perception/target selection, а агрегирует уже полученную информацию: текущие цели ботов, LOS, память и `TEAM_INTEL`. План пересчитывается с небольшим cache-window и выбирает общий focus, suppressor, число доступных flankers и наиболее раненого союзника.
 
 `flankL` и `flankR` сохраняют разные стороны обхода. `findFlankPoint()` сначала оценивает существующие `COVER_POINTS` по стороне относительно цели, длине маршрута, crowding и будущей линии огня; procedural fallback используется только если подходящей cover-точки нет. Flank-state имеет commit timer, поэтому бот не меняет решение каждый кадр.
@@ -163,6 +168,8 @@ Support-state доступен `anchor` и `engineer`: при сильно ра�
 
 
 ## Combat AI 2.1 / Map Tactics v22.5
+
+`BOT_MAP_ZONES`, `refreshBotMapOrder()` и `botObjectivePoint()` принадлежат `src/ai/tactics.js`. Frontline capture/save/HUD state пока остаётся в `src/entities/bots.js`; он использует zone model как consumer, но не владеет doctrine selection. Такой split не меняет gameplay numbers и не создаёт второго source of truth.
 
 Тактический слой теперь имеет два уровня: Tactical AI 2.0 отвечает за локальную координацию вокруг общей цели, а Map Tactics отвечает за то, **где** команда в целом должна вести бой. Карта представлена небольшим набором логических зон `BOT_MAP_ZONES`: центр и четыре основных направления арены. Это намеренно data-driven слой поверх существующей геометрии, без ложного предположения о высотах или navmesh, которых в текущей карте нет.
 
@@ -181,6 +188,8 @@ HUD союзников показывает текущую doctrine, выбра�
 
 
 ## Combat AI 2.2 / Adaptive Commander + locomotion stability v22.6
+
+`PLAYER_TACTICAL_PROFILE`, doctrine/recovery decisions, assault-wave planning и coordinated smoke/frag policy принадлежат `src/ai/tactics.js`. `BOT_MOVE_CFG`, velocity/substep guards и фактическое выполнение utility/combat остаются в `src/entities/bots.js`. При pure refactor эти два слоя нельзя одновременно «улучшать»: policy extraction обязан сохранять прежние probabilities, timers и balance constants буквально.
 
 Adaptive Commander работает поверх Map Tactics, не заменяя perception и локальный squad-plan. `PLAYER_TACTICAL_PROFILE` периодически семплирует положение игрока, сглаженную скорость перемещения и время недавнего огня. Длительное нахождение в радиусе небольшой anchor-зоны вместе с недавней стрельбой повышает `campScore`; глубокое продвижение по оси союзной→вражеской стороны классифицируется как rush. Это поведенческий сигнал для выбора командного приказа, а не скрытый debuff игрока.
 

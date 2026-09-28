@@ -20,7 +20,8 @@
 | Player/save/weapon state | `src/player/state.js` | Pointer Lock listeners |
 | Audio / presentation settings | `src/settings/settings.js` | combat authority |
 | Input / combat / projectiles | `src/combat/combat.js` | map-level AI planning |
-| Bot AI | `src/entities/bots.js` | browser/session lifecycle |
+| Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM, locomotion, Frontline UI/state |
+| Individual bot AI / Frontline execution | `src/entities/bots.js` | browser/session lifecycle; map-level doctrine ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
 | Browser game session | `src/game/session.js` | per-frame simulation |
@@ -29,7 +30,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Для AI обязателен порядок `combat.js → ai/tactics.js → entities/bots.js`, потому что Frontline state в `bots.js` использует `BOT_MAP_ZONES` при инициализации.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -65,7 +66,7 @@
 | `src/**` | Node syntax + build stamp + structure validation + browser smoke |
 | session/menu | structure owner guard + HTTP boot + реальный `file://` Chrome/CDP smoke |
 | assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
-| AI behavior | focused invariants + structure + runtime smoke; не маскировать balance change как refactor |
+| AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
 | workflow | YAML intent + least privilege + один новый run и его logs при failure |
 
 ## Task discipline

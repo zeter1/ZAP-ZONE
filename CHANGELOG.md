@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-28
 
+### AI ownership extraction — Map Tactics / Adaptive Commander
+- командный tactical layer вынесен из 2200+ строкового `src/entities/bots.js` в новый canonical owner `src/ai/tactics.js`: map zones, squad plan, doctrine selection, Adaptive Commander profile, assault-wave planning и coordinated smoke/frag policy;
+- индивидуальный bot FSM/perception, cover/flank execution, suppression effects, locomotion, стрельба и Frontline objective state остаются в `src/entities/bots.js`; gameplay constants, probabilities, timers и balance не менялись;
+- classic load graph теперь явно `combat → tactics → bots`; structural validation проверяет новый owner, запрещает drift командной policy обратно в `bots.js` и сохраняет HTTP + `file://` runtime gates;
+- `docs/AI_WORKFLOW.md` и `docs/ARCHITECTURE.md` обновлены так, чтобы следующая AI-сессия сразу открывала нужный owner вместо повторного чтения всего bot runtime.
+
 ### Session lifecycle ownership + AI navigation
 - браузерный lifecycle матча вынесен из `player/state.js` и `game/runtime.js` в новый canonical owner `src/game/session.js`: Pointer Lock, start/resume/pause, Escape sequencing, blur/focus/visibility/pagehide и frame-clock reset теперь собраны в одном месте;
 - `runtime.js` снова отвечает за frame simulation/render + boot, а `player/state.js` — за player/save/weapon/mobile state; gameplay balance и combat semantics не менялись;
