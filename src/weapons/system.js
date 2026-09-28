@@ -484,41 +484,52 @@ const FP_GENERATED_ART_TUNING=Object.freeze({
   plasma:{width:'56vw',right:'-6vw',bottom:'-36vh',muzzleX:'5%',muzzleY:'18%'},
   sniper:{width:'61vw',right:'-7vw',bottom:'-39vh',muzzleX:'2%',muzzleY:'18%'}
 });
-let fpGeneratedWeaponModel=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoadId=0;
+let fpGeneratedWeaponModel=null,fpGeneratedWeaponPending=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoading=false,fpGeneratedWeaponLoadId=0;
 function hideGeneratedFirstPersonWeaponArt(){
-  const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash');
+  const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash'),img=G('fp-weapon-art');
   if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');}
   if(flash)flash.style.opacity='0';
+  if(img){img.onload=null;img.onerror=null;img.removeAttribute('src');delete img.dataset.weaponKey;}
   if(fpGeneratedWeaponModel)fpGeneratedWeaponModel.visible=true;
-  fpGeneratedWeaponModel=null;fpGeneratedWeaponActive=false;
+  fpGeneratedWeaponLoadId+=1;fpGeneratedWeaponModel=null;fpGeneratedWeaponPending=null;
+  fpGeneratedWeaponActive=false;fpGeneratedWeaponLoading=false;
 }
 function setGeneratedFirstPersonWeaponArt(w,model){
   hideGeneratedFirstPersonWeaponArt();
-  const wrap=G('fp-weapon-art-wrap'),img=G('fp-weapon-art'),asset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
-  if(!GAME_HOSTED_HTTP_MODE||!wrap||!img||!asset)return;
+  const wrap=G('fp-weapon-art-wrap'),asset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
+  if(!GAME_HOSTED_HTTP_MODE||!wrap||!asset)return;
   const tune=FP_GENERATED_ART_TUNING[w.key]||FP_GENERATED_ART_TUNING.rifle;
   wrap.style.setProperty('--fp-width',tune.width);wrap.style.setProperty('--fp-right',tune.right);
   wrap.style.setProperty('--fp-bottom',tune.bottom);wrap.style.setProperty('--fp-muzzle-x',tune.muzzleX);
   wrap.style.setProperty('--fp-muzzle-y',tune.muzzleY);
-  const loadId=String(++fpGeneratedWeaponLoadId);
-  img.dataset.loadId=loadId;img.dataset.weaponKey=w.key;
+  fpGeneratedWeaponPending={key:w.key,model,asset};
+}
+function ensureGeneratedFirstPersonWeaponArtLoaded(){
+  if(!running||fpGeneratedWeaponActive||fpGeneratedWeaponLoading||!fpGeneratedWeaponPending)return;
+  const wrap=G('fp-weapon-art-wrap'),img=G('fp-weapon-art');
+  if(!wrap||!img)return;
+  const pending=fpGeneratedWeaponPending,loadId=String(++fpGeneratedWeaponLoadId);
+  fpGeneratedWeaponLoading=true;img.dataset.loadId=loadId;img.dataset.weaponKey=pending.key;
   img.onload=()=>{
-    if(img.dataset.loadId!==loadId||img.dataset.weaponKey!==w.key)return;
-    fpGeneratedWeaponModel=model;fpGeneratedWeaponActive=true;model.visible=false;wrap.classList.add('on');
+    if(img.dataset.loadId!==loadId||img.dataset.weaponKey!==pending.key||fpGeneratedWeaponPending?.key!==pending.key)return;
+    fpGeneratedWeaponLoading=false;fpGeneratedWeaponModel=pending.model;fpGeneratedWeaponActive=true;
+    pending.model.visible=false;wrap.classList.add('on');
   };
   img.onerror=()=>{
     if(img.dataset.loadId!==loadId)return;
-    model.visible=true;wrap.classList.remove('on');fpGeneratedWeaponActive=false;
-    console.warn('Не удалось загрузить first-person weapon art:',asset);
+    fpGeneratedWeaponLoading=false;pending.model.visible=true;wrap.classList.remove('on');
+    console.warn('Не удалось загрузить first-person weapon art:',pending.asset);
   };
-  img.src=asset;
+  img.src=pending.asset;
 }
 function syncGeneratedFirstPersonWeaponArt(visible=true){
   const wrap=G('fp-weapon-art-wrap'),stage=G('fp-weapon-art-stage'),flash=G('fp-weapon-flash');
-  if(!wrap||!stage||!fpGeneratedWeaponActive){if(flash)flash.style.opacity='0';return;}
-  const show=Boolean(visible&&running);
-  wrap.classList.toggle('shown',show);
-  wrap.classList.toggle('scope-hidden',!visible);
+  if(!wrap||!stage)return;
+  if(!running){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
+  ensureGeneratedFirstPersonWeaponArtLoaded();
+  if(!fpGeneratedWeaponActive){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
+  const show=Boolean(visible);
+  wrap.classList.toggle('shown',show);wrap.classList.toggle('scope-hidden',!visible);
   if(!show){if(flash)flash.style.opacity='0';return;}
   const dx=(gunGrp.position.x-gunBasePos.x)*310;
   const dy=-(gunGrp.position.y-gunBasePos.y)*270;

@@ -218,7 +218,7 @@ for(const token of ['FP_HAND_POSES','FP_DECAL_TUNING','FP_MODEL_TUNING','functio
 if(weapons.includes('makeAssetPlane(')||weapons.includes('GAME_ASSETS.firstPersonWeapons')||weapons.includes('GAME_ASSETS.firstPersonSkins')){
   fail('first-person weapon scene must not depend on SVG texture planes');
 }
-for(const token of ['FP_GENERATED_ART_TUNING','function setGeneratedFirstPersonWeaponArt','function syncGeneratedFirstPersonWeaponArt','GAME_ASSETS.generatedFirstPersonWeapons','model.visible=false',"G('fp-weapon-art-wrap')","wrap.classList.toggle('shown',show)"]){
+for(const token of ['FP_GENERATED_ART_TUNING','function setGeneratedFirstPersonWeaponArt','function ensureGeneratedFirstPersonWeaponArtLoaded','function syncGeneratedFirstPersonWeaponArt','GAME_ASSETS.generatedFirstPersonWeapons','model.visible=false',"G('fp-weapon-art-wrap')","wrap.classList.toggle('shown',show)"]){
   if(!weapons.includes(token))fail('generated player-held weapon presentation missing: '+token);
 }
 if(weapons.includes('gameTexture(GAME_ASSETS.generatedFirstPersonWeapons')||weapons.includes('makeAssetPlane(GAME_ASSETS.generatedFirstPersonWeapons')){
@@ -386,6 +386,7 @@ if(!runtime.includes('tickTacticalMinimap(dt,ts)'))fail('real tactical minimap r
 if(!runtime.includes('tickPlayerFootsteps(playerMoved,sprintingNow,onGnd)'))fail('distance-driven player footsteps missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('syncGeneratedFirstPersonWeaponArt(gunGrp.visible)'))fail('generated player-held weapon runtime pose sync missing');
+if(!weapons.includes('if(!running){wrap.classList.remove(\'shown\')')||!weapons.includes('fpGeneratedWeaponPending={key:w.key,model,asset}'))fail('generated player-held weapon must lazy-load only after match start');
 for(const token of ['idleRenderAt=0','const menuIdle=!running','ts-idleRenderAt>=180','ts-idleRenderAt>=85']){
   if(!runtime.includes(token))fail('menu/Firefox idle render throttling missing: '+token);
 }
