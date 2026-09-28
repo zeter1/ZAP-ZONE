@@ -29,3 +29,6 @@
 9. Current FPS runtime derivative target: 960×720 transparent WebP, <=250 KiB, per-weapon framing/muzzle tuning, visual screenshot check before calling the integration complete.
 10. FPS weapon canvas keeps transparent headroom/left-space; do not tight-crop. Desktop visible silhouette should stay in the lower-right safe sector and away from reticle + center-bottom HP/Score/Kills.
 11. Decorative weapon art stays below critical HUD layers; clamp raster sway/rotation so recoil cannot drag the baked image across HUD safe zones.
+12. Approved V3 baseline: 960×720 alpha, generous transparent headroom/left-space, baked first-person angle, screenshot-tuned per-weapon placement. Reuse this composition contract for new player-held assets.
+13. Recoil is runtime-only and frame-rate independent; muzzle flash is a separate anchored layered effect, never baked into the weapon image and never a short opaque/stubby shape.
+14. Mine and smoke may use baked-hands DOM assets like firearms; bomb remains procedural until it has its own approved asset.

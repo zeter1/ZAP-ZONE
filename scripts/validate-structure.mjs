@@ -51,7 +51,8 @@ const generatedFeedbackWebpAssets=[
 const generatedFirstPersonWebpAssets=[
   'assets/ui/weapons/fp/player-pistol-fps-01.webp','assets/ui/weapons/fp/player-shotgun-fps-01.webp',
   'assets/ui/weapons/fp/player-rifle-fps-01.webp','assets/ui/weapons/fp/player-rocket-fps-01.webp',
-  'assets/ui/weapons/fp/player-plasma-fps-01.webp','assets/ui/weapons/fp/player-sniper-fps-01.webp'
+  'assets/ui/weapons/fp/player-plasma-fps-01.webp','assets/ui/weapons/fp/player-mine-fps-01.webp',
+  'assets/ui/weapons/fp/player-smoke-fps-01.webp','assets/ui/weapons/fp/player-sniper-fps-01.webp'
 ];
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -222,7 +223,7 @@ for(const token of ['FP_HAND_POSES','FP_DECAL_TUNING','FP_MODEL_TUNING','functio
 if(weapons.includes('makeAssetPlane(')||weapons.includes('GAME_ASSETS.firstPersonWeapons')||weapons.includes('GAME_ASSETS.firstPersonSkins')){
   fail('first-person weapon scene must not depend on SVG texture planes');
 }
-for(const token of ['FP_GENERATED_ART_TUNING','function setProceduralFirstPersonRigVisible','function setGeneratedFirstPersonWeaponArt','function ensureGeneratedFirstPersonWeaponArtLoaded','function syncGeneratedFirstPersonWeaponArt','GAME_ASSETS.generatedFirstPersonWeapons','setProceduralFirstPersonRigVisible(false)',"G('fp-weapon-art-wrap')","wrap.classList.toggle('shown',show)",'Math.max(-14,Math.min(14','Math.max(-1.6,Math.min(1.6']){
+for(const token of ['FP_MUZZLE_FLASH_SECONDS','FP_RECOIL_VISUAL','FP_GENERATED_ART_TUNING','function setProceduralFirstPersonRigVisible','function setGeneratedFirstPersonWeaponArt','function ensureGeneratedFirstPersonWeaponArtLoaded','function syncGeneratedFirstPersonWeaponArt','GAME_ASSETS.generatedFirstPersonWeapons','setProceduralFirstPersonRigVisible(false)',"G('fp-weapon-art-wrap')","wrap.classList.toggle('shown',show)",'Math.max(-14,Math.min(14','Math.max(-1.6,Math.min(1.6',"mine:{width:'38vw'","smoke:{width:'34vw'",'--fp-flash-core','flashScale']){
   if(!weapons.includes(token))fail('generated player-held weapon presentation missing: '+token);
 }
 if(weapons.includes('pending.model.visible=false'))fail('baked-hand generated weapon art must hide the whole procedural first-person rig, not only the weapon body');
@@ -393,6 +394,7 @@ if(!runtime.includes('tickTacticalMinimap(dt,ts)'))fail('real tactical minimap r
 if(!runtime.includes('tickPlayerFootsteps(playerMoved,sprintingNow,onGnd)'))fail('distance-driven player footsteps missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('syncGeneratedFirstPersonWeaponArt(gunGrp.visible)'))fail('generated player-held weapon runtime pose sync missing');
+for(const token of ['recoil*=Math.pow(.82,dt*60)','recoilVis=FP_RECOIL_VISUAL','recoil*recoilVis.push','recoil*recoilVis.pitch','beamT/FP_MUZZLE_FLASH_SECONDS'])if(!runtime.includes(token))fail('weapon visual recoil/muzzle lifecycle missing: '+token);
 if(!weapons.includes('if(!running){wrap.classList.remove(\'shown\')')||!weapons.includes('fpGeneratedWeaponPending={key:w.key,model,asset}'))fail('generated player-held weapon must lazy-load only after match start');
 for(const token of ['idleRenderAt=0','const menuIdle=!running','ts-idleRenderAt>=180','ts-idleRenderAt>=85']){
   if(!runtime.includes(token))fail('menu/Firefox idle render throttling missing: '+token);
@@ -403,7 +405,7 @@ if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-swi
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-minimap','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#fp-weapon-art-wrap','#fp-weapon-art-wrap.on.shown','#fp-weapon-art-stage','#fp-weapon-flash','max-width:980px','#hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:24','#hp-wrap{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;z-index:24','#menu .btn','one authoritative gameplay reticle']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-minimap','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#fp-weapon-art-wrap','#fp-weapon-art-wrap.on.shown','#fp-weapon-art-stage','#fp-weapon-flash','#fp-weapon-flash::before','#fp-weapon-flash::after','--fp-flash-pop','max-width:980px','#hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:24','#hp-wrap{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;z-index:24','#menu .btn','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 for(const token of ['width:254px','width:236px','width:218px;height:218px','width:202px','width:176px;height:176px']){

@@ -1,8 +1,12 @@
 # Changelog — ZAP ZONE
 
-## Unreleased — 2026-09-25
+## Unreleased — 2026-09-28
 
 ### Generated First-Person Weapon Pack — player-held firearms
+- approved V3 framing зафиксирован в asset contract как проверенный success baseline: 960×720 alpha, transparent headroom/left-space, baked angle, HUD-safe composition и screenshot-driven tuning;
+- добавлены baked-hands first-person assets для mine и smoke; они используют тот же DOM/fallback pipeline, bomb пока остаётся procedural;
+- muzzle flash огнестрела переработан из короткого овального «обрубка» в отдельный layered hot-core/starburst/glow effect с per-weapon цветом и масштабом; procedural fallback flash переведён на additive tapered flare;
+- visual recoil усилен отдельными per-weapon push/pitch/roll профилями и стал frame-rate independent; generated overlay получает безопасный recoil kick без выхода из HUD safe zones;
 - V3 pack перегенерирован с дополнительным transparent headroom/left-space и более компактной FPS-композицией: оружие занимает меньшую долю viewport и сохраняет нормальный baked first-person угол;
 - per-weapon runtime tuning уменьшен и сдвинут в lower-right safe sector; muzzle anchors пересчитаны под новую композицию;
 - sway/recoil/rotation raster overlay ограничены clamp-ами, чтобы оружие не уезжало в центр, HP, Score/Kills и reticle;

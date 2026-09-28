@@ -147,7 +147,8 @@ function loop(ts){
   const moving=_mv.length()>.1;
   const bob=moving?Math.sin(ts*.009)*.012:0;
   const bobSide=moving?Math.cos(ts*.0045)*.008:0;
-  recoil*=.82;
+  const recoilVis=FP_RECOIL_VISUAL[fireW.key]||FP_RECOIL_VISUAL.rifle;
+  recoil*=Math.pow(.82,dt*60);
   gunSwayX*=Math.max(0,1-dt*7.5);gunSwayY*=Math.max(0,1-dt*7.5);
   if(reloading&&reloadTot>0){
     const p=1-(reloadT/reloadTot);
@@ -184,10 +185,10 @@ function loop(ts){
     const pumpZ=cycleKind==='pump'?cycleWave*.11:0;
     const boltX=cycleKind==='bolt'?cycleWave*.055:0;
     const cycleRot=cycleKind==='bolt'?cycleWave*.10:(cycleKind==='pump'?cycleWave*.055:0);
-    gunGrp.position.set(adsX+bobSide*bobM-gunSwayX*swayM+boltX,adsY+bob*bobM-gunSwayY*swayM,adsZ+recoil*.08+pumpZ);
-    gunGrp.rotation.x=recoil*.16+gunSwayY*.8*swayM+cycleRot;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM+(cycleKind==='bolt'?cycleWave*.08:0);
+    gunGrp.position.set(adsX+bobSide*bobM-gunSwayX*swayM+boltX,adsY+bob*bobM-gunSwayY*swayM,adsZ+recoil*recoilVis.push+pumpZ);
+    gunGrp.rotation.x=recoil*recoilVis.pitch+gunSwayY*.8*swayM+cycleRot;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM+recoil*recoilVis.roll+(cycleKind==='bolt'?cycleWave*.08:0);
   }
-  if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/.065)*.85;if(flashM)flashM.material.opacity=beamT/.065;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
+  if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/FP_MUZZLE_FLASH_SECONDS)*.72;if(flashM)flashM.material.opacity=beamT/FP_MUZZLE_FLASH_SECONDS;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
   syncGeneratedFirstPersonWeaponArt(gunGrp.visible);
 
   if(sCD>0)sCD-=dt;

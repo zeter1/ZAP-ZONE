@@ -188,6 +188,8 @@ const GAME_ASSETS=versionAssetTree({
     rifle:'assets/ui/weapons/fp/player-rifle-fps-01.webp',
     rocket:'assets/ui/weapons/fp/player-rocket-fps-01.webp',
     plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp',
+    mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
+    smoke:'assets/ui/weapons/fp/player-smoke-fps-01.webp',
     sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp'
   }),
   firstPersonSkins:Object.freeze({

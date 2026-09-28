@@ -465,6 +465,7 @@ const gunGrp=new THREE.Group();camera.add(gunGrp);
 const gunBasePos=new THREE.Vector3(.28,-.25,-.48);
 let gunSwayX=0,gunSwayY=0;
 let flashM=null,beamM=null,beamT=0;
+const FP_MUZZLE_FLASH_SECONDS=.075;
 const FP_MODEL_TUNING={
   pistol:{scale:1.02,pos:[.00,.01,.01],rot:[-.02,.00,.00]},
   shotgun:{scale:.96,pos:[.00,.00,.02],rot:[-.015,.00,.00]},
@@ -476,15 +477,27 @@ const FP_MODEL_TUNING={
   smoke:{scale:.95,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
   sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]}
 };
+const FP_RECOIL_VISUAL=Object.freeze({
+  pistol:{push:.105,pitch:.22,roll:.014},
+  shotgun:{push:.16,pitch:.31,roll:.026},
+  rifle:{push:.082,pitch:.16,roll:.010},
+  rocket:{push:.18,pitch:.34,roll:.030},
+  plasma:{push:.060,pitch:.115,roll:.008},
+  mine:{push:0,pitch:0,roll:0},
+  bomb:{push:0,pitch:0,roll:0},
+  smoke:{push:.075,pitch:.14,roll:.014},
+  sniper:{push:.17,pitch:.33,roll:.024}
+});
 const FP_GENERATED_ART_TUNING=Object.freeze({
-  // V3 assets contain the final FPS tilt, baked hands and intentional transparent headroom.
-  // Widths are tuned against HUD safe zones so the visible silhouette stays in the lower-right sector.
-  pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%'},
-  shotgun:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'28%',muzzleY:'39%'},
-  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%'},
-  rocket:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'31%'},
-  plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%'},
-  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'33%',muzzleY:'38%'}
+  // V3 is the approved framing baseline: baked hands, transparent headroom and HUD-safe lower-right placement.
+  pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:.90,flashCore:'#fff9df',flashMid:'#ffd15a',flashEdge:'#ff6d1f'},
+  shotgun:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'28%',muzzleY:'39%',kickX:16,kickY:14,kickRot:2.00,kickScale:.028,flashScale:1.18,flashCore:'#fff8d8',flashMid:'#ffc857',flashEdge:'#ff6320'},
+  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:.94,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
+  rocket:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'31%',kickX:18,kickY:16,kickRot:2.30,kickScale:.032,flashScale:1.42,flashCore:'#fff3d0',flashMid:'#ffb43e',flashEdge:'#ff4f18'},
+  plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%',kickX:5,kickY:4,kickRot:.70,kickScale:.010,flashScale:1.05,flashCore:'#efffff',flashMid:'#69eaff',flashEdge:'#8c62ff'},
+  mine:{width:'38vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
+  smoke:{width:'34vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:6,kickY:8,kickRot:1.15,kickScale:.008,flashScale:0},
+  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'33%',muzzleY:'38%',kickX:15,kickY:12,kickRot:1.80,kickScale:.024,flashScale:1.20,flashCore:'#f3fdff',flashMid:'#a4e7ff',flashEdge:'#5fa8ff'}
 });
 function setProceduralFirstPersonRigVisible(visible){
   for(const child of gunGrp.children)child.visible=visible;
@@ -508,6 +521,10 @@ function setGeneratedFirstPersonWeaponArt(w,model){
   wrap.style.setProperty('--fp-width',tune.width);wrap.style.setProperty('--fp-right',tune.right);
   wrap.style.setProperty('--fp-bottom',tune.bottom);wrap.style.setProperty('--fp-muzzle-x',tune.muzzleX);
   wrap.style.setProperty('--fp-muzzle-y',tune.muzzleY);
+  wrap.style.setProperty('--fp-flash-core',tune.flashCore||'#fff9df');
+  wrap.style.setProperty('--fp-flash-mid',tune.flashMid||'#ffd15a');
+  wrap.style.setProperty('--fp-flash-edge',tune.flashEdge||'#ff6d1f');
+  wrap.style.setProperty('--fp-flash-base-scale',String(tune.flashScale||0));
   fpGeneratedWeaponPending={key:w.key,model,asset};
 }
 function ensureGeneratedFirstPersonWeaponArtLoaded(){
@@ -541,18 +558,31 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   if(!show){if(flash)flash.style.opacity='0';return;}
   // Preserve the baked first-person angle: gameplay sway/recoil may move the art,
   // but must not drag it across the center-bottom HUD or rotate it into a poster-like pose.
+  const key=fpGeneratedWeaponPending?.key||'rifle';
+  const tune=FP_GENERATED_ART_TUNING[key]||FP_GENERATED_ART_TUNING.rifle;
   const dx=Math.max(-14,Math.min(14,(gunGrp.position.x-gunBasePos.x)*220));
   const dy=Math.max(-10,Math.min(16,-(gunGrp.position.y-gunBasePos.y)*190));
   const rawRot=gunGrp.rotation.z*16-gunGrp.rotation.y*3+gunGrp.rotation.x*2;
   const rot=Math.max(-1.6,Math.min(1.6,rawRot));
-  stage.style.setProperty('--fp-dx',dx.toFixed(1)+'px');
-  stage.style.setProperty('--fp-dy',dy.toFixed(1)+'px');
-  stage.style.setProperty('--fp-rot',rot.toFixed(2)+'deg');
-  stage.style.setProperty('--fp-scale',(1-Math.min(.025,Math.abs(gunGrp.rotation.x)*.01)).toFixed(3));
-  if(flash)flash.style.opacity=visible&&beamT>0?String(Math.min(1,beamT/.065)):'0';
+  const kick=Math.max(0,Math.min(1,recoil));
+  const drawX=Math.max(-18,Math.min(34,dx+(tune.kickX||0)*kick));
+  const drawY=Math.max(-12,Math.min(34,dy+(tune.kickY||0)*kick));
+  const drawRot=Math.max(-2.2,Math.min(3.2,rot+(tune.kickRot||0)*kick));
+  const baseScale=1-Math.min(.025,Math.abs(gunGrp.rotation.x)*.01);
+  stage.style.setProperty('--fp-dx',drawX.toFixed(1)+'px');
+  stage.style.setProperty('--fp-dy',drawY.toFixed(1)+'px');
+  stage.style.setProperty('--fp-rot',drawRot.toFixed(2)+'deg');
+  stage.style.setProperty('--fp-scale',(baseScale*(1+(tune.kickScale||0)*kick)).toFixed(3));
+  if(flash){
+    const life=Math.max(0,Math.min(1,beamT/FP_MUZZLE_FLASH_SECONDS));
+    const flashScale=(tune.flashScale||0)*(.72+life*.42);
+    flash.style.opacity=visible&&life>0&&flashScale>0?String(Math.pow(life,.55)):'0';
+    flash.style.setProperty('--fp-flash-pop',flashScale.toFixed(3));
+    flash.style.setProperty('--fp-flash-twist',((((shotSequence%5)-2)*1.8)).toFixed(1)+'deg');
+  }
 }
 function buildGun(w){
-  clearGroupChildren(gunGrp);flashM=null;beamM=null;
+  clearGroupChildren(gunGrp);flashM=null;beamM=null;beamT=0;
   const tune=FP_MODEL_TUNING[w.key]||FP_MODEL_TUNING.rifle;
   const model=createWeaponModel(w.key,{mode:'firstPerson',detail:2});
   model.scale.setScalar(tune.scale);model.position.set(...tune.pos);model.rotation.set(...tune.rot);gunGrp.add(model);
@@ -560,10 +590,20 @@ function buildGun(w){
   addFirstPersonHands(gunGrp,w.key);
   setGeneratedFirstPersonWeaponArt(w,model);
   const muzzleZ=model.userData.muzzleZ??-.90;
-  flashM=new THREE.Mesh(new THREE.SphereGeometry(w.isRocket?.11:.065,8,6),new THREE.MeshBasicMaterial({color:0xfff1b0,transparent:true,opacity:0,depthWrite:false}));
-  flashM.position.set(0,.02,muzzleZ);model.add(flashM);
-  beamM=new THREE.Mesh(new THREE.ConeGeometry(w.isRocket?.10:.065,w.isRocket?.34:.24,8,1,true),new THREE.MeshBasicMaterial({color:0xffa43a,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));
-  beamM.rotation.x=-Math.PI/2;beamM.position.set(0,.02,muzzleZ-.12);model.add(beamM);
+  const muzzleColor=w.key==='plasma'?0x72e9ff:w.isSniper?0xbfeeff:w.isRocket?0xff6a22:w.key==='shotgun'?0xffb058:0xffd06b;
+  const flashRadius=w.isRocket?.075:w.key==='shotgun'?.060:.045;
+  flashM=new THREE.Mesh(
+    new THREE.SphereGeometry(flashRadius,10,7),
+    new THREE.MeshBasicMaterial({color:muzzleColor,transparent:true,opacity:0,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending,toneMapped:false})
+  );
+  flashM.scale.set(1,.72,1.45);flashM.position.set(0,.02,muzzleZ);model.add(flashM);
+  const flareRadius=w.isRocket?.12:w.key==='shotgun'?.095:w.key==='plasma'?.072:.065;
+  const flareLength=w.isRocket?.52:w.key==='shotgun'?.42:w.isSniper?.38:.34;
+  beamM=new THREE.Mesh(
+    new THREE.ConeGeometry(flareRadius,flareLength,10,1,true),
+    new THREE.MeshBasicMaterial({color:muzzleColor,transparent:true,opacity:0,depthWrite:false,depthTest:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,toneMapped:false})
+  );
+  beamM.rotation.x=-Math.PI/2;beamM.position.set(0,.02,muzzleZ-flareLength*.46);model.add(beamM);
   gunGrp.userData.muzzleZ=muzzleZ*tune.scale;
   const p=w.viewPos||WEAPONS[0].viewPos;gunBasePos.set(p[0],p[1],p[2]);gunGrp.position.copy(gunBasePos);
 }

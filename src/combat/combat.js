@@ -703,7 +703,7 @@ function shoot(){
   }
 
   if(flashM)flashM.material.opacity=1;
-  if(beamM){beamM.material.opacity=.9;beamT=.065;}
+  if(beamM){beamM.material.opacity=.72;beamT=FP_MUZZLE_FLASH_SECONDS;}
   const bDir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   const shots=1+(Math.random()<plr.extraShotChance?1:0);
 
