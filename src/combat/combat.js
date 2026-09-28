@@ -448,10 +448,11 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
     const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
     hs.classList.remove('on','kill');void hs.offsetWidth;
     if(lethalHeadshot){
-      hs.classList.add('kill');hsIcon.src=GAME_ASSETS.fx.headshotKill;hsText.textContent='HEADSHOT KILL';
+      hs.classList.add('kill');hsText.textContent='HEADSHOT KILL';
       const flash=G('hs-kill-flash');flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');
       clearTimeout(resolvePlayerBulletHit._kft);resolvePlayerBulletHit._kft=setTimeout(()=>flash.classList.remove('on'),520);
-    }else{hsIcon.src=GAME_ASSETS.fx.headshot;hsText.textContent='HEADSHOT';}
+    }else{hsText.textContent='HEADSHOT';}
+    imageAssetWithFallback(hsIcon,headshotAsset(lethalHeadshot),headshotFallbackAsset(lethalHeadshot));
     hs.classList.add('on');
     clearTimeout(resolvePlayerBulletHit._ht);resolvePlayerBulletHit._ht=setTimeout(()=>hs.classList.remove('on','kill'),lethalHeadshot?940:620);
   }

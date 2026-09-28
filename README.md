@@ -122,8 +122,11 @@ index.html
 - `assets/ui/perks/{damage-tech-01,speed-tech-01,reload-tech-01}.png` — сгенерированные иконки ключевых perk-карточек с fallback на старые SVG;
 - `assets/ui/objective/frontline-beacon-01.png` — значок текущей Frontline-цели;
 - `assets/ui/pickups/weapon-crate-tech-01.png` — визуальный маркер weapon-pickup/crate в стартовых подсказках.
+- `assets/ui/medals/{first-blood,double-kill,triple-kill,killing-spree,longshot,critical-kill,explosive-kill,headshot}-tech-01.png` — generated combat-medal pack для kill/precision feedback.
 
-Второй raster-pack также остаётся presentation-only: он включается только через DOM/CSS на HTTP/HTTPS, не попадает в Three.js texture planes и при отсутствии файла не может превратить 3D-поверхность в чёрный прямоугольник.
+Combat medal PNG используются только в DOM HUD: `showCombatMedal(...)` подставляет raster на HTTP/HTTPS и автоматически откатывается на соответствующий `assets/medals/*.svg`, а headshot popup использует `headshot-tech-01.png` с fallback на `assets/fx/headshot.svg` / `headshot-kill.svg`. `multikill.svg` сохраняется как SVG-only, потому что отдельный raster для MULTI KILL в этом пакете не генерировался.
+
+Все generated raster-packs остаются presentation-only: они включаются только через DOM/CSS на HTTP/HTTPS, не попадают в Three.js texture planes/sprites и при отсутствии файла не могут превратить 3D-поверхность в чёрный прямоугольник.
 
 Существующие SVG сохраняются как fallback и для тех UI/asset-contracts, где они уже используются:
 

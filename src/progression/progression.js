@@ -268,8 +268,9 @@ function updateStatusIcons(){
 let _combatMedalT=0;
 function showCombatMedal(type,label){
   const root=G('combat-medal'),img=G('combat-medal-icon'),txt=G('combat-medal-text');
-  if(!root||!img||!txt||!GAME_ASSETS.medals[type])return;
-  img.src=GAME_ASSETS.medals[type];txt.textContent=label;
+  const fallback=combatMedalFallbackAsset(type);
+  if(!root||!img||!txt||!fallback)return;
+  imageAssetWithFallback(img,combatMedalAsset(type),fallback);txt.textContent=label;
   root.classList.remove('on');void root.offsetWidth;root.classList.add('on');
   clearTimeout(_combatMedalT);_combatMedalT=setTimeout(()=>root.classList.remove('on'),1450);
 }

@@ -36,6 +36,12 @@ const visualAssets=[
   'assets/weapons/fp/rocket-skin.svg','assets/weapons/fp/plasma-skin.svg','assets/weapons/fp/mine-skin.svg',
   'assets/weapons/fp/bomb-skin.svg','assets/weapons/fp/smoke-skin.svg','assets/weapons/fp/sniper-skin.svg'
 ];
+const combatMedalRasterAssets=[
+  'assets/ui/medals/first-blood-tech-01.png','assets/ui/medals/double-kill-tech-01.png',
+  'assets/ui/medals/triple-kill-tech-01.png','assets/ui/medals/killing-spree-tech-01.png',
+  'assets/ui/medals/longshot-tech-01.png','assets/ui/medals/critical-kill-tech-01.png',
+  'assets/ui/medals/explosive-kill-tech-01.png','assets/ui/medals/headshot-tech-01.png'
+];
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
@@ -43,7 +49,8 @@ const presentationRasterAssets=[
   'assets/ui/teams/blue-team-emblem-01.png','assets/ui/teams/red-team-emblem-01.png',
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
-  'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png'
+  'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
+  ...combatMedalRasterAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -108,6 +115,33 @@ if(!catalog.includes('function perkAsset(id,path)')||!catalog.includes('function
 for(const token of ["id==='damage'","id==='reload'","id==='mobility'||id==='sprint_drive'"]){
   if(!catalog.includes(token))fail('generated perk presentation mapping missing: '+token);
 }
+for(const token of [
+  "presentationMedals:Object.freeze",
+  "'first-blood':'assets/ui/medals/first-blood-tech-01.png'",
+  "'double-kill':'assets/ui/medals/double-kill-tech-01.png'",
+  "'triple-kill':'assets/ui/medals/triple-kill-tech-01.png'",
+  "'killing-spree':'assets/ui/medals/killing-spree-tech-01.png'",
+  "'longshot':'assets/ui/medals/longshot-tech-01.png'",
+  "'critical-kill':'assets/ui/medals/critical-kill-tech-01.png'",
+  "'explosive-kill':'assets/ui/medals/explosive-kill-tech-01.png'",
+  "'headshot':'assets/ui/medals/headshot-tech-01.png'",
+  'function imageAssetWithFallback','function combatMedalFallbackAsset','function combatMedalAsset',
+  'function headshotFallbackAsset','function headshotAsset'
+]){
+  if(!catalog.includes(token))fail('combat medal raster/fallback catalog contract missing: '+token);
+}
+for(const token of [
+  "'first-blood':'assets/medals/first-blood.svg'",
+  "'double-kill':'assets/medals/double-kill.svg'",
+  "'triple-kill':'assets/medals/triple-kill.svg'",
+  "'killing-spree':'assets/medals/killing-spree.svg'",
+  "'longshot':'assets/medals/longshot.svg'",
+  "'critical-kill':'assets/medals/critical-kill.svg'",
+  "'explosive-kill':'assets/medals/explosive-kill.svg'",
+  "headshot:'assets/fx/headshot.svg'","headshotKill:'assets/fx/headshot-kill.svg'"
+]){
+  if(!catalog.includes(token))fail('combat medal/headshot SVG fallback missing: '+token);
+}
 for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
   if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
 }
@@ -118,7 +152,7 @@ if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair 
 
 const progression=readFileSync('src/progression/progression.js','utf8');
 if(progression.includes('function G(id)'))fail('G helper must be available before progression.js loads');
-for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','perkFallbackAsset(p.id,p.path)','perkFallbackAsset(perk.id,perk.path)','data-fallback-src','function showCombatMedal','function showKillMedal','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
+for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','perkFallbackAsset(p.id,p.path)','perkFallbackAsset(perk.id,perk.path)','data-fallback-src','function showCombatMedal','function showKillMedal','combatMedalFallbackAsset(type)','combatMedalAsset(type)','imageAssetWithFallback(img,combatMedalAsset(type),fallback)','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
   if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
 
@@ -178,6 +212,10 @@ const combat=readFileSync('src/combat/combat.js','utf8');
 for(const token of ['function spawnPlayerBullet','function spawnEnemyBullet','function destroyEnemyBullet','MAX_ENEMY_BULLETS=260','MAX_ACTIVE_ENEMY_TRACERS','enemyTracerPool','function acquireEnemyTracer','function releaseEnemyTracer','function enemyTracerVisible','function projectileWallEnergy','function tryProjectileWallPenetration','wallEnergy:projectileWallEnergy(w,true)','wallEnergy:projectileWallEnergy(w,false)','wallPenetrations<2','function hitPlayerByEnemyBullet','closestPointOnBulletSegment','Bot firearm projectiles use the same swept-segment principle','function spawnBotSmokeGrenade','function spawnBotFragGrenade','function tickBotGrenades','mapImpactMaterial(wallHit?.object)','playSurfaceImpactSound(surface','function fireInstantSniper','const pRkts=[],eRkts=[],pTrs=[],pBullets=[],eBullets=[],botGrenades=[]','swept segment collision',"w.aimMode==='scope'",'if(w.hitscan)fireInstantSniper','window.addEventListener(\'blur\'','maxRange=120','function effectiveWeaponSpread','playerSuppressionSpreadPenalty','function weaponActionBlocked','function completePlayerReloadStep','function cancelPlayerReload',"reloadMode==='shell'",'oneShotEligible:true','w.oneShot&&b.oneShotEligible','playWeaponShotSound(w.key','playWeaponMechanicSound(\'reload\'','playWeaponMechanicSound(\'bolt\'','playExplosionSound(pos',"zone='body'","playHitImpactSound(hd?'head':hitZone"]){
   if(!combat.includes(token))fail('combat ballistics/handling integration missing: '+token);
 }
+for(const token of ['headshotAsset(lethalHeadshot)','headshotFallbackAsset(lethalHeadshot)','imageAssetWithFallback(hsIcon,headshotAsset(lethalHeadshot),headshotFallbackAsset(lethalHeadshot))']){
+  if(!combat.includes(token))fail('generated headshot presentation/fallback wiring missing: '+token);
+}
+if(!html.includes('id="hs-pop-icon" src="assets/fx/headshot.svg"'))fail('headshot DOM must retain SVG initial fallback');
 if(!combat.includes("document.addEventListener('wheel'")||!combat.includes('cycleOwnedWeapon(e.deltaY>0?1:-1)'))fail('mouse wheel must cycle owned weapons only');
 for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValue(mineIdx)<=0)updateWeaponBar();','weaponReserveValue(bombIdx)<=0)updateWeaponBar();','weaponReserveValue(smokeIdx)<=0)updateWeaponBar();']){
   if(!combat.includes(token))fail('depleted weapon bar retirement missing: '+token);

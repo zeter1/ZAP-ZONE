@@ -126,6 +126,18 @@ const GAME_ASSETS=versionAssetTree({
     'critical-kill':'assets/medals/critical-kill.svg',
     'explosive-kill':'assets/medals/explosive-kill.svg'
   }),
+  // Generated combat medals are presentation-only DOM images. SVG medal/fx assets
+  // above remain the fallback path for file:// and failed HTTP(S) image loads.
+  presentationMedals:Object.freeze({
+    'first-blood':'assets/ui/medals/first-blood-tech-01.png',
+    'double-kill':'assets/ui/medals/double-kill-tech-01.png',
+    'triple-kill':'assets/ui/medals/triple-kill-tech-01.png',
+    'killing-spree':'assets/ui/medals/killing-spree-tech-01.png',
+    'longshot':'assets/ui/medals/longshot-tech-01.png',
+    'critical-kill':'assets/ui/medals/critical-kill-tech-01.png',
+    'explosive-kill':'assets/ui/medals/explosive-kill-tech-01.png',
+    'headshot':'assets/ui/medals/headshot-tech-01.png'
+  }),
   status:Object.freeze({
     secondWind:'assets/status/second-wind.svg',
     lifesteal:'assets/status/lifesteal.svg',
@@ -209,6 +221,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.perks),
   ...Object.values(GAME_ASSETS.perkIcons),
   ...Object.values(GAME_ASSETS.medals),
+  ...Object.values(GAME_ASSETS.presentationMedals),
   ...Object.values(GAME_ASSETS.status),
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
@@ -293,4 +306,21 @@ function perkAsset(id,path){
     if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
   }
   return perkFallbackAsset(id,path);
+}
+
+function imageAssetWithFallback(img,source,fallback){
+  if(!img||!source||!fallback)return;
+  img.dataset.fallbackSrc=fallback;
+  img.onerror=()=>{img.onerror=null;img.src=img.dataset.fallbackSrc;};
+  img.src=source;
+}
+function combatMedalFallbackAsset(type){return GAME_ASSETS.medals[type]||'';}
+function combatMedalAsset(type){
+  const fallback=combatMedalFallbackAsset(type);
+  return GAME_HOSTED_HTTP_MODE?(GAME_ASSETS.presentationMedals[type]||fallback):fallback;
+}
+function headshotFallbackAsset(lethal=false){return lethal?GAME_ASSETS.fx.headshotKill:GAME_ASSETS.fx.headshot;}
+function headshotAsset(lethal=false){
+  const fallback=headshotFallbackAsset(lethal);
+  return GAME_HOSTED_HTTP_MODE?(GAME_ASSETS.presentationMedals.headshot||fallback):fallback;
 }

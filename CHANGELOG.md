@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-25
 
+### Generated Combat Medals Pack — kill/precision feedback
+- добавлен согласованный набор из 8 оптимизированных прозрачных PNG: First Blood, Double Kill, Triple Kill, Killing Spree, Longshot, Critical Kill, Explosive Kill и Headshot;
+- combat medal HUD на HTTP/HTTPS использует новые raster icons, а при ошибке загрузки автоматически возвращается к прежним `assets/medals/*.svg`; существующий `multikill.svg` остаётся SVG-only;
+- headshot popup использует `headshot-tech-01.png` с отдельным fallback на `assets/fx/headshot.svg` / `headshot-kill.svg`;
+- новые изображения остаются presentation-only DOM assets и не передаются в Three.js/WebGL texture planes/sprites, сохраняя uCoz anti-black-quad invariant;
+- validation расширен на наличие/PNG signature/минимальный размер, asset catalog mapping, реальное medal/headshot UI wiring, SVG fallback и запрет raster medals в `src/core/engine.js`; build stamp/cache key пересчитан.
+
 ### Generated Gameplay UI Pack — team/perk/objective integration
 - добавлен второй набор из 8 оптимизированных PNG-ассетов: эмблемы синей/красной команд, ammo, damage/speed/reload, Frontline beacon и weapon crate;
 - scoreboard, ammo HUD, reload HUD, Frontline objective и стартовые подсказки используют новые изображения через `.generated-art-enabled` только на HTTP/HTTPS;
