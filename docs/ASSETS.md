@@ -8,7 +8,8 @@
 
 - DOM/HUD/menu/feedback → `assets/ui/**` и `GAME_ASSETS.presentation*`;
 - gameplay SVG fallback → существующий доменный каталог (`assets/medals`, `assets/status`, `assets/fx`, `assets/perks`);
-- weapon identity → `assets/weapons/**` и `WEAPONS[].asset`;
+- weapon identity / bot/world pickup art → `assets/weapons/**` и `WEAPONS[].asset`;
+- generated player-held first-person presentation → `assets/ui/weapons/fp/**`, только DOM overlay локального игрока;
 - audio → `assets/audio/**`;
 - постоянная Three.js сцена → по умолчанию procedural geometry/materials, а не generated raster texture.
 
@@ -70,6 +71,17 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 
 Исключение возможно только отдельной задачей с runtime/browser/uCoz evidence и новым regression contract.
 
+### Player-held generated weapons
+
+Сгенерированные FPS-рендеры оружия не являются 3D-моделями и не должны подменять bot/world geometry. Контракт:
+- runtime derivative: прозрачный WebP в `assets/ui/weapons/fp/**`;
+- consumer: `#fp-weapon-art` / `#fp-weapon-art-stage` поверх canvas только для локального игрока;
+- на успешной загрузке скрывается только procedural first-person корпус текущего оружия; руки, gameplay state, ballistics, hitboxes, bots и pickups не меняются;
+- recoil/equip/reload/sprint/cycle поза DOM-art синхронизируется с существующим `gunGrp`, а muzzle flash имеет отдельный DOM feedback;
+- `file://`, 404 или decode error обязаны автоматически оставить procedural first-person модель;
+- mine/bomb/smoke остаются procedural, пока для них не создан отдельный утверждённый FPS pack;
+- запрещено загружать generated weapon WebP через `TextureLoader`, `gameTexture`, `makeAssetPlane` или `makeAssetSprite`.
+
 ## 6. Catalog и cache identity
 
 Новый runtime asset должен:
@@ -91,6 +103,7 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 - реальный HTML/CSS/JS consumer содержит wiring;
 - fallback/degradation path существует;
 - generated presentation path отсутствует в WebGL engine;
+- для player-held weapon art проверены DOM consumer, procedural fallback, pose sync и отсутствие влияния на bots/world pickups;
 - `node --check` проходит;
 - `node scripts/stamp-web-build.mjs --check` проходит после stamp;
 - `node scripts/validate-structure.mjs` проходит;

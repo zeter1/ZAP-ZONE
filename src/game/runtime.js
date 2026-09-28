@@ -188,6 +188,7 @@ function loop(ts){
     gunGrp.rotation.x=recoil*.16+gunSwayY*.8*swayM+cycleRot;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM+(cycleKind==='bolt'?cycleWave*.08:0);
   }
   if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/.065)*.85;if(flashM)flashM.material.opacity=beamT/.065;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
+  syncGeneratedFirstPersonWeaponArt(gunGrp.visible);
 
   if(sCD>0)sCD-=dt;
   if(reloading){reloadT-=dt;if(reloadT<=0)completePlayerReloadStep();}

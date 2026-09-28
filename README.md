@@ -33,6 +33,7 @@
 - Отдельных ящиков с универсальными патронами больше нет; weapon pickups после подбора появляются заново в другой части карты.
 - Единый factory 3D-моделей оружия для игрока, AI и world pickups.
 - Все 9 first-person моделей получили отдельный premium-pass: более сложные силуэты, rails/optic/muzzle/vent детали, улучшенные руки и индивидуальные SVG tech + skin панели в `assets/weapons/fp/`.
+- Для 6 основных стволов игрока (пистолет, дробовик, штурмовая винтовка, ракетница, плазма, снайперская винтовка) добавлены отдельные generated FPS WebP-рендеры: на HTTP/HTTPS они работают как player-only DOM presentation, синхронизируются с recoil/reload/equip/sprint и при ошибке автоматически оставляют procedural 3D-модель; боты и world pickups не затронуты.
 - Реальные SVG assets оружия в `assets/weapons/`.
 - Новый asset catalog: `src/assets/catalog.js`.
 - Красивые world pickups оружия с 3D-моделью и соответствующей SVG-иконкой; аптечки остаются отдельными pickups.

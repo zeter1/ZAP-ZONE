@@ -180,6 +180,16 @@ const GAME_ASSETS=versionAssetTree({
     smoke:'assets/weapons/fp/smoke-tech.svg',
     sniper:'assets/weapons/fp/sniper-tech.svg'
   }),
+  // Generated FPS renders are player-only DOM presentation. Bots/world pickups
+  // keep the procedural Three.js weapon models and gameplay geometry.
+  generatedFirstPersonWeapons:Object.freeze({
+    pistol:'assets/ui/weapons/fp/player-pistol-fps-01.webp',
+    shotgun:'assets/ui/weapons/fp/player-shotgun-fps-01.webp',
+    rifle:'assets/ui/weapons/fp/player-rifle-fps-01.webp',
+    rocket:'assets/ui/weapons/fp/player-rocket-fps-01.webp',
+    plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp',
+    sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp'
+  }),
   firstPersonSkins:Object.freeze({
     pistol:'assets/weapons/fp/pistol-skin.svg',
     shotgun:'assets/weapons/fp/shotgun-skin.svg',
@@ -238,6 +248,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
+  ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
   ...Object.values(GAME_ASSETS.firstPersonSkins),
   ...Object.values(GAME_ASSETS.ui),
   ...Object.values(GAME_ASSETS.presentation)

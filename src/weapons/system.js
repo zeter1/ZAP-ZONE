@@ -476,6 +476,56 @@ const FP_MODEL_TUNING={
   smoke:{scale:.95,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
   sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]}
 };
+const FP_GENERATED_ART_TUNING=Object.freeze({
+  pistol:{width:'48vw',right:'-5vw',bottom:'-29vh',muzzleX:'5%',muzzleY:'20%'},
+  shotgun:{width:'57vw',right:'-6vw',bottom:'-36vh',muzzleX:'5%',muzzleY:'19%'},
+  rifle:{width:'58vw',right:'-6vw',bottom:'-36vh',muzzleX:'3%',muzzleY:'18%'},
+  rocket:{width:'50vw',right:'-5vw',bottom:'-34vh',muzzleX:'8%',muzzleY:'22%'},
+  plasma:{width:'56vw',right:'-6vw',bottom:'-36vh',muzzleX:'5%',muzzleY:'18%'},
+  sniper:{width:'61vw',right:'-7vw',bottom:'-39vh',muzzleX:'2%',muzzleY:'18%'}
+});
+let fpGeneratedWeaponModel=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoadId=0;
+function hideGeneratedFirstPersonWeaponArt(){
+  const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash');
+  if(wrap){wrap.classList.remove('on');wrap.classList.remove('scope-hidden');}
+  if(flash)flash.style.opacity='0';
+  if(fpGeneratedWeaponModel)fpGeneratedWeaponModel.visible=true;
+  fpGeneratedWeaponModel=null;fpGeneratedWeaponActive=false;
+}
+function setGeneratedFirstPersonWeaponArt(w,model){
+  hideGeneratedFirstPersonWeaponArt();
+  const wrap=G('fp-weapon-art-wrap'),img=G('fp-weapon-art'),asset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
+  if(!GAME_HOSTED_HTTP_MODE||!wrap||!img||!asset)return;
+  const tune=FP_GENERATED_ART_TUNING[w.key]||FP_GENERATED_ART_TUNING.rifle;
+  wrap.style.setProperty('--fp-width',tune.width);wrap.style.setProperty('--fp-right',tune.right);
+  wrap.style.setProperty('--fp-bottom',tune.bottom);wrap.style.setProperty('--fp-muzzle-x',tune.muzzleX);
+  wrap.style.setProperty('--fp-muzzle-y',tune.muzzleY);
+  const loadId=String(++fpGeneratedWeaponLoadId);
+  img.dataset.loadId=loadId;img.dataset.weaponKey=w.key;
+  img.onload=()=>{
+    if(img.dataset.loadId!==loadId||img.dataset.weaponKey!==w.key)return;
+    fpGeneratedWeaponModel=model;fpGeneratedWeaponActive=true;model.visible=false;wrap.classList.add('on');
+  };
+  img.onerror=()=>{
+    if(img.dataset.loadId!==loadId)return;
+    model.visible=true;wrap.classList.remove('on');fpGeneratedWeaponActive=false;
+    console.warn('Не удалось загрузить first-person weapon art:',asset);
+  };
+  img.src=asset;
+}
+function syncGeneratedFirstPersonWeaponArt(visible=true){
+  const wrap=G('fp-weapon-art-wrap'),stage=G('fp-weapon-art-stage'),flash=G('fp-weapon-flash');
+  if(!wrap||!stage||!fpGeneratedWeaponActive){if(flash)flash.style.opacity='0';return;}
+  wrap.classList.toggle('scope-hidden',!visible);
+  const dx=(gunGrp.position.x-gunBasePos.x)*310;
+  const dy=-(gunGrp.position.y-gunBasePos.y)*270;
+  const rot=gunGrp.rotation.z*40-gunGrp.rotation.y*9+gunGrp.rotation.x*4;
+  stage.style.setProperty('--fp-dx',dx.toFixed(1)+'px');
+  stage.style.setProperty('--fp-dy',dy.toFixed(1)+'px');
+  stage.style.setProperty('--fp-rot',rot.toFixed(2)+'deg');
+  stage.style.setProperty('--fp-scale',(1-Math.min(.045,Math.abs(gunGrp.rotation.x)*.02)).toFixed(3));
+  if(flash)flash.style.opacity=visible&&beamT>0?String(Math.min(1,beamT/.065)):'0';
+}
 function buildGun(w){
   clearGroupChildren(gunGrp);flashM=null;beamM=null;
   const tune=FP_MODEL_TUNING[w.key]||FP_MODEL_TUNING.rifle;
@@ -483,6 +533,7 @@ function buildGun(w){
   model.scale.setScalar(tune.scale);model.position.set(...tune.pos);model.rotation.set(...tune.rot);gunGrp.add(model);
   addFirstPersonWeaponDecal(model,w);
   addFirstPersonHands(gunGrp,w.key);
+  setGeneratedFirstPersonWeaponArt(w,model);
   const muzzleZ=model.userData.muzzleZ??-.90;
   flashM=new THREE.Mesh(new THREE.SphereGeometry(w.isRocket?.11:.065,8,6),new THREE.MeshBasicMaterial({color:0xfff1b0,transparent:true,opacity:0,depthWrite:false}));
   flashM.position.set(0,.02,muzzleZ);model.add(flashM);

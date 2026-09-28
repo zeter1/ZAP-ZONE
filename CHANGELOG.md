@@ -2,6 +2,15 @@
 
 ## Unreleased — 2026-09-25
 
+### Generated First-Person Weapon Pack — player-held firearms
+- добавлены 6 оптимизированных прозрачных WebP для оружия, которое видит и держит локальный игрок: pistol, shotgun, rifle, rocket, plasma и sniper;
+- generated FPS-art подключён как DOM presentation поверх canvas только на HTTP/HTTPS; procedural first-person weapon остаётся fallback для file://, 404/decode error и оружия без нового art;
+- при успешной загрузке скрывается только procedural корпус текущего player weapon, а существующие руки, gameplay/ballistics, bots и world pickups остаются на прежней Three.js логике;
+- overlay получает позу из текущего gunGrp: equip/reload/sprint/recoil/cycle визуально двигают новый art; для выстрела добавлен отдельный DOM muzzle flash;
+- generated weapon WebP не передаются в TextureLoader/gameTexture/makeAssetPlane/makeAssetSprite, сохраняя uCoz anti-black-quad invariant;
+- catalog, structural validation, README и asset contract обновлены под новый player-held pipeline.
+
+
 ### Generated Gameplay Feedback Pack 3 — six semantic UI assets
 - добавлены 6 оптимизированных 256×256 WebP с прозрачностью: MULTI KILL, level-up energy core, death skull, armor-break crest, Frontline capture beacon и defender crest;
 - `multikill-tech-02.webp` закрывает прежний SVG-only gap в combat medals; `multikill.svg` остаётся fallback;
