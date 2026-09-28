@@ -414,6 +414,7 @@ if(engine.includes('waterTex')||engine.includes('map:waterTex')||engine.includes
 }
 
 const session=readFileSync('src/game/session.js','utf8');
+const runtime=readFileSync('src/game/runtime.js','utf8');
 for(const token of [
   'let lastT=0;',
   'function tryFullscreen()','function setGameCursorHidden(','function clearPointerLockRequest()',
@@ -432,7 +433,6 @@ if(!(html.indexOf("'src/progression/progression.js'")<html.indexOf("'src/game/se
   fail('session.js must load after progression and before runtime');
 }
 
-const runtime=readFileSync('src/game/runtime.js','utf8');
 if(!runtime.includes('botRoleLabel(e.role)'))fail('ally panel tactical role label missing');
 for(const token of ["botDoctrineLabel(plan.doctrine)","plan.zone?.label","ПРИКАЗ:"]){
   if(!runtime.includes(token))fail('ally map-order HUD missing: '+token);
