@@ -8,8 +8,9 @@
 
 - DOM/HUD/menu/feedback → `assets/ui/**` и `GAME_ASSETS.presentation*`;
 - gameplay SVG fallback → существующий доменный каталог (`assets/medals`, `assets/status`, `assets/fx`, `assets/perks`);
-- weapon identity / bot/world pickup art → `assets/weapons/**` и `WEAPONS[].asset`;
+- weapon identity / bot procedural model art → `assets/weapons/**` и `WEAPONS[].asset`;
 - generated player-held first-person presentation → `assets/ui/weapons/fp/**`, только DOM overlay локального игрока;
+- generated world pickup presentation → `assets/ui/pickups/weapons/**`, DOM projection реальной 3D pickup-позиции с procedural fallback;
 - audio → `assets/audio/**`;
 - постоянная Three.js сцена → по умолчанию procedural geometry/materials, а не generated raster texture.
 
@@ -29,6 +30,8 @@
 Текущий ориентир для компактных эмблем — 256×256 WebP с alpha. PNG допустим, когда lossless edge fidelity действительно нужна. Большой raster >512 px или >250 KiB в обычном HUD требует отдельного обоснования.
 
 Для player-held FPS weapon art действует отдельный envelope: текущий целевой runtime derivative — **960×720 WebP с alpha, до 250 KiB на файл**. Такой размер нужен потому, что оружие занимает значительную часть 16:9 viewport; уменьшать его до icon-resolution нельзя.
+
+Для generated world weapon pickups целевой runtime derivative — **512×384 WebP с alpha, до 120 KiB на файл**. Здесь tight crop допустим: asset показывается как небольшой объект на карте, а не занимает FPS viewport.
 
 Background/photo-like art: WebP/JPEG. Простые векторные fallback: SVG. Не конвертировать SVG в тяжёлый raster без пользы.
 
@@ -75,7 +78,7 @@ Generated PNG/WebP/JPEG presentation assets **не использовать** к
 
 ### Player-held generated weapons
 
-Сгенерированные FPS-рендеры оружия не являются 3D-моделями и не должны подменять bot/world geometry.
+Сгенерированные FPS-рендеры оружия не являются 3D-моделями и не должны подменять bot geometry. World pickup presentation использует отдельный DOM-projection contract ниже.
 
 **Reference lock перед генерацией.** Если пользователь дал пример посадки оружия, он является обязательным composition contract, а не просто style reference. До генерации зафиксировать:
 - камера — first-person, оружие выходит из нижнего правого сектора и направлено влево/вверх в глубину сцены;
@@ -107,7 +110,7 @@ Runtime contract:
 - runtime derivative: прозрачный WebP в `assets/ui/weapons/fp/**`, сейчас 960×720 и <=250 KiB;
 - consumer: `#fp-weapon-art` / `#fp-weapon-art-stage` поверх canvas только для локального игрока;
 - при `baked-hands` успешная загрузка скрывает все children текущего procedural `gunGrp`; fallback/error возвращает весь rig;
-- gameplay state, ballistics, hitboxes, recoil logic, bots и world pickups не меняются;
+- gameplay state, ballistics, hitboxes, recoil logic и bots не меняются; world pickups имеют отдельный DOM presentation, но сохраняют прежнюю pickup economy/3D fallback;
 - recoil/equip/reload/sprint/cycle поза DOM-art синхронизируется с существующим `gunGrp`, а muzzle flash имеет отдельный DOM feedback;
 - для player-only pack `file://` поддерживается: WebP лениво загружается только после `running` по локальному `assets/...` пути; 404/decode error обязаны автоматически вернуть procedural first-person rig;
 - mine и smoke используют отдельные approved baked-hands utility assets; bomb остаётся procedural, пока для него не создан отдельный утверждённый FPS asset;
@@ -130,6 +133,31 @@ Runtime contract:
 - desktop runtime stage ограничивать по абсолютному размеру (сейчас max 980 px), чтобы ultra-wide/high-DPI viewport не превращал оружие в огромный постер;
 - если визуальная посадка не проверена screenshot-ом, итог маркировать `NOT VERIFIED: visual framing`, даже если CI зелёный.
 
+### Generated world weapon pickups
+
+Этот pack предназначен **только для оружия/снаряжения, лежащего на арене и доступного для подбора**. Он не используется ботами и не заменяет first-person art.
+
+Контракт:
+- runtime derivative: 512×384 transparent WebP в `assets/ui/pickups/weapons/**`, <=120 KiB;
+- source art — чистый weapon-only/isometric object без рук, HUD, текста и baked background;
+- consumer — `#world-pickup-art-layer`; `src/entities/pickups.js` проецирует реальную позицию pickup из 3D мира в screen space;
+- procedural `createWorldWeaponModel()`, pedestal/ring/beacon и pickup radius остаются authoritative fallback/gameplay geometry;
+- generated image скрывает только procedural weapon body после успешной загрузки; 404/decode error оставляет старую 3D-модель;
+- world art масштабируется по distance, имеет ограниченный max-size и скрывается вне viewport/дальше установленной дистанции;
+- wall occlusion обязательна: перед показом DOM image выполняется Raycaster check по `wallMeshes`, чтобы оружие не просвечивало сквозь стены;
+- слой world pickup art находится ниже smoke/HUD/first-person UI; smoke и интерфейс должны корректно перекрывать pickup presentation;
+- generated world pickup art запрещено передавать в `gameTexture`, `TextureLoader`, `makeAssetPlane` или `makeAssetSprite`: это сохраняет uCoz anti-black-quad invariant;
+- bomb остаётся procedural, пока для него нет отдельного approved generated pickup asset;
+- реальная pickup economy, respawn, reserve grant, minimap и collision semantics не меняются.
+
+Acceptance gate:
+- asset имеет реальную alpha-прозрачность;
+- силуэт читается при размере ~40–160 px;
+- на реальном screenshot оружие находится над своей pedestal/beacon точкой, не «плывёт» отдельно от pickup;
+- wall occlusion и off-screen hiding работают;
+- при ошибке загрузки видна procedural 3D-модель;
+- CI green недостаточен для визуального acceptance: финальный in-game screenshot остаётся обязательным.
+
 ## 6. Catalog и cache identity
 
 Новый runtime asset должен:
@@ -151,8 +179,9 @@ Runtime contract:
 - реальный HTML/CSS/JS consumer содержит wiring;
 - fallback/degradation path существует;
 - generated presentation path отсутствует в WebGL engine;
-- для player-held weapon art проверены DOM consumer, procedural fallback, pose sync и отсутствие влияния на bots/world pickups;
+- для player-held weapon art проверены DOM consumer, procedural fallback, pose sync и отсутствие влияния на bots;
 - для baked-hands pack проверено, что procedural weapon **и procedural hands** скрываются одновременно, а на fallback возвращаются вместе;
+- для world pickup art проверены DOM projection, distance scaling, wall occlusion, procedural world-model fallback и отсутствие WebGL raster texture quads;
 - FPS framing сопоставлен с утверждённым reference screenshot/montage; CI не заменяет визуальную проверку композиции;
 - `node --check` проходит;
 - `node scripts/stamp-web-build.mjs --check` проходит после stamp;

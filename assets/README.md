@@ -10,7 +10,8 @@
 - `ui/objective` — objective/Frontline presentation;
 - `ui/perks` — generated perk presentation overlays;
 - `ui/icons`, `ui/teams`, `ui/pickups` — HUD/team/pickup presentation;
-- `ui/weapons/fp` — player-only generated first-person weapon presentation; never bot/world geometry;
+- `ui/pickups/weapons` — generated map weapon pickup WebP; DOM-projected from real 3D pickup positions;
+- `ui/weapons/fp` — player-only generated first-person weapon presentation; never bot geometry;
 - `medals`, `status`, `fx`, `perks` — lightweight SVG gameplay/UI fallbacks;
 - `weapons` — weapon identity/model visuals;
 - `audio` — local runtime audio;
@@ -18,7 +19,7 @@
 
 ## Critical invariants
 
-1. Generated raster/WebP UI art is DOM/CSS presentation-only; do not route it into persistent WebGL texture planes/sprites. Generated player-held weapons follow the same rule: DOM overlay for the local player, while procedural Three.js remains the fallback and still drives bots/world pickups. Current FPS weapon pack is **baked-hands**: when its image is active, hide the entire local procedural first-person rig so blocky fallback hands are never double-rendered.
+1. Generated raster/WebP UI art is DOM/CSS presentation-only; do not route it into persistent WebGL texture planes/sprites. Generated player-held weapons and generated world pickups follow the same rule: DOM presentation with procedural Three.js fallback. Bots remain procedural. Current FPS weapon pack is **baked-hands**: when its image is active, hide the entire local procedural first-person rig so blocky fallback hands are never double-rendered.
 2. Critical information keeps SVG/text/DOM fallback; decorative art may degrade to absence only when meaning remains intact.
 3. Runtime generated filenames are semantic ASCII kebab-case, not generator filenames.
 4. Add every runtime asset to `GAME_ASSETS` and `scripts/validate-structure.mjs`.
@@ -32,3 +33,6 @@
 12. Approved V3 baseline: 960×720 alpha, generous transparent headroom/left-space, baked first-person angle, screenshot-tuned per-weapon placement. Reuse this composition contract for new player-held assets.
 13. Recoil is runtime-only and frame-rate independent; muzzle flash is a separate anchored layered effect, never baked into the weapon image and never a short opaque/stubby shape.
 14. Mine and smoke may use baked-hands DOM assets like firearms; bomb remains procedural until it has its own approved asset.
+15. Generated world weapon pickups use 512×384 alpha WebP <=120 KiB in `ui/pickups/weapons`; project the real 3D pickup position into DOM screen space, keep pedestal/beacon/gameplay geometry in Three.js.
+16. World pickup DOM art must use distance scaling + viewport clipping + wall Raycaster occlusion and fall back to `createWorldWeaponModel()` on image error.
+17. Never route generated world pickup WebP through `gameTexture`, `makeAssetPlane` or `makeAssetSprite`; bomb stays procedural until it has its own approved asset.

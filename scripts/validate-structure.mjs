@@ -54,6 +54,12 @@ const generatedFirstPersonWebpAssets=[
   'assets/ui/weapons/fp/player-plasma-fps-01.webp','assets/ui/weapons/fp/player-mine-fps-01.webp',
   'assets/ui/weapons/fp/player-smoke-fps-01.webp','assets/ui/weapons/fp/player-sniper-fps-01.webp'
 ];
+const generatedWorldPickupWebpAssets=[
+  'assets/ui/pickups/weapons/world-pistol-pickup-01.webp','assets/ui/pickups/weapons/world-shotgun-pickup-01.webp',
+  'assets/ui/pickups/weapons/world-rifle-pickup-01.webp','assets/ui/pickups/weapons/world-rocket-pickup-01.webp',
+  'assets/ui/pickups/weapons/world-plasma-pickup-01.webp','assets/ui/pickups/weapons/world-mine-pickup-01.webp',
+  'assets/ui/pickups/weapons/world-smoke-pickup-01.webp','assets/ui/pickups/weapons/world-sniper-pickup-01.webp'
+];
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
@@ -62,7 +68,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedFirstPersonWebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -89,7 +95,7 @@ for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"','id="fp-weapon-art-wrap"','id="fp-weapon-art-stage"','id="fp-weapon-art"','id="fp-weapon-flash"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"','id="world-pickup-art-layer"','id="fp-weapon-art-wrap"','id="fp-weapon-art-stage"','id="fp-weapon-art"','id="fp-weapon-flash"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
@@ -185,6 +191,12 @@ for(const file of generatedFirstPersonWebpAssets){
   const bytes=readFileSync(file);
   if(bytes.length>250*1024)fail('generated first-person weapon runtime derivative exceeds 250 KiB: '+file);
 }
+if(!catalog.includes('generatedWorldWeaponPickups:Object.freeze'))fail('generated world weapon pickup catalog missing');
+for(const file of generatedWorldPickupWebpAssets){
+  if(!catalog.includes(file))fail('generated world pickup weapon missing from catalog: '+file);
+  const bytes=readFileSync(file);
+  if(bytes.length>120*1024)fail('generated world pickup derivative exceeds 120 KiB: '+file);
+}
 if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must not be catalogued');
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
@@ -251,6 +263,12 @@ for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferS
 const pickups=readFileSync('src/entities/pickups.js','utf8');
 for(const token of ['WORLD_WEAPON_COPIES','WEAPONS.flatMap','pistol:2','shotgun:2','rifle:3','rocket:2','plasma:2','sniper:2','function randomWeaponReserve','grantWeapon(idx,reserveGrant)','relocateWeaponPickup(pk)']){
   if(!pickups.includes(token))fail('dynamic weapon pickup economy missing: '+token);
+}
+for(const token of ['WORLD_PICKUP_ART_TUNING','function worldWeaponPickupAsset','function attachWorldWeaponPickupArt','function syncWorldWeaponPickupArt','GAME_ASSETS.generatedWorldWeaponPickups','new THREE.Raycaster()','intersectObjects(wallMeshes,false)','model.visible=false','g.userData.proceduralWeaponModel=model']){
+  if(!pickups.includes(token))fail('generated world weapon pickup presentation missing: '+token);
+}
+if(pickups.includes('makeAssetPlane(GAME_ASSETS.generatedWorldWeaponPickups')||pickups.includes('makeAssetSprite(GAME_ASSETS.generatedWorldWeaponPickups')||pickups.includes('gameTexture(GAME_ASSETS.generatedWorldWeaponPickups')){
+  fail('generated world weapon pickup art must stay DOM-projected, not WebGL textured');
 }
 if(pickups.includes("type:'ammo'"))fail('standalone ammo pickups must not spawn');
 if(pickups.includes("type:'bomb'"))fail('bomb must use the same weapon pickup/reserve economy');
@@ -370,7 +388,7 @@ for(const token of ['FRONTLINE_CFG','function tickFrontlineObjective','function 
 }
 const engine=readFileSync('src/core/engine.js','utf8');
 for(const file of presentationRasterAssets)if(engine.includes(file))fail('generated raster presentation asset must stay out of WebGL engine scene: '+file);
-for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)']){
+for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)',"typeof syncWorldWeaponPickupArt==='function'"]){
   if(!engine.includes(token))fail('polished engine FX/material/cover integration missing: '+token);
 }
 if(engine.includes('makeAssetPlane(')||engine.includes('makeAssetSprite(')||engine.includes('gameTexture(')){
@@ -405,7 +423,7 @@ if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-swi
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
-for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-minimap','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#fp-weapon-art-wrap','#fp-weapon-art-wrap.on.shown','#fp-weapon-art-stage','#fp-weapon-flash','#fp-weapon-flash::before','#fp-weapon-flash::after','--fp-flash-pop','max-width:980px','#hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:24','#hp-wrap{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;z-index:24','#menu .btn','one authoritative gameplay reticle']){
+for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-minimap','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#world-pickup-art-layer','.world-weapon-pickup-art','#fp-weapon-art-wrap','#fp-weapon-art-wrap.on.shown','#fp-weapon-art-stage','#fp-weapon-flash','#fp-weapon-flash::before','#fp-weapon-flash::after','--fp-flash-pop','max-width:980px','#hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:24','#hp-wrap{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;z-index:24','#menu .btn','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }
 for(const token of ['width:254px','width:236px','width:218px;height:218px','width:202px','width:176px;height:176px']){

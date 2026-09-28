@@ -36,7 +36,7 @@
 - Для 8 first-person слотов игрока используется approved V3 generated pack: pistol/shotgun/rifle/rocket/plasma/sniper плюс mine и smoke. Все assets используют baked-hands, прозрачный headroom и HUD-safe placement; DOM presentation работает на HTTP/HTTPS и `file://`, лениво загружается после старта матча, имеет ограниченный frame-rate-independent visual recoil и отдельный layered muzzle flash для огнестрела. Bomb пока остаётся procedural; боты и world pickups не затронуты.
 - Реальные SVG assets оружия в `assets/weapons/`.
 - Новый asset catalog: `src/assets/catalog.js`.
-- Красивые world pickups оружия с 3D-моделью и соответствующей SVG-иконкой; аптечки остаются отдельными pickups.
+- World weapon pickups получили отдельный generated WebP pack: 8 типов (pistol/shotgun/rifle/rocket/plasma/mine/smoke/sniper) проецируются из реальной 3D-позиции в DOM, масштабируются по дистанции и скрываются стенами через Raycaster; pedestal/beacon и procedural 3D-модель остаются gameplay/fallback, bomb пока procedural. Аптечки остаются отдельными pickups.
 - Улучшенная арена:
   - supply crates с декалями;
   - hazard-панели на барьерах;

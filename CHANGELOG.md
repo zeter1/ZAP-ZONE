@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-28
 
+### Generated World Weapon Pickup Pack — arena pickup presentation
+- добавлены 8 компактных 512×384 alpha WebP для оружия/снаряжения, лежащего на карте: pistol, shotgun, rifle, rocket, plasma, mine, smoke и sniper; bomb пока остаётся procedural;
+- world pickup art рендерится через отдельный DOM layer, привязанный к настоящей 3D-позиции pickup; generated raster не передаётся в TextureLoader/plane/sprite и сохраняет uCoz anti-black-quad invariant;
+- размер изображения меняется по дистанции, off-screen/far pickups скрываются, а wall Raycaster occlusion не даёт generated art просвечивать сквозь стены;
+- после успешной загрузки скрывается только procedural weapon body; pedestal/ring/beacon, respawn, pickup radius, reserve grant и minimap semantics остаются прежними; при 404/decode error 3D-модель автоматически остаётся fallback;
+- catalog, asset contract, README и structural validation обновлены под отдельный world-pickup DOM pipeline.
+
 ### Generated First-Person Weapon Pack — player-held firearms
 - approved V3 framing зафиксирован в asset contract как проверенный success baseline: 960×720 alpha, transparent headroom/left-space, baked angle, HUD-safe composition и screenshot-driven tuning;
 - добавлены baked-hands first-person assets для mine и smoke; они используют тот же DOM/fallback pipeline, bomb пока остаётся procedural;

@@ -88,7 +88,11 @@ function restoreVisualState(){
   renderer.setClearColor(SKY_COLOR,1);
   renderer.toneMappingExposure=.78;
 }
-function renderFrame(){restoreVisualState();renderer.render(scene,camera);}
+function renderFrame(){
+  restoreVisualState();
+  if(typeof syncWorldWeaponPickupArt==='function')syncWorldWeaponPickupArt();
+  renderer.render(scene,camera);
+}
 window.addEventListener('resize',()=>{
   W=innerWidth;H=innerHeight;
   renderer.setSize(W,H,false);

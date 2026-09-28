@@ -63,6 +63,67 @@ function mkHpMesh(){
   return g;
 }
 
+const WORLD_PICKUP_ART_TUNING=Object.freeze({
+  pistol:{maxPx:118,minPx:30,y:.18},shotgun:{maxPx:148,minPx:34,y:.20},rifle:{maxPx:154,minPx:34,y:.20},
+  rocket:{maxPx:158,minPx:36,y:.20},plasma:{maxPx:150,minPx:34,y:.20},mine:{maxPx:100,minPx:28,y:.15},
+  smoke:{maxPx:84,minPx:26,y:.18},sniper:{maxPx:166,minPx:36,y:.20}
+});
+const _worldPickupArtPos=new THREE.Vector3(),_worldPickupArtDir=new THREE.Vector3(),_worldPickupArtScreen=new THREE.Vector3();
+const _worldPickupArtRaycaster=new THREE.Raycaster();
+let worldPickupArtLastSync=0;
+function worldWeaponPickupAsset(key){return GAME_ASSETS.generatedWorldWeaponPickups?.[key]||'';}
+function hideWorldPickupArt(entry){
+  if(entry?.img)entry.img.style.visibility='hidden';
+}
+function attachWorldWeaponPickupArt(group,key,model){
+  const layer=G('world-pickup-art-layer'),asset=worldWeaponPickupAsset(key);
+  if(!layer||!asset)return null;
+  const img=document.createElement('img');
+  img.className='world-weapon-pickup-art';img.alt='';img.decoding='async';img.draggable=false;
+  img.dataset.weaponKey=key;img.style.visibility='hidden';img.src=asset;
+  const entry={img,model,key,ready:false,failed:false};
+  group.userData.worldPickupArt=entry;
+  img.onload=()=>{entry.ready=true;entry.failed=false;model.visible=false;};
+  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
+  layer.append(img);return entry;
+}
+function syncWorldWeaponPickupArt(){
+  const layer=G('world-pickup-art-layer');
+  if(!layer)return;
+  if(webglLost){layer.style.visibility='hidden';return;}
+  layer.style.visibility='visible';
+  const now=performance.now(),interval=MOBILE_LOW?66:33;
+  if(now-worldPickupArtLastSync<interval)return;
+  worldPickupArtLastSync=now;
+  for(const pk of pickups){
+    if(pk.type!=='weapon')continue;
+    const entry=pk.m.userData.worldPickupArt;
+    if(!entry?.ready||!pk.m.visible){hideWorldPickupArt(entry);continue;}
+    const tune=WORLD_PICKUP_ART_TUNING[pk.weaponKey];
+    if(!tune){hideWorldPickupArt(entry);continue;}
+    _worldPickupArtPos.set(pk.m.position.x,pk.m.position.y+tune.y,pk.m.position.z);
+    _worldPickupArtDir.subVectors(_worldPickupArtPos,camera.position);
+    const dist=_worldPickupArtDir.length();
+    if(dist<.7||dist>48){hideWorldPickupArt(entry);continue;}
+    _worldPickupArtRaycaster.set(camera.position,_worldPickupArtDir.normalize());
+    _worldPickupArtRaycaster.near=.05;_worldPickupArtRaycaster.far=Math.max(.05,dist-.42);
+    if(_worldPickupArtRaycaster.intersectObjects(wallMeshes,false).length){hideWorldPickupArt(entry);continue;}
+    _worldPickupArtScreen.copy(_worldPickupArtPos).project(camera);
+    if(_worldPickupArtScreen.z<-1||_worldPickupArtScreen.z>1||Math.abs(_worldPickupArtScreen.x)>1.08||Math.abs(_worldPickupArtScreen.y)>1.08){
+      hideWorldPickupArt(entry);continue;
+    }
+    const cap=tune.maxPx*(MOBILE_LOW?.78:1);
+    const width=Math.max(tune.minPx,Math.min(cap,cap*8.5/Math.max(5.5,dist)));
+    const x=(_worldPickupArtScreen.x*.5+.5)*W,y=(-_worldPickupArtScreen.y*.5+.5)*H;
+    const tilt=Math.sin(pk.bob*.58)*1.2;
+    entry.img.style.width=width.toFixed(1)+'px';
+    entry.img.style.left=x.toFixed(1)+'px';entry.img.style.top=y.toFixed(1)+'px';
+    entry.img.style.opacity=String(Math.max(.68,Math.min(.98,1-(dist-8)/72)));
+    entry.img.style.transform='translate3d(-50%,-50%,0) rotate('+tilt.toFixed(2)+'deg)';
+    entry.img.style.visibility='visible';
+  }
+}
+
 const WEAPON_SPAWN_PTS=AMO_PTS.slice();
 const WORLD_WEAPON_COPIES=Object.freeze({pistol:2,shotgun:2,rifle:3,rocket:2,plasma:2,mine:1,bomb:1,smoke:1,sniper:2});
 const WORLD_WEAPON_KEYS=WEAPONS.flatMap(w=>Array(WORLD_WEAPON_COPIES[w.key]||1).fill(w.key));
@@ -81,7 +142,9 @@ function mkWeaponPickupMesh(key){
   );
   base.position.y=-.31;g.add(base);
   addPickupBeacon(g,haloColor,.90,1.00);
-  g.userData.weaponKey=w.key;return g;
+  g.userData.weaponKey=w.key;g.userData.proceduralWeaponModel=model;
+  attachWorldWeaponPickupArt(g,w.key,model);
+  return g;
 }
 function randomWeaponReserve(w){
   const min=Math.max(50,Math.floor(w.pickupAmmoMin??50));

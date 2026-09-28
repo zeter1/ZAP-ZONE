@@ -180,8 +180,8 @@ const GAME_ASSETS=versionAssetTree({
     smoke:'assets/weapons/fp/smoke-tech.svg',
     sniper:'assets/weapons/fp/sniper-tech.svg'
   }),
-  // Generated FPS renders are player-only DOM presentation. Bots/world pickups
-  // keep the procedural Three.js weapon models and gameplay geometry.
+  // Generated FPS renders are player-only DOM presentation. Bots keep procedural
+  // Three.js weapon models; world pickups use a separate DOM-projection layer.
   generatedFirstPersonWeapons:Object.freeze({
     pistol:'assets/ui/weapons/fp/player-pistol-fps-01.webp',
     shotgun:'assets/ui/weapons/fp/player-shotgun-fps-01.webp',
@@ -191,6 +191,18 @@ const GAME_ASSETS=versionAssetTree({
     mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
     smoke:'assets/ui/weapons/fp/player-smoke-fps-01.webp',
     sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp'
+  }),
+  // Generated map-pickup art stays DOM-only: pickups.js projects the real 3D
+  // pickup position into screen space and keeps the procedural world model as fallback.
+  generatedWorldWeaponPickups:Object.freeze({
+    pistol:'assets/ui/pickups/weapons/world-pistol-pickup-01.webp',
+    shotgun:'assets/ui/pickups/weapons/world-shotgun-pickup-01.webp',
+    rifle:'assets/ui/pickups/weapons/world-rifle-pickup-01.webp',
+    rocket:'assets/ui/pickups/weapons/world-rocket-pickup-01.webp',
+    plasma:'assets/ui/pickups/weapons/world-plasma-pickup-01.webp',
+    mine:'assets/ui/pickups/weapons/world-mine-pickup-01.webp',
+    smoke:'assets/ui/pickups/weapons/world-smoke-pickup-01.webp',
+    sniper:'assets/ui/pickups/weapons/world-sniper-pickup-01.webp'
   }),
   firstPersonSkins:Object.freeze({
     pistol:'assets/weapons/fp/pistol-skin.svg',
@@ -251,6 +263,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
+  ...Object.values(GAME_ASSETS.generatedWorldWeaponPickups),
   ...Object.values(GAME_ASSETS.firstPersonSkins),
   ...Object.values(GAME_ASSETS.ui),
   ...Object.values(GAME_ASSETS.presentation)
