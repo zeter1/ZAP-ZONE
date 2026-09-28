@@ -12,7 +12,8 @@
 - frame loop / boot → `src/game/runtime.js`;
 - player/save/weapon ownership → `src/player/state.js`;
 - combat/input/projectiles → `src/combat/combat.js`;
-- bots/AI → `src/entities/bots.js`;
+- squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
+- individual bot FSM/perception/locomotion/combat execution + Frontline objective state → `src/entities/bots.js`;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
