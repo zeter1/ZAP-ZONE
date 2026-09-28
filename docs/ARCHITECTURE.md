@@ -163,9 +163,9 @@ SR-9 не использует gameplay-reticle: runtime скрывает `#xhai
 
 ## Tactical AI 2.0 v22.4
 
-**Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального perception/FSM, cover/flank execution, suppression effects, locomotion и стрельбы. Это граница policy → execution: командный слой выбирает общий план, а каждый бот исполняет его через собственный state machine.
+**Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального perception/FSM, cover/flank/combat execution и стрельбы, а locomotion mechanics принадлежат `src/ai/bot-navigation.js`. Это граница policy → execution: командный слой выбирает общий plan, bot FSM формирует intent, navigation owner безопасно исполняет movement intent.
 
-Classic-script порядок `combat.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js` является частью runtime-контракта. `BOT_MAP_ZONES` должен существовать до инициализации Frontline state, а bot-presentation — до создания `Enemy`; функции tactics/Frontline/presentation могут обращаться к invocation-time bot/runtime globals только после завершения последовательного bootstrap.
+Classic-script порядок `combat.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js` является частью runtime-контракта. Navigation должен существовать до bot consumer, `BOT_MAP_ZONES` — до инициализации Frontline state, а bot-presentation — до создания `Enemy`; функции этих owners могут обращаться к invocation-time bot/runtime globals только после завершения последовательного bootstrap.
 
 Поверх индивидуального state machine введён командный слой `BOT_TEAM_TACTICS`. Он не заменяет perception/target selection, а агрегирует уже полученную информацию: текущие цели ботов, LOS, память и `TEAM_INTEL`. План пересчитывается с небольшим cache-window и выбирает общий focus, suppressor, число доступных flankers и наиболее раненого союзника.
 
@@ -200,7 +200,7 @@ HUD союзников показывает текущую doctrine, выбра�
 
 ## Combat AI 2.2 / Adaptive Commander + locomotion stability v22.6
 
-`PLAYER_TACTICAL_PROFILE`, doctrine/recovery decisions, assault-wave planning и coordinated smoke/frag policy принадлежат `src/ai/tactics.js`. `BOT_MOVE_CFG`, velocity/substep guards и фактическое выполнение utility/combat остаются в `src/entities/bots.js`. При pure refactor эти два слоя нельзя одновременно «улучшать»: policy extraction обязан сохранять прежние probabilities, timers и balance constants буквально.
+`PLAYER_TACTICAL_PROFILE`, doctrine/recovery decisions, assault-wave planning и coordinated smoke/frag policy принадлежат `src/ai/tactics.js`. `BOT_MOVE_CFG` и velocity/substep guards принадлежат `src/ai/bot-navigation.js`, а utility/combat execution остаётся в `src/entities/bots.js`. При pure refactor эти слои нельзя одновременно «улучшать»: ownership extraction обязан сохранять прежние probabilities, timers и balance constants буквально.
 
 Adaptive Commander работает поверх Map Tactics, не заменяя perception и локальный squad-plan. `PLAYER_TACTICAL_PROFILE` периодически семплирует положение игрока, сглаженную скорость перемещения и время недавнего огня. Длительное нахождение в радиусе небольшой anchor-зоны вместе с недавней стрельбой повышает `campScore`; глубокое продвижение по оси союзной→вражеской стороны классифицируется как rush. Это поведенческий сигнал для выбора командного приказа, а не скрытый debuff игрока.
 
@@ -232,7 +232,7 @@ Runtime всё ещё использует общий `dt <= 0.033`, поэто�
 
 Граница намеренно не совпадает с «всё, где упоминается Frontline». `src/ai/tactics.js` остаётся owner-ом `BOT_MAP_ZONES` и doctrine/map policy; `src/entities/bots.js` остаётся owner-ом индивидуального bot FSM и только читает active objective/presence для tactical execution; `src/ui/minimap.js` только визуализирует objective/zone ownership; `src/player/state.js` вызывает публичный save/restore contract; `src/game/runtime.js` только вызывает tick и boot HUD/marker.
 
-Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → tactics → frontline → bot-presentation → bots`; presentation не зависит от Frontline, а является вторым независимым prerequisite `bots.js`. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
+Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-navigation → tactics → frontline → bot-presentation → bots`; navigation, Frontline и presentation являются отдельными prerequisites `bots.js`, при этом presentation не зависит от Frontline. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
 
 Pure extraction сохраняет буквально `rotateSeconds:44`, `captureSeconds:8.5`, `capturePoints:3`, clamp/restore semantics, capture reward `+150 score / +35 XP`, UI copy и side-effect order. Эти значения нельзя «заодно улучшать» в ownership-refactor; balance/UX change требует отдельной задачи и отдельного evidence.
 
