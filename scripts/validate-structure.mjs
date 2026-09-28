@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-navigation.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-navigation.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -97,7 +97,7 @@ for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:
 }
 
 
-for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs','scripts/bot-perception-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
@@ -299,6 +299,7 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 }
 
 
+const perception=readFileSync('src/ai/bot-perception.js','utf8');
 const navigation=readFileSync('src/ai/bot-navigation.js','utf8');
 const tactics=readFileSync('src/ai/tactics.js','utf8');
 const frontline=readFileSync('src/game/frontline.js','utf8');
@@ -365,8 +366,8 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 bot execution missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
-  fail('classic-script order must load combat -> bot navigation -> tactics -> frontline -> bots');
+if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load combat -> bot perception -> bot navigation -> tactics -> frontline -> bots');
 }
 if(!(html.indexOf("'src/entities/bot-presentation.js'")<html.indexOf("'src/entities/bots.js'"))){
   fail('classic-script order must load bot presentation owner before bots');
@@ -414,7 +415,33 @@ for(const token of [
 ]){
   if(bots.includes(token))fail('bot navigation owner leaked back into bots.js: '+token);
 }
-if(!bots.includes('function nearestHostileGrenade(')||navigation.includes('function nearestHostileGrenade('))fail('grenade threat perception must remain in bots.js');
+for(const token of [
+  'function nearestHostileGrenade(','const BOT_NOISE_EVENTS=[];','function emitBotCombatNoise(',
+  'function updateBotHearingPerception(','function updateBotTargetPerception(','function botTargetPosition(',
+  'function updateBotMineThreat(','function updateBotGrenadeThreat(','function updateBotLineOfSight(',
+  'function findBotIncomingRocketThreat(','function updateBotRocketThreat('
+]){
+  if(!perception.includes(token))fail('bot perception owner contract missing: '+token);
+}
+for(const token of [
+  'function nearestHostileGrenade(','const BOT_NOISE_EVENTS=[];','function botWeaponNoiseRadius(',
+  'function botSourceTeam(','function syncPlayerCombatNoise(','canSeePoint(pos','hearCombatNoise(dt)',
+  'findIncomingRocketThreat()','findTarget()','getTargetPos()'
+]){
+  if(bots.includes(token))fail('bot perception owner leaked back into bots.js: '+token);
+}
+for(const token of [
+  'syncPlayerCombatNoise();','updateBotHearingPerception(this,dt)','updateBotTargetPerception(this)',
+  'botTargetPosition(this)','updateBotMineThreat(this,dt)','updateBotGrenadeThreat(this,dt)',
+  'updateBotLineOfSight(this,targetPos,dt)','updateBotRocketThreat(this,dt)'
+]){
+  if(!bots.includes(token))fail('bot perception consumer contract missing: '+token);
+}
+for(const token of ['this.aiState=','this.doShoot(','moveBotWithSubsteps(','refreshBotTeamTactics(']){
+  if(perception.includes(token))fail('FSM/combat/navigation/tactics implementation leaked into bot perception owner: '+token);
+}
+if(navigation.includes('function nearestHostileGrenade('))fail('grenade threat perception must not leak into bot navigation owner');
+if(!tactics.includes('BOT_NOISE_EVENTS'))fail('team tactics must consume the canonical perception noise bus');
 for(const token of [
   "this.commandDoctrine==='breach'",'BOT_MOVE_CFG','clampBotVelocity(','moveBotWithSubsteps(',
   'steerBotAroundWalls(','steerBotAroundSmoke(','this.unstuckT=.48','Math.min(.28,lvl*.012)'
@@ -448,9 +475,10 @@ for(const token of ["this.hEl=document.createElement('div')","this.hFill=documen
 for(const token of ['suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor']){
   if(!tactics.includes(token))fail('Combat Presence 1.4 suppressor coordination owner missing: '+token);
 }
-for(const token of ['function nearestHostileGrenade','cachedGrenadeThreat','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
+for(const token of ['cachedGrenadeThreat','updateBotGrenadeThreat(this,dt)','suppressMemory=this.tacticalMode===\'suppress\'','this.doShoot(fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
   if(!bots.includes(token))fail('Combat Presence 1.4 bot awareness integration missing: '+token);
 }
+if(!perception.includes('function nearestHostileGrenade'))fail('Combat Presence 1.4 grenade awareness owner missing');
 if(!bots.includes('if(wp.hitscan){')||!bots.includes('spawnInstantSniperTrace(from,tracerDir'))fail('bot sniper must remain hitscan while normal guns use travelling bullets');
 if(bots.includes("Math.random()<(suppressing?.56:.34)"))fail('legacy random player near-miss whiz returned');
 for(const token of [
