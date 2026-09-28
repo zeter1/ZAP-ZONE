@@ -8,7 +8,8 @@
 - при успешной загрузке скрывается только procedural корпус текущего player weapon, а существующие руки, gameplay/ballistics, bots и world pickups остаются на прежней Three.js логике;
 - overlay получает позу из текущего gunGrp: equip/reload/sprint/recoil/cycle визуально двигают новый art; для выстрела добавлен отдельный DOM muzzle flash;
 - generated weapon WebP не передаются в TextureLoader/gameTexture/makeAssetPlane/makeAssetSprite, сохраняя uCoz anti-black-quad invariant;
-- catalog, structural validation, README и asset contract обновлены под новый player-held pipeline.
+- catalog, structural validation, README и asset contract обновлены под новый player-held pipeline;
+- browser/preload safety: generated player weapon остаётся `visibility:hidden` до фактического старта матча и показывается только при `running`, чтобы тяжёлый transparent layer не участвовал в menu/preload compositing.
 
 
 ### Generated Gameplay Feedback Pack 3 — six semantic UI assets

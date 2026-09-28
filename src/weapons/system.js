@@ -487,7 +487,7 @@ const FP_GENERATED_ART_TUNING=Object.freeze({
 let fpGeneratedWeaponModel=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoadId=0;
 function hideGeneratedFirstPersonWeaponArt(){
   const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash');
-  if(wrap){wrap.classList.remove('on');wrap.classList.remove('scope-hidden');}
+  if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');}
   if(flash)flash.style.opacity='0';
   if(fpGeneratedWeaponModel)fpGeneratedWeaponModel.visible=true;
   fpGeneratedWeaponModel=null;fpGeneratedWeaponActive=false;
@@ -516,7 +516,10 @@ function setGeneratedFirstPersonWeaponArt(w,model){
 function syncGeneratedFirstPersonWeaponArt(visible=true){
   const wrap=G('fp-weapon-art-wrap'),stage=G('fp-weapon-art-stage'),flash=G('fp-weapon-flash');
   if(!wrap||!stage||!fpGeneratedWeaponActive){if(flash)flash.style.opacity='0';return;}
+  const show=Boolean(visible&&running);
+  wrap.classList.toggle('shown',show);
   wrap.classList.toggle('scope-hidden',!visible);
+  if(!show){if(flash)flash.style.opacity='0';return;}
   const dx=(gunGrp.position.x-gunBasePos.x)*310;
   const dy=-(gunGrp.position.y-gunBasePos.y)*270;
   const rot=gunGrp.rotation.z*40-gunGrp.rotation.y*9+gunGrp.rotation.x*4;
