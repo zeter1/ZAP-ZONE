@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>⚡ ZAP ZONE v23.9</title><link rel="stylesheet" href="src/styles/game.css">
+<meta name="application-version" content="23.9">
+<meta name="application-build" content="96e60b2cb0002b5c">
+<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=96e60b2cb0002b5c">
 
 </head>
 <body>
@@ -177,17 +179,68 @@
 <div id="death-msg"><img src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="src/assets/catalog.js"></script>
-<script src="src/core/engine.js"></script>
-<script src="src/weapons/system.js"></script>
-<script src="src/player/state.js"></script>
-<script src="src/settings/settings.js"></script>
-<script src="src/combat/combat.js"></script>
-<script src="src/entities/bots.js"></script>
-<script src="src/entities/pickups.js"></script>
-<script src="src/progression/progression.js"></script>
-<script src="src/ui/minimap.js"></script>
-<script src="src/game/runtime.js"></script>
+<script id="cache-bootstrap">
+(()=>{
+  const BUILD_ID_PATTERN=/^[0-9a-f]{16}$/;
+  const currentBuild=document.querySelector('meta[name="application-build"]')?.content?.trim()||'';
+  const localScripts=[
+    'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
+    'src/settings/settings.js','src/combat/combat.js','src/entities/bots.js','src/entities/pickups.js',
+    'src/progression/progression.js','src/ui/minimap.js','src/game/runtime.js'
+  ];
+  const versioned=(path,build,useCacheKey)=>useCacheKey&&BUILD_ID_PATTERN.test(build)?path+(path.includes('?')?'&':'?')+'v='+encodeURIComponent(build):path;
+  const loadScript=src=>new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src=src;
+    script.onload=resolve;
+    script.onerror=()=>reject(new Error('Не удалось загрузить '+src));
+    document.body.append(script);
+  });
+  const loadGame=async(build,useCacheKey)=>{
+    window.ZAP_BUILD_ID=BUILD_ID_PATTERN.test(build)?build:'';
+    for(const path of localScripts)await loadScript(versioned(path,build,useCacheKey));
+  };
+  const safeLoad=(build,useCacheKey)=>loadGame(build,useCacheKey).catch(err=>console.error('ZAP ZONE bootstrap:',err));
+
+  if(location.protocol==='file:'){safeLoad(currentBuild,false);return;}
+
+  const manifestUrl=new URL('./version.json',location.href);
+  manifestUrl.searchParams.set('_',String(Date.now()));
+  const controller=new AbortController();
+  const timeoutId=setTimeout(()=>controller.abort(),3000);
+  fetch(manifestUrl,{cache:'no-store',signal:controller.signal})
+    .then(response=>{
+      if(!response.ok)throw new Error('Version manifest HTTP '+response.status);
+      return response.json();
+    })
+    .then(manifest=>{
+      const remoteBuild=typeof manifest?.build==='string'?manifest.build.trim():'';
+      if(!BUILD_ID_PATTERN.test(remoteBuild)){safeLoad(currentBuild,true);return;}
+      const pageUrl=new URL(location.href);
+      const requestedBuild=pageUrl.searchParams.get('zap_build');
+      if(remoteBuild!==currentBuild){
+        if(requestedBuild===remoteBuild){
+          console.warn('ZAP ZONE: hosting returned stale index.html for build marker',remoteBuild);
+          safeLoad(currentBuild,true);
+          return;
+        }
+        pageUrl.searchParams.set('zap_build',remoteBuild);
+        location.replace(pageUrl.href);
+        return;
+      }
+      if(requestedBuild===remoteBuild){
+        pageUrl.searchParams.delete('zap_build');
+        history.replaceState(history.state,'',pageUrl.href);
+      }
+      safeLoad(remoteBuild,true);
+    })
+    .catch(err=>{
+      console.warn('ZAP ZONE: version check unavailable, starting current build',err);
+      safeLoad(currentBuild,true);
+    })
+    .finally(()=>clearTimeout(timeoutId));
+})();
+</script>
 
 </body>
 </html>

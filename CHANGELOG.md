@@ -2,6 +2,16 @@
 
 ## Unreleased — 2026-09-25
 
+### Static deploy cache-busting — обновление без Ctrl+F5
+- перенесён проверенный pattern из ZeTer Photo Editor: `version.json` + build identity + guarded bootstrap;
+- HTTP/HTTPS startup запрашивает manifest через `cache: 'no-store'` и timestamp query, сравнивает remote build с build текущего HTML и при необходимости один раз открывает URL с `?zap_build=<id>`;
+- локальные JS загружаются последовательно с `?v=<build-id>`, stylesheet и CSS assets получают тот же cache key, catalog/DOM images versioned на HTTP(S);
+- прямой `file://` запуск не зависит от manifest/fetch и сохраняет отдельный local path;
+- добавлен `scripts/stamp-web-build.mjs`: build ID вычисляется по runtime bytes (`src` + `assets` + normalized index/CSS), обновляет `index.html`, CSS и `version.json`;
+- CI запускает stamp в `--check` режиме и не пропускает runtime change со stale cache metadata;
+- для ручного uCoz deploy `version.json` документирован как последний публикуемый файл, чтобы manifest не объявил сборку до завершения загрузки assets/code.
+
+
 ### Generated Visual Pack — hosting-safe UI integration
 - добавлен оптимизированный набор из 8 сгенерированных ассетов: отдельные фоны меню и загрузки, логотип ZAP ZONE, HUD-эмблемы HP/armor/XP, hazard-панель и terminal-screen;
 - исходные крупные изображения подготовлены для браузера: фоны/панели сохранены как оптимизированные JPEG, прозрачные эмблемы — как уменьшенные PNG; общий вес набора около 1.84 MiB;

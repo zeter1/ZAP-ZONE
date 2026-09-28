@@ -3,17 +3,41 @@
 function G(id){return document.getElementById(id);}
 const GAME_LOCAL_FILE_MODE=location.protocol==='file:';
 const GAME_HOSTED_HTTP_MODE=/^https?:$/.test(location.protocol);
+const GAME_BUILD_ID=typeof window.ZAP_BUILD_ID==='string'?window.ZAP_BUILD_ID:'';
+const GAME_BUILD_ID_PATTERN=/^[0-9a-f]{16}$/;
+
+function gameAssetUrl(path){
+  if(!GAME_HOSTED_HTTP_MODE||!GAME_BUILD_ID_PATTERN.test(GAME_BUILD_ID)||typeof path!=='string')return path;
+  const clean=path.replace(/([?&])v=[0-9a-f]{16}(?=(&|$))/g,'$1').replace(/[?&]$/,'');
+  return clean+(clean.includes('?')?'&':'?')+'v='+encodeURIComponent(GAME_BUILD_ID);
+}
+function versionAssetTree(value){
+  if(typeof value==='string')return gameAssetUrl(value);
+  if(!value||typeof value!=='object')return value;
+  const out={};
+  for(const [key,child] of Object.entries(value))out[key]=versionAssetTree(child);
+  return Object.freeze(out);
+}
+function versionDomAssetUrls(){
+  if(!GAME_HOSTED_HTTP_MODE||!GAME_BUILD_ID_PATTERN.test(GAME_BUILD_ID))return;
+  document.querySelectorAll('img[src^="assets/"]').forEach(img=>{
+    img.src=gameAssetUrl(img.getAttribute('src')||'');
+    if(img.dataset.generatedSrc)img.dataset.generatedSrc=gameAssetUrl(img.dataset.generatedSrc);
+    if(img.dataset.fallbackSrc)img.dataset.fallbackSrc=gameAssetUrl(img.dataset.fallbackSrc);
+  });
+}
 
 // Generated raster presentation art is enabled only for normal HTTP(S) hosting.
 // file:// keeps the lightweight SVG/gradient fallbacks so first interaction stays responsive.
 if(GAME_HOSTED_HTTP_MODE){
   document.documentElement.classList.add('generated-art-enabled');
+  versionDomAssetUrls();
   const generatedLogo=G('brand-logo');
   if(generatedLogo?.dataset.generatedSrc)generatedLogo.src=generatedLogo.dataset.generatedSrc;
 }
 
 // Centralized visual asset catalog. Paths are root-relative to the game URL.
-const GAME_ASSETS=Object.freeze({
+const GAME_ASSETS=versionAssetTree({
   pickups:Object.freeze({
     ammo:'assets/pickups/ammo.svg',
     medkit:'assets/pickups/medkit.svg'

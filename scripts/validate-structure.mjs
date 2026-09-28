@@ -44,16 +44,27 @@ const presentationRasterAssets=[
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
+const versionManifest=JSON.parse(readFileSync('version.json','utf8'));
+const htmlBuild=html.match(/<meta name="application-build" content="([0-9a-f]{16})">/)?.[1]||'';
+if(!html.includes('<meta name="application-version" content="23.9">'))fail('application-version marker missing');
+if(!htmlBuild)fail('application-build marker missing or invalid');
+if(versionManifest.version!=='23.9'||versionManifest.build!==htmlBuild)fail('version.json does not match index build metadata');
+for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:'no-store'","manifestUrl.searchParams.set('_',String(Date.now()))","pageUrl.searchParams.set('zap_build',remoteBuild)",'location.replace(pageUrl.href)','window.ZAP_BUILD_ID']){
+  if(!html.includes(token))fail('cache/update bootstrap missing: '+token);
+}
 
-for(const file of ['src/styles/game.css',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
-for(const file of requiredScripts)if(!html.includes('src="'+file+'"'))fail('index does not load '+file);
-if(!html.includes('href="src/styles/game.css"'))fail('index does not load game.css');
+
+for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
+if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
+if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
 for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
-for(const match of html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)){
-  if(match[1].trim().length>120)fail('large inline game script returned');
+for(const match of html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi)){
+  if(/id=["']cache-bootstrap["']/.test(match[1]))continue;
+  if(match[2].trim().length>120)fail('large inline game script returned');
 }
 for(const file of requiredAssets){
   const svg=readFileSync(file,'utf8');
@@ -79,7 +90,7 @@ for(const file of audioAssets){
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)'))fail('per-id perk asset resolver missing');
-for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
+for(const token of ['function G(id)','GAME_LOCAL_FILE_MODE','GAME_HOSTED_HTTP_MODE','GAME_BUILD_ID','function gameAssetUrl','function versionAssetTree','function versionDomAssetUrls','generated-art-enabled','dataset.generatedSrc','function makeLocalAssetFallbackTexture','if(GAME_LOCAL_FILE_MODE)']){
   if(!catalog.includes(token))fail('early DOM/local-file asset fallback missing: '+token);
 }
 if(!catalog.includes('firstPersonWeapons:Object.freeze'))fail('first-person weapon asset catalog missing');

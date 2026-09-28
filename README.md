@@ -131,6 +131,19 @@ index.html
 - `assets/weapons/fp/*-skin.svg` — дополнительные weapon-specific skin/armor панели для всех 9 типов оружия;
 - `assets/characters/*-armor-mark.svg` — новые командные маркировки брони ботов; динамический gameplay-reticle обычного оружия не зависит от отдельного SVG.
 
+## Обновление на uCoz / static hosting без Ctrl+F5
+
+Для HTTP/HTTPS-хостинга игра использует build manifest и cache-busting:
+
+- `version.json` хранит независимый build ID;
+- `index.html` при старте запрашивает manifest с `cache: 'no-store'` и уникальным query;
+- при обнаружении нового build выполняется один guarded reload с `?zap_build=<id>`;
+- CSS и локальные JS получают `?v=<build-id>`, catalog/DOM assets получают тот же build key;
+- `file://` не делает network version check и запускает local scripts без cache key;
+- `node scripts/stamp-web-build.mjs` автоматически пересчитывает build ID по runtime-файлам, а CI запрещает commit со stale `index.html` / CSS / `version.json`.
+
+Для ручной публикации через файловый менеджер сначала загрузите новые runtime-файлы и `index.html`, а `version.json` — **последним**. Manifest означает, что новая сборка уже полностью доступна. После первого внедрения bootstrap следующие релизы не должны требовать Ctrl+F5; у пользователя со старым `index.html`, закэшированным ещё до появления bootstrap, один последний hard refresh теоретически возможен.
+
 ## Проверка
 
 GitHub Actions **Validate** имеет только `contents: read` и выполняет:
