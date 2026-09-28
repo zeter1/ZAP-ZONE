@@ -2,7 +2,7 @@
 
 [![Validate](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml/badge.svg)](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml)
 
-**ZAP ZONE** — браузерный 3D FPS на **Three.js/WebGL** с командным боем **5×5**: игрок и 4 союзных AI-бота против команды из 5 вражеских ботов.
+**ZAP ZONE** — динамичный браузерный 3D FPS на **Three.js/WebGL** с командным боем **5×5**: игрок и 4 союзных AI-бота против пятёрки противников. Команды давят сектора, заходят во фланг, подавляют огнём и перестраивают план под стиль игрока — арена ощущается как живой тактический бой, а не статичный тир.
 
 ## История изменений
 
@@ -96,7 +96,9 @@ index.html
 │   ├── player/state.js
 │   ├── settings/settings.js
 │   ├── combat/combat.js
-│   ├── entities/{bots,pickups}.js
+│   ├── ai/{bot-navigation,tactics}.js
+│   ├── game/frontline.js
+│   ├── entities/{bot-presentation,bots,pickups}.js
 │   ├── progression/progression.js
 │   ├── game/session.js
 │   ├── ui/minimap.js
@@ -116,7 +118,7 @@ index.html
 
 ## Для ChatGPT / Codex / AI-разработки
 
-Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**, asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
+Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для locomotion сначала открывайте **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
 
 Правило проекта: refactor переносит **ownership + invariants + verification oracle**, а не просто строки кода. После source/runtime-изменения обязательны build-stamp check, structural validation и browser smoke; полезные проверки не отключаются ради зелёного CI.
 

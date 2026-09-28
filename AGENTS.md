@@ -12,10 +12,11 @@
 - frame loop / boot → `src/game/runtime.js`;
 - player/save/weapon ownership → `src/player/state.js`;
 - combat/input/projectiles → `src/combat/combat.js`;
+- bot navigation / wall+smoke steering / speed caps / collision substeps → `src/ai/bot-navigation.js` + `docs/specs/BOT_NAVIGATION.md`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
-- individual bot FSM/perception/locomotion/combat execution → `src/entities/bots.js`;
+- individual bot perception/FSM/combat execution → `src/entities/bots.js`; navigation mechanics live in `src/ai/bot-navigation.js`;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;

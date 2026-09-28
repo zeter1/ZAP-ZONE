@@ -2,9 +2,15 @@
 
 ## Unreleased — 2026-09-28
 
+### Bot navigation / locomotion ownership
+- patrol points, wall/smoke steering, route penalty, speed caps и collision substeps вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-navigation.js`;
+- pure extraction сохраняет `BOT_MOVE_CFG`, `substep=.16`, correction/final displacement caps, smoke thresholds/weights и `WPTS` без balance change;
+- `nearestHostileGrenade()`, mine/noise/hearing и individual FSM остаются в `bots.js`, squad doctrine — в `src/ai/tactics.js`; structural guards закрепляют границу;
+- добавлены direct `node:test` regressions, `docs/specs/BOT_NAVIGATION.md` и AI routing для быстрого поиска owner-а.
+
 ### Bot presentation / arm-rig ownership
 - procedural bot body, stable gameplay hit-mesh construction, visual armor/readability, weapon pivot и two-hand arm-rig solver вынесены из `src/entities/bots.js` в отдельный canonical owner `src/entities/bot-presentation.js`;
-- `bots.js` остаётся consumer-ом presentation seam и владельцем FSM/perception/locomotion/combat execution; geometry, grip positions, arm constants, hit-mesh order и gameplay balance в pure extraction не менялись;
+- `bots.js` остаётся consumer-ом presentation seam; FSM/perception/combat execution остаются там, а locomotion mechanics позднее вынесены в `src/ai/bot-navigation.js` (см. текущую запись выше); geometry, grip positions, arm constants, hit-mesh order и gameplay balance в presentation extraction не менялись;
 - добавлены direct `node:test` regressions для grip coordinate conversion/hand pinning и structural owner/consumer guards, запрещающие возврат presentation implementation в AI owner;
 - AI routing, architecture/spec и classic-script graph обновлены так, чтобы задачи по модели/arm rig открывали узкий owner вместо повторного чтения всего bot runtime.
 
@@ -17,7 +23,7 @@
 
 ### AI ownership extraction — Map Tactics / Adaptive Commander
 - командный tactical layer вынесен из 2200+ строкового `src/entities/bots.js` в новый canonical owner `src/ai/tactics.js`: map zones, squad plan, doctrine selection, Adaptive Commander profile, assault-wave planning и coordinated smoke/frag policy;
-- индивидуальный bot FSM/perception, cover/flank execution, suppression effects, locomotion, стрельба и Frontline objective state остаются в `src/entities/bots.js`; gameplay constants, probabilities, timers и balance не менялись;
+- индивидуальный bot FSM/perception, cover/flank execution, suppression effects и стрельба остаются в `src/entities/bots.js`; locomotion mechanics позднее вынесены в `src/ai/bot-navigation.js`, а Frontline state — в `src/game/frontline.js`; gameplay constants, probabilities, timers и balance в tactical extraction не менялись;
 - classic load graph теперь явно `combat → tactics → bots`; structural validation проверяет новый owner, запрещает drift командной policy обратно в `bots.js` и сохраняет HTTP + `file://` runtime gates;
 - `docs/AI_WORKFLOW.md` и `docs/ARCHITECTURE.md` обновлены так, чтобы следующая AI-сессия сразу открывала нужный owner вместо повторного чтения всего bot runtime.
 
