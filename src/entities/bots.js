@@ -28,18 +28,7 @@ function lvlSpdMult(){ return 1 + level * 0.02; }
 
 // Bot tactical cover / flank destination owner: src/ai/bot-positioning.js
 
-const _BOT_NEAR_MISS_TO_PLAYER=new THREE.Vector3(),_BOT_NEAR_MISS_POINT=new THREE.Vector3();
-function botShotClosestApproachToPlayer(from,dir,maxRange=120){
-  const torso=_BOT_NEAR_MISS_TO_PLAYER.set(camera.position.x,camera.position.y-.28,camera.position.z);
-  const rel=torso.clone().sub(from);
-  const along=Math.max(0,Math.min(maxRange,rel.dot(dir)));
-  if(along<1.2)return null;
-  _BOT_NEAR_MISS_POINT.copy(from).addScaledVector(dir,along);
-  if(wallBetween(from,_BOT_NEAR_MISS_POINT,wallMeshes))return null;
-  const distance=_BOT_NEAR_MISS_POINT.distanceTo(torso);
-  return{distance,along,point:_BOT_NEAR_MISS_POINT.clone()};
-}
-
+// Bot fire-control execution owner: src/ai/bot-fire-control.js
 
 class Enemy{
   constructor(x,z,type,team){
@@ -211,31 +200,6 @@ class Enemy{
 
 
 
-  getAimPoint(tp){
-    const aim=tp.clone();
-    if(this.targetEn&&this.targetEn.alive)aim.y+=1.26;
-    else aim.y=camera.position.y-.10;
-    const dist=Math.max(1,this.group.position.distanceTo(tp));
-    let lead=0;
-    if(this.weapon.isRocket)lead=Math.min(1.05,dist/BOT_ROCKET_SPEED)*(.72+this.aimSkill*.20);
-    else if(this.weapon.key==='plasma')lead=Math.min(.42,dist/TRACER_SPEED.plasma)*.45;
-    const vx=this.targetEn&&this.targetEn.alive?(this.targetEn.velX||0):plrVx;
-    const vz=this.targetEn&&this.targetEn.alive?(this.targetEn.velZ||0):plrVz;
-    aim.x+=vx*lead;aim.z+=vz*lead;
-    const smooth=.16+this.aimSkill*.18;
-    if(!Number.isFinite(this.aimPoint.x))this.aimPoint.copy(aim);
-    this.aimPoint.lerp(aim,smooth);
-    return this.aimPoint.clone();
-  }
-
-  getMuzzlePos(){
-    const fwd=new THREE.Vector3(Math.sin(this.group.rotation.y),0,Math.cos(this.group.rotation.y));
-    const mp=this.group.position.clone();
-    mp.y+=1.22;
-    mp.addScaledVector(fwd,.96);
-    return mp;
-  }
-
   triggerDodge(preferredDir=0,urgency=1){
     if(this.dodgeCD>0||this.dodgeT>0)return;
     this.dodgeDir=preferredDir||(Math.random()<.5?-1:1);
@@ -243,17 +207,6 @@ class Enemy{
     this.dodgeSpd=this.speed*(1.30+this.aimSkill*.16)*Math.max(.96,Math.min(1.08,urgency));
     this.dodgeCD=.88+Math.random()*.62;
     if(Math.random()<0.16*urgency&&this.jV===0)this.jV=4.6+Math.random()*1.6;
-  }
-
-  startReload(){
-    if(this.reloadT<=0){
-      this.reloadT=this.weapon.reload*(0.86+Math.random()*.18);
-      playWeaponMechanicSound('reload',.32,this.weapon.key,this.group.position);
-    }
-  }
-  finishReload(){
-    this.mag=this.weapon.clip;this.reloadT=0;
-    playWeaponMechanicSound('reloadDone',.24,this.weapon.key,this.group.position);
   }
 
   maybePlantMine(dist,tp){
@@ -310,130 +263,6 @@ class Enemy{
     }
   }
 
-  dealDamageToCurrentTarget(amount,dir){
-    if(amount<=0)return;
-    if(this.targetEn&&this.targetEn.alive&&this.targetEn.team!==this.team){
-      this.targetEn.hurt(amount,dir,this.team,this);
-      if(!this.targetEn.alive){
-        this.kills=(this.kills||0)+1;
-        if(this.team==='ally')allyKills++;else enemyKills++;
-        updateTeamScore();
-        if(typeof pushKillFeed==='function'){
-          pushKillFeed(
-            this.team,
-            this.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
-            this.targetEn.team,
-            this.targetEn.team==='ally'?'СВОЙ БОТ':'ВРАЖЕСКИЙ БОТ',
-            'bullet'
-          );
-        }
-      }
-      return;
-    }
-    if(this.team==='enemy'&&this.targetIsPlayer)applyDamageToPlayer(amount*ENEMY_VS_PLAYER_DAMAGE_SCALE,'bullet',this);
-  }
-
-  doShoot(tp,dist,suppressMemory=false){
-    const wp=this.weapon;
-    const from=this.getMuzzlePos();
-    const aim=this.getAimPoint(tp);
-    const wallBlocked=wallBetween(from,aim,losMeshes),smokeBlocked=smokeBlocksSight(from,aim);
-    if(wallBlocked||(smokeBlocked&&!suppressMemory)){
-      if(Math.random()<.20){
-        const missDir=aim.clone().sub(from).normalize();
-        const missCol=this.team==='ally'?0x8cbcff:wp.bCol;
-        if(wp.hitscan)spawnInstantSniperTrace(from,missDir,Math.min(dist,18),missCol);
-        else spawnTracer(from,missDir,Math.min(dist,18),missCol,wp.key);
-      }
-      return;
-    }
-
-    let dir=aim.clone().sub(from).normalize();
-    const suppressing=this.tacticalMode==='suppress'||suppressMemory;
-    const incomingPressure=this.suppressedT>0?1+Math.min(.48,this.suppressedT*.20):1;
-    const volumePenalty=suppressing?1.14:1;
-    const acc=(wp.isRocket?(this.curAcc*.50+wp.spread*.45):(this.curAcc*.40+wp.spread*.78))*incomingPressure*volumePenalty;
-    dir.x+=(Math.random()-.5)*acc;
-    dir.y+=(Math.random()-.5)*acc*.28;
-    dir.z+=(Math.random()-.5)*acc;
-    dir.normalize();
-
-    const shotCol=this.team==='ally'?0x8cbcff:wp.bCol;
-    if(friendlyInLine(from,dir,this.team,Math.max(2,dist*.88))){
-      this.sT=.10+Math.random()*.12;
-      return;
-    }
-    if(wp.isRocket&&(dist<10||friendlyNearPoint(aim,this.team,5.2))){
-      this.weaponSwitchT=0;
-      this.sT=.18;
-      return;
-    }
-    emitBotCombatNoise(from,this,wp,wp.isRocket?'rocket':'shot');
-    playWeaponShotSound(wp.key,this.team==='enemy'?1:.72,from);
-    trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.isSniper?1.38:wp.key==='shotgun'?1.2:1);
-    if(wp.key!=='rocket'&&wp.key!=='plasma'){
-      const q=new THREE.Quaternion().setFromAxisAngle(_UP,this.group.rotation.y);
-      ejectCasing(from.clone().add(new THREE.Vector3(0,.08,0)),q,wp.key==='shotgun');
-    }
-
-    if(wp.isRocket){
-      spawnERkt(from,dir,wp.dmg*BOT_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*this.baseDmgMul,this.team,this);
-      this.mag--;
-      return;
-    }
-
-    const pellets=wp.pellets||1;
-    let tracerDir=dir.clone();
-    if(wp.hitscan){
-      const distanceDamageScale=weaponDamageScaleAtDistance(wp,dist);
-      const rangePenalty=dist/(wp.range*1.55);
-      const targetVx=this.targetEn&&this.targetEn.alive?(this.targetEn.velX||0):plrVx;
-      const targetVz=this.targetEn&&this.targetEn.alive?(this.targetEn.velZ||0):plrVz;
-      const movingPenalty=(Math.abs(targetVx)+Math.abs(targetVz))*0.01;
-      let hitChance=Math.max(.10,Math.min(.982,wp.hitBias-rangePenalty-Math.random()*this.curAcc-movingPenalty));
-      if(suppressing)hitChance*=.80;
-      if(this.suppressedT>0)hitChance*=Math.max(.72,1-Math.min(.24,this.suppressedT*.10));
-      let totalDmg=0;
-      if(this.targetEn&&this.targetEn.alive){
-        if(Math.random()<hitChance)totalDmg=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul;
-      }else if(this.team==='enemy'){
-        const toPlr=new THREE.Vector3(camera.position.x-from.x,camera.position.y-from.y,camera.position.z-from.z).normalize();
-        const align=dir.dot(toPlr);
-        hitChance*=.72;
-        if(Math.random()<hitChance&&align>.958)totalDmg=wp.dmg*distanceDamageScale*BOT_DAMAGE_BOOST*this.baseDmgMul*.88;
-      }
-      if(this.team==='enemy'&&this.targetIsPlayer&&totalDmg<=0&&dist>5&&(this.nearMissCd||0)<=0){
-        const approach=botShotClosestApproachToPlayer(from,tracerDir,Math.max(6,Math.min(wp.range+10,dist+18)));
-        if(approach&&approach.distance<=1.78){
-          const pressure=registerPlayerSuppression(this,wp,approach.point,approach.distance,1.78);
-          if(pressure>0)this.nearMissCd=Math.max(.16,.38-pressure*.11);
-        }
-      }
-      spawnInstantSniperTrace(from,tracerDir,Math.min(dist,wp.range+10),shotCol);
-      if(totalDmg>0)this.dealDamageToCurrentTarget(totalDmg,tracerDir);
-    }else{
-      const baseDamage=wp.dmg*BOT_DAMAGE_BOOST*this.baseDmgMul;
-      for(let i=0;i<pellets;i++){
-        const pd=dir.clone();
-        if(pellets>1){
-          const pe=wp.spread*(0.65+dist/Math.max(10,wp.range)*0.75);
-          pd.x+=(Math.random()-.5)*pe;
-          pd.y+=(Math.random()-.5)*pe*.34;
-          pd.z+=(Math.random()-.5)*pe;
-          pd.normalize();
-        }
-        if(i===0)tracerDir.copy(pd);
-        const pelletDamage=baseDamage*(pellets>1?.58:1);
-        const playerDamage=pelletDamage*ENEMY_VS_PLAYER_DAMAGE_SCALE*(pellets>1?.79:.88);
-        spawnEnemyBullet(from,pd,wp,this,{
-          visual:i===0,damage:pelletDamage,playerDamage,
-          suppressing
-        });
-      }
-    }
-    this.mag--;
-  }
-
   update(dt){
     if(!this.alive)return false;
     this.syncScale();
@@ -459,7 +288,7 @@ class Enemy{
     if(this.dodgeCD>0)this.dodgeCD-=dt;
     if(this.mineCD>0)this.mineCD-=dt;
     if(this.bombCD>0)this.bombCD-=dt;
-    if(this.reloadT>0){this.reloadT-=dt;if(this.reloadT<=0)this.finishReload();}
+    if(this.reloadT>0){this.reloadT-=dt;if(this.reloadT<=0)finishBotReload(this);}
 
     this._lastDt=dt;
     if(this.reactionT>0)this.reactionT-=dt;
@@ -536,7 +365,7 @@ class Enemy{
     this.tacticalMode=squadPlan.suppressor===this&&focusMatches&&squadPlan.flankerCount>0?'suppress':
       this.flankPoint&&this.flankCommitT>0?'flank':breachRole?'breach':supportReady?'support':'normal';
     maybeCoordinateBotUtility(this,squadPlan,targetPos,dist,assaultWaveState);
-    if(this.mag<=Math.max(1,Math.ceil(this.weapon.clip*.22))&&!this.reloadT&&(!this.canSeeTarget||dist>this.weapon.opt*1.15))this.startReload();
+    if(this.mag<=Math.max(1,Math.ceil(this.weapon.clip*.22))&&!this.reloadT&&(!this.canSeeTarget||dist>this.weapon.opt*1.15))startBotReload(this);
     if((hpPct<.38||(hpPct<.56&&this.reloadT>0))&&(!this.pickupTarget||!this.pickupTarget.m.visible)){
       this.pickupTarget=this.findReachableHealthPickup(30);
     }
@@ -951,7 +780,7 @@ class Enemy{
       const playerFireAllowed=!(this.team==='enemy'&&this.targetIsPlayer)||canPressurePlayer(this);
       if(!playerFireAllowed&&this.sT<=0)this.sT=.20+Math.random()*.25;
       if(playerFireAllowed&&this.sT<=0&&this.reactionT<=0&&this.burstPauseT<=0){
-        if(this.mag<=0&&!this.reloadT)this.startReload();
+        if(this.mag<=0&&!this.reloadT)startBotReload(this);
         else if(!this.reloadT){
           const fireTarget=suppressMemory?this.lastKnown.clone().addScaledVector(this.lastKnownVel,Math.min(.45,this.lastSeenT*.16)):targetPos;
           const fireDist=Math.max(1,this.group.position.distanceTo(fireTarget));
@@ -960,7 +789,7 @@ class Enemy{
           }else if(!this.weapon.isRocket&&!suppressMemory&&this.maybePlantMine(dist,targetPos)){
             this.sT=.48;
           }else{
-            this.doShoot(fireTarget,fireDist,suppressMemory);
+            executeBotShot(this,fireTarget,fireDist,suppressMemory);
             this.burstLeft--;
             if(this.burstLeft<=0){
               const attackingPlayer=this.team==='enemy'&&this.targetIsPlayer;
@@ -975,7 +804,7 @@ class Enemy{
               this.burstPauseT=attackingPlayer?(suppressing?.24+Math.random()*.22:.42+Math.random()*.42):normalPause;
             }
             this.sT=Math.max((this.team==='enemy'&&this.targetIsPlayer)?0.095:0.055,this.weapon.rate*this.fireRateMul*(.96+Math.random()*.24));
-            if(this.mag<=0)this.startReload();
+            if(this.mag<=0)startBotReload(this);
           }
         }
       }
