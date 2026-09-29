@@ -183,15 +183,7 @@ class Enemy{
   }
 
   registerSuppression(source,intensity=.6){
-    if(!this.alive||!source||source===this||source.team===this.team)return;
-    const pressure=Math.max(.3,Math.min(1.4,intensity));
-    this.suppressedT=Math.max(this.suppressedT,.62+pressure*.78);
-    this.suppressionSource=source;
-    this.coverCooldownT=Math.min(this.coverCooldownT,.12);
-    if(this.hp/this.maxHp<.72||pressure>.9){
-      this.coverEvalT=Math.min(this.coverEvalT,.05);
-      this.stateCD=Math.min(this.stateCD,.08);
-    }
+    applyBotSuppressionResponse(this,source,intensity);
   }
 
   update(dt){

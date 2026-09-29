@@ -89,11 +89,21 @@ Behavior закреплён `scripts/bot-deployables-owner.test.mjs`; structural
 
 Owner получает уже произошедший damage event из стабильной public seam `Enemy.hurt(...)` и владеет только retaliatory AI policy: hostile bot/player source semantics, точным retarget predicate, target memory/velocity, target lock и ускорением reaction/burst/FSM timers.
 
-Граница намеренно отделяет **damage application/lifecycle** от **AI response policy**. `src/entities/bots.js` по-прежнему мутирует HP, показывает hit emissive, выполняет прежний dodge RNG и concrete dodge, а затем вызывает damage-reaction owner до `die()`. `src/ai/bot-perception.js` остаётся owner-ом active sensing/hearing/LOS target acquisition; near-miss suppression пока остаётся отдельной event seam и не смешивается с damage reaction.
+Граница намеренно отделяет **damage application/lifecycle** от **AI response policy**. `src/entities/bots.js` по-прежнему мутирует HP, показывает hit emissive, выполняет прежний dodge RNG и concrete dodge, а затем вызывает damage-reaction owner до `die()`. `src/ai/bot-perception.js` остаётся owner-ом active sensing/hearing/LOS target acquisition; near-miss suppression остаётся отдельной event seam, теперь с собственным response owner `src/ai/bot-suppression-response.js`, и не смешивается с damage reaction.
 
 Pure extraction сохраняет точную включительную границу `dmg >= maxHp * 0.10`, source precedence, target-memory fields и timer clamps. Новый owner не содержит `Math.random()`, поэтому RNG consumption/order `Enemy.hurt()` не меняется.
 
 Behavior закреплён `scripts/bot-damage-reaction-owner.test.mjs`; structural validation требует canonical definition + consumer, запрещает возврат implementation в `bots.js`, запрещает HP/dodge/death/RNG authority в owner и фиксирует event order `dodge → damage reaction → death`.
+
+## Bot suppression-response policy owner
+
+**Canonical owner:** `src/ai/bot-suppression-response.js`. Узкий контракт — **[specs/BOT_SUPPRESSION_RESPONSE.md](specs/BOT_SUPPRESSION_RESPONSE.md)**.
+
+`src/combat/combat.js` остаётся owner-ом swept-bullet near-miss detection и вызывает стабильную seam `Enemy.registerSuppression(...)`. `src/entities/bots.js` сохраняет эту public seam, suppression decay/source expiry и потребление suppression в cover/FSM, но сама near-miss response policy теперь делегируется в owner.
+
+Owner сохраняет прежний source guard, clamp `0.3..1.4`, duration `max(current, 0.62 + pressure * 0.78)`, `coverCooldownT <= 0.12` и строгие thresholds `hp/maxHp < 0.72` / `pressure > 0.9` для `coverEvalT <= 0.05` и `stateCD <= 0.08`. Строковый player token остаётся допустимым source, как и до extraction.
+
+Owner не содержит `Math.random()`, near-miss geometry, perception, cover scoring или FSM transition selection. Structural validation запрещает duplicate implementation в `bots.js`, прямой обход seam из `combat.js` и неправильный classic-script load order.
 
 ## Session lifecycle owner
 

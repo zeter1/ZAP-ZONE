@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot suppression-response policy ownership
+- near-miss suppression response вынесен из `Enemy.registerSuppression()` в canonical owner `src/ai/bot-suppression-response.js`, при этом `Enemy.registerSuppression(...)` сохранён как стабильная public seam для `combat.js`;
+- pure extraction сохраняет source guard, player-token semantics, pressure clamp `0.3..1.4`, duration `0.62 + pressure*0.78`, strict thresholds `hp/maxHp < 0.72` / `pressure > 0.9` и все timer clamps без новых RNG calls или balance changes;
+- suppression decay/source expiry и cover/FSM consumers остаются в `bots.js`; swept-bullet near-miss detection остаётся в `combat.js`, поэтому detection/response/lifecycle boundaries не смешаны;
+- добавлены 5 focused Node 22 regressions, `docs/specs/BOT_SUPPRESSION_RESPONSE.md`, AI routing, owner/consumer/reverse/producer guards и classic-script load-order validation.
+
 ### Bot damage-reaction policy ownership
 - retaliatory target selection, source semantics, target memory/lock и reaction/burst/FSM timer clamps вынесены из `Enemy.hurt()` в canonical owner `src/ai/bot-damage-reaction.js`;
 - `Enemy.hurt(...)` остаётся стабильной public seam и по-прежнему владеет HP mutation, hit presentation, dodge RNG/concrete execution и death lifecycle; порядок side effects сохранён как `dodge → damage reaction → death`;
