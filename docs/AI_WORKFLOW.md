@@ -30,7 +30,8 @@
 | Bot near-miss suppression response | `src/ai/bot-suppression-response.js` | bullet sweep/near-miss detection; suppression decay; cover scoring; FSM transition selection; damage reaction |
 | Bot dodge-response execution / RNG order / optional jump | `src/ai/bot-dodge-response.js` | survived-damage/rocket trigger policy; dodge timer decay; movement consumption; perception/navigation/FSM authority |
 | Bot navigation / collision-limited locomotion | `src/ai/bot-navigation.js` | grenade/mine/noise perception; tactical destination scoring; squad doctrine / target policy |
-| Bot tactical cover/flank destination scoring | `src/ai/bot-positioning.js` | FSM transitions; commit timers/peek execution; locomotion mechanics; squad doctrine |
+| Bot tactical cover/flank destination scoring | `src/ai/bot-positioning.js` | FSM transitions; cover/peek execution; locomotion mechanics; squad doctrine |
+| Bot cover reevaluation / peek / chain / exit execution | `src/ai/bot-cover-execution.js` | cover/flank destination scoring; timer lifecycle; collision-limited locomotion; squad doctrine |
 | Bot weapon selection / hold hysteresis / reselection | `src/ai/bot-weapon-policy.js` | weapon data/scoring; FSM/fire gate; shot execution; visual implementation |
 | Bot fire-control execution | `src/ai/bot-fire-control.js` | broad fire gate/post-shot cadence; weapon selection; squad doctrine; projectile primitive ownership |
 | Bot post-shot burst/cadence + RNG ordering | `src/ai/bot-fire-cadence.js` | broad fire gate; constructor/timer lifecycle; shot execution; weapon data |
@@ -48,7 +49,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -67,6 +68,7 @@
 - bot near-miss suppression / pressure clamp / cover+FSM timer response → `docs/specs/BOT_SUPPRESSION_RESPONSE.md` → `src/ai/bot-suppression-response.js` → `Enemy.registerSuppression()` consumer → `src/combat/combat.js` producer;
 - bot dodge execution / RNG order / urgency clamps / optional jump → `docs/specs/BOT_DODGE_RESPONSE.md` → `src/ai/bot-dodge-response.js` → `Enemy.triggerDodge()` seam → damage/rocket producers;
 - bot navigation / collision micro-steps / smoke route / speed caps → `docs/specs/BOT_NAVIGATION.md` → `src/ai/bot-navigation.js` → `src/entities/bots.js` consumer;
+- bot cover reevaluation / peek-side probing / LOS+smoke acceptance / peek envelope / cover chain+exit → `docs/specs/BOT_COVER_EXECUTION.md` → `src/ai/bot-cover-execution.js` → `src/entities/bots.js` consumer;
 - bot weapon selection / switch timer / hold hysteresis / unsafe-range reselection → `docs/specs/BOT_WEAPON_POLICY.md` → `src/ai/bot-weapon-policy.js` → `src/entities/bots.js` consumer;
 - bot fire-control / aim / muzzle / reload / shot execution / hit resolution → `docs/specs/BOT_FIRE_CONTROL.md` → `src/ai/bot-fire-control.js` → `src/entities/bots.js` + `src/ai/tactics.js` consumers;
 - bot post-shot burst/cadence / exact RNG order / pause / next-shot timer → `docs/specs/BOT_FIRE_CADENCE.md` → `src/ai/bot-fire-cadence.js` → `src/entities/bots.js` consumer;

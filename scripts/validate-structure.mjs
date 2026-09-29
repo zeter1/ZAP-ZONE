@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-progression-scaling.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-suppression-response.js','src/ai/bot-dodge-response.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-fire-cadence.js','src/ai/bot-deployables.js','src/ai/bot-state-policy.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-progression-scaling.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-suppression-response.js','src/ai/bot-dodge-response.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-cover-execution.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-fire-cadence.js','src/ai/bot-deployables.js','src/ai/bot-state-policy.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -306,6 +306,7 @@ const suppressionResponse=readFileSync('src/ai/bot-suppression-response.js','utf
 const dodgeResponse=readFileSync('src/ai/bot-dodge-response.js','utf8');
 const navigation=readFileSync('src/ai/bot-navigation.js','utf8');
 const positioning=readFileSync('src/ai/bot-positioning.js','utf8');
+const coverExecution=readFileSync('src/ai/bot-cover-execution.js','utf8');
 const weaponPolicy=readFileSync('src/ai/bot-weapon-policy.js','utf8');
 const fireControl=readFileSync('src/ai/bot-fire-control.js','utf8');
 const fireCadence=readFileSync('src/ai/bot-fire-cadence.js','utf8');
@@ -443,7 +444,7 @@ for(const token of ['class Enemy','this.hp-=','die(','applyBotDamageReaction(','
 if((bots.match(/applyBotDodgeResponse\(/g)||[]).length!==1)fail('bots.js must reach dodge-response owner only through Enemy.triggerDodge');
 if(!bots.includes("if(this.hp>0&&Math.random()<Math.min(.90,.48+level*.018+kills*.0025))this.triggerDodge();"))fail('survived-damage producer must keep Enemy.triggerDodge compatibility seam');
 if(!bots.includes('this.triggerDodge(rocketThreat.side,urgency);'))fail('rocket-threat producer must keep Enemy.triggerDodge compatibility seam');
-for(const sourceOwner of [perception,damageReaction,suppressionResponse,navigation,positioning,weaponPolicy,fireControl,deployables,tactics]){
+for(const sourceOwner of [perception,damageReaction,suppressionResponse,navigation,positioning,coverExecution,weaponPolicy,fireControl,deployables,tactics]){
   if(sourceOwner.includes('applyBotDodgeResponse('))fail('bot producer/owner must not bypass Enemy.triggerDodge compatibility seam');
 }
 for(const token of [
@@ -454,6 +455,27 @@ for(const token of [
 ]){
   if(!bots.includes(token))fail('bot dodge lifecycle/movement consumer contract missing: '+token);
 }
+
+for(const token of [
+  'function botCoverPeekEnvelope(peekT,peekDuration){',
+  'function updateBotCoverSelection(bot,dt,targetPos,dist,hpPct){',
+  'function tryStartBotCoverPeek(bot,targetPos){',
+  'function runBotCoverExecution(bot,{dt,targetPos,dx,dz,squadPlan,assaultWaveState,mapObjective}){',
+  'for(const sign of [bot.sideBias,-bot.sideBias])',
+  'if(Math.hypot(coll.x-rawX,coll.z-rawZ)>.55)continue;',
+  'if(!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt)){',
+  'bot.peekDuration=.92+Math.random()*.34;bot.peekT=bot.peekDuration;',
+  'bot.peekCooldownT=1.25+Math.random()*.85;bot.sideBias=sign;return true;',
+  "const canChain=(squadPlan.doctrine==='breach'||squadPlan.doctrine==='retake')&&assaultWaveState==='active'&&targetPos&&mapObjective&&bot.coverChainT<=0;",
+  'bot.coverPoint=nextCover;bot.coverHoldT=.16+Math.random()*.22;bot.coverChainT=.72+Math.random()*.35;',
+  'bot.coverPoint=null;bot.coverCooldownT=.95+Math.random()*.70;',
+  "bot.aiState=bot.canSeeTarget?'engage':'hunt';bot.stateCD=.32;"
+])if(!coverExecution.includes(token))fail('bot cover-execution owner contract missing: '+token);
+for(const token of ['updateBotCoverSelection(this,dt,targetPos,dist,hpPct);','runBotCoverExecution(this,{dt,targetPos,dx,dz,squadPlan,assaultWaveState,mapObjective});','botCoverPeekEnvelope(this.peekT,this.peekDuration)'])if(!bots.includes(token))fail('bot cover-execution consumer contract missing: '+token);
+for(const token of ['for(const sign of [this.sideBias,-this.sideBias])','this.peekDuration=.92+Math.random()*.34','this.peekCooldownT=1.25+Math.random()*.85','const envelope=p<.24?p/.24:p>.72?(1-p)/.28:1;',"const canChain=(squadPlan.doctrine==='breach'||squadPlan.doctrine==='retake')",'this.coverCooldownT=.95+Math.random()*.70'])if(bots.includes(token))fail('bot cover-execution implementation leaked back into bots.js: '+token);
+if(coverExecution.includes('function findBotTacticalCover('))fail('cover-execution owner must consume positioning scoring');
+for(const token of ['class Enemy','moveBotWithSubsteps(','steerBotAroundWalls(','clampBotVelocity(','applyBotStateSelectionPolicy(','executeBotShot(','tryPlantBotMine(','tryPlantBotBomb(','BOT_TEAM_TACTICS'])if(coverExecution.includes(token))fail('unrelated authority leaked into bot cover-execution owner: '+token);
+for(const token of ['tryStartBotCoverPeek(','botCoverPeekEnvelope(','coverChainT=.72+Math.random()*.35'])if(positioning.includes(token))fail('cover execution leaked into positioning owner: '+token);
 for(const token of ['function tryPlantBotMine(bot,dist,targetPos){','function tryPlantBotBomb(bot,dist,targetPos){','countTeamMines(bot.team)','activeBombCount()','bombNearPoint(pos,24)',"bot.commandDoctrine==='breach'",'mkMine()','mkBomb()']){if(!deployables.includes(token))fail('bot deployables owner contract missing: '+token);}
 if(/maybePlant(?:Mine|Bomb)\s*\(/.test(bots))fail('bot deployable implementation leaked back into bots.js');
 for(const token of ['tryPlantBotBomb(this,dist,targetPos)','tryPlantBotMine(this,dist,targetPos)','this.mineCD=8+Math.random()*12','this.bombCD=24+Math.random()*52','if(this.mineCD>0)this.mineCD-=dt;','if(this.bombCD>0)this.bombCD-=dt;']){if(!bots.includes(token))fail('bot deployables consumer/fire-gate contract missing: '+token);}
@@ -524,8 +546,8 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 bot execution missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-progression-scaling.js'")&&html.indexOf("'src/ai/bot-progression-scaling.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-damage-reaction.js'")&&html.indexOf("'src/ai/bot-damage-reaction.js'")<html.indexOf("'src/ai/bot-suppression-response.js'")&&html.indexOf("'src/ai/bot-suppression-response.js'")<html.indexOf("'src/ai/bot-dodge-response.js'")&&html.indexOf("'src/ai/bot-dodge-response.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/bot-positioning.js'")&&html.indexOf("'src/ai/bot-positioning.js'")<html.indexOf("'src/ai/bot-weapon-policy.js'")&&html.indexOf("'src/ai/bot-weapon-policy.js'")<html.indexOf("'src/ai/bot-fire-control.js'")&&html.indexOf("'src/ai/bot-fire-control.js'")<html.indexOf("'src/ai/bot-fire-cadence.js'")&&html.indexOf("'src/ai/bot-fire-cadence.js'")<html.indexOf("'src/ai/bot-deployables.js'")&&html.indexOf("'src/ai/bot-deployables.js'")<html.indexOf("'src/ai/bot-state-policy.js'")&&html.indexOf("'src/ai/bot-state-policy.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
-  fail('classic-script order must load combat -> bot progression scaling -> bot perception -> bot damage reaction -> bot suppression response -> bot dodge response -> bot navigation -> bot positioning -> bot weapon policy -> bot fire-control -> bot fire-cadence -> bot deployables -> bot state policy -> tactics -> frontline -> bots');
+if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-progression-scaling.js'")&&html.indexOf("'src/ai/bot-progression-scaling.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-damage-reaction.js'")&&html.indexOf("'src/ai/bot-damage-reaction.js'")<html.indexOf("'src/ai/bot-suppression-response.js'")&&html.indexOf("'src/ai/bot-suppression-response.js'")<html.indexOf("'src/ai/bot-dodge-response.js'")&&html.indexOf("'src/ai/bot-dodge-response.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/bot-positioning.js'")&&html.indexOf("'src/ai/bot-positioning.js'")<html.indexOf("'src/ai/bot-cover-execution.js'")&&html.indexOf("'src/ai/bot-cover-execution.js'")<html.indexOf("'src/ai/bot-weapon-policy.js'")&&html.indexOf("'src/ai/bot-weapon-policy.js'")<html.indexOf("'src/ai/bot-fire-control.js'")&&html.indexOf("'src/ai/bot-fire-control.js'")<html.indexOf("'src/ai/bot-fire-cadence.js'")&&html.indexOf("'src/ai/bot-fire-cadence.js'")<html.indexOf("'src/ai/bot-deployables.js'")&&html.indexOf("'src/ai/bot-deployables.js'")<html.indexOf("'src/ai/bot-state-policy.js'")&&html.indexOf("'src/ai/bot-state-policy.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load combat -> bot progression scaling -> bot perception -> bot damage reaction -> bot suppression response -> bot dodge response -> bot navigation -> bot positioning -> bot cover execution -> bot weapon policy -> bot fire-control -> bot fire-cadence -> bot deployables -> bot state policy -> tactics -> frontline -> bots');
 }
 if(!(html.indexOf("'src/entities/bot-presentation.js'")<html.indexOf("'src/entities/bots.js'"))){
   fail('classic-script order must load bot presentation owner before bots');
