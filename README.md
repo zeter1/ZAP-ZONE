@@ -96,7 +96,7 @@ index.html
 │   ├── player/state.js
 │   ├── settings/settings.js
 │   ├── combat/combat.js
-│   ├── ai/{bot-progression-scaling,bot-perception,bot-damage-reaction,bot-suppression-response,bot-dodge-response,bot-navigation,bot-positioning,bot-weapon-policy,bot-fire-control,bot-fire-cadence,bot-deployables,tactics}.js
+│   ├── ai/{bot-progression-scaling,bot-perception,bot-damage-reaction,bot-suppression-response,bot-dodge-response,bot-navigation,bot-positioning,bot-weapon-policy,bot-fire-control,bot-fire-cadence,bot-deployables,bot-state-policy,tactics}.js
 │   ├── game/frontline.js
 │   ├── entities/{bot-presentation,bots,pickups}.js
 │   ├── progression/progression.js
@@ -118,7 +118,7 @@ index.html
 
 ## Для ChatGPT / Codex / AI-разработки
 
-Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для bot progression scaling — **[docs/specs/BOT_PROGRESSION_SCALING.md](docs/specs/BOT_PROGRESSION_SCALING.md)**, для damage-event retaliation — **[docs/specs/BOT_DAMAGE_REACTION.md](docs/specs/BOT_DAMAGE_REACTION.md)**, для dodge RNG/execution — **[docs/specs/BOT_DODGE_RESPONSE.md](docs/specs/BOT_DODGE_RESPONSE.md)**, для locomotion — **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для исполнения bot-shot — **[docs/specs/BOT_FIRE_CONTROL.md](docs/specs/BOT_FIRE_CONTROL.md)**, для post-shot burst/cadence и RNG order — **[docs/specs/BOT_FIRE_CADENCE.md](docs/specs/BOT_FIRE_CADENCE.md)**, для individual mine/bomb policy — **[docs/specs/BOT_DEPLOYABLES.md](docs/specs/BOT_DEPLOYABLES.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
+Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для bot progression scaling — **[docs/specs/BOT_PROGRESSION_SCALING.md](docs/specs/BOT_PROGRESSION_SCALING.md)**, для damage-event retaliation — **[docs/specs/BOT_DAMAGE_REACTION.md](docs/specs/BOT_DAMAGE_REACTION.md)**, для dodge RNG/execution — **[docs/specs/BOT_DODGE_RESPONSE.md](docs/specs/BOT_DODGE_RESPONSE.md)**, для locomotion — **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для исполнения bot-shot — **[docs/specs/BOT_FIRE_CONTROL.md](docs/specs/BOT_FIRE_CONTROL.md)**, для post-shot burst/cadence и RNG order — **[docs/specs/BOT_FIRE_CADENCE.md](docs/specs/BOT_FIRE_CADENCE.md)**, для individual mine/bomb policy — **[docs/specs/BOT_DEPLOYABLES.md](docs/specs/BOT_DEPLOYABLES.md)**, для high-level bot state selection и priority thresholds — **[docs/specs/BOT_STATE_POLICY.md](docs/specs/BOT_STATE_POLICY.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
 
 Правило проекта: refactor переносит **ownership + invariants + verification oracle**, а не просто строки кода. После source/runtime-изменения обязательны build-stamp check, structural validation и browser smoke; полезные проверки не отключаются ради зелёного CI.
 
