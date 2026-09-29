@@ -120,24 +120,7 @@ class Enemy{
   }
 
   syncScale(force=false){
-    if(!force&&this.levelSync===level)return;
-    const oldMax=this.maxHp||1;
-    const oldHp=this.hp||oldMax;
-    const hpRatio=force?1:Math.max(.24,Math.min(1,oldHp/oldMax));
-    const roleHp=this.role==='anchor'?1.18:this.role==='assault'?1.02:this.role==='engineer'?1.10:1.05;
-    const roleSpd=(this.role==='flankL'||this.role==='flankR')?1.12:(this.role==='anchor'?.96:1.03);
-    const roleDmg=this.role==='anchor'?1.10:(this.role==='engineer'?1.02:1.06);
-    const lvl=Math.max(1,level);
-    const dominance=Math.min(.55,kills*.009);
-    const combatGrowth=Math.min(.28,kills*.0045);
-    this.aimSkill=Math.min(.97,.58+this.skillSeed+lvl*.013+Math.min(.13,kills*.0018));
-    this.maxHp=this.baseHp*(1.08+lvl*.082+dominance)*roleHp;
-    this.hp=force?this.maxHp:Math.min(this.maxHp,this.maxHp*hpRatio+Math.max(10,this.maxHp*.05));
-    this.speed=this.baseSpeed*(1.02+Math.min(.28,lvl*.012)+Math.min(.12,kills*.0020))*roleSpd;
-    this.baseDmgMul=(.86+this.type*.06)*(1+lvl*.038+combatGrowth)*roleDmg;
-    this.curAcc=Math.max(.0075,this.baseAcc*(1.03-Math.min(lvl*.019,.58)-Math.min(.18,kills*.0022))*(this.role==='anchor'?.82:1));
-    this.fireRateMul=Math.max(.62,1.08-lvl*.013-Math.min(.20,kills*.0025))*(this.role==='assault'?.92:1);
-    this.levelSync=level;
+    applyBotProgressionScaling(this,force);
   }
 
   findReachableHealthPickup(maxDist=30){
