@@ -189,7 +189,7 @@
   const currentBuild=document.querySelector('meta[name="application-build"]')?.content?.trim()||'';
   const localScripts=[
     'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-    'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+    'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-fire-control.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
     'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
   ];
   const versioned=(path,build,useCacheKey)=>useCacheKey&&BUILD_ID_PATTERN.test(build)?path+(path.includes('?')?'&':'?')+'v='+encodeURIComponent(build):path;
