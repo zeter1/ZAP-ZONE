@@ -129,7 +129,11 @@ jobs:
           chrome_pid=$!
           trap 'kill "$chrome_pid" 2>/dev/null || true; wait "$chrome_pid" 2>/dev/null || true; rm -rf "$profile_dir" 2>/dev/null || true' EXIT
 
-          if ! timeout 20s node scripts/browser-menu-smoke.mjs; then
+          if ! ZAP_CDP_WAIT_MS=15000 timeout 35s node scripts/browser-menu-smoke.mjs; then
+            echo "--- local-file CDP diagnostics ---"
+            ps -p "$chrome_pid" -o pid=,stat=,etime=,cmd= || true
+            curl -fsS http://127.0.0.1:9222/json/version || true
+            curl -fsS http://127.0.0.1:9222/json/list || true
             echo "--- local-file Chrome log ---"
             cat /tmp/zap-file-chrome.log || true
             exit 1
