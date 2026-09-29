@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-29
 
+### Projectile ricochet parity and shared shooting-physics policy
+- successful player ricochet теперь реально отражает projectile по world-space normal, уменьшает speed/damage и продолжает swept flight вместо ложного sound/FX перед удалением;
+- player и bot projectile paths используют canonical `src/combat/projectile-ricochet.js`; прежние material probabilities сохранены без hidden rebalance;
+- wall penetration остаётся раньше ricochet, cap = 1, post-bounce offset предотвращает повторный hit, ineligible/capped impacts не расходуют RNG;
+- добавлены Node 22 regressions, spec, AI routing, structural guards и Validate step.
+
+
 ### Bot engage-state movement ownership
 - strafe timer/direction, role/tactical optimal-range policy, opponent-weapon matchup, Frontline objective pull, flank bias, close/far correction и anchor cover tether вынесены из `Enemy.update()` в canonical owner `src/ai/bot-engagement-movement.js`;
 - extraction сохраняет snapshot `myX/myZ`, exact strict thresholds, movement-addition order и branch-specific RNG: normal strafe reset draw выполняется раньше optional sniper clamp draw;

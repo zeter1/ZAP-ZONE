@@ -258,6 +258,15 @@ RMB/ADS изолирован через `aimMode:'scope'`. Этот флаг е�
 У SR-9 обычный center crosshair скрыт и в hip state, и внутри scope. У остальных оружий динамический crosshair визуализирует текущий итоговый spread с учётом movement, air penalty и weapon bloom.
 
 
+## Projectile ricochet ownership v23.9
+
+**Canonical policy owner:** `src/combat/projectile-ricochet.js`; узкий контракт — **[specs/PROJECTILE_RICOCHET.md](specs/PROJECTILE_RICOCHET.md)**. `src/combat/combat.js` сохраняет swept collision, penetration-first ordering, projectile mutation и FX/audio; `src/core/engine.js` — geometry/material mapping и world-space normals.
+
+После Task 020 player и bot ballistic projectiles используют одну bounce execution model: max-one ricochet, reflection по surface normal, post-impact offset и монотонное уменьшение speed/damage. Прежние player/enemy material chance profiles сохранены раздельно, чтобы bugfix не стал скрытым rebalance.
+
+Критичный порядок: **target hit → wall penetration → ricochet → terminal impact**. Ineligible/capped impacts не расходуют RNG. Plasma и hitscan SR-9 не переводятся в эту ветку.
+
+
 ## Weapon lifecycle v22.2
 
 Оружие теперь имеет отдельный runtime lifecycle поверх `rate` и `reload`:
