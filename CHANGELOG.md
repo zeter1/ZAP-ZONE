@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot progression-scaling ownership
+- deterministic level/kills/role scaling вынесен из `Enemy.syncScale()` в canonical owner `src/ai/bot-progression-scaling.js`, а constructor/update сохраняют прежнюю seam;
+- pure extraction сохраняет same-level early return, `force=true`, все формулы/caps/role multipliers, 24% HP-ratio floor + legacy growth heal и clamp-before-assault semantics для fire-rate без balance changes;
+- добавлены 7 Node 22 regressions, `docs/specs/BOT_PROGRESSION_SCALING.md`, AI routing, owner/consumer/reverse/load-order guards и отдельный Validate step;
+- `stamp-web-build --check` теперь при stale build печатает вычисленный expected build ID, ускоряя безопасное исправление manifest/cache keys без ослабления gate.
+
 ### Bot dodge-response execution ownership
 - concrete dodge execution вынесено из `Enemy.triggerDodge()` в canonical owner `src/ai/bot-dodge-response.js`, при этом public seam и оба producer-а (survived damage / rocket threat) сохранены;
 - pure extraction сохраняет active/cooldown early return, preferred-direction precedence, duration/speed urgency clamps, cooldown, optional jump и точный `Math.random()` consumption order без balance changes;
