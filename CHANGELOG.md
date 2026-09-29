@@ -38,9 +38,11 @@
 - pure extraction сохраняет включительный threshold `dmg >= 10% maxHp`, bot/player source precedence и не добавляет новых random calls или balance changes;
 - добавлены 4 focused Node 22 regressions, `docs/specs/BOT_DAMAGE_REACTION.md`, AI routing, classic-script load-order и owner/consumer/reverse/event-order guards.
 
-### GitHub Actions supply-chain hardening
-- `Validate` больше не следует за перемещаемыми `actions/checkout@v4` и `actions/setup-node@v4`: обе официальные GitHub Actions закреплены на проверенных полных SHA релиза `v4.4.0`;
-- Node 22, triggers, `contents: read`, concurrency, regression suites и HTTP/`file://` browser smoke gates сохранены без изменения; проходка меняет только identity CI dependencies.
+### GitHub Actions Node 24 runtime migration
+- `actions/checkout` обновлён до стабильного `v7.0.1` и закреплён на полном SHA `3d3c42e5aac5ba805825da76410c181273ba90b1`; `actions/setup-node` обновлён до стабильного `v7.0.0` и закреплён на полном SHA `820762786026740c76f36085b0efc47a31fe5020`;
+- оба выбранных upstream-релиза объявляют `runs.using: node24`, поэтому устранён warning GitHub о Node 20 actions, принудительно запускаемых на Node 24;
+- project runtime намеренно остаётся `node-version: "22"`: runtime JavaScript Action и Node-версия тестируемого проекта разделены как разные concerns;
+- exact PR-head `8f4f201617cdeb955dcd81f651d8701c003a4baf` прошёл полный Validate run `36558620151` без `##[warning]`; triggers, path filters, `contents: read`, concurrency, regression suites, HTTP boot и реальный `file://` smoke сохранены.
 
 ### Bot individual mine/bomb deployable ownership
 - individual mine/bomb eligibility, role/doctrine probability и deployment side effects вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-deployables.js`;

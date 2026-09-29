@@ -91,9 +91,11 @@
 
 ## GitHub Actions dependency identity
 
-- В `.github/workflows/*` внешние `uses:` refs закрепляйте на проверенные полные 40-символьные commit SHA; рядом сохраняйте читаемый release tag-комментарий (например, `# v4.4.0`) для аудита.
-- При upgrade сначала сверяйте upstream repository и соответствие release/tag → full SHA; не возвращайте movable `@vN` в unrelated change.
-- Workflow change считается high-risk: сохраняйте least privilege и после записи проверяйте exact GitHub Actions run на exact head до следующего write.
+- В `.github/workflows/*` внешние `uses:` refs закрепляйте на проверенные полные 40-символьные commit SHA; рядом сохраняйте читаемый release tag-комментарий (например, `# v7.0.1`) для аудита.
+- При upgrade сначала сверяйте официальный upstream release/tag → full SHA и metadata `action.yml`; для JavaScript Action после удаления Node 20 подтверждайте `runs.using: node24` у выбранного релиза.
+- Не смешивайте **Action runtime** и **project runtime**: upgrade checkout/setup-* ради Node 24 не означает, что `node-version` проекта надо менять. Project runtime повышается только отдельным evidence-based change.
+- Для `setup-node` отдельно проверяйте breaking changes кеширования/registry auth. Не добавляйте package-manager cache, lockfile или auth-настройки в проект, который их не использует; если auto-cache реально может включиться и не нужен, задайте явный безопасный opt-out.
+- Workflow change считается high-risk: сохраняйте least privilege и после первой записи проверяйте exact PR run на exact head, затем читайте job-log. Regression oracle для runtime migration — прежний warning должен исчезнуть, а существующие gates должны остаться зелёными без suppression.
 
 ## Verification matrix
 
