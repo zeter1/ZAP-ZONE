@@ -2,9 +2,15 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot weapon-selection policy ownership
+- post-spawn weapon reconsideration, current-weapon hold/hysteresis и switch timers вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-weapon-policy.js`;
+- weapon data/role-range scoring и visual implementation остаются в `src/weapons/system.js`, fire execution — в `src/ai/bot-fire-control.js`, а `bots.js` сохраняет FSM/fire-gate authority и отдельную spawn initialization;
+- pure extraction сохраняет thresholds, probabilities, random-call order, magazine semantics и visual refresh order без gameplay balance change;
+- добавлены focused Node 22 regressions, `docs/specs/BOT_WEAPON_POLICY.md`, AI routing и owner/consumer/reverse structural guards.
+
 ### Bot fire-control execution ownership
 - aim/muzzle helpers, reload lifecycle, concrete shot execution, hit/near-miss resolution и bot kill accounting вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-fire-control.js`;
-- FSM/fire gate, burst cadence, weapon-selection policy, utility planting и squad doctrine остаются у прежних owners; projectile/collision primitives не дублируются из `src/combat/combat.js`;
+- FSM/fire gate, burst cadence, utility planting и squad doctrine остаются вне fire-control; post-spawn weapon selection теперь принадлежит `src/ai/bot-weapon-policy.js`, а projectile/collision primitives не дублируются из `src/combat/combat.js`;
 - coordinated smoke/frag теперь получает muzzle origin через canonical `getBotMuzzlePos(bot)`, поэтому один muzzle contract используется и firearms, и utility;
 - добавлены focused `node:test` regressions, `docs/specs/BOT_FIRE_CONTROL.md`, AI-routing и owner/consumer/reverse structural guards без gameplay balance change.
 
