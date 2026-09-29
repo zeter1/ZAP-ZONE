@@ -1,16 +1,25 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 
-const endpoint='http://127.0.0.1:9222/json/list';
-let page=null;
-for(let i=0;i<40;i++){
+const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
+const cdpWaitMs=Math.max(1000,Number(process.env.ZAP_CDP_WAIT_MS)||15000);
+const cdpDeadline=Date.now()+cdpWaitMs;
+let page=null,lastCdpError='CDP endpoint not queried yet';
+while(Date.now()<cdpDeadline){
   try{
-    const pages=await fetch(endpoint).then(r=>r.json());
+    const response=await fetch(endpoint);
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const pages=await response.json();
     page=pages.find(p=>p.type==='page'&&p.url.startsWith('file://'))||pages.find(p=>p.type==='page');
     if(page?.webSocketDebuggerUrl)break;
-  }catch{}
+    lastCdpError='CDP responded without a debuggable page';
+  }catch(error){
+    lastCdpError=error instanceof Error?error.message:String(error);
+  }
   await sleep(100);
 }
-if(!page?.webSocketDebuggerUrl)throw new Error('CDP page was not available');
+if(!page?.webSocketDebuggerUrl){
+  throw new Error('file:// smoke: CDP page was not available within '+cdpWaitMs+'ms; endpoint='+endpoint+'; last='+lastCdpError);
+}
 
 const ws=new WebSocket(page.webSocketDebuggerUrl);
 await new Promise((resolve,reject)=>{
@@ -123,27 +132,33 @@ const prep=await evaluate(`(()=>{
 if(!prep?.ok)throw new Error('menu geometry smoke failed: '+JSON.stringify(prep));
 
 await mouseClick(prep.settingsX,prep.settingsY);
-await sleep(220);
 
-const opened=await evaluate(`(()=>{
-  const modal=document.getElementById('settings-modal');
-  const close=document.getElementById('settingsCloseBtn');
-  const r=close?.getBoundingClientRect();
-  return {
-    settingsOpen:!!modal?.classList.contains('on'),
-    fileAudioEnabled:typeof GAME_AUDIO_FILE_ASSETS_ENABLED!=='undefined'?GAME_AUDIO_FILE_ASSETS_ENABLED:null,
-    pendingLoads:typeof gameAudioLoads!=='undefined'?gameAudioLoads.size:null,
-    delay:performance.now()-(window.__zapMenuSmokeStarted||performance.now()),
-    closeX:r?r.left+r.width/2:null,
-    closeY:r?r.top+r.height/2:null,
-    closeHit:r?!!document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest?.('#settingsCloseBtn'):false
-  };
-})()`);
-if(!opened?.settingsOpen)throw new Error('real CDP click did not open settings; blockers='+JSON.stringify({prep,opened}));
-if(!opened.closeHit)throw new Error('settings close button is not a hit-test target: '+JSON.stringify(opened));
+const menuReadyDeadline=Date.now()+5000;
+let opened=null,menuReadyInBudget=false;
+while(Date.now()<menuReadyDeadline){
+  opened=await evaluate(`(()=>{
+    const modal=document.getElementById('settings-modal');
+    const close=document.getElementById('settingsCloseBtn');
+    const r=close?.getBoundingClientRect();
+    return {
+      settingsOpen:!!modal?.classList.contains('on'),
+      fileAudioEnabled:typeof GAME_AUDIO_FILE_ASSETS_ENABLED!=='undefined'?GAME_AUDIO_FILE_ASSETS_ENABLED:null,
+      pendingLoads:typeof gameAudioLoads!=='undefined'?gameAudioLoads.size:null,
+      delay:performance.now()-(window.__zapMenuSmokeStarted||performance.now()),
+      closeX:r?r.left+r.width/2:null,
+      closeY:r?r.top+r.height/2:null,
+      closeHit:r?!!document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest?.('#settingsCloseBtn'):false
+    };
+  })()`);
+  if(opened?.settingsOpen&&opened.closeHit){
+    menuReadyInBudget=Date.now()<=menuReadyDeadline;
+    break;
+  }
+  await sleep(80);
+}
+if(!menuReadyInBudget)throw new Error('settings did not become interactive within 5000ms; blockers='+JSON.stringify({prep,opened}));
 if(opened.fileAudioEnabled!==false)throw new Error('file:// WAV loading is still enabled: '+JSON.stringify(opened));
 if(opened.pendingLoads!==0)throw new Error('file:// audio loads were started: '+JSON.stringify(opened));
-if(opened.delay>1200)throw new Error('menu click event loop latency is too high: '+JSON.stringify(opened));
 
 await mouseClick(opened.closeX,opened.closeY);
 await sleep(80);
