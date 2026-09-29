@@ -170,7 +170,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #menu .btn,#pause .btn,#settings-modal .btn{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation;-moz-user-select:none;}
 #pause.on{display:flex;}
 #death-flash{position:fixed;inset:0;background:rgba(255,0,0,0);pointer-events:none;z-index:600;transition:none;}
-#death-msg{position:fixed;top:14%;left:50%;transform:translate(-50%,-50%);font-size:42px;font-weight:900;color:#ff3333;text-shadow:0 0 42px #ff0000,0 2px 0 #560000;pointer-events:none;opacity:0;z-index:601;letter-spacing:4px;white-space:nowrap;}
+#death-msg{position:absolute;inset:19% 10% 17%;transform:none;font-size:clamp(18px,2.05vw,34px);font-weight:900;color:#ff3333;text-shadow:0 0 42px #ff0000,0 2px 0 #560000;pointer-events:none;opacity:0;z-index:1;letter-spacing:clamp(1px,.22vw,4px);white-space:normal;text-align:center;line-height:1.08;min-width:0;}
 .bigtitle{font-size:64px;font-weight:900;color:#ffd700;text-shadow:0 0 30px #ffa500,0 4px 0 #b8860b;margin-bottom:8px;letter-spacing:5px;}
 .hints{margin:16px 0;color:#aaa;font-size:13px;line-height:2.2;text-align:center;}
 .btn{padding:13px 42px;font-size:17px;font-weight:800;border:none;border-radius:50px;cursor:pointer;text-transform:uppercase;letter-spacing:3px;margin-top:10px;}
@@ -262,7 +262,7 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #hp-txt::before{
   content:'';
   width:19px;height:19px;display:inline-block;flex:0 0 auto;
-  background:url('../../assets/ui/health.svg?v=7f208f3959fdd009') center/contain no-repeat;
+  background:url('../../assets/ui/health.svg?v=dd846cbc0a0f50a1') center/contain no-repeat;
   filter:drop-shadow(0 0 6px rgba(255,55,80,.55));
 }
 #armor-row{position:relative;}
@@ -270,14 +270,14 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   content:'';
   position:absolute;left:-27px;top:50%;transform:translateY(-50%);
   width:20px;height:20px;
-  background:url('../../assets/ui/armor.svg?v=7f208f3959fdd009') center/contain no-repeat;
+  background:url('../../assets/ui/armor.svg?v=dd846cbc0a0f50a1') center/contain no-repeat;
   filter:drop-shadow(0 0 6px rgba(70,170,255,.55));
 }
 #xp-wrap::before{
   content:'';
   position:absolute;left:-30px;top:50%;transform:translateY(-50%);
   width:22px;height:22px;
-  background:url('../../assets/ui/xp.svg?v=7f208f3959fdd009') center/contain no-repeat;
+  background:url('../../assets/ui/xp.svg?v=dd846cbc0a0f50a1') center/contain no-repeat;
   filter:drop-shadow(0 0 7px rgba(255,205,45,.55));
 }
 @media (max-width:900px){
@@ -356,10 +356,11 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   animation:zapLevelIcon 1.1s ease-in-out infinite alternate;
 }
 #death-msg{
-  display:flex;align-items:center;justify-content:center;gap:16px;
+  display:flex;align-items:center;justify-content:center;gap:clamp(8px,1.1vw,16px);
 }
+#death-msg span{min-width:0;max-width:100%;overflow-wrap:anywhere;}
 #death-msg img{
-  width:74px;height:74px;object-fit:contain;
+  width:clamp(42px,5vw,72px);height:clamp(42px,5vw,72px);object-fit:contain;flex:0 0 auto;
   filter:drop-shadow(0 0 14px rgba(255,45,45,.75));
 }
 #frontline-art{display:none;}
@@ -501,10 +502,11 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .setting-control span{min-width:54px;text-align:right;color:#7fddff;font-family:Consolas,monospace;font-weight:900;}
 .setting-toggle{cursor:pointer;}
 .setting-toggle input{width:19px;height:19px;accent-color:#45caff;}
+.settings-section-title{margin:18px 0 2px;padding-top:10px;border-top:1px solid rgba(255,214,82,.16);color:#ffd95b;font-size:11px;font-weight:1000;letter-spacing:2.2px;text-align:center;}
 .settings-note{margin:14px 0 2px;color:#8fa8ba;font-size:11px;line-height:1.55;text-align:center;}
 #settings-box .btn{display:block;margin:18px auto 0;}
 #canvas{transform-origin:50% 50%;will-change:transform;}
-@media(max-width:700px){#damage-direction span{top:-105px;}#settings-box{padding:18px;}.setting-row{align-items:flex-start;flex-direction:column;gap:7px;}.setting-control{width:100%;min-width:0;}.setting-control input[type=range]{width:100%;}}
+@media(max-width:700px){#damage-direction span{top:-105px;}#settings-box{padding:18px;}.setting-row{align-items:flex-start;flex-direction:column;gap:7px;}.setting-control{width:100%;min-width:0;}.setting-control input[type=range]{width:100%;}#battle-result-frame{width:min(94vw,680px);bottom:6px;}#death-msg{inset:18% 8% 15%;font-size:clamp(15px,4vw,25px);}}
 
 
 /* v22.0 — sniper optic and weapon-handling HUD */
@@ -516,12 +518,12 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #sniper-scope img{display:block;width:100%;height:100%;object-fit:cover;}
 #sniper-scope.rifle-scope img{filter:saturate(1.08) contrast(1.04);}
 #sniper-scope.kick img{animation:sniperScopeKick .26s cubic-bezier(.15,.72,.22,1);}
-#frontline-capture-burst{position:fixed;left:50%;top:45%;width:min(42vw,520px);aspect-ratio:1;transform:translate(-50%,-50%) scale(.55);opacity:0;visibility:hidden;pointer-events:none;z-index:70;background:url('../../assets/ui/objective/frontline-capture-burst-tech-01.webp?v=7f208f3959fdd009') center/contain no-repeat;mix-blend-mode:screen;filter:drop-shadow(0 0 28px rgba(80,220,255,.45));}
+#frontline-capture-burst{position:fixed;left:50%;top:45%;width:min(42vw,520px);aspect-ratio:1;transform:translate(-50%,-50%) scale(.55);opacity:0;visibility:hidden;pointer-events:none;z-index:70;background:url('../../assets/ui/objective/frontline-capture-burst-tech-01.webp?v=dd846cbc0a0f50a1') center/contain no-repeat;mix-blend-mode:screen;filter:drop-shadow(0 0 28px rgba(80,220,255,.45));}
 #frontline-capture-burst.on{visibility:visible;animation:frontlineCaptureBurst 1.05s cubic-bezier(.15,.72,.22,1) both;}
 #frontline-capture-burst.enemy{filter:hue-rotate(145deg) drop-shadow(0 0 28px rgba(255,70,85,.42));}
 @keyframes frontlineCaptureBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(-8deg)}24%{opacity:.96;transform:translate(-50%,-50%) scale(.92) rotate(0)}70%{opacity:.72;transform:translate(-50%,-50%) scale(1.08) rotate(4deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.18) rotate(7deg)}}
-#battle-result-frame{position:fixed;left:50%;top:18%;width:min(76vw,760px);aspect-ratio:16/9;transform:translate(-50%,-50%) scale(.94);opacity:0;visibility:hidden;pointer-events:none;z-index:600;background:url('../../assets/ui/feedback/battle-result-frame-tech-01.webp?v=7f208f3959fdd009') center/contain no-repeat;filter:drop-shadow(0 0 22px rgba(75,190,255,.28));transition:opacity .12s ease,transform .18s ease;}
-#battle-result-frame.on{opacity:.72;visibility:visible;transform:translate(-50%,-50%) scale(1);}
+#battle-result-frame{position:fixed;left:50%;top:auto;bottom:clamp(8px,2vh,20px);width:min(78vw,760px);max-width:calc(100vw - 20px);aspect-ratio:16/9;transform:translateX(-50%) scale(.94);transform-origin:50% 100%;opacity:0;visibility:hidden;pointer-events:none;z-index:601;background:url('../../assets/ui/feedback/battle-result-frame-tech-01.webp?v=dd846cbc0a0f50a1') center/contain no-repeat;filter:drop-shadow(0 0 22px rgba(75,190,255,.28));transition:opacity .12s ease,transform .18s ease;}
+#battle-result-frame.on{opacity:.82;visibility:visible;transform:translateX(-50%) scale(1);}
 #xhair.scope-hidden{opacity:0!important;}
 @keyframes sniperScopeKick{
   0%{transform:scale(1) translateY(0)}
@@ -584,22 +586,22 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
    relative file paths. Persistent Three.js/WebGL surfaces still never use these
    images, preserving the uCoz anti-black-quad invariant. */
 .generated-art-enabled #loading{
-  background:linear-gradient(180deg,rgba(0,6,15,.48),rgba(0,0,0,.76)),url('../../assets/ui/backgrounds/loading-bg-arena-01.jpg?v=7f208f3959fdd009') center/cover no-repeat,radial-gradient(circle at 50% 35%,#0b2038 0,#03070d 55%,#000 100%);
+  background:linear-gradient(180deg,rgba(0,6,15,.48),rgba(0,0,0,.76)),url('../../assets/ui/backgrounds/loading-bg-arena-01.jpg?v=dd846cbc0a0f50a1') center/cover no-repeat,radial-gradient(circle at 50% 35%,#0b2038 0,#03070d 55%,#000 100%);
 }
 .generated-art-enabled #menu{
-  background:linear-gradient(180deg,rgba(1,5,12,.24),rgba(1,4,10,.70)),url('../../assets/ui/backgrounds/menu-bg-arena-01.jpg?v=7f208f3959fdd009') center/cover no-repeat,radial-gradient(circle at 50% 30%,#12233d 0,#050912 48%,#000 100%);
+  background:linear-gradient(180deg,rgba(1,5,12,.24),rgba(1,4,10,.70)),url('../../assets/ui/backgrounds/menu-bg-arena-01.jpg?v=dd846cbc0a0f50a1') center/cover no-repeat,radial-gradient(circle at 50% 30%,#12233d 0,#050912 48%,#000 100%);
 }
-.generated-art-enabled #hp-txt::before{background:url('../../assets/ui/health-icon-tech-01.png?v=7f208f3959fdd009') center/contain no-repeat;}
-.generated-art-enabled #armor-row::before{background:url('../../assets/ui/armor-icon-01.png?v=7f208f3959fdd009') center/contain no-repeat;}
-.generated-art-enabled #xp-wrap::before{background:url('../../assets/ui/xp-star-01.png?v=7f208f3959fdd009') center/contain no-repeat;}
+.generated-art-enabled #hp-txt::before{background:url('../../assets/ui/health-icon-tech-01.png?v=dd846cbc0a0f50a1') center/contain no-repeat;}
+.generated-art-enabled #armor-row::before{background:url('../../assets/ui/armor-icon-01.png?v=dd846cbc0a0f50a1') center/contain no-repeat;}
+.generated-art-enabled #xp-wrap::before{background:url('../../assets/ui/xp-star-01.png?v=dd846cbc0a0f50a1') center/contain no-repeat;}
 .generated-art-enabled #restartBtn::before{
   content:'';display:inline-block;width:24px;height:24px;margin-right:9px;vertical-align:-7px;border-radius:6px;
-  background:url('../../assets/environment/hazard-panel-01.jpg?v=7f208f3959fdd009') center/cover no-repeat,linear-gradient(135deg,#ff9b18,#2c1600);
+  background:url('../../assets/environment/hazard-panel-01.jpg?v=dd846cbc0a0f50a1') center/cover no-repeat,linear-gradient(135deg,#ff9b18,#2c1600);
   box-shadow:0 0 10px rgba(255,137,25,.32);pointer-events:none;
 }
 .generated-art-enabled #settings-title::before{
   content:'';display:inline-block;width:34px;height:34px;margin-right:10px;vertical-align:-10px;border-radius:8px;
-  background:url('../../assets/environment/terminal-screen-01.jpg?v=7f208f3959fdd009') center/cover no-repeat,linear-gradient(135deg,#063461,#05101b);
+  background:url('../../assets/environment/terminal-screen-01.jpg?v=dd846cbc0a0f50a1') center/cover no-repeat,linear-gradient(135deg,#063461,#05101b);
   box-shadow:0 0 12px rgba(40,190,255,.30);pointer-events:none;
 }
 
@@ -617,31 +619,31 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
   content:'';display:inline-block;flex:0 0 auto;background-position:center;background-repeat:no-repeat;background-size:contain;
 }
 .generated-art-enabled #tb-ally::before{
-  width:24px;height:24px;background-image:url('../../assets/ui/teams/blue-team-emblem-01.png?v=7f208f3959fdd009');
+  width:24px;height:24px;background-image:url('../../assets/ui/teams/blue-team-emblem-01.png?v=dd846cbc0a0f50a1');
   filter:drop-shadow(0 0 6px rgba(60,190,255,.42));
 }
 .generated-art-enabled #tb-enemy::before{
-  width:24px;height:24px;background-image:url('../../assets/ui/teams/red-team-emblem-01.png?v=7f208f3959fdd009');
+  width:24px;height:24px;background-image:url('../../assets/ui/teams/red-team-emblem-01.png?v=dd846cbc0a0f50a1');
   filter:drop-shadow(0 0 6px rgba(255,70,85,.40));
 }
 .generated-art-enabled #wammo::before{
   width:24px;height:24px;margin-right:5px;vertical-align:-6px;
-  background-image:url('../../assets/ui/pickups/ammo-crate-tech-02.webp?v=7f208f3959fdd009');
+  background-image:url('../../assets/ui/pickups/ammo-crate-tech-02.webp?v=dd846cbc0a0f50a1');
   filter:drop-shadow(0 0 6px rgba(70,205,255,.30));
 }
 .generated-art-enabled #reload-lbl::before{
   width:20px;height:20px;margin-right:4px;vertical-align:-6px;
-  background-image:url('../../assets/ui/perks/reload-tech-01.png?v=7f208f3959fdd009');
+  background-image:url('../../assets/ui/perks/reload-tech-01.png?v=dd846cbc0a0f50a1');
   filter:drop-shadow(0 0 6px rgba(255,190,45,.30));
 }
 .generated-art-enabled #frontline-art{
   display:inline-block;width:24px;height:24px;margin-right:1px;flex:0 0 auto;
-  background:url('../../assets/ui/objective/frontline-capture-tech-01.webp?v=7f208f3959fdd009') center/contain no-repeat;
+  background:url('../../assets/ui/objective/frontline-capture-tech-01.webp?v=dd846cbc0a0f50a1') center/contain no-repeat;
   filter:drop-shadow(0 0 7px rgba(80,210,255,.38));
 }
 .generated-art-enabled #menu .hints::after{
   width:42px;height:42px;margin:7px auto 0;
-  background-image:url('../../assets/ui/pickups/weapon-crate-tech-01.png?v=7f208f3959fdd009');
+  background-image:url('../../assets/ui/pickups/weapon-crate-tech-01.png?v=dd846cbc0a0f50a1');
   filter:drop-shadow(0 0 9px rgba(70,190,255,.24));
 }
 

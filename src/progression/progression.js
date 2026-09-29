@@ -231,13 +231,14 @@ function wHUD(){
     const velocity=w.hitscan?'МГНОВЕННО':w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
     mode.textContent=weaponModeLabel(w)+(velocity?' · '+velocity:'');
   }
-  G('wammo').textContent=ammo+' / '+w.clip;
-  G('wammo').style.color=ammo<=Math.ceil(w.clip*.25)?'#ff4444':ammo<=Math.ceil(w.clip*.5)?'#ffaa00':'#fff';
+  const infiniteAmmo=testingInfiniteAmmoEnabled();
+  G('wammo').textContent=infiniteAmmo?'∞ / '+w.clip:ammo+' / '+w.clip;
+  G('wammo').style.color=infiniteAmmo?'#7dffad':ammo<=Math.ceil(w.clip*.25)?'#ff4444':ammo<=Math.ceil(w.clip*.5)?'#ffaa00':'#fff';
   let extra='';
   if(w.isSmoke)extra=playerSmokeCD>0?' · кулдаун '+Math.ceil(playerSmokeCD)+'с':' · готова';
   else if(w.isBomb)extra=playerBombCD>0?' · кулдаун '+Math.ceil(playerBombCD)+'с':'';
   else if(w.isMine)extra=playerMineCD>0?' · кулдаун '+Math.ceil(playerMineCD)+'с':'';
-  G('wtot').textContent='Запас '+w.label+': '+uAmmo+extra;
+  G('wtot').textContent='Запас '+w.label+': '+(infiniteAmmo?'∞':uAmmo)+extra;
   updateMineHUD();
 }
 function xpHUD(){
@@ -354,6 +355,7 @@ function startDeathCamera(attacker){
   deathCamFocus.copy(deathGround);
   if(deathCamKiller&&killerPos.distanceTo(deathGround)<28)deathCamFocus.lerp(killerPos,.28);
 
+  hideGeneratedFirstPersonWeaponArt(false);
   gunGrp.visible=false;
   setGameCursorHidden(true);
   G('xhair').style.opacity='0';
@@ -386,8 +388,8 @@ function tickDeathCamera(dt){
   G('death-flash').style.opacity=String(Math.max(.24,1-p*.76));
 }
 function tickDeathWorld(dt){
-  // The battlefield does not freeze. Existing bullets and rockets keep flying through the killcam.
-  for(const en of enemies)if(en.alive)en.update(dt);
+  // The battlefield keeps simulating during the killcam, except when bot freeze is explicitly enabled for testing.
+  if(!gameSettings.stopBots)for(const en of enemies)if(en.alive)en.update(dt);
   tickProjectiles(dt);tickMines(dt);tickSmoke(dt);
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);
   tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);
@@ -414,7 +416,7 @@ function checkDeath(){
   const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ'+(deathReason?' · '+deathReason.toUpperCase():'');
   G('death-msg').style.opacity='1';
   G('battle-result-frame')?.classList.add('on');
-  dyingT=deathCamDuration;
+  dyingT=PLAYER_RESPAWN_DELAY;
 }
 function doRespawn(){
   cleanupDeathCamera();

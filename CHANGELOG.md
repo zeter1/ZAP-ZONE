@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-29
 
+### Death/respawn UX and in-game testing controls
+- death result frame and message are now bottom-anchored as one responsive unit; the death reason wraps/scales inside the frame instead of escaping it;
+- player first-person weapon presentation is removed immediately for the death camera, and weapon swaps keep both stale generated art and procedural fallback hidden until the new generated asset is ready;
+- player respawn delay is now exactly 15 seconds while the death camera motion remains independently timed;
+- Settings now include testing toggles for freezing bot AI, infinite player ammunition (including deployables), and immediate access to every weapon type without permanently changing weapon ownership in autosave;
+- structural regression guards cover the new settings wiring, respawn timing, bot freeze, infinite-ammo consumption gates, death-frame containment and first-person weapon transition seam.
+
 ### Projectile ricochet parity and shared shooting-physics policy
 - successful player ricochet теперь реально отражает projectile по world-space normal, уменьшает speed/damage и продолжает swept flight вместо ложного sound/FX перед удалением;
 - player и bot projectile paths используют canonical `src/combat/projectile-ricochet.js`; прежние material probabilities сохранены без hidden rebalance;

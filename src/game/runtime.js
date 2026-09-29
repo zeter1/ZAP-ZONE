@@ -235,12 +235,14 @@ function loop(ts){
     while(ec+0<TEAM_SIZE&&countTeam('enemy')<TEAM_SIZE)spawnBot('enemy');
   }
 
-  // Update enemies
+  // Update bots unless the explicit testing freeze is enabled.
   let touched=false;
-  for(const en of enemies){
-    if(!en.alive)continue;
-    const mel=en.update(dt);
-    if(mel){let dmg=(9+en.type*2.8)*(1+level*.045+Math.min(.25,kills*.003))*dt;applyDamageToPlayer(dmg,'melee',en);touched=true;}
+  if(!gameSettings.stopBots){
+    for(const en of enemies){
+      if(!en.alive)continue;
+      const mel=en.update(dt);
+      if(mel){let dmg=(9+en.type*2.8)*(1+level*.045+Math.min(.25,kills*.003))*dt;applyDamageToPlayer(dmg,'melee',en);touched=true;}
+    }
   }
   if(touched)markHUD();
 

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="application-version" content="23.9">
-<meta name="application-build" content="7f208f3959fdd009">
-<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=7f208f3959fdd009">
+<meta name="application-build" content="dd846cbc0a0f50a1">
+<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=dd846cbc0a0f50a1">
 
 </head>
 <body>
@@ -23,7 +23,9 @@
   <div id="xhair"><span class="xh-arm xh-t"></span><span class="xh-arm xh-r"></span><span class="xh-arm xh-b"></span><span class="xh-arm xh-l"></span><div class="xh-dot"></div></div>
   <div id="sniper-scope"><img src="assets/ui/sniper-scope.svg" alt=""></div>
   <div id="frontline-capture-burst" aria-hidden="true"></div>
-  <div id="battle-result-frame" aria-hidden="true"></div>
+  <div id="battle-result-frame" aria-hidden="true">
+    <div id="death-msg"><img src="assets/fx/skull.svg" data-generated-src="assets/ui/feedback/death-skull-tech-01.webp" data-fallback-src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
+  </div>
   <div id="fp-weapon-art-wrap" aria-hidden="true"><div id="fp-weapon-art-stage"><img id="fp-weapon-art" alt=""><span id="fp-weapon-flash"></span></div></div>
   <div id="hitmarker"></div>
   <div id="damage-direction"><span>▲</span></div>
@@ -175,12 +177,15 @@
     <label class="setting-toggle"><span>Тряска экрана</span><input id="setting-shake" type="checkbox"></label>
     <label class="setting-toggle"><span>Динамический прицел</span><input id="setting-crosshair" type="checkbox"></label>
     <label class="setting-toggle"><span>Показывать FPS</span><input id="setting-fps" type="checkbox"></label>
-    <div class="settings-note">Настройки сохраняются отдельно от прогресса игры и применяются сразу.</div>
+    <div class="settings-section-title">ТЕСТИРОВАНИЕ</div>
+    <label class="setting-toggle"><span>Остановить ботов</span><input id="setting-stop-bots" type="checkbox"></label>
+    <label class="setting-toggle"><span>Бесконечные патроны у оружия</span><input id="setting-infinite-ammo" type="checkbox"></label>
+    <label class="setting-toggle"><span>У игрока сразу все виды оружия</span><input id="setting-all-weapons" type="checkbox"></label>
+    <div class="settings-note">Настройки сохраняются отдельно от прогресса игры и применяются сразу. Тестовые переключатели можно менять во время матча.</div>
     <button class="btn byellow" id="settingsCloseBtn" type="button">ГОТОВО</button>
   </div>
 </div>
 <div id="death-flash"></div>
-<div id="death-msg"><img src="assets/fx/skull.svg" data-generated-src="assets/ui/feedback/death-skull-tech-01.webp" data-fallback-src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script id="cache-bootstrap">

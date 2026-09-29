@@ -900,6 +900,28 @@ if(!runtime.includes('ensureCurrentWeaponUsable();'))fail('runtime must auto-swi
 for(const token of ["fireW.automatic","scopedWeapon=activeW.aimMode==='scope'","adsWanted=!IS_TOUCH&&scopedWeapon&&zooming","scopeActive||scopedWeapon","recoilReturn=activeW.recoilReturn","weaponBloom=Math.max","shotResetT>0","weaponEquipT>0","sprintExitT>0","const sprintingNow=wantsSprint","cycleKind==='pump'","cycleKind==='bolt'","completePlayerReloadStep()","updateWeaponStateHUD()","ejectCasing(casingPos"]){if(!runtime.includes(token))fail('runtime weapon lifecycle missing: '+token);}
 
 const css=readFileSync('src/styles/game.css','utf8');
+for(const token of ['id="setting-stop-bots"','id="setting-infinite-ammo"','id="setting-all-weapons"']){
+  if(!html.includes(token))fail('testing settings DOM missing: '+token);
+}
+if(!/<div id="battle-result-frame"[^>]*>\s*<div id="death-msg"/.test(html))fail('death message must stay inside the bottom result frame');
+for(const token of ['stopBots:false','infiniteAmmo:false','allWeapons:false',"gameSettings.stopBots=stopBots.checked","gameSettings.infiniteAmmo=infiniteAmmo.checked","gameSettings.allWeapons=allWeapons.checked"]){
+  if(!settings.includes(token))fail('testing settings persistence/binding missing: '+token);
+}
+if(!state.includes('const PLAYER_RESPAWN_DELAY=15;')||!progression.includes('dyingT=PLAYER_RESPAWN_DELAY;'))fail('player respawn delay must remain exactly 15 seconds');
+for(const token of ['function testingInfiniteAmmoEnabled()','function testingAllWeaponsEnabled()','Number.POSITIVE_INFINITY','!!weaponOwned[idx]||testingAllWeaponsEnabled()','hideGeneratedFirstPersonWeaponArt(false);']){
+  if(!state.includes(token))fail('player testing/weapon-switch contract missing: '+token);
+}
+for(const token of ['const w=getW(),infiniteAmmo=testingInfiniteAmmoEnabled();','if(!infiniteAmmo&&ammo<=0)','if(!infiniteAmmo&&Math.random()>=plr.ammoSaveChance)ammo--;','if(!testingInfiniteAmmoEnabled())setWeaponAmmo(mineIdx,mineAmmo-1);','if(!testingInfiniteAmmoEnabled())setWeaponAmmo(bombIdx,bombAmmo-1);','if(!testingInfiniteAmmoEnabled())setWeaponAmmo(smokeIdx,smokeAmmo-1);']){
+  if(!combat.includes(token))fail('infinite-ammo testing contract missing: '+token);
+}
+if(!runtime.includes('if(!gameSettings.stopBots){')||!progression.includes('if(!gameSettings.stopBots)for(const en of enemies)if(en.alive)en.update(dt);'))fail('bot-freeze testing contract missing');
+for(const token of ['function hideGeneratedFirstPersonWeaponArt(showProcedural=true)','const hasGeneratedArt=!!(wrap&&asset);','hideGeneratedFirstPersonWeaponArt(!hasGeneratedArt);']){
+  if(!weapons.includes(token))fail('first-person weapon transition guard missing: '+token);
+}
+if(!progression.includes('hideGeneratedFirstPersonWeaponArt(false);')||!progression.includes("G('wammo').textContent=infiniteAmmo?'∞ / '+w.clip"))fail('death weapon hide / infinite-ammo HUD contract missing');
+for(const token of ['bottom:clamp(8px,2vh,20px)','white-space:normal','overflow-wrap:anywhere']){
+  if(!css.includes(token))fail('bottom death-frame responsive containment missing: '+token);
+}
 for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMedalPop','#hitmarker','#damage-direction','#threat-direction','#settings-modal','#sniper-scope','sniperScopeKick','.xh-arm','#wstate','#frontline-map','#frontline-minimap','#left-tactical-stack','#frontline-objective','#frontline-track','#frontline-bearing','#frontline-capture-burst','#battle-result-frame','#world-pickup-art-layer','.world-weapon-pickup-art','.world-health-pickup-art','#fp-weapon-art-wrap','#fp-weapon-art-wrap.on.shown','#fp-weapon-art-stage','#fp-weapon-flash','#fp-weapon-flash::before','#fp-weapon-flash::after','--fp-flash-pop','max-width:980px','#hud{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:24','#hp-wrap{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);text-align:center;z-index:24','#menu .btn','one authoritative gameplay reticle']){
   if(!css.includes(token))fail('CSS visual integration missing: '+token);
 }

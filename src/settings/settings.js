@@ -3,7 +3,8 @@
 // Player settings, Web Audio SFX and presentation-only combat feedback.
 const GAME_SETTINGS_KEY='zap_zone_settings_v1';
 const GAME_SETTINGS_DEFAULTS=Object.freeze({
-  sensitivity:1,sfx:.65,screenShake:true,dynamicCrosshair:true,showFps:false
+  sensitivity:1,sfx:.65,screenShake:true,dynamicCrosshair:true,showFps:false,
+  stopBots:false,infiniteAmmo:false,allWeapons:false
 });
 function clampSetting(v,min,max,fallback){
   const n=Number(v);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;
@@ -16,7 +17,10 @@ function loadGameSettings(){
       sfx:clampSetting(saved.sfx,0,1,.65),
       screenShake:saved.screenShake!==false,
       dynamicCrosshair:saved.dynamicCrosshair!==false,
-      showFps:saved.showFps===true
+      showFps:saved.showFps===true,
+      stopBots:saved.stopBots===true,
+      infiniteAmmo:saved.infiniteAmmo===true,
+      allWeapons:saved.allWeapons===true
     };
   }catch(e){return {...GAME_SETTINGS_DEFAULTS};}
 }
@@ -407,8 +411,10 @@ function tickGamePresentation(dt,ts){
 
 function syncSettingsControls(){
   const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
+  const stopBots=byId('setting-stop-bots'),infiniteAmmo=byId('setting-infinite-ammo'),allWeapons=byId('setting-all-weapons');
   if(sens)sens.value=String(gameSettings.sensitivity);if(sfx)sfx.value=String(gameSettings.sfx);
   if(shake)shake.checked=gameSettings.screenShake;if(crosshair)crosshair.checked=gameSettings.dynamicCrosshair;if(fps)fps.checked=gameSettings.showFps;
+  if(stopBots)stopBots.checked=gameSettings.stopBots;if(infiniteAmmo)infiniteAmmo.checked=gameSettings.infiniteAmmo;if(allWeapons)allWeapons.checked=gameSettings.allWeapons;
   if(byId('setting-sensitivity-value'))byId('setting-sensitivity-value').textContent=gameSettings.sensitivity.toFixed(2)+'×';
   if(byId('setting-sfx-value'))byId('setting-sfx-value').textContent=Math.round(gameSettings.sfx*100)+'%';
 }
@@ -416,12 +422,14 @@ function applyGameSettings(){
   if(gameAudioMaster&&gameAudioCtx)gameAudioMaster.gain.setTargetAtTime(gameSettings.sfx,gameAudioCtx.currentTime,.02);
   const fps=byId('fps-counter');if(fps)fps.style.display=gameSettings.showFps?'block':'none';
   if(!gameSettings.screenShake){shakeTime=0;shakePower=0;if(typeof canvas!=='undefined')canvas.style.transform='';}
+  if(typeof applyPlayerTestingSettings==='function')applyPlayerTestingSettings();
   syncSettingsControls();
 }
 function openGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=true;syncSettingsControls();modal.classList.add('on');modal.setAttribute('aria-hidden','false');playSfx('ui');}
 function closeGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=false;modal.classList.remove('on');modal.setAttribute('aria-hidden','true');saveGameSettings();playSfx('ui');}
 function bindGameSettings(){
   const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
+  const stopBots=byId('setting-stop-bots'),infiniteAmmo=byId('setting-infinite-ammo'),allWeapons=byId('setting-all-weapons');
   const primeAudio=()=>{ensureGameAudio();scheduleGameAudioWarmup();};
   window.addEventListener('pointerdown',primeAudio,{once:true,capture:true});
   window.addEventListener('keydown',primeAudio,{once:true,capture:true});
@@ -431,6 +439,9 @@ function bindGameSettings(){
   shake?.addEventListener('change',()=>{gameSettings.screenShake=shake.checked;saveGameSettings();});
   crosshair?.addEventListener('change',()=>{gameSettings.dynamicCrosshair=crosshair.checked;saveGameSettings();});
   fps?.addEventListener('change',()=>{gameSettings.showFps=fps.checked;saveGameSettings();});
+  stopBots?.addEventListener('change',()=>{gameSettings.stopBots=stopBots.checked;saveGameSettings();});
+  infiniteAmmo?.addEventListener('change',()=>{gameSettings.infiniteAmmo=infiniteAmmo.checked;saveGameSettings();});
+  allWeapons?.addEventListener('change',()=>{gameSettings.allWeapons=allWeapons.checked;saveGameSettings();});
   window.addEventListener('keydown',e=>{if(e.code==='Escape'&&settingsOpen){e.preventDefault();e.stopImmediatePropagation();closeGameSettings();}},true);
   applyGameSettings();
 }

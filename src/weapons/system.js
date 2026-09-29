@@ -504,20 +504,23 @@ function setProceduralFirstPersonRigVisible(visible){
   for(const child of gunGrp.children)child.visible=visible;
 }
 let fpGeneratedWeaponModel=null,fpGeneratedWeaponPending=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoading=false,fpGeneratedWeaponLoadId=0;
-function hideGeneratedFirstPersonWeaponArt(){
+function hideGeneratedFirstPersonWeaponArt(showProcedural=true){
   const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash'),img=G('fp-weapon-art');
   if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');}
   if(flash)flash.style.opacity='0';
   if(img){img.onload=null;img.onerror=null;img.removeAttribute('src');delete img.dataset.weaponKey;}
-  setProceduralFirstPersonRigVisible(true);
+  setProceduralFirstPersonRigVisible(showProcedural);
   fpGeneratedWeaponLoadId+=1;fpGeneratedWeaponModel=null;fpGeneratedWeaponPending=null;
   fpGeneratedWeaponActive=false;fpGeneratedWeaponLoading=false;
 }
 function setGeneratedFirstPersonWeaponArt(w,model){
-  hideGeneratedFirstPersonWeaponArt();
   const wrap=G('fp-weapon-art-wrap'),asset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
+  const hasGeneratedArt=!!(wrap&&asset);
+  hideGeneratedFirstPersonWeaponArt(!hasGeneratedArt);
   // file:// can load sibling WebP assets directly; HTTP cache versioning stays in gameAssetUrl().
-  if(!wrap||!asset)return;
+  // During a generated-art swap, keep the procedural rig hidden so a stale/fallback model
+  // cannot flash for a frame before the new image finishes loading.
+  if(!hasGeneratedArt)return;
   const tune=FP_GENERATED_ART_TUNING[w.key]||FP_GENERATED_ART_TUNING.rifle;
   wrap.style.setProperty('--fp-width',tune.width);wrap.style.setProperty('--fp-right',tune.right);
   wrap.style.setProperty('--fp-bottom',tune.bottom);wrap.style.setProperty('--fp-muzzle-x',tune.muzzleX);

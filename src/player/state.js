@@ -39,6 +39,7 @@ let lvlAnnT=0,lvlAnnMax=3.0;
 let pendingLevels=0,dyingT=0;
 
 // Death camera keeps the last hit, projectiles and battlefield visible before respawn.
+const PLAYER_RESPAWN_DELAY=15;
 let deathCamActive=false,deathCamElapsed=0,deathCamDuration=4.6,deathCamKiller=null,deathBody=null;
 const deathCamPlayerPos=new THREE.Vector3();
 const deathCamFocus=new THREE.Vector3();
@@ -213,27 +214,49 @@ function rollPerkChoices(count=4){
   return selected;
 }
 function getW(){return WEAPONS[curW];}
+function testingInfiniteAmmoEnabled(){return typeof gameSettings!=='undefined'&&gameSettings.infiniteAmmo===true;}
+function testingAllWeaponsEnabled(){return typeof gameSettings!=='undefined'&&gameSettings.allWeapons===true;}
+function testingVirtualReserve(w){return Math.max(w.clip,Math.min(w.reserveCap??9999,Math.max(120,w.clip*8)));}
 
-function ownsWeapon(idx){return Number.isInteger(idx)&&idx>=0&&idx<WEAPONS.length&&!!weaponOwned[idx];}
+function ownsWeapon(idx){
+  return Number.isInteger(idx)&&idx>=0&&idx<WEAPONS.length&&(!!weaponOwned[idx]||testingAllWeaponsEnabled());
+}
 function weaponTotalAmmo(idx){
   if(!ownsWeapon(idx))return 0;
+  if(testingInfiniteAmmoEnabled())return Number.POSITIVE_INFINITY;
   return Math.max(0,weaponAmmoValue(idx))+Math.max(0,weaponReserveValue(idx));
 }
 function weaponSelectable(idx){return ownsWeapon(idx)&&weaponTotalAmmo(idx)>0;}
 function weaponReserveValue(idx){
+  if(!ownsWeapon(idx))return 0;
+  const w=WEAPONS[idx];
+  if(testingInfiniteAmmoEnabled())return testingVirtualReserve(w);
+  if(testingAllWeaponsEnabled()&&!weaponOwned[idx])return testingVirtualReserve(w);
   if(idx===curW)return uAmmo;
-  const w=WEAPONS[idx],val=weaponReserve[idx];
+  const val=weaponReserve[idx];
   return Math.max(0,Math.min(w.reserveCap??9999,Number.isFinite(val)?val:0));
 }
 function syncCurrentAmmo(){
+  if(!weaponOwned[curW])return;
   weaponAmmo[curW]=Math.max(0,Math.min(getW().clip,ammo));
   weaponReserve[curW]=Math.max(0,Math.min(getW().reserveCap??9999,uAmmo));
 }
 function weaponAmmoValue(idx){
   if(!ownsWeapon(idx))return 0;
+  const w=WEAPONS[idx];
+  if(testingInfiniteAmmoEnabled())return w.clip;
+  if(testingAllWeaponsEnabled()&&!weaponOwned[idx])return w.clip;
   if(idx===curW)return ammo;
-  const w=WEAPONS[idx],val=weaponAmmo[idx];
+  const val=weaponAmmo[idx];
   return Math.max(0,Math.min(w.clip,Number.isFinite(val)?val:0));
+}
+function applyPlayerTestingSettings(){
+  if(!testingAllWeaponsEnabled()&&!weaponOwned[curW]){
+    const fallback=weaponOwned.findIndex(Boolean);
+    if(fallback>=0&&fallback!==curW)switchW(fallback);
+  }
+  if(typeof updateWeaponBar==='function')updateWeaponBar();
+  if(typeof wHUD==='function')wHUD();
 }
 function setWeaponAmmo(idx,value){
   const w=WEAPONS[idx];if(!w)return 0;
@@ -302,13 +325,16 @@ function applySavedPerk(id){
 }
 function captureSave(){
   syncCurrentAmmo();
-  const mags=weaponAmmo.map((value,i)=>ownsWeapon(i)?Math.max(0,Math.min(WEAPONS[i].clip,value)):0);
-  const reserves=weaponReserve.map((value,i)=>ownsWeapon(i)?Math.max(0,Math.min(WEAPONS[i].reserveCap??9999,value)):0);
+  const mags=weaponAmmo.map((value,i)=>weaponOwned[i]?Math.max(0,Math.min(WEAPONS[i].clip,value)):0);
+  const reserves=weaponReserve.map((value,i)=>weaponOwned[i]?Math.max(0,Math.min(WEAPONS[i].reserveCap??9999,value)):0);
+  const savedCurW=weaponOwned[curW]?curW:Math.max(0,weaponOwned.findIndex(Boolean));
+  const savedAmmo=Math.max(0,Math.min(WEAPONS[savedCurW].clip,weaponAmmo[savedCurW]??0));
+  const savedReserve=Math.max(0,Math.min(WEAPONS[savedCurW].reserveCap??9999,weaponReserve[savedCurW]??0));
   return {
     v:27,t:Date.now(),
     level,xp,score,kills,allyKills,enemyKills,
     frontline:typeof serializeFrontlineObjective==='function'?serializeFrontlineObjective():null,
-    hp,armor,uAmmo,curW,ammo,weaponAmmo:mags,weaponReserve:reserves,weaponOwned:weaponOwned.slice(),
+    hp,armor,uAmmo:savedReserve,curW:savedCurW,ammo:savedAmmo,weaponAmmo:mags,weaponReserve:reserves,weaponOwned:weaponOwned.slice(),
     playerMineCD,playerBombCD,playerSmokeCD,
     perks:perksGot.map(p=>p.id),
     player:{x:camera.position.x,z:camera.position.z,yaw,pitch}
@@ -362,6 +388,7 @@ function activatePreparedGame(){
   gameSessionActivated=true;
   respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;
   deathReason='';
+  applyPlayerTestingSettings();
   showAnn(preparedSaveLoaded?'АВТОСЕЙВ ВОССТАНОВЛЕН':'КОМАНДНЫЙ БОЙ 5×5 — GO!');
 }
 async function preloadGameContent(){
@@ -463,6 +490,8 @@ function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;
   if(!ownsWeapon(idx)){showMsg('🔒 '+WEAPONS[idx].label+' ещё не найдено — подберите его на карте');return;}
   if(!weaponSelectable(idx)){updateWeaponBar();showMsg('Пусто: '+WEAPONS[idx].label+' — подберите такой же ствол для пополнения');return;}
+  const nextAmmo=weaponAmmoValue(idx),nextReserve=weaponReserveValue(idx);
+  hideGeneratedFirstPersonWeaponArt(false);
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
   adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;
@@ -470,8 +499,8 @@ function switchW(idx){
   lastW=curW;
   curW=idx;
   const w=getW();
-  ammo=Math.max(0,Math.min(w.clip,weaponAmmo[idx]??0));
-  uAmmo=Math.max(0,Math.min(w.reserveCap??9999,weaponReserve[idx]??0));
+  ammo=Math.max(0,Math.min(w.clip,nextAmmo));
+  uAmmo=Math.max(0,Math.min(w.reserveCap??9999,nextReserve));
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   weaponEquipTot=w.equipTime||.32;weaponEquipT=weaponEquipTot;weaponReadyT=weaponEquipTot;
   playWeaponMechanicSound('equip',.82,w.key);
@@ -482,7 +511,7 @@ function switchW(idx){
 }
 function quickSwitchWeapon(){
   if(lastW!==curW&&weaponSelectable(lastW)){switchW(lastW);return;}
-  const idx=weaponOwned.findIndex((owned,i)=>owned&&i!==curW&&weaponSelectable(i));
+  const idx=WEAPONS.findIndex((_,i)=>i!==curW&&weaponSelectable(i));
   if(idx>=0)switchW(idx);
 }
 function cycleOwnedWeapon(direction){
