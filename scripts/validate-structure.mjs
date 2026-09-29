@@ -255,7 +255,7 @@ if(weapons.includes('gameTexture(GAME_ASSETS.generatedFirstPersonWeapons')||weap
   fail('generated player-held weapon art must stay DOM-only');
 }
 if(weapons.includes('if(!GAME_HOSTED_HTTP_MODE||!wrap||!asset)return;'))fail('generated player-held weapon art must not be disabled in file:// mode');
-if(!weapons.includes('if(!wrap||!asset)return;'))fail('generated player-held weapon loader protocol-neutral guard missing');
+if(!weapons.includes('const hasGeneratedArt=!!(wrap&&asset);')||!weapons.includes('if(!hasGeneratedArt)return;'))fail('generated player-held weapon loader protocol-neutral guard missing');
 if(!weapons.includes("el.style.display=owned&&!selectable?'none':''"))fail('empty owned weapons must disappear from the weapon bar');
 const rifleStart=weapons.indexOf("weaponDef('rifle'");
 const rifleEnd=weapons.indexOf('})',rifleStart);
@@ -305,7 +305,7 @@ for(const [label,section,ownerFlag] of [['player',playerProjectileSection,'true'
 }
 for(const forbidden of ['const ricochetChance=surface===','const ricochetLimit=surface===','const limit=surface===\'metal\'?.46','const chance=surface===\'metal\'?.76'])if(combat.includes(forbidden))fail('duplicate inline ricochet policy returned to combat.js: '+forbidden);
 if(!combat.includes("document.addEventListener('wheel'")||!combat.includes('cycleOwnedWeapon(e.deltaY>0?1:-1)'))fail('mouse wheel must cycle owned weapons only');
-for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValue(mineIdx)<=0)updateWeaponBar();','weaponReserveValue(bombIdx)<=0)updateWeaponBar();','weaponReserveValue(smokeIdx)<=0)updateWeaponBar();']){
+for(const token of ['if(!infiniteAmmo&&ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValue(mineIdx)<=0)updateWeaponBar();','weaponReserveValue(bombIdx)<=0)updateWeaponBar();','weaponReserveValue(smokeIdx)<=0)updateWeaponBar();']){
   if(!combat.includes(token))fail('depleted weapon bar retirement missing: '+token);
 }
 
