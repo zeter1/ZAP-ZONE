@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot individual mine/bomb deployable ownership
+- individual mine/bomb eligibility, role/doctrine probability и deployment side effects вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-deployables.js`;
+- `bots.js` сохраняет FSM/fire gate, cooldown lifecycle и порядок `bomb → mine → firearm shot`; coordinated smoke/frag остаётся в `src/ai/tactics.js`, shared constructors/state — в combat/weapon owners;
+- pure extraction сохраняет thresholds, multipliers, limits, placement physics, damage/fuse/cooldown formulas и RNG consumption order без gameplay balance change;
+- добавлены focused Node 22 regressions, `docs/specs/BOT_DEPLOYABLES.md`, AI routing, load-order oracle и owner/consumer/reverse structural guards.
+
 ### Bot weapon-selection policy ownership
 - post-spawn weapon reconsideration, current-weapon hold/hysteresis и switch timers вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-weapon-policy.js`;
 - weapon data/role-range scoring и visual implementation остаются в `src/weapons/system.js`, fire execution — в `src/ai/bot-fire-control.js`, а `bots.js` сохраняет FSM/fire-gate authority и отдельную spawn initialization;
