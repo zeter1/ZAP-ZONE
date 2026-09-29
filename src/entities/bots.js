@@ -271,14 +271,7 @@ class Enemy{
       this.pickupTarget=this.findReachableHealthPickup(30);
     }
 
-    this.coverEvalT-=dt;
-    if(this.coverEvalT<=0&&targetPos&&this.coverCooldownT<=0){
-      const needCover=(!this.canSeeTarget&&dist>10)||(hpPct<0.52)||(this.reloadT>0)||(this.role==='anchor'&&dist>12)||(this.lastDamageT>0&&dist>8)||(this.suppressedT>0);
-      const nextCover=needCover?findBotTacticalCover(this,targetPos):null;
-      if(nextCover&&(!this.coverPoint||this.coverPoint.distanceToSquared(nextCover)>.64))this.coverHoldT=.28+Math.random()*.42;
-      this.coverPoint=nextCover;
-      this.coverEvalT=.82+Math.random()*.48;
-    }
+    updateBotCoverSelection(this,dt,targetPos,dist,hpPct);
 
     this.aiT+=dt;this.stateCD-=dt;
     if(this.stateCD<=0){
@@ -348,47 +341,8 @@ class Enemy{
         break;
       }
       case 'cover':{
-        if(this.coverPoint){
-          if(!this.peekPoint&&this.peekCooldownT<=0&&targetPos&&this.reloadT<=0){
-            const tx=targetPos.x-this.coverPoint.x,tz=targetPos.z-this.coverPoint.z,td=Math.max(.001,Math.hypot(tx,tz));
-            const px=-tz/td,pz=tx/td;
-            for(const sign of [this.sideBias,-this.sideBias]){
-              const rawX=this.coverPoint.x+px*sign*1.35,rawZ=this.coverPoint.z+pz*sign*1.35;
-              const coll=collideWalls(rawX,rawZ,BOT_R);
-              if(Math.hypot(coll.x-rawX,coll.z-rawZ)>.55)continue;
-              const eye=new THREE.Vector3(coll.x,1.38,coll.z),tgt=targetPos.clone();tgt.y+=1.15;
-              if(!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt)){
-                this.peekPoint=new THREE.Vector3(coll.x,0,coll.z);this.peekDuration=.92+Math.random()*.34;this.peekT=this.peekDuration;
-                this.peekCooldownT=1.25+Math.random()*.85;this.sideBias=sign;break;
-              }
-            }
-          }
-          let coverGoal=this.coverPoint,peekMoveM=.98;
-          if(this.peekPoint&&this.peekT>0&&this.peekDuration>0){
-            const p=Math.max(0,Math.min(1,1-this.peekT/this.peekDuration));
-            const envelope=p<.24?p/.24:p>.72?(1-p)/.28:1;
-            coverGoal=this.coverPoint.clone().lerp(this.peekPoint,Math.max(0,envelope));
-            peekMoveM=.68;
-          }
-          const cx=coverGoal.x-myX,cz=coverGoal.z-myZ,cd=Math.sqrt(cx*cx+cz*cz)+0.001;
-          if(cd>(this.peekPoint?.42:1.4)){mx=(cx/cd)*spd*peekMoveM;mz=(cz/cd)*spd*peekMoveM;}
-          else{
-            this.coverHoldT-=dt;
-            if(this.reloadT<=0&&this.coverHoldT<=0){
-              const canChain=(squadPlan.doctrine==='breach'||squadPlan.doctrine==='retake')&&assaultWaveState==='active'&&targetPos&&mapObjective&&this.coverChainT<=0;
-              const nextCover=canChain?findBotTacticalCover(this,targetPos):null;
-              const advances=nextCover&&nextCover.distanceToSquared(this.group.position)>6.25&&
-                nextCover.distanceTo(mapObjective)+1.2<this.group.position.distanceTo(mapObjective);
-              if(advances){
-                this.coverPoint=nextCover;this.coverHoldT=.16+Math.random()*.22;this.coverChainT=.72+Math.random()*.35;
-              }else{
-                this.coverPoint=null;this.coverCooldownT=.95+Math.random()*.70;
-                this.aiState=this.canSeeTarget?'engage':'hunt';this.stateCD=.32;
-              }
-            }
-          }
-          if(targetPos)this.desiredYaw=Math.atan2(dx,dz);
-        }
+        const coverMove=runBotCoverExecution(this,{dt,targetPos,dx,dz,squadPlan,assaultWaveState,mapObjective});
+        mx=coverMove.x;mz=coverMove.z;
         break;
       }
       case 'hunt':{
@@ -556,8 +510,7 @@ class Enemy{
     this.velX=actualCap.x;this.velZ=actualCap.z;
     this.motionX=this.velX;this.motionZ=this.velZ;
     this.group.rotation.y=lerpAngle(this.group.rotation.y,this.desiredYaw,Math.min(1,dt*(5.2+this.aimSkill*3.2)));
-    const peekProgress=this.peekPoint&&this.peekDuration>0?Math.max(0,Math.min(1,1-this.peekT/this.peekDuration)):0;
-    const peekEnvelope=peekProgress<.24?peekProgress/.24:peekProgress>.72?(1-peekProgress)/.28:1;
+    const peekEnvelope=this.peekPoint?botCoverPeekEnvelope(this.peekT,this.peekDuration):0;
     const targetPeekLean=this.peekPoint?(-this.sideBias*.105*Math.max(0,peekEnvelope)):0;
     this.peekLean+=(targetPeekLean-this.peekLean)*(1-Math.exp(-dt*11));
     this.group.rotation.z+=(this.peekLean-this.group.rotation.z)*(1-Math.exp(-dt*12));

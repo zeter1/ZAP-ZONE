@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot cover / peek execution ownership
+- cover reevaluation, peek-side probing, LOS/smoke validation, peek timing/envelope, hold/chaining и cover exit вынесены из большого `Enemy.update()` в canonical owner `src/ai/bot-cover-execution.js`;
+- `src/ai/bot-positioning.js` сохраняет единоличное владение cover/flank destination scoring, `src/ai/bot-navigation.js` — collision-limited locomotion, а constructor/timer lifecycle и final movement остаются в `src/entities/bots.js`;
+- pure extraction сохраняет probe order `[sideBias,-sideBias]`, collision rejection `> 0.55`, LOS→smoke short-circuit, peek/chain/exit thresholds и точный branch-specific RNG order; duplicate peek-envelope math заменён одним canonical helper;
+- добавлены focused Node 22 regressions, `docs/specs/BOT_COVER_EXECUTION.md`, AI routing, reverse/authority/load-order guards и отдельный Validate step без ослабления HTTP/`file://` browser gates.
+
 ### Bot AI state-selection policy ownership
 - strict high-level state-selection ladder вынесен из большого `Enemy.update()` в canonical owner `src/ai/bot-state-policy.js`; `stateCD` decrement/gate, derived tactical facts и state execution остаются в `src/entities/bots.js`;
 - pure extraction сохраняет точный precedence `resupply → retreat → support → cover → flank → objective → engage → hunt → search → fallback`, strict/inclusive threshold semantics, ally/enemy engage-range multipliers и финальный objective/patrol fallback без gameplay rebalance;

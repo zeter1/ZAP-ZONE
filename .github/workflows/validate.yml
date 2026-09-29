@@ -51,6 +51,7 @@ jobs:
           node --check scripts/bot-suppression-response-owner.test.mjs
           node --check scripts/bot-dodge-response-owner.test.mjs
           node --check scripts/bot-positioning-owner.test.mjs
+          node --check scripts/bot-cover-execution-owner.test.mjs
           node --check scripts/bot-weapon-policy-owner.test.mjs
           node --check scripts/bot-fire-control-owner.test.mjs
           node --check scripts/bot-fire-cadence-owner.test.mjs
@@ -79,6 +80,8 @@ jobs:
         run: node --test scripts/bot-navigation-owner.test.mjs
       - name: Bot positioning regressions
         run: node --test scripts/bot-positioning-owner.test.mjs
+      - name: Bot cover-execution regressions
+        run: node --test scripts/bot-cover-execution-owner.test.mjs
       - name: Bot weapon-policy regressions
         run: node --test scripts/bot-weapon-policy-owner.test.mjs
       - name: Bot fire-control regressions
