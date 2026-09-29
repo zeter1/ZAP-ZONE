@@ -309,7 +309,7 @@ const tactics=readFileSync('src/ai/tactics.js','utf8');
 const frontline=readFileSync('src/game/frontline.js','utf8');
 const presentation=readFileSync('src/entities/bot-presentation.js','utf8');
 const bots=readFileSync('src/entities/bots.js','utf8');
-for(const token of ['function tryPlantBotMine(bot,dist,targetPos){','function tryPlantBotBomb(bot,dist,targetPos){','countTeamMines(bot.team)','activeBombCount()','bombNearPoint(pos,24)',"+'"+"bot.commandDoctrine==='breach'"+"'"+",'mkMine()','mkBomb()']){if(!deployables.includes(token))fail('bot deployables owner contract missing: '+token);}
+for(const token of ['function tryPlantBotMine(bot,dist,targetPos){','function tryPlantBotBomb(bot,dist,targetPos){','countTeamMines(bot.team)','activeBombCount()','bombNearPoint(pos,24)',"bot.commandDoctrine==='breach'",'mkMine()','mkBomb()']){if(!deployables.includes(token))fail('bot deployables owner contract missing: '+token);}
 if(/maybePlant(?:Mine|Bomb)\s*\(/.test(bots))fail('bot deployable implementation leaked back into bots.js');
 for(const token of ['tryPlantBotBomb(this,dist,targetPos)','tryPlantBotMine(this,dist,targetPos)','this.mineCD=8+Math.random()*12','this.bombCD=24+Math.random()*52','if(this.mineCD>0)this.mineCD-=dt;','if(this.bombCD>0)this.bombCD-=dt;']){if(!bots.includes(token))fail('bot deployables consumer/fire-gate contract missing: '+token);}
 const botBombDeployCall=bots.indexOf('tryPlantBotBomb(this,dist,targetPos)'),botMineDeployCall=bots.indexOf('tryPlantBotMine(this,dist,targetPos)'),botShotCall=bots.indexOf('executeBotShot(this,fireTarget,fireDist,suppressMemory)');
