@@ -47,6 +47,7 @@ jobs:
           node --check scripts/bot-navigation-owner.test.mjs
           node --check scripts/bot-perception-owner.test.mjs
           node --check scripts/bot-positioning-owner.test.mjs
+          node --check scripts/bot-fire-control-owner.test.mjs
           node --check scripts/browser-boot-smoke.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
@@ -62,6 +63,8 @@ jobs:
         run: node --test scripts/bot-navigation-owner.test.mjs
       - name: Bot positioning regressions
         run: node --test scripts/bot-positioning-owner.test.mjs
+      - name: Bot fire-control regressions
+        run: node --test scripts/bot-fire-control-owner.test.mjs
 
       - name: Browser boot smoke test
         shell: bash
@@ -100,7 +103,11 @@ jobs:
             > /tmp/zap-http-chrome.out 2> /tmp/zap-http-chrome.log &
           chrome_pid=$!
 
-          if ! timeout 25s node scripts/browser-boot-smoke.mjs; then
+          if ! ZAP_CDP_WAIT_MS=15000 timeout 40s node scripts/browser-boot-smoke.mjs; then
+            echo "--- CDP diagnostics ---"
+            ps -p "$chrome_pid" -o pid=,stat=,etime=,cmd= || true
+            curl -fsS http://127.0.0.1:9222/json/version || true
+            curl -fsS http://127.0.0.1:9222/json/list || true
             echo "--- HTTP Chrome log ---"
             tail -n 120 /tmp/zap-http-chrome.log || true
             exit 1

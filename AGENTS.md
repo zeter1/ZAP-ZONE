@@ -15,10 +15,11 @@
 - bot perception / combat noise / hearing / target acquisition / grenade+mine+rocket sensing → `src/ai/bot-perception.js` + `docs/specs/BOT_PERCEPTION.md`;
 - bot navigation / wall+smoke steering / speed caps / collision substeps → `src/ai/bot-navigation.js` + `docs/specs/BOT_NAVIGATION.md`;
 - bot tactical cover/flank destination scoring → `src/ai/bot-positioning.js` + `docs/specs/BOT_POSITIONING.md`;
+- bot aim / muzzle / reload / concrete shot + hit resolution → `src/ai/bot-fire-control.js` + `docs/specs/BOT_FIRE_CONTROL.md`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
-- individual bot FSM / tactical execution / shooting / damage reaction → `src/entities/bots.js`; it consumes perception, navigation and positioning owners rather than reimplementing them;
+- individual bot FSM / fire gate + burst cadence / weapon-selection policy / tactical execution / damage reaction → `src/entities/bots.js`; it consumes perception, navigation, positioning and fire-control owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
