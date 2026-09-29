@@ -103,7 +103,11 @@ jobs:
             > /tmp/zap-http-chrome.out 2> /tmp/zap-http-chrome.log &
           chrome_pid=$!
 
-          if ! timeout 25s node scripts/browser-boot-smoke.mjs; then
+          if ! ZAP_CDP_WAIT_MS=15000 timeout 40s node scripts/browser-boot-smoke.mjs; then
+            echo "--- CDP diagnostics ---"
+            ps -p "$chrome_pid" -o pid=,stat=,etime=,cmd= || true
+            curl -fsS http://127.0.0.1:9222/json/version || true
+            curl -fsS http://127.0.0.1:9222/json/list || true
             echo "--- HTTP Chrome log ---"
             tail -n 120 /tmp/zap-http-chrome.log || true
             exit 1
