@@ -689,21 +689,7 @@ class Enemy{
             this.sT=.48;
           }else{
             executeBotShot(this,fireTarget,fireDist,suppressMemory);
-            this.burstLeft--;
-            if(this.burstLeft<=0){
-              const attackingPlayer=this.team==='enemy'&&this.targetIsPlayer;
-              let base=attackingPlayer
-                ? (this.weapon.isRocket||this.weapon.key==='shotgun'||this.weapon.isSniper?1:2)
-                : (this.weapon.isSniper?1:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?4:this.weapon.key==='pistol'?3:1));
-              let extra=this.weapon.isSniper?1:(attackingPlayer?2:(this.weapon.key==='rifle'||this.weapon.key==='plasma'?5:3));
-              const suppressing=this.tacticalMode==='suppress'&&!this.weapon.isRocket&&!this.weapon.isSniper;
-              if(suppressing){base+=2;extra+=2;}
-              this.burstLeft=base+Math.floor(Math.random()*extra);
-              const normalPause=((this.weapon.isSniper?.72:this.weapon.isRocket?.58:this.weapon.key==='shotgun'?.34:.16)+Math.random()*(.18+(1-this.aimSkill)*.22))*(suppressing?.48:1);
-              this.burstPauseT=attackingPlayer?(suppressing?.24+Math.random()*.22:.42+Math.random()*.42):normalPause;
-            }
-            this.sT=Math.max((this.team==='enemy'&&this.targetIsPlayer)?0.095:0.055,this.weapon.rate*this.fireRateMul*(.96+Math.random()*.24));
-            if(this.mag<=0)startBotReload(this);
+            applyBotPostShotCadence(this);
           }
         }
       }
