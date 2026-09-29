@@ -77,6 +77,12 @@
 - **REVIEW:** duplicate owners, stale docs/tests, accidental behavior/balance changes, cache/build parity.
 - **DELIVER:** только после evidence; если слой не проверен — отметить `NOT VERIFIED`.
 
+## GitHub Actions dependency identity
+
+- В `.github/workflows/*` внешние `uses:` refs закрепляйте на проверенные полные 40-символьные commit SHA; рядом сохраняйте читаемый release tag-комментарий (например, `# v4.4.0`) для аудита.
+- При upgrade сначала сверяйте upstream repository и соответствие release/tag → full SHA; не возвращайте movable `@vN` в unrelated change.
+- Workflow change считается high-risk: сохраняйте least privilege и после записи проверяйте exact GitHub Actions run на exact head до следующего write.
+
 ## Verification matrix
 
 | Изменение | Минимум проверки |

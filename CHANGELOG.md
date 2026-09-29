@@ -2,6 +2,10 @@
 
 ## Unreleased — 2026-09-29
 
+### GitHub Actions supply-chain hardening
+- `Validate` больше не следует за перемещаемыми `actions/checkout@v4` и `actions/setup-node@v4`: обе официальные GitHub Actions закреплены на проверенных полных SHA релиза `v4.4.0`;
+- Node 22, triggers, `contents: read`, concurrency, regression suites и HTTP/`file://` browser smoke gates сохранены без изменения; проходка меняет только identity CI dependencies.
+
 ### Bot individual mine/bomb deployable ownership
 - individual mine/bomb eligibility, role/doctrine probability и deployment side effects вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-deployables.js`;
 - `bots.js` сохраняет FSM/fire gate, cooldown lifecycle и порядок `bomb → mine → firearm shot`; coordinated smoke/frag остаётся в `src/ai/tactics.js`, shared constructors/state — в combat/weapon owners;
