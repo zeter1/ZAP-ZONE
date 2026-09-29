@@ -89,7 +89,7 @@ Behavior закреплён `scripts/bot-deployables-owner.test.mjs`; structural
 
 Owner получает уже произошедший damage event из стабильной public seam `Enemy.hurt(...)` и владеет только retaliatory AI policy: hostile bot/player source semantics, точным retarget predicate, target memory/velocity, target lock и ускорением reaction/burst/FSM timers.
 
-Граница намеренно отделяет **damage application/lifecycle** от **AI response policy**. `src/entities/bots.js` по-прежнему мутирует HP, показывает hit emissive, выполняет прежний dodge RNG и concrete dodge, а затем вызывает damage-reaction owner до `die()`. `src/ai/bot-perception.js` остаётся owner-ом active sensing/hearing/LOS target acquisition; near-miss suppression остаётся отдельной event seam, теперь с собственным response owner `src/ai/bot-suppression-response.js`, и не смешивается с damage reaction.
+Граница намеренно отделяет **damage application/lifecycle** от **AI response policy**. `src/entities/bots.js` по-прежнему мутирует HP, показывает hit emissive, сохраняет прежний survived-damage dodge chance и вызывает стабильную `Enemy.triggerDodge()` seam; concrete dodge-response execution принадлежит `src/ai/bot-dodge-response.js`, после чего damage-reaction owner всё так же вызывается до `die()`. `src/ai/bot-perception.js` остаётся owner-ом active sensing/hearing/LOS target acquisition; near-miss suppression остаётся отдельной event seam, теперь с собственным response owner `src/ai/bot-suppression-response.js`, и не смешивается с damage reaction.
 
 Pure extraction сохраняет точную включительную границу `dmg >= maxHp * 0.10`, source precedence, target-memory fields и timer clamps. Новый owner не содержит `Math.random()`, поэтому RNG consumption/order `Enemy.hurt()` не меняется.
 
@@ -104,6 +104,16 @@ Behavior закреплён `scripts/bot-damage-reaction-owner.test.mjs`; struct
 Owner сохраняет прежний source guard, clamp `0.3..1.4`, duration `max(current, 0.62 + pressure * 0.78)`, `coverCooldownT <= 0.12` и строгие thresholds `hp/maxHp < 0.72` / `pressure > 0.9` для `coverEvalT <= 0.05` и `stateCD <= 0.08`. Строковый player token остаётся допустимым source, как и до extraction.
 
 Owner не содержит `Math.random()`, near-miss geometry, perception, cover scoring или FSM transition selection. Structural validation запрещает duplicate implementation в `bots.js`, прямой обход seam из `combat.js` и неправильный classic-script load order.
+
+## Bot dodge-response execution owner
+
+**Canonical owner:** `src/ai/bot-dodge-response.js`. Узкий контракт — **[specs/BOT_DODGE_RESPONSE.md](specs/BOT_DODGE_RESPONSE.md)**.
+
+`Enemy.triggerDodge(preferredDir=0, urgency=1)` остаётся стабильной public seam в `src/entities/bots.js`. Survived-damage и rocket-threat branches решают **когда** вызвать dodge и с какими direction/urgency; owner решает только **как** применить уже принятый запрос.
+
+Owner сохраняет ранний reject при active dodge/cooldown, fallback direction, duration/speed urgency clamps, cooldown и optional jump. Здесь намеренно остаётся `Math.random()`, потому что concrete RNG consumption — часть этой execution policy: preferred direction short-circuit пропускает direction draw; rejected request не потребляет RNG; jump predicate всегда потребляет свой draw до проверки `jV===0`, а impulse draw появляется только после успешного predicate и нулевой вертикальной скорости.
+
+Dodge timer decay, movement-vector consumption, speed cap/collision остаются в `src/entities/bots.js` + `src/ai/bot-navigation.js`; rocket sensing остаётся в perception. `scripts/bot-dodge-response-owner.test.mjs` фиксирует controlled-RNG semantics, а structure validation запрещает duplicate implementation, producer bypass и неверный classic-script load order.
 
 ## Session lifecycle owner
 

@@ -2,7 +2,7 @@
 
 [![Validate](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml/badge.svg)](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml)
 
-**ZAP ZONE** — динамичный браузерный 3D FPS на **Three.js/WebGL** с командным боем **5×5**: игрок и 4 союзных AI-бота против пятёрки противников. Команды давят сектора, заходят во фланг, подавляют огнём и перестраивают план под стиль игрока — арена ощущается как живой тактический бой, а не статичный тир.
+**ZAP ZONE** — динамичный браузерный 3D FPS на **Three.js/WebGL** с командным боем **5×5**: игрок и 4 союзных AI-бота против пятёрки противников. Команды давят сектора, заходят во фланг, подавляют огнём, реагируют на ракетные угрозы уклонениями и перестраивают план под стиль игрока — арена ощущается как живой тактический бой, а не статичный тир.
 
 ## История изменений
 
@@ -96,7 +96,7 @@ index.html
 │   ├── player/state.js
 │   ├── settings/settings.js
 │   ├── combat/combat.js
-│   ├── ai/{bot-perception,bot-damage-reaction,bot-navigation,bot-positioning,bot-weapon-policy,bot-fire-control,bot-deployables,tactics}.js
+│   ├── ai/{bot-perception,bot-damage-reaction,bot-suppression-response,bot-dodge-response,bot-navigation,bot-positioning,bot-weapon-policy,bot-fire-control,bot-deployables,tactics}.js
 │   ├── game/frontline.js
 │   ├── entities/{bot-presentation,bots,pickups}.js
 │   ├── progression/progression.js
@@ -118,7 +118,7 @@ index.html
 
 ## Для ChatGPT / Codex / AI-разработки
 
-Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для damage-event retaliation — **[docs/specs/BOT_DAMAGE_REACTION.md](docs/specs/BOT_DAMAGE_REACTION.md)**, для locomotion — **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для individual mine/bomb policy — **[docs/specs/BOT_DEPLOYABLES.md](docs/specs/BOT_DEPLOYABLES.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
+Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для damage-event retaliation — **[docs/specs/BOT_DAMAGE_REACTION.md](docs/specs/BOT_DAMAGE_REACTION.md)**, для dodge RNG/execution — **[docs/specs/BOT_DODGE_RESPONSE.md](docs/specs/BOT_DODGE_RESPONSE.md)**, для locomotion — **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для individual mine/bomb policy — **[docs/specs/BOT_DEPLOYABLES.md](docs/specs/BOT_DEPLOYABLES.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
 
 Правило проекта: refactor переносит **ownership + invariants + verification oracle**, а не просто строки кода. После source/runtime-изменения обязательны build-stamp check, structural validation и browser smoke; полезные проверки не отключаются ради зелёного CI.
 

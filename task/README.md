@@ -10,4 +10,5 @@
 - не читать весь проект: сначала `AGENTS.md` → `docs/AI_WORKFLOW.md` → owner/spec → точечный код;
 - чистый refactor не должен незаметно менять gameplay balance;
 - после source/runtime change обязательны build stamp, structure validation и browser smoke;
-- GitHub writes собирать в минимальное число логических commits и проверять Actions после записи.
+- GitHub writes собирать в минимальное число логических commits и проверять Actions после записи;
+- randomized policy extraction обязана фиксировать short-circuit и точный RNG call count/order, если они наблюдаемы в gameplay.

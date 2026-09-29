@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot dodge-response execution ownership
+- concrete dodge execution вынесено из `Enemy.triggerDodge()` в canonical owner `src/ai/bot-dodge-response.js`, при этом public seam и оба producer-а (survived damage / rocket threat) сохранены;
+- pure extraction сохраняет active/cooldown early return, preferred-direction precedence, duration/speed urgency clamps, cooldown, optional jump и точный `Math.random()` consumption order без balance changes;
+- dodge timer decay, movement consumption/collision и rocket sensing остаются у прежних owners; producer-ы не обходят `Enemy.triggerDodge()`;
+- добавлены 4 controlled-RNG Node 22 regressions, `docs/specs/BOT_DODGE_RESPONSE.md`, AI routing, owner/consumer/reverse/producer guards и classic-script load-order validation.
+
 ### Bot suppression-response policy ownership
 - near-miss suppression response вынесен из `Enemy.registerSuppression()` в canonical owner `src/ai/bot-suppression-response.js`, при этом `Enemy.registerSuppression(...)` сохранён как стабильная public seam для `combat.js`;
 - pure extraction сохраняет source guard, player-token semantics, pressure clamp `0.3..1.4`, duration `0.62 + pressure*0.78`, strict thresholds `hp/maxHp < 0.72` / `pressure > 0.9` и все timer clamps без новых RNG calls или balance changes;

@@ -174,12 +174,7 @@ class Enemy{
 
 
   triggerDodge(preferredDir=0,urgency=1){
-    if(this.dodgeCD>0||this.dodgeT>0)return;
-    this.dodgeDir=preferredDir||(Math.random()<.5?-1:1);
-    this.dodgeT=(0.34+Math.random()*.24)*Math.max(.86,Math.min(1.14,urgency));
-    this.dodgeSpd=this.speed*(1.30+this.aimSkill*.16)*Math.max(.96,Math.min(1.08,urgency));
-    this.dodgeCD=.88+Math.random()*.62;
-    if(Math.random()<0.16*urgency&&this.jV===0)this.jV=4.6+Math.random()*1.6;
+    applyBotDodgeResponse(this,preferredDir,urgency);
   }
 
   registerSuppression(source,intensity=.6){
