@@ -20,15 +20,16 @@
 16. `src/ai/bot-fire-control.js` — aim/muzzle/reload и concrete shot/hit execution для уже принятого fire intent.
 17. `src/ai/bot-fire-cadence.js` — post-shot burst reset, pause, next-shot schedule и точный RNG order.
 18. `src/ai/bot-deployables.js` — individual mine/bomb eligibility, role/doctrine probability и deployment side effects.
-19. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
-20. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
-21. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
-22. `src/entities/bots.js` — per-bot FSM, broad fire gate и tactical execution; cadence initialization/timer decay остаются lifecycle-state, а progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables owners используются как consumer dependencies.
-23. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-24. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-25. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
-26. `src/ui/minimap.js` — тактическая миникарта.
-27. `src/game/runtime.js` — frame simulation/render loop и boot.
+19. `src/ai/bot-state-policy.js` — periodic high-level state selection priority и post-selection `stateCD` schedule.
+20. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
+21. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
+22. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
+23. `src/entities/bots.js` — per-bot state execution, event-driven state overrides, broad fire gate и tactical execution; state/cadence timer lifecycle остаётся здесь, а progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables/state-policy owners используются как consumer dependencies.
+24. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+25. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+26. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+27. `src/ui/minimap.js` — тактическая миникарта.
+28. `src/game/runtime.js` — frame simulation/render loop и boot.
 
 ## Bot progression-scaling policy owner
 
@@ -46,7 +47,7 @@ Behavior закреплён `scripts/bot-progression-scaling-owner.test.mjs`; st
 
 **Canonical owner:** `src/ai/bot-perception.js`. Узкий контракт — **[specs/BOT_PERCEPTION.md](specs/BOT_PERCEPTION.md)**. Owner владеет сбором и интерпретацией сенсорных сигналов: bounded combat-noise bus, hearing attenuation/uncertainty, target acquisition/scoring, LOS memory refresh, hostile grenade/mine scan cadence и incoming-rocket prediction.
 
-Граница проходит по схеме **sense → decide → execute**. `src/combat/combat.js` и `src/weapons/system.js` остаются producer-ами projectile/mine/grenade/shot state. Perception читает эти данные и обновляет per-bot sensory memory. `src/entities/bots.js` остаётся owner-ом FSM-переходов (`hunt`, `retreat`, dodge), broad fire gate, tactical execution и damage reaction; post-spawn weapon-selection policy принадлежит `src/ai/bot-weapon-policy.js`, concrete shot execution — `src/ai/bot-fire-control.js`, а post-shot burst/cadence — `src/ai/bot-fire-cadence.js`. `src/ai/tactics.js` может читать canonical `BOT_NOISE_EVENTS` для team-level awareness, но не владеет его lifecycle.
+Граница проходит по схеме **sense → decide → execute**. `src/combat/combat.js` и `src/weapons/system.js` остаются producer-ами projectile/mine/grenade/shot state. Perception читает эти данные и обновляет per-bot sensory memory. `src/entities/bots.js` остаётся owner-ом event-driven overrides (`hunt`, `retreat`, dodge), broad fire gate и tactical execution; periodic ordered state selection принадлежит `src/ai/bot-state-policy.js`, а damage-event reaction — отдельному owner; post-spawn weapon-selection policy принадлежит `src/ai/bot-weapon-policy.js`, concrete shot execution — `src/ai/bot-fire-control.js`, а post-shot burst/cadence — `src/ai/bot-fire-cadence.js`. `src/ai/tactics.js` может читать canonical `BOT_NOISE_EVENTS` для team-level awareness, но не владеет его lifecycle.
 
 Хранение `targetEn`, `lastKnown`, `heardT`, scan timers и cached threat на объекте `Enemy` не делает `bots.js` owner-ом алгоритма perception: это per-entity state, которым canonical sensing functions управляют через явный bot argument. Такой seam уменьшает context cost без создания второго AI object model.
 
@@ -98,6 +99,17 @@ Behavior закреплён `scripts/bot-fire-control-owner.test.mjs`; structura
 
 Особенно важен stochastic contract: ветка enemy→player всё ещё потребляет RNG для `normalPause` до отдельного player-pause RNG, хотя первый результат затем не используется. Controlled-RNG regression фиксирует не только формулы, но и количество/порядок draws; constructor `burstLeft/sT` не перенесены, чтобы не менять spawn RNG order.
 
+## Bot high-level state-selection policy owner
+
+**Canonical owner:** `src/ai/bot-state-policy.js`. Узкий контракт — **[specs/BOT_STATE_POLICY.md](specs/BOT_STATE_POLICY.md)**. Owner получает уже вычисленные в `Enemy.update()` факты и выбирает только periodic high-level `aiState`, после чего назначает legacy `stateCD`.
+
+Граница: **fact production + cooldown lifecycle → ordered state decision → state execution**. `src/entities/bots.js` сохраняет `stateCD` decrement/gate, hearing/explosive event overrides, tactical/perception fact production и весь movement/combat switch; `bot-positioning.js` продолжает владеть cover/flank destination scoring, `tactics.js` — squad doctrine, а fire/deployable owners не получают FSM authority.
+
+Pure extraction сохраняет приоритет буквально: `resupply → retreat → support → cover → flank → map objective → engage → hunt → search → objective/patrol fallback`. Сохраняются strict thresholds `.48/.25/.58/.72`, inclusive engage range (`<= range*1.14` ally, `<= range*1.08` enemy), strict `lastSeenT < 8.5/<14.5` и то, что `mapOrderWanted` опережает engage/hunt/search.
+
+Stochastic contract также является частью поведения: один реальный policy call потребляет ровно один `Math.random()` для `stateCD=.22+random*.30`; при `stateCD>0` caller не вызывает policy и state-selection RNG не расходуется. Controlled-RNG regression плюс structural gate фиксируют это отдельно от state execution.
+
+`scripts/bot-state-policy-owner.test.mjs` проверяет priority conflicts, exact threshold boundaries, ally/enemy engage range, hunt/search boundaries, fallback и RNG count. `scripts/validate-structure.mjs` дополнительно запрещает возврат ladder в `bots.js`, leakage movement/perception/tactics/combat authority в policy owner и неправильный classic-script load order.
 ## Bot individual deployables owner
 
 **Canonical owner:** `src/ai/bot-deployables.js`. Узкий контракт — **[specs/BOT_DEPLOYABLES.md](specs/BOT_DEPLOYABLES.md)**. Owner получает уже разрешённый individual utility attempt и решает eligibility/probability для mine/bomb, после чего выполняет placement через существующие shared combat primitives.
