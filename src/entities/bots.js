@@ -783,26 +783,7 @@ class Enemy{
     this.coverPoint=null;this.coverCooldownT=0;
     this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(1,0,0);});
     if(this.hp>0&&Math.random()<Math.min(.90,.48+level*.018+kills*.0025))this.triggerDodge();
-    const botSource=source&&source!=='player'&&source!==this&&source.alive&&source.team!==this.team?source:null;
-    const playerSource=this.team==='enemy'&&(source==='player'||fromTeam==='player'||fromTeam==='ally');
-    const shouldRetaliate=!this.canSeeTarget||this.targetLockT<=.15||dmg>=this.maxHp*.10;
-    if(botSource&&shouldRetaliate){
-      this.targetEn=botSource;this.targetIsPlayer=false;
-      this.lastKnown.copy(botSource.group.position);this.lastKnownVel.set(botSource.velX||0,0,botSource.velZ||0);
-      this.lastSeenT=0;this.lastTargetSeenAt=performance.now();this.losT=0;
-      this.targetLockT=.92+this.aimSkill*.45;this.searchPoint=null;this.searchStep=0;
-    }else if(playerSource&&!dying&&shouldRetaliate){
-      this.targetEn=null;this.targetIsPlayer=true;
-      this.lastKnown.copy(camera.position);this.lastKnownVel.set(plrVx,0,plrVz);
-      this.lastSeenT=0;this.lastTargetSeenAt=performance.now();this.losT=0;
-      this.targetLockT=.92+this.aimSkill*.45;this.searchPoint=null;this.searchStep=0;
-    }else{
-      this.lastSeenT=Math.min(this.lastSeenT,1.15);
-    }
-    this.reactionT=Math.min(this.reactionT,.07);
-    this.burstPauseT=Math.min(this.burstPauseT,.06);
-    if(this.aiState==='patrol'||this.aiState==='search')this.aiState='hunt';
-    this.stateCD=Math.min(this.stateCD,.14);
+    applyBotDamageReaction(this,dmg,fromTeam,source);
     if(this.hp<=0)this.die(dmg,dir);
   }
 

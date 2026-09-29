@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-deployables.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-deployables.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -97,7 +97,7 @@ for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:
 }
 
 
-for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs','scripts/bot-perception-owner.test.mjs','scripts/bot-positioning-owner.test.mjs','scripts/bot-weapon-policy-owner.test.mjs','scripts/bot-fire-control-owner.test.mjs','scripts/bot-deployables-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs','scripts/bot-perception-owner.test.mjs','scripts/bot-damage-reaction-owner.test.mjs','scripts/bot-positioning-owner.test.mjs','scripts/bot-weapon-policy-owner.test.mjs','scripts/bot-fire-control-owner.test.mjs','scripts/bot-deployables-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
@@ -300,6 +300,7 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 
 
 const perception=readFileSync('src/ai/bot-perception.js','utf8');
+const damageReaction=readFileSync('src/ai/bot-damage-reaction.js','utf8');
 const navigation=readFileSync('src/ai/bot-navigation.js','utf8');
 const positioning=readFileSync('src/ai/bot-positioning.js','utf8');
 const weaponPolicy=readFileSync('src/ai/bot-weapon-policy.js','utf8');
@@ -309,6 +310,38 @@ const tactics=readFileSync('src/ai/tactics.js','utf8');
 const frontline=readFileSync('src/game/frontline.js','utf8');
 const presentation=readFileSync('src/entities/bot-presentation.js','utf8');
 const bots=readFileSync('src/entities/bots.js','utf8');
+for(const token of [
+  'function applyBotDamageReaction(bot,dmg,fromTeam,source=null){',
+  "const botSource=source&&source!=='player'",
+  "const playerSource=bot.team==='enemy'",
+  'const shouldRetaliate=!bot.canSeeTarget||bot.targetLockT<=.15||dmg>=bot.maxHp*.10;',
+  'bot.targetLockT=.92+bot.aimSkill*.45',
+  'bot.reactionT=Math.min(bot.reactionT,.07);',
+  'bot.burstPauseT=Math.min(bot.burstPauseT,.06);',
+  "bot.aiState='hunt'",
+  'bot.stateCD=Math.min(bot.stateCD,.14);'
+]){
+  if(!damageReaction.includes(token))fail('bot damage-reaction owner contract missing: '+token);
+}
+if(!bots.includes('applyBotDamageReaction(this,dmg,fromTeam,source);'))fail('Enemy.hurt must consume canonical bot damage-reaction policy');
+for(const token of [
+  "const botSource=source&&source!=='player'",
+  "const playerSource=this.team==='enemy'",
+  'const shouldRetaliate=!this.canSeeTarget',
+  'this.targetLockT=.92+this.aimSkill*.45'
+]){
+  if(bots.includes(token))fail('bot damage-reaction implementation leaked back into bots.js: '+token);
+}
+for(const token of ['this.hp-=','triggerDodge(','die(','Math.random(','class Enemy','registerSuppression(','spawnEnemyBullet','BOT_TEAM_TACTICS','findBotFlankPoint']){
+  if(damageReaction.includes(token))fail('HP/dodge/death/RNG/combat/tactics authority leaked into bot damage-reaction owner: '+token);
+}
+const hurtStart=bots.indexOf('  hurt(dmg,dir,fromTeam,source=null){');
+const hurtEnd=bots.indexOf('\n  die(dmg,dir){',hurtStart);
+const hurtBody=hurtStart>=0&&hurtEnd>hurtStart?bots.slice(hurtStart,hurtEnd):'';
+const hurtDodge=hurtBody.indexOf('this.triggerDodge()');
+const hurtReaction=hurtBody.indexOf('applyBotDamageReaction(this,dmg,fromTeam,source);');
+const hurtDeath=hurtBody.indexOf('if(this.hp<=0)this.die(dmg,dir);');
+if(!(hurtDodge>=0&&hurtDodge<hurtReaction&&hurtReaction<hurtDeath))fail('Enemy.hurt event order must remain dodge -> damage reaction -> death');
 for(const token of ['function tryPlantBotMine(bot,dist,targetPos){','function tryPlantBotBomb(bot,dist,targetPos){','countTeamMines(bot.team)','activeBombCount()','bombNearPoint(pos,24)',"bot.commandDoctrine==='breach'",'mkMine()','mkBomb()']){if(!deployables.includes(token))fail('bot deployables owner contract missing: '+token);}
 if(/maybePlant(?:Mine|Bomb)\s*\(/.test(bots))fail('bot deployable implementation leaked back into bots.js');
 for(const token of ['tryPlantBotBomb(this,dist,targetPos)','tryPlantBotMine(this,dist,targetPos)','this.mineCD=8+Math.random()*12','this.bombCD=24+Math.random()*52','if(this.mineCD>0)this.mineCD-=dt;','if(this.bombCD>0)this.bombCD-=dt;']){if(!bots.includes(token))fail('bot deployables consumer/fire-gate contract missing: '+token);}
@@ -379,8 +412,8 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 bot execution missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/bot-positioning.js'")&&html.indexOf("'src/ai/bot-positioning.js'")<html.indexOf("'src/ai/bot-weapon-policy.js'")&&html.indexOf("'src/ai/bot-weapon-policy.js'")<html.indexOf("'src/ai/bot-fire-control.js'")&&html.indexOf("'src/ai/bot-fire-control.js'")<html.indexOf("'src/ai/bot-deployables.js'")&&html.indexOf("'src/ai/bot-deployables.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
-  fail('classic-script order must load combat -> bot perception -> bot navigation -> bot positioning -> bot weapon policy -> bot fire-control -> bot deployables -> tactics -> frontline -> bots');
+if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-damage-reaction.js'")&&html.indexOf("'src/ai/bot-damage-reaction.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/bot-positioning.js'")&&html.indexOf("'src/ai/bot-positioning.js'")<html.indexOf("'src/ai/bot-weapon-policy.js'")&&html.indexOf("'src/ai/bot-weapon-policy.js'")<html.indexOf("'src/ai/bot-fire-control.js'")&&html.indexOf("'src/ai/bot-fire-control.js'")<html.indexOf("'src/ai/bot-deployables.js'")&&html.indexOf("'src/ai/bot-deployables.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load combat -> bot perception -> bot damage reaction -> bot navigation -> bot positioning -> bot weapon policy -> bot fire-control -> bot deployables -> tactics -> frontline -> bots');
 }
 if(!(html.indexOf("'src/entities/bot-presentation.js'")<html.indexOf("'src/entities/bots.js'"))){
   fail('classic-script order must load bot presentation owner before bots');

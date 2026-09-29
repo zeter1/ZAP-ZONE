@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot damage-reaction policy ownership
+- retaliatory target selection, source semantics, target memory/lock и reaction/burst/FSM timer clamps вынесены из `Enemy.hurt()` в canonical owner `src/ai/bot-damage-reaction.js`;
+- `Enemy.hurt(...)` остаётся стабильной public seam и по-прежнему владеет HP mutation, hit presentation, dodge RNG/concrete execution и death lifecycle; порядок side effects сохранён как `dodge → damage reaction → death`;
+- pure extraction сохраняет включительный threshold `dmg >= 10% maxHp`, bot/player source precedence и не добавляет новых random calls или balance changes;
+- добавлены 4 focused Node 22 regressions, `docs/specs/BOT_DAMAGE_REACTION.md`, AI routing, classic-script load-order и owner/consumer/reverse/event-order guards.
+
 ### GitHub Actions supply-chain hardening
 - `Validate` больше не следует за перемещаемыми `actions/checkout@v4` и `actions/setup-node@v4`: обе официальные GitHub Actions закреплены на проверенных полных SHA релиза `v4.4.0`;
 - Node 22, triggers, `contents: read`, concurrency, regression suites и HTTP/`file://` browser smoke gates сохранены без изменения; проходка меняет только identity CI dependencies.
