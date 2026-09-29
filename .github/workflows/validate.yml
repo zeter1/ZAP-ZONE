@@ -47,6 +47,7 @@ jobs:
           node --check scripts/bot-navigation-owner.test.mjs
           node --check scripts/bot-perception-owner.test.mjs
           node --check scripts/bot-positioning-owner.test.mjs
+          node --check scripts/bot-weapon-policy-owner.test.mjs
           node --check scripts/bot-fire-control-owner.test.mjs
           node --check scripts/browser-boot-smoke.mjs
       - name: Web build stamp
@@ -63,6 +64,8 @@ jobs:
         run: node --test scripts/bot-navigation-owner.test.mjs
       - name: Bot positioning regressions
         run: node --test scripts/bot-positioning-owner.test.mjs
+      - name: Bot weapon-policy regressions
+        run: node --test scripts/bot-weapon-policy-owner.test.mjs
       - name: Bot fire-control regressions
         run: node --test scripts/bot-fire-control-owner.test.mjs
 

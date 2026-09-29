@@ -140,33 +140,6 @@ class Enemy{
     this.levelSync=level;
   }
 
-  chooseWeapon(distHint=22,force=false){
-    const prevWeapon=this.weapon;
-    const prev=prevWeapon?prevWeapon.idx:-1;
-    const currentUsable=!!(prevWeapon&&
-      distHint<=prevWeapon.range*1.04&&
-      !(distHint<9&&prevWeapon.isRocket)&&
-      !(distHint>22&&prevWeapon.key==='shotgun')&&
-      !(distHint<22&&prevWeapon.isSniper));
-    if(!force&&currentUsable&&this.mag>0&&Math.random()<.78){
-      this.weaponSwitchT=2.4+Math.random()*2.2;
-      return;
-    }
-    const candidate=chooseBotWeaponByDistance(distHint,prev,force,this.role);
-    if(!force&&prevWeapon&&currentUsable&&candidate.idx!==prev){
-      const prevFit=Math.abs(distHint-prevWeapon.opt)/Math.max(8,prevWeapon.range);
-      const nextFit=Math.abs(distHint-candidate.opt)/Math.max(8,candidate.range);
-      if(nextFit>prevFit*.82&&Math.random()<.72){
-        this.weaponSwitchT=2.2+Math.random()*2.0;
-        return;
-      }
-    }
-    this.weapon=candidate;
-    if(force||this.mag<=0||this.mag>this.weapon.clip)this.mag=this.weapon.clip;
-    this.weaponSwitchT=4.5+Math.random()*4.0;
-    refreshBotWeaponVisual(this);
-  }
-
   findReachableHealthPickup(maxDist=30){
     let best=null,bestScore=maxDist;
     const from=this.group.position.clone();from.y=.55;
@@ -317,9 +290,7 @@ class Enemy{
     }
 
     this.weaponSwitchT-=dt;
-    if(targetPos&&(this.weaponSwitchT<=0||dist>this.weapon.range*1.18||(dist<8&&this.weapon.isRocket)||(this.weapon.key==='shotgun'&&dist>22))){
-      this.chooseWeapon(dist,false);
-    }
+    if(targetPos&&shouldBotReconsiderWeapon(this,dist))selectBotWeapon(this,dist,false);
 
     updateBotLineOfSight(this,targetPos,dt);
     const hpPct=this.hp/this.maxHp;

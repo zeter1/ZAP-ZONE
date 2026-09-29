@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const fail=message=>{console.error('VALIDATION ERROR:',message);process.exitCode=1;};
 const requiredScripts=[
   'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-fire-control.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+  'src/settings/settings.js','src/combat/combat.js','src/ai/bot-perception.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
 const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
@@ -97,7 +97,7 @@ for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:
 }
 
 
-for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs','scripts/bot-perception-owner.test.mjs','scripts/bot-positioning-owner.test.mjs','scripts/bot-fire-control-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
+for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build.mjs','scripts/frontline-owner.test.mjs','scripts/bot-presentation-owner.test.mjs','scripts/bot-navigation-owner.test.mjs','scripts/bot-perception-owner.test.mjs','scripts/bot-positioning-owner.test.mjs','scripts/bot-weapon-policy-owner.test.mjs','scripts/bot-fire-control-owner.test.mjs',...requiredScripts,...requiredAssets,...presentationRasterAssets,...audioAssets])if(!existsSync(file))fail('missing '+file);
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
@@ -302,6 +302,7 @@ for(const token of ['if(ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValu
 const perception=readFileSync('src/ai/bot-perception.js','utf8');
 const navigation=readFileSync('src/ai/bot-navigation.js','utf8');
 const positioning=readFileSync('src/ai/bot-positioning.js','utf8');
+const weaponPolicy=readFileSync('src/ai/bot-weapon-policy.js','utf8');
 const fireControl=readFileSync('src/ai/bot-fire-control.js','utf8');
 const tactics=readFileSync('src/ai/tactics.js','utf8');
 const frontline=readFileSync('src/game/frontline.js','utf8');
@@ -369,8 +370,8 @@ for(const token of [
   if(!bots.includes(token))fail('Tactical AI 2.0 bot execution missing: '+token);
 }
 if(!combat.includes("bot.tacticalMode==='suppress'?-26"))fail('suppressor-aware player pressure ordering missing');
-if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/bot-positioning.js'")&&html.indexOf("'src/ai/bot-positioning.js'")<html.indexOf("'src/ai/bot-fire-control.js'")&&html.indexOf("'src/ai/bot-fire-control.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
-  fail('classic-script order must load combat -> bot perception -> bot navigation -> bot positioning -> bot fire-control -> tactics -> frontline -> bots');
+if(!(html.indexOf("'src/combat/combat.js'")<html.indexOf("'src/ai/bot-perception.js'")&&html.indexOf("'src/ai/bot-perception.js'")<html.indexOf("'src/ai/bot-navigation.js'")&&html.indexOf("'src/ai/bot-navigation.js'")<html.indexOf("'src/ai/bot-positioning.js'")&&html.indexOf("'src/ai/bot-positioning.js'")<html.indexOf("'src/ai/bot-weapon-policy.js'")&&html.indexOf("'src/ai/bot-weapon-policy.js'")<html.indexOf("'src/ai/bot-fire-control.js'")&&html.indexOf("'src/ai/bot-fire-control.js'")<html.indexOf("'src/ai/tactics.js'")&&html.indexOf("'src/ai/tactics.js'")<html.indexOf("'src/game/frontline.js'")&&html.indexOf("'src/game/frontline.js'")<html.indexOf("'src/entities/bots.js'"))){
+  fail('classic-script order must load combat -> bot perception -> bot navigation -> bot positioning -> bot weapon policy -> bot fire-control -> tactics -> frontline -> bots');
 }
 if(!(html.indexOf("'src/entities/bot-presentation.js'")<html.indexOf("'src/entities/bots.js'"))){
   fail('classic-script order must load bot presentation owner before bots');
@@ -450,6 +451,17 @@ for(const token of ['function findBotTacticalCover(bot,target){','function findB
 for(const token of ['findTacticalCover(target){','findFlankPoint(target,sideSign){'])if(bots.includes(token))fail('bot positioning implementation leaked back into bots.js: '+token);
 for(const token of ['findBotTacticalCover(this,targetPos)','findBotFlankPoint(this,squadPlan.focusPos,sign)'])if(!bots.includes(token))fail('bot positioning consumer contract missing: '+token);
 for(const token of ["this.aiState=","case 'cover'","case 'flank'",'moveBotWithSubsteps(','refreshBotTeamTactics(','flankCommitT=','coverEvalT='])if(positioning.includes(token))fail('FSM/tactics/locomotion authority leaked into bot positioning owner: '+token);
+for(const token of [
+  'function shouldBotReconsiderWeapon(bot,dist){','function selectBotWeapon(bot,distHint=22,force=false){',
+  'dist>weapon.range*1.18','distHint<=prevWeapon.range*1.04','chooseBotWeaponByDistance(distHint,prev,force,bot.role)',
+  'nextFit>prevFit*.82&&Math.random()<.72','refreshBotWeaponVisual(bot)'
+]){if(!weaponPolicy.includes(token))fail('bot weapon-selection policy owner contract missing: '+token);}
+if(bots.includes('chooseWeapon(distHint=22,force=false){'))fail('bot weapon-selection implementation leaked back into bots.js');
+if((bots.match(/chooseBotWeaponByDistance\(/g)||[]).length!==1||!bots.includes('this.weapon=chooseBotWeaponByDistance(22,-1,true,this.role);'))fail('bots.js must keep only the distinct forced spawn weapon initialization');
+for(const token of ['shouldBotReconsiderWeapon(this,dist)','selectBotWeapon(this,dist,false)'])if(!bots.includes(token))fail('bot weapon-selection policy consumer contract missing: '+token);
+for(const token of ['BOT_PRIMARY_POOL','const scored=BOT_PRIMARY_POOL.map','function refreshBotWeaponVisual(','BOT_WEAPON_POSES','executeBotShot(','bot.aiState=','bot.burstLeft=','function refreshBotTeamTactics('])if(weaponPolicy.includes(token))fail('weapon data/presentation/FSM/fire-control/tactics authority leaked into bot weapon policy: '+token);
+if(fireControl.includes('selectBotWeapon(')||fireControl.includes('shouldBotReconsiderWeapon('))fail('fire-control must request reselection, not own weapon-selection policy');
+if(!fireControl.includes('bot.weaponSwitchT=0'))fail('rocket safety must retain the bounded reselection request signal');
 for(const token of [
   'function botShotClosestApproachToPlayer(','function getBotAimPoint(bot,tp){','function getBotMuzzlePos(bot){',
   'function startBotReload(bot){','function finishBotReload(bot){','function dealBotDamageToCurrentTarget(bot,amount,dir){',

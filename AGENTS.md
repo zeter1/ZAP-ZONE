@@ -2,10 +2,12 @@
 
 Короткая карта для ChatGPT/Codex. Не читайте весь репозиторий механически.
 
-1. Откройте `task/README.md` и один текущий `task/*.md`.
-2. Прочитайте `docs/AI_WORKFLOW.md`.
-3. По задаче откройте нужный owner/spec в `docs/ARCHITECTURE.md`, `docs/ASSETS.md` или узком `docs/specs/*.md`.
-4. Затем читайте только актуальные owner-файлы, callers, validation и `.github/workflows/validate.yml`.
+Выбирайте маршрут чтения по задаче, а не открывайте один и тот же стек «на всякий случай»:
+
+- продолжение очереди refactor/debug → один текущий `task/*.md` → `docs/AI_WORKFLOW.md` → нужный owner/spec → прямые callers/oracles;
+- узкая правка с уже известным owner-ом → owner/spec + прямые callers/oracles; `task/README.md` нужен только при изменении очереди;
+- CI failure → workflow → exact run/job/failed step/log → затронутый owner;
+- явная задача пользователя имеет приоритет над backlog; unrelated docs не читать только ради полноты контекста.
 
 Главные owner-ы:
 - browser session / pause / Pointer Lock → `src/game/session.js`;
@@ -15,11 +17,12 @@
 - bot perception / combat noise / hearing / target acquisition / grenade+mine+rocket sensing → `src/ai/bot-perception.js` + `docs/specs/BOT_PERCEPTION.md`;
 - bot navigation / wall+smoke steering / speed caps / collision substeps → `src/ai/bot-navigation.js` + `docs/specs/BOT_NAVIGATION.md`;
 - bot tactical cover/flank destination scoring → `src/ai/bot-positioning.js` + `docs/specs/BOT_POSITIONING.md`;
+- bot weapon reselection / hold hysteresis / switch timing → `src/ai/bot-weapon-policy.js` + `docs/specs/BOT_WEAPON_POLICY.md`;
 - bot aim / muzzle / reload / concrete shot + hit resolution → `src/ai/bot-fire-control.js` + `docs/specs/BOT_FIRE_CONTROL.md`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
-- individual bot FSM / fire gate + burst cadence / weapon-selection policy / tactical execution / damage reaction → `src/entities/bots.js`; it consumes perception, navigation, positioning and fire-control owners rather than reimplementing them;
+- individual bot FSM / fire gate + burst cadence / tactical execution / damage reaction → `src/entities/bots.js`; it consumes perception, navigation, positioning, weapon-policy and fire-control owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
