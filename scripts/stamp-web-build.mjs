@@ -76,6 +76,7 @@ if(process.argv.includes('--check')){
   if(cssSource!==expectedCss)errors.push('src/styles/game.css asset cache keys are stale; run node scripts/stamp-web-build.mjs');
   if(actualManifest!==expectedManifest)errors.push('version.json is stale; run node scripts/stamp-web-build.mjs');
   if(errors.length){
+    console.error('BUILD STAMP EXPECTED:',build);
     for(const error of errors)console.error('BUILD STAMP ERROR:',error);
     process.exit(1);
   }
