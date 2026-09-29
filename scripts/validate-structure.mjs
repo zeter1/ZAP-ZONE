@@ -48,6 +48,12 @@ const generatedFeedbackWebpAssets=[
   'assets/ui/feedback/armor-break-tech-01.webp','assets/ui/objective/frontline-capture-tech-01.webp',
   'assets/ui/perks/defender-tech-01.webp'
 ];
+const generatedStatusPerkWebpAssets=[
+  'assets/ui/status/second-wind-tech-01.webp','assets/ui/status/lifesteal-tech-01.webp',
+  'assets/ui/status/armor-regen-tech-01.webp','assets/ui/status/low-health-tech-01.webp',
+  'assets/ui/status/smoke-guard-tech-01.webp','assets/ui/status/crit-ready-tech-01.webp',
+  'assets/ui/perks/predator-tech-01.webp','assets/ui/perks/warmachine-tech-01.webp'
+];
 const generatedFirstPersonWebpAssets=[
   'assets/ui/weapons/fp/player-pistol-fps-01.webp','assets/ui/weapons/fp/player-shotgun-fps-01.webp',
   'assets/ui/weapons/fp/player-rifle-fps-01.webp','assets/ui/weapons/fp/player-rocket-fps-01.webp',
@@ -73,7 +79,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -119,6 +125,15 @@ for(const file of presentationRasterAssets){
   if(file.endsWith('.png')&&bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')fail('invalid PNG signature: '+file);
   if(file.endsWith('.jpg')&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[bytes.length-2]===0xff&&bytes[bytes.length-1]===0xd9))fail('invalid JPEG envelope: '+file);
   if(file.endsWith('.webp')&&!(bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP'))fail('invalid WebP envelope: '+file);
+}
+for(const file of generatedStatusPerkWebpAssets){
+  const bytes=readFileSync(file);
+  if(bytes.length>32768)fail('generated status/perk asset exceeds 32 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('status/perk WebP must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  if(width!==256||height!==256)fail('status/perk WebP must be 256x256: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('status/perk WebP alpha flag missing: '+file);
 }
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
@@ -214,7 +229,7 @@ if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair 
 
 const progression=readFileSync('src/progression/progression.js','utf8');
 if(progression.includes('function G(id)'))fail('G helper must be available before progression.js loads');
-for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','perkFallbackAsset(p.id,p.path)','perkFallbackAsset(perk.id,perk.path)','data-fallback-src','function showCombatMedal','function showKillMedal','combatMedalFallbackAsset(type)','combatMedalAsset(type)','imageAssetWithFallback(img,combatMedalAsset(type),fallback)','function updateStatusIcons','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
+for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','perkFallbackAsset(p.id,p.path)','perkFallbackAsset(perk.id,perk.path)','data-fallback-src','function showCombatMedal','function showKillMedal','combatMedalFallbackAsset(type)','combatMedalAsset(type)','imageAssetWithFallback(img,combatMedalAsset(type),fallback)','function updateStatusIcons','statusFallbackAsset(key)','statusAsset(key)','imageAssetWithFallback(img,statusAsset(key),fallback)','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
   if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
 
@@ -967,5 +982,19 @@ if(!html.includes('ZAP ZONE v23.9'))fail('index version is not v23.9');
 if(!process.exitCode)console.log('ZAP ZONE v23.9 texture-quad-free 3D FX validation passed.');
 
 for(const token of ["generatedSniperScope:'assets/ui/scopes/sniper-scope-tech-01.webp'","generatedRifleScope:'assets/ui/scopes/rifle-scope-tech-01.webp'","ammoCrate:'assets/ui/pickups/ammo-crate-tech-02.webp'","medkitPickup:'assets/ui/pickups/world-medkit-pickup-01.webp'","frontlineCaptureBurst:'assets/ui/objective/frontline-capture-burst-tech-01.webp'","battleResultFrame:'assets/ui/feedback/battle-result-frame-tech-01.webp'"]){if(!catalog.includes(token))fail('generated asset pack 4 catalog mapping missing: '+token);}
+for(const token of [
+  "presentationStatus:Object.freeze",
+  "secondWind:'assets/ui/status/second-wind-tech-01.webp'",
+  "lifesteal:'assets/ui/status/lifesteal-tech-01.webp'",
+  "armorRegen:'assets/ui/status/armor-regen-tech-01.webp'",
+  "lowHealth:'assets/ui/status/low-health-tech-01.webp'",
+  "smokeGuard:'assets/ui/status/smoke-guard-tech-01.webp'",
+  "critReady:'assets/ui/status/crit-ready-tech-01.webp'",
+  "predatorPerk:'assets/ui/perks/predator-tech-01.webp'",
+  "warmachinePerk:'assets/ui/perks/warmachine-tech-01.webp'",
+  "if(id==='predator')return GAME_ASSETS.presentation.predatorPerk",
+  "if(id==='warmachine')return GAME_ASSETS.presentation.warmachinePerk",
+  "function statusFallbackAsset(key)","function statusAsset(key)"
+]){if(!catalog.includes(token))fail('generated asset pack 5 catalog/fallback mapping missing: '+token);}
 if(!weapons.includes("scopeFallback:'assets/ui/sniper-scope.svg'"))fail('sniper generated scope must retain SVG fallback');
 if(!pickups.includes("bomb:{maxPx:112"))fail('generated bomb world pickup tuning missing');

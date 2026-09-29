@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 5 consumers
+The 2026-09-29 pack adds six generated status-HUD icons and two legendary perk renders as 256×256 transparent WebP. Status art lives in `ui/status` and is selected by `src/progression/progression.js` through `src/assets/catalog.js`, with the existing `status/*.svg` files kept as load/decode fallbacks. `predator-tech-01.webp` and `warmachine-tech-01.webp` are selected only for the matching legendary perk IDs; their existing unique perk SVGs remain fallback.
+
+Pack 5 stays DOM-only, uses semantic ASCII filenames, and is validated as VP8X alpha WebP, exactly 256×256 and <=32 KiB per file. It does not alter perk/status gameplay semantics.
+
 ## Pack 4 consumers
 The 2026-09-28 pack adds eight generated WebP assets. Consumer ownership is explicit: bomb FPS art → `src/weapons/system.js`; bomb/medkit world art → `src/entities/pickups.js`; scope overlays → `src/game/runtime.js`; Frontline burst → `src/entities/bots.js`; result frame → `src/progression/progression.js`; ammo crate → `src/styles/game.css`.
 
@@ -14,6 +19,7 @@ Do not add a generated file without a consumer and fallback. WebP upload must be
 - `ui/medals` — generated combat medals;
 - `ui/objective` — objective/Frontline presentation;
 - `ui/perks` — generated perk presentation overlays;
+- `ui/status` — generated status-HUD presentation with `status/*.svg` fallback;
 - `ui/icons`, `ui/teams`, `ui/pickups` — HUD/team/pickup presentation;
 - `ui/pickups/weapons` — generated map weapon pickup WebP; DOM-projected from real 3D pickup positions;
 - `ui/weapons/fp` — player-only generated first-person weapon presentation; never bot geometry;
@@ -46,3 +52,4 @@ Do not add a generated file without a consumer and fallback. WebP upload must be
 20. Dual-runtime invariant: every visual/runtime asset must work both from uCoz/static HTTP(S) hosting and from a direct local `file://.../index.html` launch. Do not gate generated visual art off merely because the protocol is `file:`.
 21. HTTP(S) may add the current build query for cache busting; local file mode must use plain relative paths. Generated menu backgrounds, logos, HUD/perk/medal/feedback art and weapon/pickup DOM art must remain available in both modes with fallback only on real load/decode failure.
 22. Asset work is not complete until both hosted validation and the local-file browser smoke prove the relevant generated presentation path is active.
+23. Pack 5 status/legendary-perk runtime derivatives are 256×256 alpha WebP <=32 KiB. Keep SVG fallback wiring; never make these presentation images a gameplay-state dependency.

@@ -155,6 +155,16 @@ const GAME_ASSETS=versionAssetTree({
     smokeGuard:'assets/status/smoke-guard.svg',
     critReady:'assets/status/crit-ready.svg'
   }),
+  // Generated status icons are DOM-only presentation with the SVG status set above
+  // as the authoritative load/decode fallback in both HTTP(S) and file:// runtimes.
+  presentationStatus:Object.freeze({
+    secondWind:'assets/ui/status/second-wind-tech-01.webp',
+    lifesteal:'assets/ui/status/lifesteal-tech-01.webp',
+    armorRegen:'assets/ui/status/armor-regen-tech-01.webp',
+    lowHealth:'assets/ui/status/low-health-tech-01.webp',
+    smokeGuard:'assets/ui/status/smoke-guard-tech-01.webp',
+    critReady:'assets/ui/status/crit-ready-tech-01.webp'
+  }),
   impact:Object.freeze({
     bullet:'assets/fx/bullet-hit.svg',
     wall:'assets/fx/wall-impact.svg',
@@ -247,6 +257,8 @@ const GAME_ASSETS=versionAssetTree({
     speedPerk:'assets/ui/perks/speed-tech-01.png',
     reloadPerk:'assets/ui/perks/reload-tech-01.png',
     defenderPerk:'assets/ui/perks/defender-tech-01.webp',
+    predatorPerk:'assets/ui/perks/predator-tech-01.webp',
+    warmachinePerk:'assets/ui/perks/warmachine-tech-01.webp',
     levelUp:'assets/ui/feedback/levelup-core-tech-01.webp',
     death:'assets/ui/feedback/death-skull-tech-01.webp',
     armorBreak:'assets/ui/feedback/armor-break-tech-01.webp',
@@ -269,6 +281,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.medals),
   ...Object.values(GAME_ASSETS.presentationMedals),
   ...Object.values(GAME_ASSETS.status),
+  ...Object.values(GAME_ASSETS.presentationStatus),
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
@@ -351,6 +364,8 @@ function perkAsset(id,path){
   if(id==='damage')return GAME_ASSETS.presentation.damagePerk;
   if(id==='reload')return GAME_ASSETS.presentation.reloadPerk;
   if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
+  if(id==='predator')return GAME_ASSETS.presentation.predatorPerk;
+  if(id==='warmachine')return GAME_ASSETS.presentation.warmachinePerk;
   if(['armor','armorregen','blastshield','ballistic_lining','surplus_armor','smoke_guard'].includes(id))return GAME_ASSETS.presentation.defenderPerk;
   return perkFallbackAsset(id,path);
 }
@@ -360,6 +375,11 @@ function imageAssetWithFallback(img,source,fallback){
   img.dataset.fallbackSrc=fallback;
   img.onerror=()=>{img.onerror=null;img.src=img.dataset.fallbackSrc;};
   img.src=source;
+}
+function statusFallbackAsset(key){return GAME_ASSETS.status[key]||'';}
+function statusAsset(key){
+  const fallback=statusFallbackAsset(key);
+  return GAME_ASSETS.presentationStatus[key]||fallback;
 }
 function combatMedalFallbackAsset(type){return GAME_ASSETS.medals[type]||'';}
 function combatMedalAsset(type){

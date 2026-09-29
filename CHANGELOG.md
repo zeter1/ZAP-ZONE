@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Generated Asset Pack 5 — status HUD + legendary perks
+- добавлены 8 проверенных generated WebP 256×256 с alpha: шесть статусных HUD-иконок (`secondWind`, `lifesteal`, `armorRegen`, `lowHealth`, `smokeGuard`, `critReady`) и отдельные legendary-perk арты для `predator` / `warmachine`;
+- статусный HUD теперь выбирает generated art через централизованный catalog и автоматически возвращается на существующие `assets/status/*.svg` при ошибке загрузки/декодирования; обе runtime-модели HTTP(S) и `file://` сохраняются;
+- `Режим хищника` и `Машина разрушения` получают собственные generated изображения в карточках выбора и perk-panel, при этом уникальные SVG остаются fallback; игровые характеристики и баланс не менялись;
+- structural validation проверяет наличие/каталогизацию Pack 5, RIFF/WEBP + VP8X alpha, точный размер 256×256, лимит 32 KiB, fallback wiring и запрет использования generated raster assets в persistent WebGL scene.
+
 ### Death/respawn UX and in-game testing controls
 - death result frame and message are now bottom-anchored as one responsive unit; the death reason wraps/scales inside the frame instead of escaping it;
 - player first-person weapon presentation is removed immediately for the death camera, and weapon swaps keep both stale generated art and procedural fallback hidden until the new generated asset is ready;

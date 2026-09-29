@@ -261,7 +261,9 @@ function updateStatusIcons(){
   if(sig===_statusSig)return;_statusSig=sig;wrap.replaceChildren();
   for(const [key,label] of active.slice(0,6)){
     const item=document.createElement('div');item.className='status-chip';item.title=label;
-    const img=document.createElement('img');img.src=GAME_ASSETS.status[key];img.alt='';
+    const img=document.createElement('img');
+    const fallback=statusFallbackAsset(key);
+    imageAssetWithFallback(img,statusAsset(key),fallback);img.alt='';
     const tip=document.createElement('span');tip.textContent=label;
     item.append(img,tip);wrap.appendChild(item);
   }
