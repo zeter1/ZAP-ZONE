@@ -411,11 +411,11 @@ if(!combat.includes(suppressionProducer))fail('combat near-miss producer must ke
 if(combat.includes('applyBotSuppressionResponse('))fail('combat near-miss producer must not bypass Enemy.registerSuppression');
 for(const token of [
   'if(this.suppressedT>0){this.suppressedT=Math.max(0,this.suppressedT-dt);if(this.suppressedT<=0)this.suppressionSource=null;}',
-  '||(this.suppressedT>0);',
-  "||this.suppressedT>0))this.aiState='cover';"
+  '||(this.suppressedT>0);'
 ]){
   if(!bots.includes(token))fail('bot suppression lifecycle/consumer contract missing: '+token);
 }
+if(!statePolicy.includes("||bot.suppressedT>0))bot.aiState='cover';"))fail('bot suppression cover-state consumer contract missing from canonical state-policy owner');
 for(const token of [
   'function applyBotDodgeResponse(bot,preferredDir=0,urgency=1){',
   'if(bot.dodgeCD>0||bot.dodgeT>0)return;',
