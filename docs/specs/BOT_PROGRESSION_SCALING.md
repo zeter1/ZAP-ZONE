@@ -51,7 +51,7 @@ fireRateMul= max(0.62, 1.08 - lvl*0.013 - min(0.20,kills*0.0025)) * (assault?0.9
 levelSync  = level
 ```
 
-Two subtle compatibility points are intentional:
+Three subtle compatibility points are intentional:
 
 1. `force=true` bypasses the same-level guard and fills HP to the newly computed max.
 2. The fire-rate floor is applied **before** the assault multiplier, so an assault bot can end at `0.62 * 0.92`; moving the clamp after the role multiplier would be a balance change.
