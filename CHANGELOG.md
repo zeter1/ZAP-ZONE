@@ -1,6 +1,13 @@
 # Changelog — ZAP ZONE
 
-## Unreleased — 2026-09-28
+## Unreleased — 2026-09-29
+
+### Bot tactical positioning ownership
+- cover/flank candidate filtering и scoring вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-positioning.js`;
+- pure extraction сохраняет distance/LOS/smoke/route/crowding/Frontline/doctrine weights и procedural flank fallback без balance change;
+- `bots.js` остаётся owner-ом FSM, reevaluation/commit timers и peek/cover/flank execution; `bot-navigation.js` — movement mechanics, `tactics.js` — squad policy, `frontline.js` — objective state;
+- добавлены direct `node:test` regressions, `docs/specs/BOT_POSITIONING.md`, source-oracle migration и owner/consumer/reverse structural guards.
+
 
 ### Bot navigation / locomotion ownership
 - patrol points, wall/smoke steering, route penalty, speed caps и collision substeps вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-navigation.js`;

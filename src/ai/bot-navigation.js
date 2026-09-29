@@ -2,8 +2,9 @@
 
 // ─── BOT NAVIGATION / LOCOMOTION OWNER ─────────────────────────────────────
 // Patrol points, collision-aware steering, smoke route cost and anti-teleport
-// movement caps live here. Threat perception (grenades/mines/noise) stays in
-// entities/bots.js. Engine/combat globals are invocation-time dependencies.
+// movement caps live here. Threat perception lives in ai/bot-perception.js;
+// tactical destination scoring lives in ai/bot-positioning.js. FSM/tactical
+// execution stays in entities/bots.js. Engine/combat globals are invocation-time dependencies.
 
 const WPTS=[
   [0,0],[-20,20],[20,-20],[-20,-20],[20,20],

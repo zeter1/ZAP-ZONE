@@ -46,6 +46,7 @@ jobs:
           node --check scripts/bot-presentation-owner.test.mjs
           node --check scripts/bot-navigation-owner.test.mjs
           node --check scripts/bot-perception-owner.test.mjs
+          node --check scripts/bot-positioning-owner.test.mjs
           node --check scripts/browser-boot-smoke.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
@@ -59,6 +60,8 @@ jobs:
         run: node --test scripts/bot-perception-owner.test.mjs
       - name: Bot navigation regressions
         run: node --test scripts/bot-navigation-owner.test.mjs
+      - name: Bot positioning regressions
+        run: node --test scripts/bot-positioning-owner.test.mjs
 
       - name: Browser boot smoke test
         shell: bash

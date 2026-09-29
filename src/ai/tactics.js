@@ -1,5 +1,5 @@
 // Canonical owner for squad coordination, map doctrine and Adaptive Commander policy.
-// Per-bot perception, FSM, locomotion, cover/flank execution and Frontline objective state stay in src/entities/bots.js.
+// Per-bot sensing lives in ai/bot-perception.js; destination scoring in ai/bot-positioning.js; FSM/tactical execution in entities/bots.js; locomotion in ai/bot-navigation.js; Frontline state in game/frontline.js.
 
 const BOT_MAP_ZONES=[
   {id:'mid',label:'ЦЕНТР',x:0,z:0,r:21,weight:1.34},

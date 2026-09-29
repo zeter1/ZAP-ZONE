@@ -11,15 +11,16 @@
 7. `src/combat/combat.js` — input и combat.
 8. `src/ai/bot-perception.js` — combat-noise bus, hearing, target acquisition, LOS memory и explosive/rocket sensing.
 9. `src/ai/bot-navigation.js` — patrol points, wall/smoke steering, movement caps и collision substeps.
-10. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
-11. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
-12. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
-13. `src/entities/bots.js` — per-bot FSM, tactical execution и combat execution; perception/navigation owners используются как consumer dependencies.
-14. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-15. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-16. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
-17. `src/ui/minimap.js` — тактическая миникарта.
-18. `src/game/runtime.js` — frame simulation/render loop и boot.
+10. `src/ai/bot-positioning.js` — per-bot cover/flank destination filtering и scoring.
+11. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
+12. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
+13. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
+14. `src/entities/bots.js` — per-bot FSM, tactical/combat execution; perception/navigation/positioning owners используются как consumer dependencies.
+15. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+16. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+17. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+18. `src/ui/minimap.js` — тактическая миникарта.
+19. `src/game/runtime.js` — frame simulation/render loop и boot.
 
 ## Bot perception / threat-sensing owner
 
@@ -40,6 +41,14 @@ Structural validation требует одного perception owner-а, consumer 
 `src/core/engine.js` остаётся единственным владельцем collision primitives, `src/combat/combat.js` — producer-ом smoke state, а `src/entities/bots.js` выбирает AI state/intention и потребляет navigation helpers. Grenade/mine/rocket threat perception, noise/hearing и target acquisition принадлежат `src/ai/bot-perception.js`; squad doctrine — `src/ai/tactics.js`. `nearestHostileGrenade()` намеренно не относится к navigation только из-за того, что его результат может вызвать retreat.
 
 Pure extraction сохраняет `WPTS`, movement multipliers, smoke thresholds/weights, `substep=.16`, correction cap `intended*1.35+.035` и final cap `total*1.10+.035`. Structural validation запрещает возврат реализации в `bots.js`, а `scripts/bot-navigation-owner.test.mjs` проверяет behavior отдельно от расположения кода.
+
+## Bot tactical positioning owner
+
+**Canonical owner:** `src/ai/bot-positioning.js`. Узкий контракт — **[specs/BOT_POSITIONING.md](specs/BOT_POSITIONING.md)**. Owner выбирает **куда** конкретному боту выгоднее переместиться для cover/flank: фильтрует `COVER_POINTS`, учитывает LOS/smoke, route cost, crowding, Frontline bias, doctrine и side preference, а для flank сохраняет collision-checked procedural fallback.
+
+Граница намеренно уже Tactical AI: `src/ai/tactics.js` выбирает командную doctrine/focus, `src/entities/bots.js` решает **когда** reevaluate cover/flank, владеет FSM/commit timers/peek execution, а `src/ai/bot-navigation.js` отвечает **как физически двигаться** к уже выбранной destination. Positioning owner не меняет `aiState`, `coverPoint`, `flankPoint` или timers — он только возвращает destination/`null`.
+
+Pure extraction сохраняет исходные thresholds/weights буквально. Behavior закреплён `scripts/bot-positioning-owner.test.mjs`, а structural validation одновременно требует owner definitions, consumer calls и запрещает возврат scoring implementation в `bots.js`.
 
 ## Session lifecycle owner
 
@@ -178,11 +187,11 @@ SR-9 не использует gameplay-reticle: runtime скрывает `#xhai
 
 **Canonical owner:** `src/ai/tactics.js` владеет `BOT_TEAM_TACTICS`, общим squad focus, suppressor selection, role labels и общими тактическими фазами. `src/entities/bots.js` остаётся владельцем индивидуального FSM, cover/flank/combat execution и стрельбы, а locomotion mechanics принадлежат `src/ai/bot-navigation.js`. Это граница policy → execution: командный слой выбирает общий plan, bot FSM формирует intent, navigation owner безопасно исполняет movement intent.
 
-Classic-script порядок `combat.js → ai/bot-perception.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js` является частью runtime-контракта. Navigation должен существовать до bot consumer, `BOT_MAP_ZONES` — до инициализации Frontline state, а bot-presentation — до создания `Enemy`; функции этих owners могут обращаться к invocation-time bot/runtime globals только после завершения последовательного bootstrap.
+Classic-script порядок `combat.js → ai/bot-perception.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js` является частью runtime-контракта. Navigation должен существовать до bot consumer, `BOT_MAP_ZONES` — до инициализации Frontline state, а bot-presentation — до создания `Enemy`; функции этих owners могут обращаться к invocation-time bot/runtime globals только после завершения последовательного bootstrap.
 
 Поверх индивидуального state machine введён командный слой `BOT_TEAM_TACTICS`. Он не заменяет perception/target selection, а агрегирует уже полученную информацию: текущие цели ботов, LOS, память и `TEAM_INTEL`. План пересчитывается с небольшим cache-window и выбирает общий focus, suppressor, число доступных flankers и наиболее раненого союзника.
 
-`flankL` и `flankR` сохраняют разные стороны обхода. `findFlankPoint()` сначала оценивает существующие `COVER_POINTS` по стороне относительно цели, длине маршрута, crowding и будущей линии огня; procedural fallback используется только если подходящей cover-точки нет. Flank-state имеет commit timer, поэтому бот не меняет решение каждый кадр.
+`flankL` и `flankR` сохраняют разные стороны обхода. `findBotFlankPoint()` в `src/ai/bot-positioning.js` оценивает существующие `COVER_POINTS` по стороне относительно цели, длине маршрута, crowding и будущей линии огня; procedural fallback используется только если подходящей cover-точки нет. Сам flank-state и его commit timer остаются в `src/entities/bots.js`, поэтому destination scoring не получает FSM authority.
 
 Suppressor — это не бонус к урону. Для suppress-mode увеличивается длина очереди и уменьшается accuracy. Промах по AI-цели может вызвать `registerSuppression()`: pressure временно ухудшает ответную точность и ускоряет reevaluation укрытия. Для игрока сохранён прежний fairness-контракт: suppression выражается объёмом огня и near-miss/whiz feedback, без скрытого замедления или debuff.
 

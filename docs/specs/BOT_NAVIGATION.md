@@ -17,7 +17,9 @@
 ## Границы ownership
 
 - `src/core/engine.js` — единственный source of truth для `collideWalls()`, `wallBetween()`, `wallMeshes`, `BOT_R`; здесь не создаётся вторая physics model.
-- `src/entities/bots.js` — individual perception/FSM/combat execution. `nearestHostileGrenade()`, mine/grenade threat state, noise/hearing и target acquisition не переносятся сюда только потому, что влияют на движение.
+- `src/ai/bot-perception.js` — individual sensing: mine/grenade/rocket threats, noise/hearing и target acquisition.
+- `src/ai/bot-positioning.js` — cover/flank destination filtering/scoring; он потребляет route cost, но не владеет locomotion.
+- `src/entities/bots.js` — individual FSM, tactical execution и combat execution.
 - `src/ai/tactics.js` — squad/map policy и doctrine.
 - `src/game/frontline.js` — objective state/capture.
 - `src/entities/bot-presentation.js` — model/hit meshes/arm rig.
@@ -26,7 +28,7 @@
 
 External dependencies используются invocation-time: engine даёт `collideWalls`, `wallBetween`, `wallMeshes`, `BOT_R`, `THREE.Vector3`; combat даёт `smokeClouds`; bot consumer — `group.position`, `team`, `sideBias`, `strafeDir`.
 
-Canonical classic-script route: `combat.js → ai/bot-navigation.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Navigation не зависит от tactics/frontline/presentation, но должен быть определён до consumer-а.
+Canonical classic-script route: `combat.js → ai/bot-perception.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Navigation не зависит от perception/positioning/tactics/frontline/presentation, но должен быть определён до positioning и bot consumer-ов.
 
 ## Pure-refactor invariants
 

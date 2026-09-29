@@ -26,6 +26,8 @@ function lvlSpdMult(){ return 1 + level * 0.02; }
 
 // Bot perception / threat sensing owner: src/ai/bot-perception.js
 
+// Bot tactical cover / flank destination owner: src/ai/bot-positioning.js
+
 const _BOT_NEAR_MISS_TO_PLAYER=new THREE.Vector3(),_BOT_NEAR_MISS_POINT=new THREE.Vector3();
 function botShotClosestApproachToPlayer(from,dir,maxRange=120){
   const torso=_BOT_NEAR_MISS_TO_PLAYER.set(camera.position.x,camera.position.y-.28,camera.position.z);
@@ -188,80 +190,6 @@ class Enemy{
       best=pk;bestScore=d;
     }
     return best;
-  }
-
-  findTacticalCover(target){
-    let best=null,bestScore=1e9;
-    const from=this.group.position,tx=target.x,tz=target.z;
-    const routeFrom=from.clone();routeFrom.y=.55;
-    for(const cp of COVER_POINTS){
-      const p=new THREE.Vector3(cp[0],0,cp[1]);
-      const dFrom=p.distanceTo(from),targetDist=p.distanceTo(target);
-      if(dFrom<4||dFrom>32||targetDist<7)continue;
-      const eye=p.clone();eye.y=1.35;
-      const tgt=target.clone();tgt.y=1.45;
-      if(!wallBetween(eye,tgt,losMeshes))continue;
-      const routeTo=p.clone();routeTo.y=.55;
-      const routePenalty=botRoutePenalty(routeFrom,routeTo,this.team);
-      let crowdPenalty=0;
-      for(const other of enemies){
-        if(!other.alive||other===this||other.team!==this.team)continue;
-        const od=other.group.position.distanceTo(p);
-        if(od<4.5)crowdPenalty+=(4.5-od)*1.6;
-      }
-      const objective=frontlineZone();
-      const objectiveDist=Math.hypot(p.x-objective.x,p.z-objective.z);
-      const objectiveCoverPenalty=(this.commandDoctrine==='hold'||this.commandDoctrine==='retake')
-        ?Math.max(0,objectiveDist-objective.r*.78)*.42
-        :Math.max(0,objectiveDist-objective.r*1.10)*.12;
-      let score=dFrom+Math.abs(targetDist-15)*.17+crowdPenalty+routePenalty+objectiveCoverPenalty;
-      const fromObjectiveDist=Math.hypot(from.x-objective.x,from.z-objective.z);
-      const objectiveAdvance=fromObjectiveDist-objectiveDist;
-      if(this.commandDoctrine==='breach'||this.commandDoctrine==='retake')score-=Math.max(-3,Math.min(10,objectiveAdvance))*.46;
-      if(objectiveDist<objective.r*.78&&(this.commandDoctrine==='hold'||this.commandDoctrine==='retake'))score-=3.4;
-      const side=((p.x-from.x)*(tz-from.z)-(p.z-from.z)*(tx-from.x));
-      if(Math.sign(side)===Math.sign(this.sideBias))score-=2.4;
-      if(score<bestScore){bestScore=score;best=p;}
-    }
-    return best?best.clone():null;
-  }
-
-  findFlankPoint(target,sideSign){
-    const from=this.group.position;
-    const dx=target.x-from.x,dz=target.z-from.z,dist=Math.max(1,Math.hypot(dx,dz));
-    const dirX=dx/dist,dirZ=dz/dist,perpX=-dirZ,perpZ=dirX;
-    let best=null,bestScore=Infinity;
-    for(const cp of COVER_POINTS){
-      const p=new THREE.Vector3(cp[0],0,cp[1]);
-      const dFrom=p.distanceTo(from),dTarget=p.distanceTo(target);
-      if(dFrom<6||dFrom>44||dTarget<10||dTarget>29)continue;
-      const side=((p.x-target.x)*perpX+(p.z-target.z)*perpZ)*sideSign;
-      if(side<4.5)continue;
-      const eye=p.clone();eye.y=1.35;
-      const tgt=target.clone();tgt.y=1.35;
-      const firingLane=!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt);
-      const routeFrom=from.clone();routeFrom.y=.55;
-      const routeTo=p.clone();routeTo.y=.55;
-      const routePenalty=botRoutePenalty(routeFrom,routeTo,this.team);
-      let crowd=0;
-      for(const mate of enemies){
-        if(!mate.alive||mate===this||mate.team!==this.team)continue;
-        const md=mate.group.position.distanceTo(p);
-        if(md<5)crowd+=(5-md)*1.5;
-      }
-      const objective=frontlineZone();
-      const objectiveDist=Math.hypot(p.x-objective.x,p.z-objective.z);
-      const objectivePenalty=Math.max(0,objectiveDist-objective.r*1.25)*.10;
-      const score=dFrom*.46+Math.abs(dTarget-17)*.70-side*.20+crowd+routePenalty+(firingLane?-5.0:3.8)+objectivePenalty;
-      if(score<bestScore){bestScore=score;best=p;}
-    }
-    if(best)return best.clone();
-    const radius=Math.max(12,Math.min(22,dist*.48));
-    const cx=target.x+perpX*sideSign*radius-dirX*3.5;
-    const cz=target.z+perpZ*sideSign*radius-dirZ*3.5;
-    const coll=collideWalls(Math.max(-90,Math.min(90,cx)),Math.max(-90,Math.min(90,cz)),BOT_R);
-    if(Math.hypot(coll.x-cx,coll.z-cz)<2.6)return new THREE.Vector3(coll.x,0,coll.z);
-    return null;
   }
 
 
@@ -599,7 +527,7 @@ class Enemy{
     );
     if(this.flankEvalT<=0&&coordinatedFlank){
       const sign=this.role==='flankL'?-1:1;
-      const nextFlank=this.findFlankPoint(squadPlan.focusPos,sign);
+      const nextFlank=findBotFlankPoint(this,squadPlan.focusPos,sign);
       if(nextFlank){this.flankPoint=nextFlank;this.flankCommitT=(squadPlan.doctrine==='breach'?3.5:2.6)+Math.random()*1.2;}
       this.flankEvalT=(squadPlan.doctrine==='breach'?.58:.82)+Math.random()*.42;
     }
@@ -616,7 +544,7 @@ class Enemy{
     this.coverEvalT-=dt;
     if(this.coverEvalT<=0&&targetPos&&this.coverCooldownT<=0){
       const needCover=(!this.canSeeTarget&&dist>10)||(hpPct<0.52)||(this.reloadT>0)||(this.role==='anchor'&&dist>12)||(this.lastDamageT>0&&dist>8)||(this.suppressedT>0);
-      const nextCover=needCover?this.findTacticalCover(targetPos):null;
+      const nextCover=needCover?findBotTacticalCover(this,targetPos):null;
       if(nextCover&&(!this.coverPoint||this.coverPoint.distanceToSquared(nextCover)>.64))this.coverHoldT=.28+Math.random()*.42;
       this.coverPoint=nextCover;
       this.coverEvalT=.82+Math.random()*.48;
@@ -726,7 +654,7 @@ class Enemy{
             this.coverHoldT-=dt;
             if(this.reloadT<=0&&this.coverHoldT<=0){
               const canChain=(squadPlan.doctrine==='breach'||squadPlan.doctrine==='retake')&&assaultWaveState==='active'&&targetPos&&mapObjective&&this.coverChainT<=0;
-              const nextCover=canChain?this.findTacticalCover(targetPos):null;
+              const nextCover=canChain?findBotTacticalCover(this,targetPos):null;
               const advances=nextCover&&nextCover.distanceToSquared(this.group.position)>6.25&&
                 nextCover.distanceTo(mapObjective)+1.2<this.group.position.distanceTo(mapObjective);
               if(advances){
