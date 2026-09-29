@@ -24,6 +24,7 @@
 | Player/save/weapon state | `src/player/state.js` | Pointer Lock listeners |
 | Audio / presentation settings | `src/settings/settings.js` | combat authority |
 | Input / combat / projectiles | `src/combat/combat.js` | map-level AI planning |
+| Bot progression scaling / HP rescale | `src/ai/bot-progression-scaling.js` | damage/death lifecycle; locomotion; fire execution; weapon data |
 | Bot perception / threat sensing | `src/ai/bot-perception.js` | FSM transitions; shooting; navigation physics; squad doctrine |
 | Bot damage-event retaliation / memory / reaction timers | `src/ai/bot-damage-reaction.js` | HP mutation; hit presentation; dodge/death lifecycle; perception scans; suppression |
 | Bot near-miss suppression response | `src/ai/bot-suppression-response.js` | bullet sweep/near-miss detection; suppression decay; cover scoring; FSM transition selection; damage reaction |
@@ -36,7 +37,7 @@
 | Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM/combat execution; perception ownership; Frontline capture/state |
 | Frontline objective / capture / save / HUD / marker | `src/game/frontline.js` | map doctrine; individual bot FSM |
 | Bot model / hit meshes / weapon arm rig | `src/entities/bot-presentation.js` | AI decisions; locomotion policy; weapon data |
-| Individual bot FSM / combat policy | `src/entities/bots.js` | perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/deployables implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
+| Individual bot FSM / combat policy | `src/entities/bots.js` | progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/deployables implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
 | Browser game session | `src/game/session.js` | per-frame simulation |
@@ -45,7 +46,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-deployables.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, deployables, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-deployables.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, deployables, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -58,6 +59,7 @@
 - assets / generated art / uCoz / fallback → `docs/ASSETS.md`;
 - architecture ownership / session / weapon lifecycle / AI invariants → нужный раздел `docs/ARCHITECTURE.md`;
 - Frontline objective/capture/save/HUD/marker → `docs/specs/FRONTLINE.md` → `src/game/frontline.js` → конкретный consumer;
+- bot level/kills/role stat scaling / HP rescale / caps+floors → `docs/specs/BOT_PROGRESSION_SCALING.md` → `src/ai/bot-progression-scaling.js` → `Enemy.syncScale()` consumer;
 - bot perception / combat-noise hearing / target acquisition / LOS memory / grenade+mine+rocket sensing → `docs/specs/BOT_PERCEPTION.md` → `src/ai/bot-perception.js` → `src/entities/bots.js` consumer;
 - bot damage-event retaliation / source semantics / target memory+lock / reaction timers → `docs/specs/BOT_DAMAGE_REACTION.md` → `src/ai/bot-damage-reaction.js` → `Enemy.hurt()` consumer;
 - bot near-miss suppression / pressure clamp / cover+FSM timer response → `docs/specs/BOT_SUPPRESSION_RESPONSE.md` → `src/ai/bot-suppression-response.js` → `Enemy.registerSuppression()` consumer → `src/combat/combat.js` producer;
@@ -100,6 +102,7 @@
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
 | Frontline objective | `node --test scripts/frontline-owner.test.mjs` + structure owner guards + build stamp + dual-runtime smoke |
 | Bot presentation / arm rig | `node --test scripts/bot-presentation-owner.test.mjs` + owner/consumer guards + build stamp + dual-runtime smoke |
+| Bot progression scaling | `node --test scripts/bot-progression-scaling-owner.test.mjs` + formula/cap/role/HP-rescale + owner/consumer/reverse/load-order guards + build stamp + dual-runtime smoke |
 | Bot perception / threat sensing | `node --test scripts/bot-perception-owner.test.mjs` + owner/consumer/reverse guards + build stamp + dual-runtime smoke |
 | Bot damage-reaction policy | `node --test scripts/bot-damage-reaction-owner.test.mjs` + exact-threshold/source/event-order guards + build stamp + dual-runtime smoke |
 | Bot suppression-response policy | `node --test scripts/bot-suppression-response-owner.test.mjs` + source/clamp/strict-threshold + producer/consumer/reverse guards + build stamp + dual-runtime smoke |
