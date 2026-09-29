@@ -410,12 +410,8 @@ for(const token of ['Math.random(','class Enemy','registerSuppression(','closest
 const suppressionProducer='nearest.registerSuppression(b.src,b.suppressing?1.10:Math.max(.38,1-nearestD/1.45));';
 if(!combat.includes(suppressionProducer))fail('combat near-miss producer must keep Enemy.registerSuppression compatibility seam');
 if(combat.includes('applyBotSuppressionResponse('))fail('combat near-miss producer must not bypass Enemy.registerSuppression');
-for(const token of [
-  'if(this.suppressedT>0){this.suppressedT=Math.max(0,this.suppressedT-dt);if(this.suppressedT<=0)this.suppressionSource=null;}',
-  '||(this.suppressedT>0);'
-]){
-  if(!bots.includes(token))fail('bot suppression lifecycle/consumer contract missing: '+token);
-}
+if(!bots.includes('if(this.suppressedT>0){this.suppressedT=Math.max(0,this.suppressedT-dt);if(this.suppressedT<=0)this.suppressionSource=null;}'))fail('bot suppression lifecycle contract missing from bots.js');
+if(!coverExecution.includes('||(bot.suppressedT>0);'))fail('bot suppression cover-selection consumer contract missing from cover-execution owner');
 if(!statePolicy.includes("||bot.suppressedT>0))bot.aiState='cover';"))fail('bot suppression cover-state consumer contract missing from canonical state-policy owner');
 for(const token of [
   'function applyBotDodgeResponse(bot,preferredDir=0,urgency=1){',
@@ -625,7 +621,8 @@ for(const token of ['function findBotTacticalCover(bot,target){','function findB
   if(!positioning.includes(token))fail('bot positioning owner contract missing: '+token);
 }
 for(const token of ['findTacticalCover(target){','findFlankPoint(target,sideSign){'])if(bots.includes(token))fail('bot positioning implementation leaked back into bots.js: '+token);
-for(const token of ['findBotTacticalCover(this,targetPos)','findBotFlankPoint(this,squadPlan.focusPos,sign)'])if(!bots.includes(token))fail('bot positioning consumer contract missing: '+token);
+if(!coverExecution.includes('findBotTacticalCover(bot,targetPos)'))fail('bot positioning cover consumer contract missing from cover-execution owner');
+if(!bots.includes('findBotFlankPoint(this,squadPlan.focusPos,sign)'))fail('bot positioning flank consumer contract missing from bots.js');
 for(const token of ["this.aiState=","case 'cover'","case 'flank'",'moveBotWithSubsteps(','refreshBotTeamTactics(','flankCommitT=','coverEvalT='])if(positioning.includes(token))fail('FSM/tactics/locomotion authority leaked into bot positioning owner: '+token);
 for(const token of [
   'function shouldBotReconsiderWeapon(bot,dist){','function selectBotWeapon(bot,distHint=22,force=false){',
@@ -738,9 +735,10 @@ for(const token of ['breachReady:false','smokeWaveId:-1','smokeDecisionWaveId:-1
   if(!tactics.includes(token))fail('Combat Presence 1.3 coordinated utility owner missing: '+token);
 }
 if(!fireControl.includes('spawnEnemyBullet(from,pd,wp,bot'))fail('Combat Presence 1.3 bot ballistic execution missing');
-for(const token of ["this.tacticalMode=squadPlan.suppressor===this","breachRole?'breach'",'this.peekPoint=null;this.peekT=0','let coverGoal=this.coverPoint']){
+for(const token of ["this.tacticalMode=squadPlan.suppressor===this","breachRole?'breach'",'this.peekPoint=null;this.peekT=0']){
   if(!bots.includes(token))fail('Combat Presence 1.3 bot integration missing: '+token);
 }
+if(!coverExecution.includes('let coverGoal=bot.coverPoint,peekMoveM=.98;'))fail('Combat Presence 1.3 cover execution integration missing');
 for(const token of ['const insigniaMat=','const addInsignia=','addInsignia(.281,Math.PI)','addInsignia(-.219,0)']){
   if(!presentation.includes(token))fail('procedural bot insignia missing from presentation owner: '+token);
 }
@@ -754,9 +752,10 @@ for(const token of ["this.hEl=document.createElement('div')","this.hFill=documen
 for(const token of ['suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor']){
   if(!tactics.includes(token))fail('Combat Presence 1.4 suppressor coordination owner missing: '+token);
 }
-for(const token of ['cachedGrenadeThreat','updateBotGrenadeThreat(this,dt)','suppressMemory=this.tacticalMode===\'suppress\'','executeBotShot(this,fireTarget,fireDist,suppressMemory)','this.peekDuration=.92','const peekEnvelope=','targetPeekLean']){
+for(const token of ['cachedGrenadeThreat','updateBotGrenadeThreat(this,dt)','suppressMemory=this.tacticalMode===\'suppress\'','executeBotShot(this,fireTarget,fireDist,suppressMemory)','const peekEnvelope=','targetPeekLean']){
   if(!bots.includes(token))fail('Combat Presence 1.4 bot awareness integration missing: '+token);
 }
+if(!coverExecution.includes('bot.peekDuration=.92+Math.random()*.34;'))fail('Combat Presence 1.4 peek timing integration missing from cover-execution owner');
 if(!perception.includes('function nearestHostileGrenade'))fail('Combat Presence 1.4 grenade awareness owner missing');
 if(!fireControl.includes('if(wp.hitscan){')||!fireControl.includes('spawnInstantSniperTrace(from,tracerDir'))fail('bot sniper must remain hitscan while normal guns use travelling bullets');
 if(bots.includes("Math.random()<(suppressing?.56:.34)")||fireControl.includes("Math.random()<(suppressing?.56:.34)"))fail('legacy random player near-miss whiz returned');
