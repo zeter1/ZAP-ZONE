@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot fire-control execution ownership
+- aim/muzzle helpers, reload lifecycle, concrete shot execution, hit/near-miss resolution и bot kill accounting вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-fire-control.js`;
+- FSM/fire gate, burst cadence, weapon-selection policy, utility planting и squad doctrine остаются у прежних owners; projectile/collision primitives не дублируются из `src/combat/combat.js`;
+- coordinated smoke/frag теперь получает muzzle origin через canonical `getBotMuzzlePos(bot)`, поэтому один muzzle contract используется и firearms, и utility;
+- добавлены focused `node:test` regressions, `docs/specs/BOT_FIRE_CONTROL.md`, AI-routing и owner/consumer/reverse structural guards без gameplay balance change.
+
 ### Bot tactical positioning ownership
 - cover/flank candidate filtering и scoring вынесены из `src/entities/bots.js` в canonical owner `src/ai/bot-positioning.js`;
 - pure extraction сохраняет distance/LOS/smoke/route/crowding/Frontline/doctrine weights и procedural flank fallback без balance change;
