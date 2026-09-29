@@ -92,10 +92,10 @@ test('role modifiers remain asymmetric across HP speed damage accuracy and fire 
   near(assault.fireRateMul,(1.08-3*.013)*.92,'assault fire-rate role modifier');
 });
 
-test('accuracy and fire-rate clamps preserve clamp-before-role semantics',()=>{
+test('accuracy and fire-rate clamps preserve their exact role ordering',()=>{
   const harness=createHarness({level:100,kills:1000});
-  const anchor=makeBot({role:'anchor'});
-  const assault=makeBot({role:'assault'});
+  const anchor=makeBot({role:'anchor',baseAcc:.02});
+  const assault=makeBot({role:'assault',baseAcc:.02});
   harness.apply(anchor,true);
   harness.apply(assault,true);
 
