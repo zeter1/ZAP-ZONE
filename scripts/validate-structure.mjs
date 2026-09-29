@@ -442,7 +442,7 @@ for(const token of ['this.aiState=','this.doShoot(','moveBotWithSubsteps(','refr
   if(perception.includes(token))fail('FSM/combat/navigation/tactics implementation leaked into bot perception owner: '+token);
 }
 if(navigation.includes('function nearestHostileGrenade('))fail('grenade threat perception must not leak into bot navigation owner');
-for(const token of ['function findBotTacticalCover(bot,target){','function findBotFlankPoint(bot,target,sideSign){','objectiveCoverPenalty','objectivePenalty=Math.max','botRoutePenalty(routeFrom,routeTo,bot.team)','const firingLane=!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt)']){
+for(const token of ['function findBotTacticalCover(bot,target){','function findBotFlankPoint(bot,target,sideSign){','objectiveCoverPenalty','objectivePenalty=Math.max','objectiveAdvance','botRoutePenalty(routeFrom,routeTo,bot.team)','const firingLane=!wallBetween(eye,tgt,losMeshes)&&!smokeBlocksSight(eye,tgt)']){
   if(!positioning.includes(token))fail('bot positioning owner contract missing: '+token);
 }
 for(const token of ['findTacticalCover(target){','findFlankPoint(target,sideSign){'])if(bots.includes(token))fail('bot positioning implementation leaked back into bots.js: '+token);
@@ -460,7 +460,7 @@ if(bots.includes('this.stuckT=0;this.strafeDir*=-1;this.sideBias*=-1;this.trigge
 for(const token of ['function botAssaultWaveState','waveStart:-999']){
   if(!tactics.includes(token))fail('Combat Presence 1.2 assault-wave owner missing: '+token);
 }
-for(const token of ['playWeaponShotSound(wp.key','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','assaultWaveState===\'staging\'','coverChainT','objectiveAdvance','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
+for(const token of ['playWeaponShotSound(wp.key','function botShotClosestApproachToPlayer','registerPlayerSuppression(this,wp,approach.point','assaultWaveState===\'staging\'','coverChainT','playWeaponMechanicSound(\'reload\'','footstepDistance','playFootstepSound(this.group.position','frontlineContested','objectiveUrgency','strategicRetreat']){
   if(!bots.includes(token))fail('Combat Presence 1.2 / Frontline bot integration missing: '+token);
 }
 for(const token of ['breachReady:false','smokeWaveId:-1','smokeDecisionWaveId:-1','smokeDecisionUse:false','smokeReadyAt:-999','Math.random()<.30','plan.smokeReadyAt=now+14000+Math.random()*8000','fragWaveId:-1','function maybeCoordinateBotUtility','spawnBotSmokeGrenade(bot.getMuzzlePos()','spawnBotFragGrenade(bot.getMuzzlePos()']){
