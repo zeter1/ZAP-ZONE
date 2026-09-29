@@ -46,6 +46,7 @@ jobs:
           node --check scripts/bot-presentation-owner.test.mjs
           node --check scripts/bot-navigation-owner.test.mjs
           node --check scripts/bot-perception-owner.test.mjs
+          node --check scripts/bot-damage-reaction-owner.test.mjs
           node --check scripts/bot-positioning-owner.test.mjs
           node --check scripts/bot-weapon-policy-owner.test.mjs
           node --check scripts/bot-fire-control-owner.test.mjs
@@ -61,6 +62,8 @@ jobs:
         run: node --test scripts/bot-presentation-owner.test.mjs
       - name: Bot perception regressions
         run: node --test scripts/bot-perception-owner.test.mjs
+      - name: Bot damage-reaction regressions
+        run: node --test scripts/bot-damage-reaction-owner.test.mjs
       - name: Bot navigation regressions
         run: node --test scripts/bot-navigation-owner.test.mjs
       - name: Bot positioning regressions

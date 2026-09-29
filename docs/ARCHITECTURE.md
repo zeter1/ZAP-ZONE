@@ -83,6 +83,18 @@ Pure extraction сохраняет thresholds, role/doctrine multipliers, limits
 
 Behavior закреплён `scripts/bot-deployables-owner.test.mjs`; structural validation требует owner functions и consumer order, запрещает возврат implementation в `Enemy`, запрещает FSM/squad/fire-control authority в deployables owner и фиксирует classic-script dependency order.
 
+## Bot damage-reaction policy owner
+
+**Canonical owner:** `src/ai/bot-damage-reaction.js`. Узкий контракт — **[specs/BOT_DAMAGE_REACTION.md](specs/BOT_DAMAGE_REACTION.md)**.
+
+Owner получает уже произошедший damage event из стабильной public seam `Enemy.hurt(...)` и владеет только retaliatory AI policy: hostile bot/player source semantics, точным retarget predicate, target memory/velocity, target lock и ускорением reaction/burst/FSM timers.
+
+Граница намеренно отделяет **damage application/lifecycle** от **AI response policy**. `src/entities/bots.js` по-прежнему мутирует HP, показывает hit emissive, выполняет прежний dodge RNG и concrete dodge, а затем вызывает damage-reaction owner до `die()`. `src/ai/bot-perception.js` остаётся owner-ом active sensing/hearing/LOS target acquisition; near-miss suppression пока остаётся отдельной event seam и не смешивается с damage reaction.
+
+Pure extraction сохраняет точную включительную границу `dmg >= maxHp * 0.10`, source precedence, target-memory fields и timer clamps. Новый owner не содержит `Math.random()`, поэтому RNG consumption/order `Enemy.hurt()` не меняется.
+
+Behavior закреплён `scripts/bot-damage-reaction-owner.test.mjs`; structural validation требует canonical definition + consumer, запрещает возврат implementation в `bots.js`, запрещает HP/dodge/death/RNG authority в owner и фиксирует event order `dodge → damage reaction → death`.
+
 ## Session lifecycle owner
 
 `src/game/session.js` — единственный владелец переходов между меню/паузой/активной игрой и состоянием браузера. Здесь живут Pointer Lock request/change/error, start/resume, Escape sequencing, blur/focus/visibility/pagehide persistence и общий `lastT`, который сбрасывается после lifecycle-переходов.
