@@ -1,5 +1,20 @@
 # Asset pipeline — ZAP ZONE
 
+## Generated Asset Pack 7 (2026-09-29)
+Runtime paths:
+- `assets/ui/overlays/low-health-vignette-01.webp` — low-HP peripheral damage texture.
+- `assets/ui/overlays/damage-direction-01.webp` — rotatable directional hit texture.
+- `assets/ui/overlays/smoke-clouds-01.webp` — smoke-screen presentation layer.
+- `assets/ui/fx/ballistic-muzzle-flash-sheet-01.webp` — 4×2 ballistic muzzle sheet.
+- `assets/ui/fx/plasma-discharge-sheet-01.webp` — 4×2 plasma discharge sheet.
+- `assets/ui/overlays/explosion-shockwave-01.webp` — nearby explosion screen shockwave.
+- `assets/ui/overlays/suppression-vignette-01.webp` — player near-miss/suppression overlay.
+- `assets/ui/overlays/armor-hit-field-01.webp` — non-breaking armor-hit field.
+- `assets/ui/overlays/sprint-speed-lines-01.webp` — sprint peripheral speed texture.
+- `assets/ui/overlays/respawn-materialize-01.webp` — respawn materialization overlay.
+
+Pack 7 is presentation-only. Screen overlays are DOM/CSS layers, muzzle sheets decorate the existing DOM first-person flash, and no generated raster is routed into persistent Three.js texture planes/sprites. Every overlay keeps an existing procedural/UI fallback. Runtime derivatives are VP8X alpha WebP, 512×288 for screen overlays and 512×256 for the two 4×2 sheets, with a 128 KiB CI budget.
+
 ## Generated Asset Pack 6 (2026-09-29)
 Runtime paths:
 - `assets/ui/perks/bulletstorm-tech-01.webp` — «Шторм свинца».

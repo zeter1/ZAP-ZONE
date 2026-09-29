@@ -371,8 +371,15 @@ function showDamageDirection(attacker,kind='bullet',amount=0){
   const degrees=combatBearingDegrees(attacker);
   el.style.transform='translate(-50%,-50%) rotate('+degrees.toFixed(1)+'deg)';el.className='';void el.offsetWidth;el.classList.add('on');
   if(kind==='rocket'||kind==='mine'||kind==='bomb')el.classList.add('explosive');
-  el.style.setProperty('--damage-strength',Math.max(.72,Math.min(1.18,.78+(Number(amount)||0)/120)).toFixed(2));
-  clearTimeout(damageDirectionTimer);damageDirectionTimer=setTimeout(()=>{el.className='';},760);
+  const strength=Math.max(.72,Math.min(1.18,.78+(Number(amount)||0)/120));
+  el.style.setProperty('--damage-strength',strength.toFixed(2));
+  const edge=ensureCombatOverlay('damage-edge-overlay','damageDirection');
+  if(edge){
+    edge.style.setProperty('--overlay-strength',Math.min(1,strength).toFixed(2));
+    edge.style.transform='rotate('+(degrees+90).toFixed(1)+'deg)';
+    edge.classList.remove('on');void edge.offsetWidth;edge.classList.add('on');
+  }
+  clearTimeout(damageDirectionTimer);damageDirectionTimer=setTimeout(()=>{el.className='';if(edge)edge.classList.remove('on');},760);
 }
 function showThreatDirection(source,kind='bullet',intensity=.6){
   const el=byId('threat-direction');if(!el)return;
@@ -381,6 +388,66 @@ function showThreatDirection(source,kind='bullet',intensity=.6){
   el.style.setProperty('--threat-strength',Math.max(.45,Math.min(1.15,Number(intensity)||.6)).toFixed(2));
   el.className='';void el.offsetWidth;el.classList.add('on',kind);
   clearTimeout(threatDirectionTimer);threatDirectionTimer=setTimeout(()=>{el.className='';},520);
+}
+
+let armorHitTimer=0,explosionShockwaveTimer=0,respawnMaterializeTimer=0;
+function ensureCombatOverlay(id,assetKey){
+  let el=byId(id);
+  if(!el){
+    const root=byId('ui');if(!root)return null;
+    el=document.createElement('div');el.id=id;el.className='generated-combat-overlay';el.setAttribute('aria-hidden','true');
+    root.insertBefore(el,root.firstChild);
+  }
+  const asset=GAME_ASSETS.presentationCombat?.[assetKey];
+  if(asset&&el.dataset.asset!==asset){
+    el.dataset.asset=asset;
+    el.style.setProperty('--combat-overlay-image','url("'+asset+'")');
+  }
+  return el;
+}
+function ensureGeneratedCombatPresentation(){
+  const smoke=byId('smoke-overlay'),smokeAsset=GAME_ASSETS.presentationCombat?.smoke;
+  if(smoke&&smokeAsset&&smoke.dataset.generatedSmoke!==smokeAsset){
+    smoke.dataset.generatedSmoke=smokeAsset;
+    smoke.style.setProperty('--smoke-overlay-image','url("'+smokeAsset+'")');
+  }
+  ensureCombatOverlay('low-health-overlay','lowHealth');
+  ensureCombatOverlay('damage-edge-overlay','damageDirection');
+  ensureCombatOverlay('suppression-overlay','suppression');
+  ensureCombatOverlay('armor-hit-overlay','armorHit');
+  ensureCombatOverlay('explosion-shockwave-overlay','explosionShockwave');
+  ensureCombatOverlay('sprint-speed-overlay','sprint');
+  ensureCombatOverlay('respawn-materialize-overlay','respawn');
+}
+function setLowHealthCombatOverlay(strength=0){
+  const el=ensureCombatOverlay('low-health-overlay','lowHealth');if(!el)return;
+  el.style.opacity=String(Math.max(0,Math.min(.78,Number(strength)||0)));
+}
+function setSprintSpeedOverlay(strength=0){
+  const el=ensureCombatOverlay('sprint-speed-overlay','sprint');if(!el)return;
+  const value=Math.max(0,Math.min(1,Number(strength)||0));
+  el.style.opacity=String(value*.52);
+}
+function showArmorHitFx(amount=0){
+  const el=ensureCombatOverlay('armor-hit-overlay','armorHit');if(!el)return;
+  el.style.setProperty('--overlay-strength',Math.max(.35,Math.min(1,.42+(Number(amount)||0)/45)).toFixed(2));
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(armorHitTimer);armorHitTimer=setTimeout(()=>el.classList.remove('on'),520);
+}
+function triggerExplosionShockwave(source,radius=3){
+  const src=combatSourcePosition(source);if(!src||typeof camera==='undefined')return;
+  const dist=Math.hypot(src.x-camera.position.x,src.y-camera.position.y,src.z-camera.position.z);
+  const reach=Math.max(10,Math.min(30,10+(Number(radius)||3)*3.6));if(dist>reach)return;
+  const strength=Math.max(.16,Math.min(1,1-dist/reach));
+  const el=ensureCombatOverlay('explosion-shockwave-overlay','explosionShockwave');if(!el)return;
+  el.style.setProperty('--overlay-strength',strength.toFixed(3));
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(explosionShockwaveTimer);explosionShockwaveTimer=setTimeout(()=>el.classList.remove('on'),720);
+}
+function showRespawnMaterializeFx(){
+  const el=ensureCombatOverlay('respawn-materialize-overlay','respawn');if(!el)return;
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(respawnMaterializeTimer);respawnMaterializeTimer=setTimeout(()=>el.classList.remove('on'),1150);
 }
 
 let shakeTime=0,shakeDuration=.1,shakePower=0,fpsAccum=0,fpsFrames=0;
@@ -397,6 +464,8 @@ function tickGamePresentation(dt,ts){
     suppressionReticle.classList.toggle('suppressed',playerSuppression>.12);
     suppressionReticle.style.setProperty('--suppression',Math.min(1,playerSuppression).toFixed(3));
   }
+  const suppressionOverlay=ensureCombatOverlay('suppression-overlay','suppression');
+  if(suppressionOverlay)suppressionOverlay.style.opacity=String(Math.min(.66,playerSuppression*.40+playerSuppressionPulse*.72));
   if(gameSettings.showFps&&fps){
     fps.style.display='block';fpsAccum+=safeDt;fpsFrames++;
     if(fpsAccum>=.45){fps.textContent='FPS '+Math.round(fpsFrames/Math.max(.001,fpsAccum));fpsAccum=0;fpsFrames=0;}
@@ -445,4 +514,5 @@ function bindGameSettings(){
   window.addEventListener('keydown',e=>{if(e.code==='Escape'&&settingsOpen){e.preventDefault();e.stopImmediatePropagation();closeGameSettings();}},true);
   applyGameSettings();
 }
+ensureGeneratedCombatPresentation();
 bindGameSettings();

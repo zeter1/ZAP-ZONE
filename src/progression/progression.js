@@ -146,6 +146,7 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
     dmg-=absorb;
   }
   const armorImpact=armorBefore>armor;
+  if(armorImpact&&typeof showArmorHitFx==='function')showArmorHitFx(armorBefore-armor);
   if(armorBefore>0&&armor<=0)showArmorBreakFx();
   if(dmg<=0)return 0;
   hp-=dmg;
@@ -407,6 +408,8 @@ function checkDeath(){
     pushKillFeed('enemy','ВРАЖЕСКИЙ БОТ','ally','ВЫ',deathReason||'bullet');
   }
   zooming=false;
+  if(typeof setLowHealthCombatOverlay==='function')setLowHealthCombatOverlay(0);
+  if(typeof setSprintSpeedOverlay==='function')setSprintSpeedOverlay(0);
   G('sniper-scope')?.classList.remove('on','kick');
   dying=true;running=false;paused=false;lvlAnnOpen=false;perkPickOpen=false;refreshMobileHUD();playSfx('death');
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');G('pause').classList.remove('on');
@@ -461,6 +464,7 @@ function doRespawn(){
   buildGun(getW());wHUD();markHUD();flushHUD();xpHUD();updateStats();updateWeaponBar();updateTeamScore();
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   setDamageOverlay(0);G('rwarn').style.opacity='0';G('mines-panel').style.display=(getW().isMine||getW().isBomb)?'block':'none';
+  if(typeof showRespawnMaterializeFx==='function')showRespawnMaterializeFx();
 
   showAnn('ТАКТИЧЕСКОЕ ВОЗРОЖДЕНИЕ · БОЙ ПРОДОЛЖАЕТСЯ');
   saveProgress(true);
@@ -522,6 +526,7 @@ function restartGameFromScratch(){
   G('death-flash').style.background='rgba(255,0,0,0)';G('death-flash').style.opacity='1';G('death-msg').style.opacity='0';G('battle-result-frame')?.classList.remove('on');
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';G('rwarn').style.opacity='0';
   setDamageOverlay(0);
+  if(typeof showRespawnMaterializeFx==='function')showRespawnMaterializeFx();
   buildGun(getW());buildWeaponBar();updateWeaponBar();updatePerkPanel();updateStats();
   spawnPickups();spawnInitial();
   wHUD();markHUD();flushHUD();xpHUD();updateTeamScore();

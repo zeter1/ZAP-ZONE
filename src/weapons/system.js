@@ -529,6 +529,8 @@ function setGeneratedFirstPersonWeaponArt(w,model){
   wrap.style.setProperty('--fp-flash-mid',tune.flashMid||'#ffd15a');
   wrap.style.setProperty('--fp-flash-edge',tune.flashEdge||'#ff6d1f');
   wrap.style.setProperty('--fp-flash-base-scale',String(tune.flashScale||0));
+  const flashAsset=w.key==='plasma'?GAME_ASSETS.presentationCombat?.plasmaMuzzle:GAME_ASSETS.presentationCombat?.ballisticMuzzle;
+  wrap.style.setProperty('--fp-flash-image',flashAsset?'url("'+flashAsset+'")':'none');
   fpGeneratedWeaponPending={key:w.key,model,asset};
 }
 function ensureGeneratedFirstPersonWeaponArtLoaded(){
@@ -583,6 +585,9 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
     flash.style.opacity=visible&&life>0&&flashScale>0?String(Math.pow(life,.55)):'0';
     flash.style.setProperty('--fp-flash-pop',flashScale.toFixed(3));
     flash.style.setProperty('--fp-flash-twist',((((shotSequence%5)-2)*1.8)).toFixed(1)+'deg');
+    const frame=Math.abs(shotSequence)%8,col=frame%4,row=frame>=4?1:0;
+    flash.style.setProperty('--fp-flash-x',(col*100/3).toFixed(2)+'%');
+    flash.style.setProperty('--fp-flash-y',(row*100).toFixed(2)+'%');
   }
 }
 function buildGun(w){

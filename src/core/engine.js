@@ -578,6 +578,7 @@ function explode(pos,col,r=3){
   for(let i=0;i<(MOBILE_LOW?1:2);i++)spawnSmoke(pos,0x664433);
   for(let i=0;i<(MOBILE_LOW?2:5);i++)spawnSpark(pos,col);
   spawnExplosionFx(pos,col,r);
+  if(typeof triggerExplosionShockwave==='function')triggerExplosionShockwave(pos,r);
   if(!VISUAL_LIGHTS)return;
   let fl=_eLights.find(l=>!l._act);
   if(!fl){fl=new THREE.PointLight(0xff4400,0,10);fl._act=false;scene.add(fl);_eLights.push(fl);}

@@ -181,6 +181,20 @@ const GAME_ASSETS=versionAssetTree({
     levelup:'assets/fx/levelup.svg',
     skull:'assets/fx/skull.svg'
   }),
+  // Generated combat textures are presentation-only DOM/CSS layers. They never
+  // become persistent WebGL planes/sprites; procedural HUD/world feedback remains fallback.
+  presentationCombat:Object.freeze({
+    lowHealth:'assets/ui/overlays/low-health-vignette-01.webp',
+    damageDirection:'assets/ui/overlays/damage-direction-01.webp',
+    smoke:'assets/ui/overlays/smoke-clouds-01.webp',
+    ballisticMuzzle:'assets/ui/fx/ballistic-muzzle-flash-sheet-01.webp',
+    plasmaMuzzle:'assets/ui/fx/plasma-discharge-sheet-01.webp',
+    explosionShockwave:'assets/ui/overlays/explosion-shockwave-01.webp',
+    suppression:'assets/ui/overlays/suppression-vignette-01.webp',
+    armorHit:'assets/ui/overlays/armor-hit-field-01.webp',
+    sprint:'assets/ui/overlays/sprint-speed-lines-01.webp',
+    respawn:'assets/ui/overlays/respawn-materialize-01.webp'
+  }),
   firstPersonWeapons:Object.freeze({
     pistol:'assets/weapons/fp/pistol-tech.svg',
     shotgun:'assets/weapons/fp/shotgun-tech.svg',

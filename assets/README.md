@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 7 consumers
+The 2026-09-29 combat-texture pack adds ten generated alpha WebP assets: low-health, directional damage, smoke, ballistic/plasma muzzle sheets, explosion shockwave, suppression, armor-hit, sprint-speed and respawn materialization. Runtime ownership is split deliberately: `src/settings/settings.js` owns screen-space transient overlays, `src/game/runtime.js` owns low-health/sprint strengths, `src/progression/progression.js` owns armor-hit/respawn events, `src/core/engine.js` only emits the explosion presentation hook, and `src/weapons/system.js` consumes the two muzzle spritesheets.
+
+All Pack 7 rasters remain DOM/CSS presentation-only and protocol-neutral. The procedural damage arrow, smoke gradient and procedural muzzle glow remain graceful fallbacks, so a missing generated texture does not remove critical gameplay information.
+
 ## Pack 6 consumers
 The 2026-09-29 pack adds ten generated perk renders as 256×256 transparent WebP: `bulletstorm`, `immortal`, `doubletap`, `piercing`, `laststand`, `thorns`, `explosive_rounds`, `evasive_matrix`, `headshot_armor` and `bombtech`. They are selected by `perkAsset(id,path)` in `src/assets/catalog.js` and appear in both level-up perk cards and the active perk panel through the existing `src/progression/progression.js` consumers.
 

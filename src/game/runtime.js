@@ -102,6 +102,10 @@ function loop(ts){
 
   // Movement
   const lowHpActive=hp<plr.maxHp*.35;
+  if(typeof setLowHealthCombatOverlay==='function'){
+    const lowHpStrength=lowHpActive?Math.max(.18,Math.min(.72,.18+(1-Math.max(0,hp)/(plr.maxHp*.35))*.54)):0;
+    setLowHealthCombatOverlay(lowHpStrength);
+  }
   const runHeld=(K['ShiftLeft']||K['ShiftRight']||mobileInput.run);
   const sprintAllowed=!reloading&&!zooming&&weaponEquipT<=0&&cycleT<=0;
   const wantsSprint=!!runHeld&&sprintAllowed;
@@ -118,6 +122,7 @@ function loop(ts){
   const sprintTarget=sprintingNow?1:0;
   const sprintStep=dt*(sprintingNow?8.5:11.5);
   sprintBlend+=Math.max(-sprintStep,Math.min(sprintStep,sprintTarget-sprintBlend));
+  if(typeof setSprintSpeedOverlay==='function')setSprintSpeedOverlay(sprintBlend);
   if(wasWeaponSprinting&&!sprintingNow)sprintExitT=Math.max(sprintExitT,activeW.sprintRecover||.15);
   wasWeaponSprinting=sprintingNow;
   if(crosshair)crosshair.classList.toggle('weapon-lowered',sprintingNow||weaponEquipT>0||sprintExitT>0);

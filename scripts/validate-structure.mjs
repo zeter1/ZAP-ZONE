@@ -78,6 +78,13 @@ const generatedSupplementalWebpAssets=[
   'assets/ui/scopes/sniper-scope-tech-01.webp','assets/ui/scopes/rifle-scope-tech-01.webp',
   'assets/ui/objective/frontline-capture-burst-tech-01.webp','assets/ui/feedback/battle-result-frame-tech-01.webp'
 ];
+const generatedCombatTextureWebpAssets=[
+  'assets/ui/overlays/low-health-vignette-01.webp','assets/ui/overlays/damage-direction-01.webp',
+  'assets/ui/overlays/smoke-clouds-01.webp','assets/ui/fx/ballistic-muzzle-flash-sheet-01.webp',
+  'assets/ui/fx/plasma-discharge-sheet-01.webp','assets/ui/overlays/explosion-shockwave-01.webp',
+  'assets/ui/overlays/suppression-vignette-01.webp','assets/ui/overlays/armor-hit-field-01.webp',
+  'assets/ui/overlays/sprint-speed-lines-01.webp','assets/ui/overlays/respawn-materialize-01.webp'
+];
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
@@ -86,7 +93,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -100,6 +107,7 @@ const presentationCssRasterAssets=[
 const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
+for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
 const versionManifest=JSON.parse(readFileSync('version.json','utf8'));
 const htmlBuild=html.match(/<meta name="application-build" content="([0-9a-f]{16})">/)?.[1]||'';
 if(!html.includes('<meta name="application-version" content="23.9">'))fail('application-version marker missing');
@@ -142,6 +150,16 @@ for(const file of [...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAss
   if(width!==256||height!==256)fail('status/perk WebP must be 256x256: '+file+' ('+width+'x'+height+')');
   if((bytes[20]&0x10)===0)fail('status/perk WebP alpha flag missing: '+file);
 }
+for(const file of generatedCombatTextureWebpAssets){
+  const bytes=readFileSync(file);
+  if(bytes.length>128*1024)fail('generated combat texture exceeds 128 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('generated combat texture must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  const expectedHeight=file.includes('muzzle-flash')||file.includes('plasma-discharge')?256:288;
+  if(width!==512||height!==expectedHeight)fail('generated combat texture dimensions invalid: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('generated combat texture alpha flag missing: '+file);
+}
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
   'data-generated-src="assets/ui/feedback/levelup-core-tech-01.webp"',
@@ -180,6 +198,19 @@ for(const token of [
 ]){
   if(!catalog.includes(token))fail('generated feedback pack mapping missing: '+token);
 }
+for(const token of [
+  'presentationCombat:Object.freeze',
+  "lowHealth:'assets/ui/overlays/low-health-vignette-01.webp'",
+  "damageDirection:'assets/ui/overlays/damage-direction-01.webp'",
+  "smoke:'assets/ui/overlays/smoke-clouds-01.webp'",
+  "ballisticMuzzle:'assets/ui/fx/ballistic-muzzle-flash-sheet-01.webp'",
+  "plasmaMuzzle:'assets/ui/fx/plasma-discharge-sheet-01.webp'",
+  "explosionShockwave:'assets/ui/overlays/explosion-shockwave-01.webp'",
+  "suppression:'assets/ui/overlays/suppression-vignette-01.webp'",
+  "armorHit:'assets/ui/overlays/armor-hit-field-01.webp'",
+  "sprint:'assets/ui/overlays/sprint-speed-lines-01.webp'",
+  "respawn:'assets/ui/overlays/respawn-materialize-01.webp'"
+])if(!catalog.includes(token))fail('generated combat texture catalog missing: '+token);
 for(const token of [
   "presentationMedals:Object.freeze",
   "'first-blood':'assets/ui/medals/first-blood-tech-01.png'",
@@ -235,12 +266,14 @@ if(catalog.includes('crosshair.svg'))fail('legacy static gameplay crosshair must
 if(existsSync('assets/ui/crosshair.svg'))fail('legacy static gameplay crosshair file must be removed');
 
 const progression=readFileSync('src/progression/progression.js','utf8');
+for(const token of ["showArmorHitFx(armorBefore-armor)","showRespawnMaterializeFx()"])if(!progression.includes(token))fail('progression combat overlay consumer missing: '+token);
 if(progression.includes('function G(id)'))fail('G helper must be available before progression.js loads');
 for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','perkFallbackAsset(p.id,p.path)','perkFallbackAsset(perk.id,perk.path)','data-fallback-src','function showCombatMedal','function showKillMedal','combatMedalFallbackAsset(type)','combatMedalAsset(type)','imageAssetWithFallback(img,combatMedalAsset(type),fallback)','function updateStatusIcons','statusFallbackAsset(key)','statusAsset(key)','imageAssetWithFallback(img,statusAsset(key),fallback)','function showArmorBreakFx','function updateWeaponStateHUD',"w.hitscan?'МГНОВЕННО'","playHitImpactSound(armorImpact?'armor':'body'"]){
   if(!progression.includes(token))fail('progression visual/weapon HUD integration missing: '+token);
 }
 
 const weapons=readFileSync('src/weapons/system.js','utf8');
+for(const token of ["GAME_ASSETS.presentationCombat?.plasmaMuzzle","GAME_ASSETS.presentationCombat?.ballisticMuzzle","--fp-flash-x","--fp-flash-y"])if(!weapons.includes(token))fail('generated muzzle-flash sheet wiring missing: '+token);
 const weaponDefs=[...weapons.matchAll(/weaponDef\('([^']+)'/g)].map(m=>m[1]);
 if(weaponDefs.length!==9)fail('expected 9 weapon definitions, found '+weaponDefs.length);
 if(!weaponDefs.includes('sniper'))fail('sniper weapon definition missing');
@@ -290,7 +323,7 @@ if(shotgunDef.includes("aimMode:'scope'"))fail('shotgun must not use rifle/snipe
 
 
 const settings=readFileSync('src/settings/settings.js','utf8');
-for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferSfx','gameAudioRetryAfter','GAME_AUDIO_FILE_ASSETS_ENABLED','function scheduleGameAudioWarmup','requestIdleCallback','if(!GAME_AUDIO_FILE_ASSETS_ENABLED)return Promise.resolve(null)','if(loaded)startBattlefieldAmbience()','function combatAcousticProfile','function playWeaponTail','function playSniperCrack','function footstepSurfaceAt','function playFootstepSound','function tickPlayerFootsteps','function playHitImpactSound','function playWeaponMechanicSound','function startBattlefieldAmbience','function playerSuppressionSpreadPenalty','function registerPlayerSuppression','function playWeaponShotSound','function playSurfaceImpactSound','distant.distance>38','function playExplosionSound','function playWhizSound','function showHitMarker','function showDamageDirection','function showThreatDirection','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
+for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferSfx','gameAudioRetryAfter','GAME_AUDIO_FILE_ASSETS_ENABLED','function scheduleGameAudioWarmup','requestIdleCallback','if(!GAME_AUDIO_FILE_ASSETS_ENABLED)return Promise.resolve(null)','if(loaded)startBattlefieldAmbience()','function combatAcousticProfile','function playWeaponTail','function playSniperCrack','function footstepSurfaceAt','function playFootstepSound','function tickPlayerFootsteps','function playHitImpactSound','function playWeaponMechanicSound','function startBattlefieldAmbience','function playerSuppressionSpreadPenalty','function registerPlayerSuppression','function playWeaponShotSound','function playSurfaceImpactSound','distant.distance>38','function playExplosionSound','function playWhizSound','function showHitMarker','function showDamageDirection','function showThreatDirection','function ensureCombatOverlay','function ensureGeneratedCombatPresentation','function setLowHealthCombatOverlay','function setSprintSpeedOverlay','function showArmorHitFx','function triggerExplosionShockwave','function showRespawnMaterializeFx','function tickGamePresentation','function lookSensitivityMultiplier',"w.aimMode==='scope'","case 'equip'","case 'shell'","case 'ricochet'","case 'whiz'"]){
   if(!settings.includes(token))fail('settings/presentation integration missing: '+token);
 }
 
@@ -865,6 +898,7 @@ for(const token of ['const activeFrontline=frontlineZone();','frontlineContested
 }
 if(!tactics.includes('const frontlineBias=s=>'))fail('Frontline map bias must stay owned by tactics');
 const engine=readFileSync('src/core/engine.js','utf8');
+if(!engine.includes("typeof triggerExplosionShockwave==='function'"))fail('explosion shockwave presentation hook missing');
 for(const file of presentationRasterAssets)if(engine.includes(file))fail('generated raster presentation asset must stay out of WebGL engine scene: '+file);
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)',"typeof syncWorldWeaponPickupArt==='function'"]){
   if(!engine.includes(token))fail('polished engine FX/material/cover integration missing: '+token);
@@ -881,6 +915,7 @@ if(engine.includes('waterTex')||engine.includes('map:waterTex')||engine.includes
 
 const session=readFileSync('src/game/session.js','utf8');
 const runtime=readFileSync('src/game/runtime.js','utf8');
+for(const token of ['setLowHealthCombatOverlay(lowHpStrength)','setSprintSpeedOverlay(sprintBlend)'])if(!runtime.includes(token))fail('runtime combat overlay consumer missing: '+token);
 for(const token of [
   'let lastT=0;',
   'function tryFullscreen()','function setGameCursorHidden(','function clearPointerLockRequest()',

@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Generated Asset Pack 7 — combat textures and screen-space feedback
+- added ten optimized alpha WebP combat textures: low-health vignette, directional damage, tactical smoke, ballistic/plasma muzzle sheets, explosion shockwave, suppression, armor hit, sprint speed-lines and respawn materialization;
+- new textures are actually consumed at runtime through the centralized asset catalog: screen overlays stay DOM/CSS presentation-only, the two 4×2 sheets decorate the existing first-person muzzle-flash layer, and the engine only emits a presentation hook for nearby explosions;
+- existing procedural arrow/gradient/glow feedback remains as graceful fallback, including direct `file://` play; no generated raster is introduced into persistent WebGL scene geometry;
+- structural validation now checks Pack 7 presence/catalog/wiring, VP8X alpha, 512px dimensions and a 128 KiB per-file budget.
+
 ### Generated Asset Pack 6 — high-impact perk art
 - добавлены 10 оптимизированных 256×256 alpha WebP для `bulletstorm`, `immortal`, `doubletap`, `piercing`, `laststand`, `thorns`, `explosive_rounds`, `evasive_matrix`, `headshot_armor` и `bombtech`;
 - карточки выбора уровня и панель уже взятых perks используют новые арты через существующий `perkAsset(id,path)`, а точные per-id `assets/perks/*.svg` остаются fallback при load/decode error;
