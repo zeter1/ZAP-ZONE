@@ -21,6 +21,7 @@
 | Asset identity / fallback | `src/assets/catalog.js` | gameplay logic |
 | Arena / renderer / collision | `src/core/engine.js` | UI/session policy |
 | Weapon data / 3D factory | `src/weapons/system.js` | browser lifecycle |
+| Projectile ricochet policy / reflection math | `src/combat/projectile-ricochet.js` | swept collision, wall penetration, weapon balance |
 | Player/save/weapon state | `src/player/state.js` | Pointer Lock listeners |
 | Audio / presentation settings | `src/settings/settings.js` | combat authority |
 | Input / combat / projectiles | `src/combat/combat.js` | map-level AI planning |
@@ -50,7 +51,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-engagement-movement.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat/projectile-ricochet.js → combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-engagement-movement.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -61,6 +62,7 @@
 ## Маршрутизация документации
 
 - assets / generated art / uCoz / fallback → `docs/ASSETS.md`;
+- firearm projectile ricochet / angle chance / retention / bounce cap → `docs/specs/PROJECTILE_RICOCHET.md` → `src/combat/projectile-ricochet.js` → `src/combat/combat.js`;
 - architecture ownership / session / weapon lifecycle / AI invariants → нужный раздел `docs/ARCHITECTURE.md`;
 - Frontline objective/capture/save/HUD/marker → `docs/specs/FRONTLINE.md` → `src/game/frontline.js` → конкретный consumer;
 - bot level/kills/role stat scaling / HP rescale / caps+floors → `docs/specs/BOT_PROGRESSION_SCALING.md` → `src/ai/bot-progression-scaling.js` → `Enemy.syncScale()` consumer;
@@ -107,6 +109,7 @@
 |---|---|
 | docs/task only | ссылки/пути/актуальность owner map |
 | `src/**` | Node syntax + build stamp + structure validation + browser smoke |
+| Projectile ricochet / ballistic bounce | `node --test scripts/projectile-ricochet.test.mjs` + penetration-before-ricochet guard + build stamp + dual-runtime smoke |
 | session/menu | structure owner guard + HTTP boot + реальный `file://` Chrome/CDP smoke |
 | assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
