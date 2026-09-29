@@ -258,7 +258,7 @@ function maybeCoordinateBotUtility(bot,plan,targetPos,dist,waveState){
   if(plan.smokeDecisionUse&&plan.smokeWaveId!==plan.waveId&&(bot.role==='engineer'||bot.role==='anchor')&&dist>14&&dist<46){
     const objective=botObjectivePoint(bot,plan)||plan.zonePos;
     const smokeTarget=bot.group.position.clone().lerp(objective,.58);smokeTarget.y=.1;
-    if(!friendlyNearPoint(smokeTarget,bot.team,3.5)&&spawnBotSmokeGrenade(bot.getMuzzlePos(),smokeTarget,bot.team,bot)){
+    if(!friendlyNearPoint(smokeTarget,bot.team,3.5)&&spawnBotSmokeGrenade(getBotMuzzlePos(bot),smokeTarget,bot.team,bot)){
       plan.smokeWaveId=plan.waveId;
       plan.smokeDecisionUse=false;
       plan.smokeReadyAt=now+14000+Math.random()*8000;
@@ -266,7 +266,7 @@ function maybeCoordinateBotUtility(bot,plan,targetPos,dist,waveState){
   }
   if(plan.fragWaveId!==plan.waveId&&(bot.role==='assault'||bot.role==='engineer')&&dist>9&&dist<31&&bot.canSeeTarget){
     const fragTarget=targetPos.clone();fragTarget.y=.1;
-    if(!friendlyNearPoint(fragTarget,bot.team,5.6)&&spawnBotFragGrenade(bot.getMuzzlePos(),fragTarget,bot.team,bot)){
+    if(!friendlyNearPoint(fragTarget,bot.team,5.6)&&spawnBotFragGrenade(getBotMuzzlePos(bot),fragTarget,bot.team,bot)){
       plan.fragWaveId=plan.waveId;
     }
   }
