@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot post-shot fire-cadence ownership
+- post-shot burst reset, pause, next-shot `sT` и empty-mag reload handoff вынесены из большого `Enemy.update()` в canonical owner `src/ai/bot-fire-cadence.js`; broad fire gate и concrete shot execution остаются у прежних owners;
+- pure extraction сохраняет все weapon/player/suppressing formulas, cadence floors `0.095/0.055`, `fireRateMul` semantics и точный branch-specific RNG order, включая legacy `normalPause` draw, который вычисляется перед enemy-player override;
+- добавлены controlled-RNG Node 22 regressions, reverse/authority/order/load structural guards, отдельный `BOT_FIRE_CADENCE` spec и AI routing; constructor cadence RNG намеренно не переносится, чтобы не менять global spawn RNG order;
+- Validate получает отдельный fire-cadence regression step без ослабления существующих fire-control/deployables/browser gates.
+
 ### Bot progression-scaling ownership
 - deterministic level/kills/role scaling вынесен из `Enemy.syncScale()` в canonical owner `src/ai/bot-progression-scaling.js`, а constructor/update сохраняют прежнюю seam;
 - pure extraction сохраняет same-level early return, `force=true`, все формулы/caps/role multipliers, 24% HP-ratio floor + legacy growth heal и clamp-before-assault semantics для fire-rate без balance changes;
