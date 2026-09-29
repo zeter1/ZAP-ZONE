@@ -32,12 +32,13 @@
 | Bot navigation / collision-limited locomotion | `src/ai/bot-navigation.js` | grenade/mine/noise perception; tactical destination scoring; squad doctrine / target policy |
 | Bot tactical cover/flank destination scoring | `src/ai/bot-positioning.js` | FSM transitions; commit timers/peek execution; locomotion mechanics; squad doctrine |
 | Bot weapon selection / hold hysteresis / reselection | `src/ai/bot-weapon-policy.js` | weapon data/scoring; FSM/fire gate; shot execution; visual implementation |
-| Bot fire-control execution | `src/ai/bot-fire-control.js` | fire gate/burst policy; weapon selection; squad doctrine; projectile primitive ownership |
+| Bot fire-control execution | `src/ai/bot-fire-control.js` | broad fire gate/post-shot cadence; weapon selection; squad doctrine; projectile primitive ownership |
+| Bot post-shot burst/cadence + RNG ordering | `src/ai/bot-fire-cadence.js` | broad fire gate; constructor/timer lifecycle; shot execution; weapon data |
 | Bot individual mine/bomb deployables | `src/ai/bot-deployables.js` | FSM/fire gate; squad smoke/frag doctrine; shared mine/bomb data, limits and player deployables |
 | Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM/combat execution; perception ownership; Frontline capture/state |
 | Frontline objective / capture / save / HUD / marker | `src/game/frontline.js` | map doctrine; individual bot FSM |
 | Bot model / hit meshes / weapon arm rig | `src/entities/bot-presentation.js` | AI decisions; locomotion policy; weapon data |
-| Individual bot FSM / combat policy | `src/entities/bots.js` | progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/deployables implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
+| Individual bot FSM / combat policy | `src/entities/bots.js` | progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
 | Browser game session | `src/game/session.js` | per-frame simulation |
@@ -46,7 +47,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-deployables.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, deployables, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -67,6 +68,7 @@
 - bot navigation / collision micro-steps / smoke route / speed caps → `docs/specs/BOT_NAVIGATION.md` → `src/ai/bot-navigation.js` → `src/entities/bots.js` consumer;
 - bot weapon selection / switch timer / hold hysteresis / unsafe-range reselection → `docs/specs/BOT_WEAPON_POLICY.md` → `src/ai/bot-weapon-policy.js` → `src/entities/bots.js` consumer;
 - bot fire-control / aim / muzzle / reload / shot execution / hit resolution → `docs/specs/BOT_FIRE_CONTROL.md` → `src/ai/bot-fire-control.js` → `src/entities/bots.js` + `src/ai/tactics.js` consumers;
+- bot post-shot burst/cadence / exact RNG order / pause / next-shot timer → `docs/specs/BOT_FIRE_CADENCE.md` → `src/ai/bot-fire-cadence.js` → `src/entities/bots.js` consumer;
 - bot mine/bomb eligibility / role+doctrine probability / deployment side effects → `docs/specs/BOT_DEPLOYABLES.md` → `src/ai/bot-deployables.js` → `src/entities/bots.js` consumer;
 - bot geometry / hit meshes / weapon grips / two-hand arm rig → `docs/specs/BOT_PRESENTATION.md` → `src/entities/bot-presentation.js` → `src/entities/bots.js` consumer;
 - cache-busting / ручная публикация → README + `scripts/stamp-web-build.mjs`;
@@ -110,6 +112,7 @@
 | Bot navigation / locomotion | `node --test scripts/bot-navigation-owner.test.mjs` + reverse-owner guards + build stamp + dual-runtime smoke |
 | Bot weapon-selection policy | `node --test scripts/bot-weapon-policy-owner.test.mjs` + owner/consumer/reverse guards + build stamp + dual-runtime smoke |
 | Bot fire-control execution | `node --test scripts/bot-fire-control-owner.test.mjs` + owner/consumer/reverse guards + build stamp + dual-runtime smoke |
+| Bot post-shot fire cadence | `node --test scripts/bot-fire-cadence-owner.test.mjs` + controlled-RNG/owner/consumer/reverse/order/load guards + build stamp + dual-runtime smoke |
 | Bot individual deployables | `node --test scripts/bot-deployables-owner.test.mjs` + owner/consumer/reverse guards + random/side-effect order + build stamp + dual-runtime smoke |
 | workflow | YAML intent + least privilege + один новый run и его logs при failure |
 
