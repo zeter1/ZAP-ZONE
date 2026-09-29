@@ -38,6 +38,7 @@ function renderPerkChoices(lvl){
     const rarity=PERK_RARITIES[p.rarity]||PERK_RARITIES.common;
     const d=document.createElement('div');
     d.className='pcard rarity-'+p.rarity;
+    if(typeof applyPresentationAtlasVariables==='function')applyPresentationAtlasVariables(d,'perk-frame',perkRarityPresentationFrame(p.rarity));
     const perkIcon=perkAsset(p.id,p.path),perkIconFallback=perkFallbackAsset(p.id,p.path);
     d.innerHTML=`<img class="pcard-ic" src="${perkIcon}" data-fallback-src="${perkIconFallback}" alt="" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc"><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
     d.addEventListener('click',()=>pickPerk(p));
@@ -181,7 +182,9 @@ function pushKillFeed(killerTeam,killerLabel,victimTeam,victimLabel,kind='bullet
   killer.className='kf-name '+(killerLabel==='ВЫ'?'player':killerTeam);
   killer.textContent=killerLabel;
   const icon=document.createElement('span');icon.className='kf-icon';
-  icon.textContent=kind==='headshot'?'🎯':kind==='rocket'?'🚀':kind==='mine'?'💣':kind==='bomb'?'🧨':kind==='melee'?'⚡':'✦';
+  const iconFrame=typeof killFeedPresentationFrame==='function'?killFeedPresentationFrame(kind):null;
+  if(iconFrame&&applyPresentationAtlasFrame(icon,iconFrame))icon.classList.add('generated');
+  else icon.textContent=kind==='headshot'?'🎯':kind==='rocket'?'🚀':kind==='mine'?'💣':kind==='bomb'?'🧨':kind==='melee'?'⚡':'✦';
   const victim=document.createElement('span');
   victim.className='kf-name '+(victimLabel==='ВЫ'?'player':victimTeam);
   victim.textContent=victimLabel;
@@ -235,6 +238,17 @@ function wHUD(){
   const infiniteAmmo=testingInfiniteAmmoEnabled();
   G('wammo').textContent=infiniteAmmo?'∞ / '+w.clip:ammo+' / '+w.clip;
   G('wammo').style.color=infiniteAmmo?'#7dffad':ammo<=Math.ceil(w.clip*.25)?'#ff4444':ammo<=Math.ceil(w.clip*.5)?'#ffaa00':'#fff';
+  const weaponHud=G('whud');
+  if(weaponHud){
+    weaponHud.classList.remove('ammo-low','ammo-empty');
+    if(!infiniteAmmo){
+      const warningState=ammo<=0?'empty':ammo<=Math.ceil(w.clip*.25)?'low':'';
+      if(warningState&&typeof applyPresentationAtlasVariables==='function'){
+        applyPresentationAtlasVariables(weaponHud,'ammo-warning',ammoWarningPresentationFrame(warningState));
+        weaponHud.classList.add('ammo-'+warningState);
+      }
+    }
+  }
   let extra='';
   if(w.isSmoke)extra=playerSmokeCD>0?' · кулдаун '+Math.ceil(playerSmokeCD)+'с':' · готова';
   else if(w.isBomb)extra=playerBombCD>0?' · кулдаун '+Math.ceil(playerBombCD)+'с':'';

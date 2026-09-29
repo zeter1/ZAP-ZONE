@@ -195,6 +195,20 @@ const GAME_ASSETS=versionAssetTree({
     sprint:'assets/ui/overlays/sprint-speed-lines-01.webp',
     respawn:'assets/ui/overlays/respawn-materialize-01.webp'
   }),
+  // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
+  // remains the runtime fallback; no persistent Three.js raster planes are created.
+  presentationHud:Object.freeze({
+    hitmarkers:'assets/ui/combat/hitmarker-sheet-01.webp',
+    botRoles:'assets/ui/bots/bot-role-badges-01.webp',
+    botDoctrines:'assets/ui/bots/tactical-doctrine-badges-01.webp',
+    killFeed:'assets/ui/killfeed/killfeed-weapon-icons-01.webp',
+    threats:'assets/ui/threat/threat-warning-icons-01.webp',
+    frontlineContested:'assets/ui/objective/frontline-contested-alert-01.webp',
+    ammoWarning:'assets/ui/weapons/low-ammo-warning-01.webp',
+    reloadStates:'assets/ui/weapons/reload-state-sheet-01.webp',
+    perkRarityFrames:'assets/ui/perks/perk-rarity-frames-01.webp',
+    pickupNotification:'assets/ui/pickups/pickup-notification-frame-01.webp'
+  }),
   firstPersonWeapons:Object.freeze({
     pistol:'assets/weapons/fp/pistol-tech.svg',
     shotgun:'assets/weapons/fp/shotgun-tech.svg',
@@ -308,6 +322,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.presentationStatus),
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
+  ...Object.values(GAME_ASSETS.presentationHud),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedWorldWeaponPickups),
@@ -425,3 +440,59 @@ function headshotAsset(lethal=false){
   const fallback=headshotFallbackAsset(lethal);
   return GAME_ASSETS.presentationMedals.headshot||fallback;
 }
+
+function presentationAtlasFrame(asset,col=0,row=0,cols=1,rows=1){
+  if(!asset)return null;
+  return{asset,col,row,cols,rows};
+}
+function presentationAtlasPercent(index,count){return count<=1?50:index/(count-1)*100;}
+function applyPresentationAtlasFrame(el,frame){
+  if(!el||!frame?.asset)return false;
+  el.style.backgroundImage='url("'+frame.asset+'")';
+  el.style.backgroundSize=(frame.cols*100)+'% '+(frame.rows*100)+'%';
+  el.style.backgroundPosition=presentationAtlasPercent(frame.col,frame.cols).toFixed(3)+'% '+presentationAtlasPercent(frame.row,frame.rows).toFixed(3)+'%';
+  el.style.backgroundRepeat='no-repeat';
+  return true;
+}
+function applyPresentationAtlasVariables(el,prefix,frame){
+  if(!el||!prefix||!frame?.asset)return false;
+  el.style.setProperty('--'+prefix+'-image','url("'+frame.asset+'")');
+  el.style.setProperty('--'+prefix+'-size',(frame.cols*100)+'% '+(frame.rows*100)+'%');
+  el.style.setProperty('--'+prefix+'-position',presentationAtlasPercent(frame.col,frame.cols).toFixed(3)+'% '+presentationAtlasPercent(frame.row,frame.rows).toFixed(3)+'%');
+  return true;
+}
+function hitMarkerPresentationFrame(kind='hit'){
+  const pos={hit:[0,0],head:[1,0],crit:[0,1],kill:[1,1]}[kind]||[0,0];
+  return presentationAtlasFrame(GAME_ASSETS.presentationHud.hitmarkers,pos[0],pos[1],2,2);
+}
+function botRolePresentationFrame(role){
+  const col={assault:0,flankL:1,flankR:2,anchor:3,engineer:4}[role];
+  return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHud.botRoles,col,0,5,1):null;
+}
+function botDoctrinePresentationFrame(doctrine){
+  const col={breach:0,push:1,hold:2,retake:3}[doctrine];
+  return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHud.botDoctrines,col,0,4,1):null;
+}
+function killFeedPresentationFrame(kind){
+  const pos={pistol:[0,0],shotgun:[1,0],rifle:[2,0],rocket:[3,0],plasma:[4,0],sniper:[0,1],mine:[1,1],bomb:[2,1],smoke:[3,1],headshot:[4,1]}[kind];
+  return pos?presentationAtlasFrame(GAME_ASSETS.presentationHud.killFeed,pos[0],pos[1],5,2):null;
+}
+function threatPresentationFrame(kind){
+  const normalized=kind==='grenade'?'frag':kind;
+  const pos={rocket:[0,0],mine:[1,0],bomb:[2,0],frag:[0,1],sniper:[1,1],plasma:[2,1]}[normalized];
+  return pos?presentationAtlasFrame(GAME_ASSETS.presentationHud.threats,pos[0],pos[1],3,2):null;
+}
+function ammoWarningPresentationFrame(state){
+  const col=state==='low'?0:state==='empty'?1:null;
+  return col===null?null:presentationAtlasFrame(GAME_ASSETS.presentationHud.ammoWarning,col,0,2,1);
+}
+function reloadPresentationFrame(mode){
+  const col=mode==='mag'||mode==='tactical'?0:mode==='empty'?1:mode==='shell'?2:null;
+  return col===null?null:presentationAtlasFrame(GAME_ASSETS.presentationHud.reloadStates,col,0,3,1);
+}
+function perkRarityPresentationFrame(rarity){
+  const pos={common:[0,0],rare:[1,0],epic:[0,1],legendary:[1,1]}[rarity];
+  return pos?presentationAtlasFrame(GAME_ASSETS.presentationHud.perkRarityFrames,pos[0],pos[1],2,2):null;
+}
+function frontlineContestedPresentationFrame(){return presentationAtlasFrame(GAME_ASSETS.presentationHud.frontlineContested);}
+function pickupNotificationPresentationFrame(){return presentationAtlasFrame(GAME_ASSETS.presentationHud.pickupNotification);}

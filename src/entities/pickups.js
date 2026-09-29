@@ -205,6 +205,28 @@ function spawnPickups(){
     pickups.push(pk);relocateWeaponPickup(pk,i*3+2);
   });
 }let pickupTickAcc=0;
+let pickupToastTimer=0;
+function showPickupNotification(icon,fallback,title,detail,tone='cyan'){
+  const root=G('pickup-toast'),iconEl=G('pickup-toast-icon'),titleEl=G('pickup-toast-title'),detailEl=G('pickup-toast-detail');
+  if(!root||!iconEl||!titleEl||!detailEl){showMsg((title?title+' · ':'')+(detail||''));return;}
+  if(typeof applyPresentationAtlasVariables==='function')applyPresentationAtlasVariables(root,'pickup-frame',pickupNotificationPresentationFrame());
+  root.dataset.tone=tone;
+  titleEl.textContent=title||'';detailEl.textContent=detail||'';
+  if(icon||fallback){
+    iconEl.style.display='block';
+    iconEl.dataset.fallbackSrc=fallback||'';
+    iconEl.onerror=()=>{
+      const fb=iconEl.dataset.fallbackSrc||'';
+      if(fb&&iconEl.getAttribute('src')!==fb){iconEl.onerror=null;iconEl.src=fb;}
+      else iconEl.style.display='none';
+    };
+    iconEl.src=icon||fallback;
+  }else{
+    iconEl.onerror=null;iconEl.removeAttribute('src');iconEl.style.display='none';
+  }
+  root.classList.remove('on');void root.offsetWidth;root.classList.add('on');
+  clearTimeout(pickupToastTimer);pickupToastTimer=setTimeout(()=>root.classList.remove('on'),2600);
+}
 function tickPickups(dt){
   pickupTickAcc+=dt;
   if(pickupTickAcc<1/30)return;
@@ -247,8 +269,9 @@ function tickPickups(dt){
       pk.cd=.8;pk.m.visible=false;
       pk.respawn=(w.isRocket||w.isBomb||w.isSniper?20:14)+Math.random()*14;
       updateMineHUD();updateWeaponBar();wHUD();
-      if(result.first)showMsg(w.icon+' НОВОЕ ОРУЖИЕ: '+w.label+' · +'+result.added+' патронов');
-      else showMsg(w.icon+' +'+result.added+' патронов для '+w.label+' · запас '+result.total);
+      const pickupIcon=GAME_ASSETS.generatedWorldWeaponPickups[w.key]||w.asset;
+      if(result.first)showPickupNotification(pickupIcon,w.asset,'НОВОЕ ОРУЖИЕ',w.label+' · +'+result.added+' патронов','gold');
+      else showPickupNotification(pickupIcon,w.asset,'БОЕПРИПАСЫ',w.label+' · +'+result.added+' · запас '+result.total,'cyan');
       saveProgress(true);
       continue;
     }
@@ -257,9 +280,9 @@ function tickPickups(dt){
     if(hp>=plr.maxHp){
       if(plr.overhealArmor<=0||armor>=plr.maxArmor){pk.cd=.35;continue;}
       const gain=Math.min(plr.overhealArmor,plr.maxArmor-armor);
-      armor+=gain;markHUD();showMsg('🛡️ Аптечка преобразована: +'+Math.round(gain)+' брони');
+      armor+=gain;markHUD();showPickupNotification(GAME_ASSETS.presentation.medkitPickup,GAME_ASSETS.pickups.medkit,'АПТЕЧКА → БРОНЯ','+'+Math.round(gain)+' брони','blue');
     }else{
-      const before=hp;hp=Math.min(hp+heal,plr.maxHp);markHUD();showMsg('❤️ +'+Math.round(hp-before)+' HP!');
+      const before=hp;hp=Math.min(hp+heal,plr.maxHp);markHUD();showPickupNotification(GAME_ASSETS.presentation.medkitPickup,GAME_ASSETS.pickups.medkit,'АПТЕЧКА','+'+Math.round(hp-before)+' HP','green');
     }
     pk.cd=.8;pk.m.visible=false;pk.respawn=14;
   }

@@ -85,6 +85,14 @@ const generatedCombatTextureWebpAssets=[
   'assets/ui/overlays/suppression-vignette-01.webp','assets/ui/overlays/armor-hit-field-01.webp',
   'assets/ui/overlays/sprint-speed-lines-01.webp','assets/ui/overlays/respawn-materialize-01.webp'
 ];
+const generatedTacticalHudWebpAssets=[
+  'assets/ui/combat/hitmarker-sheet-01.webp',
+  'assets/ui/bots/bot-role-badges-01.webp','assets/ui/bots/tactical-doctrine-badges-01.webp',
+  'assets/ui/killfeed/killfeed-weapon-icons-01.webp','assets/ui/threat/threat-warning-icons-01.webp',
+  'assets/ui/objective/frontline-contested-alert-01.webp',
+  'assets/ui/weapons/low-ammo-warning-01.webp','assets/ui/weapons/reload-state-sheet-01.webp',
+  'assets/ui/perks/perk-rarity-frames-01.webp','assets/ui/pickups/pickup-notification-frame-01.webp'
+];
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
@@ -93,7 +101,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -122,7 +130,7 @@ for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"','id="frontline-capture-burst"','id="battle-result-frame"','id="world-pickup-art-layer"','id="fp-weapon-art-wrap"','id="fp-weapon-art-stage"','id="fp-weapon-art"','id="fp-weapon-flash"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"','id="frontline-capture-burst"','id="battle-result-frame"','id="world-pickup-art-layer"','id="fp-weapon-art-wrap"','id="fp-weapon-art-stage"','id="fp-weapon-art"','id="fp-weapon-flash"','id="reload-state-art"','id="pickup-toast"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');

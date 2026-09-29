@@ -137,6 +137,9 @@ function updateFrontlineHUD(force=false){
   if(scoreEl)scoreEl.textContent='ЗОНЫ '+allyControlScore+' : '+enemyControlScore+' · ЗАХВАТ = '+FRONTLINE_CFG.capturePoints+' ОЧКА';
   const mapHint=G('frontline-map-hint');
   if(mapHint)mapHint.textContent='ЦЕЛЬ: '+zone.label+' · '+dist+' м';
+  if(!root.dataset.generatedContested&&typeof applyPresentationAtlasVariables==='function'){
+    if(applyPresentationAtlasVariables(root,'frontline-contested',frontlineContestedPresentationFrame()))root.dataset.generatedContested='1';
+  }
   root.classList.toggle('ally',frontlineObjective.owner==='ally');
   root.classList.toggle('enemy',frontlineObjective.owner==='enemy');
   root.classList.toggle('contested',contested);

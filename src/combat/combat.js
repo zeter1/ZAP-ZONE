@@ -765,6 +765,8 @@ function doReload(){
     reloadT=Math.max(.30,w.reload*mult);
   }
   reloadTot=reloadT;
+  const reloadArt=G('reload-state-art');
+  if(reloadArt&&typeof applyPresentationAtlasFrame==='function')applyPresentationAtlasFrame(reloadArt,reloadPresentationFrame(reloadMode));
   playWeaponMechanicSound('reload',1,w.key);
   G('rmsg').textContent=reloadMode==='shell'?'ЗАРЯДКА ПАТРОНОВ...':reloadMode==='empty'?'ПУСТОЙ МАГАЗИН...':'ТАКТИЧЕСКАЯ ПЕРЕЗАРЯДКА...';
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';

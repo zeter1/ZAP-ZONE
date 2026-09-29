@@ -356,7 +356,11 @@ function playSfx(name,intensity=1,weaponKey=''){
 
 let hitMarkerTimer=0,crosshairTimer=0;
 function showHitMarker(kind='hit'){
-  const el=byId('hitmarker');if(!el)return;el.className='';void el.offsetWidth;el.classList.add('on',kind);
+  const el=byId('hitmarker');if(!el)return;
+  el.className='';
+  const frame=typeof hitMarkerPresentationFrame==='function'?hitMarkerPresentationFrame(kind):null;
+  if(frame&&applyPresentationAtlasFrame(el,frame))el.classList.add('generated');
+  void el.offsetWidth;el.classList.add('on',kind);
   clearTimeout(hitMarkerTimer);hitMarkerTimer=setTimeout(()=>{el.className='';},220);pulseCrosshair('hit');
 }
 function pulseCrosshair(kind='fire'){
@@ -383,10 +387,14 @@ function showDamageDirection(attacker,kind='bullet',amount=0){
 }
 function showThreatDirection(source,kind='bullet',intensity=.6){
   const el=byId('threat-direction');if(!el)return;
-  const degrees=combatBearingDegrees(source);
+  const degrees=combatBearingDegrees(source),art=el.querySelector('span');
   el.style.transform='translate(-50%,-50%) rotate('+degrees.toFixed(1)+'deg)';
   el.style.setProperty('--threat-strength',Math.max(.45,Math.min(1.15,Number(intensity)||.6)).toFixed(2));
-  el.className='';void el.offsetWidth;el.classList.add('on',kind);
+  el.className='';
+  const frame=typeof threatPresentationFrame==='function'?threatPresentationFrame(kind):null;
+  if(art&&frame&&applyPresentationAtlasFrame(art,frame)){art.textContent='';el.classList.add('generated');}
+  else if(art){art.style.backgroundImage='';art.textContent='⌃';}
+  void el.offsetWidth;el.classList.add('on',kind);
   clearTimeout(threatDirectionTimer);threatDirectionTimer=setTimeout(()=>{el.className='';},520);
 }
 
