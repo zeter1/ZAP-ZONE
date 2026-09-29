@@ -1,5 +1,20 @@
 # Asset pipeline — ZAP ZONE
 
+## Generated Asset Pack 6 (2026-09-29)
+Runtime paths:
+- `assets/ui/perks/bulletstorm-tech-01.webp` — «Шторм свинца».
+- `assets/ui/perks/immortal-tech-01.webp` — «Несокрушимый».
+- `assets/ui/perks/doubletap-tech-01.webp` — «Двойной импульс».
+- `assets/ui/perks/piercing-tech-01.webp` — «Бронебойный сердечник».
+- `assets/ui/perks/laststand-tech-01.webp` — «Последний рубеж».
+- `assets/ui/perks/thorns-tech-01.webp` — «Ответный разряд».
+- `assets/ui/perks/explosive-rounds-tech-01.webp` — «Разрывные боеприпасы».
+- `assets/ui/perks/evasive-matrix-tech-01.webp` — «Матрица уклонения».
+- `assets/ui/perks/headshot-armor-tech-01.webp` — «Трофейная броня».
+- `assets/ui/perks/bombtech-tech-01.webp` — «Тяжёлая бомба».
+
+Pack 6 is wired through the existing protocol-neutral `perkAsset(id,path)` resolver, so generated art is used by level-up cards and the active perk panel while `assets/perks/<id>.svg` remains the authoritative load/decode fallback. All files are DOM-only 256×256 VP8X alpha WebP derivatives <=32 KiB and do not change perk mechanics or balance.
+
 ## Generated Asset Pack 4 (2026-09-28)
 Runtime paths:
 - `assets/ui/weapons/fp/player-bomb-fps-01.webp` — baked-hands FPS bomb, DOM overlay.

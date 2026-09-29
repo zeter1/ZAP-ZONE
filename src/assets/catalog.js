@@ -259,6 +259,16 @@ const GAME_ASSETS=versionAssetTree({
     defenderPerk:'assets/ui/perks/defender-tech-01.webp',
     predatorPerk:'assets/ui/perks/predator-tech-01.webp',
     warmachinePerk:'assets/ui/perks/warmachine-tech-01.webp',
+    bulletstormPerk:'assets/ui/perks/bulletstorm-tech-01.webp',
+    immortalPerk:'assets/ui/perks/immortal-tech-01.webp',
+    doubletapPerk:'assets/ui/perks/doubletap-tech-01.webp',
+    piercingPerk:'assets/ui/perks/piercing-tech-01.webp',
+    laststandPerk:'assets/ui/perks/laststand-tech-01.webp',
+    thornsPerk:'assets/ui/perks/thorns-tech-01.webp',
+    explosiveRoundsPerk:'assets/ui/perks/explosive-rounds-tech-01.webp',
+    evasiveMatrixPerk:'assets/ui/perks/evasive-matrix-tech-01.webp',
+    headshotArmorPerk:'assets/ui/perks/headshot-armor-tech-01.webp',
+    bombtechPerk:'assets/ui/perks/bombtech-tech-01.webp',
     levelUp:'assets/ui/feedback/levelup-core-tech-01.webp',
     death:'assets/ui/feedback/death-skull-tech-01.webp',
     armorBreak:'assets/ui/feedback/armor-break-tech-01.webp',
@@ -366,6 +376,16 @@ function perkAsset(id,path){
   if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
   if(id==='predator')return GAME_ASSETS.presentation.predatorPerk;
   if(id==='warmachine')return GAME_ASSETS.presentation.warmachinePerk;
+  if(id==='bulletstorm')return GAME_ASSETS.presentation.bulletstormPerk;
+  if(id==='immortal')return GAME_ASSETS.presentation.immortalPerk;
+  if(id==='doubletap')return GAME_ASSETS.presentation.doubletapPerk;
+  if(id==='piercing')return GAME_ASSETS.presentation.piercingPerk;
+  if(id==='laststand')return GAME_ASSETS.presentation.laststandPerk;
+  if(id==='thorns')return GAME_ASSETS.presentation.thornsPerk;
+  if(id==='explosive_rounds')return GAME_ASSETS.presentation.explosiveRoundsPerk;
+  if(id==='evasive_matrix')return GAME_ASSETS.presentation.evasiveMatrixPerk;
+  if(id==='headshot_armor')return GAME_ASSETS.presentation.headshotArmorPerk;
+  if(id==='bombtech')return GAME_ASSETS.presentation.bombtechPerk;
   if(['armor','armorregen','blastshield','ballistic_lining','surplus_armor','smoke_guard'].includes(id))return GAME_ASSETS.presentation.defenderPerk;
   return perkFallbackAsset(id,path);
 }

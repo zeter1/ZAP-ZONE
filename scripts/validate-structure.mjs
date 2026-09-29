@@ -54,6 +54,13 @@ const generatedStatusPerkWebpAssets=[
   'assets/ui/status/smoke-guard-tech-01.webp','assets/ui/status/crit-ready-tech-01.webp',
   'assets/ui/perks/predator-tech-01.webp','assets/ui/perks/warmachine-tech-01.webp'
 ];
+const generatedPerkPack6WebpAssets=[
+  'assets/ui/perks/bulletstorm-tech-01.webp','assets/ui/perks/immortal-tech-01.webp',
+  'assets/ui/perks/doubletap-tech-01.webp','assets/ui/perks/piercing-tech-01.webp',
+  'assets/ui/perks/laststand-tech-01.webp','assets/ui/perks/thorns-tech-01.webp',
+  'assets/ui/perks/explosive-rounds-tech-01.webp','assets/ui/perks/evasive-matrix-tech-01.webp',
+  'assets/ui/perks/headshot-armor-tech-01.webp','assets/ui/perks/bombtech-tech-01.webp'
+];
 const generatedFirstPersonWebpAssets=[
   'assets/ui/weapons/fp/player-pistol-fps-01.webp','assets/ui/weapons/fp/player-shotgun-fps-01.webp',
   'assets/ui/weapons/fp/player-rifle-fps-01.webp','assets/ui/weapons/fp/player-rocket-fps-01.webp',
@@ -79,7 +86,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -126,7 +133,7 @@ for(const file of presentationRasterAssets){
   if(file.endsWith('.jpg')&&!(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[bytes.length-2]===0xff&&bytes[bytes.length-1]===0xd9))fail('invalid JPEG envelope: '+file);
   if(file.endsWith('.webp')&&!(bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP'))fail('invalid WebP envelope: '+file);
 }
-for(const file of generatedStatusPerkWebpAssets){
+for(const file of [...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets]){
   const bytes=readFileSync(file);
   if(bytes.length>32768)fail('generated status/perk asset exceeds 32 KiB budget: '+file);
   if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('status/perk WebP must use VP8X alpha envelope: '+file);
@@ -996,5 +1003,27 @@ for(const token of [
   "if(id==='warmachine')return GAME_ASSETS.presentation.warmachinePerk",
   "function statusFallbackAsset(key)","function statusAsset(key)"
 ]){if(!catalog.includes(token))fail('generated asset pack 5 catalog/fallback mapping missing: '+token);}
+for(const token of [
+  "bulletstormPerk:'assets/ui/perks/bulletstorm-tech-01.webp'",
+  "immortalPerk:'assets/ui/perks/immortal-tech-01.webp'",
+  "doubletapPerk:'assets/ui/perks/doubletap-tech-01.webp'",
+  "piercingPerk:'assets/ui/perks/piercing-tech-01.webp'",
+  "laststandPerk:'assets/ui/perks/laststand-tech-01.webp'",
+  "thornsPerk:'assets/ui/perks/thorns-tech-01.webp'",
+  "explosiveRoundsPerk:'assets/ui/perks/explosive-rounds-tech-01.webp'",
+  "evasiveMatrixPerk:'assets/ui/perks/evasive-matrix-tech-01.webp'",
+  "headshotArmorPerk:'assets/ui/perks/headshot-armor-tech-01.webp'",
+  "bombtechPerk:'assets/ui/perks/bombtech-tech-01.webp'",
+  "if(id==='bulletstorm')return GAME_ASSETS.presentation.bulletstormPerk",
+  "if(id==='immortal')return GAME_ASSETS.presentation.immortalPerk",
+  "if(id==='doubletap')return GAME_ASSETS.presentation.doubletapPerk",
+  "if(id==='piercing')return GAME_ASSETS.presentation.piercingPerk",
+  "if(id==='laststand')return GAME_ASSETS.presentation.laststandPerk",
+  "if(id==='thorns')return GAME_ASSETS.presentation.thornsPerk",
+  "if(id==='explosive_rounds')return GAME_ASSETS.presentation.explosiveRoundsPerk",
+  "if(id==='evasive_matrix')return GAME_ASSETS.presentation.evasiveMatrixPerk",
+  "if(id==='headshot_armor')return GAME_ASSETS.presentation.headshotArmorPerk",
+  "if(id==='bombtech')return GAME_ASSETS.presentation.bombtechPerk"
+]){if(!catalog.includes(token))fail('generated asset pack 6 catalog/fallback mapping missing: '+token);}
 if(!weapons.includes("scopeFallback:'assets/ui/sniper-scope.svg'"))fail('sniper generated scope must retain SVG fallback');
 if(!pickups.includes("bomb:{maxPx:112"))fail('generated bomb world pickup tuning missing');

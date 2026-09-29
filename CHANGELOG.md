@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Generated Asset Pack 6 — high-impact perk art
+- добавлены 10 оптимизированных 256×256 alpha WebP для `bulletstorm`, `immortal`, `doubletap`, `piercing`, `laststand`, `thorns`, `explosive_rounds`, `evasive_matrix`, `headshot_armor` и `bombtech`;
+- карточки выбора уровня и панель уже взятых perks используют новые арты через существующий `perkAsset(id,path)`, а точные per-id `assets/perks/*.svg` остаются fallback при load/decode error;
+- generated perk art остаётся DOM-only и protocol-neutral: один и тот же presentation path работает на HTTP(S)/uCoz и при прямом `file://` запуске, без возврата raster textures в persistent WebGL scene;
+- structural validation проверяет Pack 6 catalog/wiring, RIFF/WEBP + VP8X alpha, точный размер 256×256 и лимит 32 KiB; характеристики, редкости и баланс perks не менялись.
+
 ### Generated Asset Pack 5 — status HUD + legendary perks
 - добавлены 8 проверенных generated WebP 256×256 с alpha: шесть статусных HUD-иконок (`secondWind`, `lifesteal`, `armorRegen`, `lowHealth`, `smokeGuard`, `critReady`) и отдельные legendary-perk арты для `predator` / `warmachine`;
 - статусный HUD теперь выбирает generated art через централизованный catalog и автоматически возвращается на существующие `assets/status/*.svg` при ошибке загрузки/декодирования; обе runtime-модели HTTP(S) и `file://` сохраняются;

@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 6 consumers
+The 2026-09-29 pack adds ten generated perk renders as 256×256 transparent WebP: `bulletstorm`, `immortal`, `doubletap`, `piercing`, `laststand`, `thorns`, `explosive_rounds`, `evasive_matrix`, `headshot_armor` and `bombtech`. They are selected by `perkAsset(id,path)` in `src/assets/catalog.js` and appear in both level-up perk cards and the active perk panel through the existing `src/progression/progression.js` consumers.
+
+Every Pack 6 image keeps its per-id `assets/perks/*.svg` fallback, works in both HTTP(S) and direct `file://` runtimes, stays DOM-only, and is validated as VP8X alpha WebP at exactly 256×256 and <=32 KiB. The pack changes presentation only; perk balance and gameplay semantics are unchanged.
+
 ## Pack 5 consumers
 The 2026-09-29 pack adds six generated status-HUD icons and two legendary perk renders as 256×256 transparent WebP. Status art lives in `ui/status` and is selected by `src/progression/progression.js` through `src/assets/catalog.js`, with the existing `status/*.svg` files kept as load/decode fallbacks. `predator-tech-01.webp` and `warmachine-tech-01.webp` are selected only for the matching legendary perk IDs; their existing unique perk SVGs remain fallback.
 
@@ -53,3 +58,4 @@ Do not add a generated file without a consumer and fallback. WebP upload must be
 21. HTTP(S) may add the current build query for cache busting; local file mode must use plain relative paths. Generated menu backgrounds, logos, HUD/perk/medal/feedback art and weapon/pickup DOM art must remain available in both modes with fallback only on real load/decode failure.
 22. Asset work is not complete until both hosted validation and the local-file browser smoke prove the relevant generated presentation path is active.
 23. Pack 5 status/legendary-perk runtime derivatives are 256×256 alpha WebP <=32 KiB. Keep SVG fallback wiring; never make these presentation images a gameplay-state dependency.
+24. Pack 6 perk runtime derivatives use the same 256×256 alpha WebP <=32 KiB envelope. Each new generated perk must resolve through `perkAsset(id,path)`, retain its exact per-id SVG fallback, and remain presentation-only.
