@@ -1,16 +1,25 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
-let page=null;
-for(let i=0;i<60;i++){
+const cdpWaitMs=Math.max(1000,Number(process.env.ZAP_CDP_WAIT_MS)||15000);
+const cdpDeadline=Date.now()+cdpWaitMs;
+let page=null,lastCdpError='CDP endpoint not queried yet';
+while(Date.now()<cdpDeadline){
   try{
-    const pages=await fetch(endpoint).then(r=>r.json());
+    const response=await fetch(endpoint);
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const pages=await response.json();
     page=pages.find(p=>p.type==='page'&&p.url.startsWith('http://127.0.0.1:8000'))||pages.find(p=>p.type==='page');
     if(page?.webSocketDebuggerUrl)break;
-  }catch{}
+    lastCdpError='CDP responded without a debuggable page';
+  }catch(error){
+    lastCdpError=error instanceof Error?error.message:String(error);
+  }
   await sleep(100);
 }
-if(!page?.webSocketDebuggerUrl)throw new Error('HTTP smoke: CDP page was not available');
+if(!page?.webSocketDebuggerUrl){
+  throw new Error('HTTP smoke: CDP page was not available within '+cdpWaitMs+'ms; endpoint='+endpoint+'; last='+lastCdpError);
+}
 
 const ws=new WebSocket(page.webSocketDebuggerUrl);
 await new Promise((resolve,reject)=>{
