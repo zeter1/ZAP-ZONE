@@ -14,6 +14,7 @@
 - frame loop / boot → `src/game/runtime.js`;
 - player/save/weapon ownership → `src/player/state.js`;
 - combat/input/projectiles → `src/combat/combat.js`;
+- bot level/kills/role stat scaling + HP rescale → `src/ai/bot-progression-scaling.js` + `docs/specs/BOT_PROGRESSION_SCALING.md`;
 - bot perception / combat noise / hearing / target acquisition / grenade+mine+rocket sensing → `src/ai/bot-perception.js` + `docs/specs/BOT_PERCEPTION.md`;
 - bot damage-event retaliation / target memory+lock / reaction timers → `src/ai/bot-damage-reaction.js` + `docs/specs/BOT_DAMAGE_REACTION.md`;
 - bot near-miss suppression response / pressure+cover/FSM timer clamps → `src/ai/bot-suppression-response.js` + `docs/specs/BOT_SUPPRESSION_RESPONSE.md`;
@@ -26,7 +27,7 @@
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
-- individual bot FSM / fire gate + burst cadence / tactical execution / HP+death lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control and deployables owners rather than reimplementing them;
+- individual bot FSM / fire gate + burst cadence / tactical execution / HP+death lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control and deployables owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
