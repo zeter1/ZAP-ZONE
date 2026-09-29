@@ -209,6 +209,20 @@ const GAME_ASSETS=versionAssetTree({
     perkRarityFrames:'assets/ui/perks/perk-rarity-frames-01.webp',
     pickupNotification:'assets/ui/pickups/pickup-notification-frame-01.webp'
   }),
+  // Pack 8 remains DOM/canvas presentation-only. Existing procedural UI stays
+  // authoritative and becomes the graceful fallback if a generated atlas fails.
+  presentationHudV2:Object.freeze({
+    reticles:'assets/ui/combat/reticle-identity-atlas-01.webp',
+    minimapMarkers:'assets/ui/minimap/minimap-marker-atlas-01.webp',
+    spawnProtection:'assets/ui/feedback/spawn-protection-atlas-01.webp',
+    respawnCountdown:'assets/ui/feedback/respawn-countdown-atlas-01.webp',
+    explosiveFuse:'assets/ui/explosives/explosive-fuse-atlas-01.webp',
+    projectileTrails:'assets/ui/fx/projectile-trail-atlas-01.webp',
+    weaponSwitch:'assets/ui/weapons/weapon-switch-swipe-atlas-01.webp',
+    botOverhead:'assets/ui/bots/bot-overhead-frame-atlas-01.webp',
+    comboMeter:'assets/ui/feedback/combo-meter-atlas-01.webp',
+    pickupBeacon:'assets/ui/pickups/pickup-beacon-atlas-01.webp'
+  }),
   firstPersonWeapons:Object.freeze({
     pistol:'assets/weapons/fp/pistol-tech.svg',
     shotgun:'assets/weapons/fp/shotgun-tech.svg',
@@ -323,6 +337,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.presentationHud),
+  ...Object.values(GAME_ASSETS.presentationHudV2),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedWorldWeaponPickups),
@@ -496,3 +511,41 @@ function perkRarityPresentationFrame(rarity){
 }
 function frontlineContestedPresentationFrame(){return presentationAtlasFrame(GAME_ASSETS.presentationHud.frontlineContested);}
 function pickupNotificationPresentationFrame(){return presentationAtlasFrame(GAME_ASSETS.presentationHud.pickupNotification);}
+
+
+function reticlePresentationFrame(key){
+  const pos={pistol:[0,0],shotgun:[1,0],rifle:[2,0],plasma:[0,1],rocket:[1,1],sniper:[2,1]}[key];
+  return pos?presentationAtlasFrame(GAME_ASSETS.presentationHudV2.reticles,pos[0],pos[1],3,2):null;
+}
+function minimapMarkerPresentationFrame(kind){
+  const pos={player:[0,0],ally:[1,0],weapon:[2,0],medkit:[0,1],objectiveActive:[1,1],objectiveNeutral:[2,1],mine:[0,2],bomb:[1,2],smoke:[2,2]}[kind];
+  return pos?presentationAtlasFrame(GAME_ASSETS.presentationHudV2.minimapMarkers,pos[0],pos[1],3,3):null;
+}
+function spawnProtectionPresentationFrame(index){
+  const i=Math.max(0,Math.min(6,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.spawnProtection,i%4,Math.floor(i/4),4,2);
+}
+function respawnCountdownPresentationFrame(seconds){
+  const sec=Math.max(1,Math.min(15,Math.ceil(Number(seconds)||1))),i=15-sec;
+  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.respawnCountdown,i%4,Math.floor(i/4),4,4);
+}
+function explosiveFusePresentationFrame(state){
+  const pos={safe:[0,0],arming:[1,0],armed:[0,1],danger:[1,1]}[state]||[0,0];
+  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.explosiveFuse,pos[0],pos[1],2,2);
+}
+function projectileTrailPresentationFrame(kind){
+  const row={ballistic:0,sniper:1,plasma:2,rocket:3,impact:4}[kind];
+  return Number.isInteger(row)?presentationAtlasFrame(GAME_ASSETS.presentationHudV2.projectileTrails,0,row,1,5):null;
+}
+function botOverheadPresentationFrame(team,state='normal'){
+  const col=team==='enemy'?1:0,row=state==='armor'?1:state==='critical'||state==='broken'?2:0;
+  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.botOverhead,col,row,2,3);
+}
+function comboMeterPresentationFrame(value){
+  const n=Math.max(0,Number(value)||0),row=n>=7?4:n>=5?3:n>=4?2:n>=3?1:0;
+  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.comboMeter,0,row,1,5);
+}
+function pickupBeaconPresentationFrame(kind){
+  const pos={weapon:[0,0],heavy:[1,0],utility:[0,1],medkit:[1,1]}[kind]||[0,0];
+  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.pickupBeacon,pos[0],pos[1],2,2);
+}

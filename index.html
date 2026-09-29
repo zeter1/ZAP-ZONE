@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="application-version" content="23.9">
-<meta name="application-build" content="197cf120440c4d2a">
-<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=197cf120440c4d2a">
+<meta name="application-build" content="d918796c3e5fbf93">
+<title>⚡ ZAP ZONE v23.9</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=d918796c3e5fbf93">
 
 </head>
 <body>
 <canvas id="canvas"></canvas>
 <div id="world-pickup-art-layer" aria-hidden="true"></div>
+<div id="projectile-trail-layer" aria-hidden="true"></div>
+<div id="explosive-fuse-layer" aria-hidden="true"></div>
 <div id="smoke-overlay"></div>
 <div id="loading">
   <div id="loading-box">
@@ -20,10 +22,13 @@
   </div>
 </div>
 <div id="ui">
+  <div id="weapon-switch-swipe" aria-hidden="true"></div>
+  <div id="spawn-protection-fx" aria-hidden="true"><span id="spawn-protection-glyph"></span></div>
   <div id="xhair"><span class="xh-arm xh-t"></span><span class="xh-arm xh-r"></span><span class="xh-arm xh-b"></span><span class="xh-arm xh-l"></span><div class="xh-dot"></div></div>
   <div id="sniper-scope"><img src="assets/ui/sniper-scope.svg" alt=""></div>
   <div id="frontline-capture-burst" aria-hidden="true"></div>
   <div id="battle-result-frame" aria-hidden="true">
+    <div id="respawn-countdown" aria-hidden="true"></div>
     <div id="death-msg"><img src="assets/fx/skull.svg" data-generated-src="assets/ui/feedback/death-skull-tech-01.webp" data-fallback-src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
   </div>
   <div id="fp-weapon-art-wrap" aria-hidden="true"><div id="fp-weapon-art-stage"><img id="fp-weapon-art" alt=""><span id="fp-weapon-flash"></span></div></div>

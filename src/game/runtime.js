@@ -27,6 +27,7 @@ function loop(ts){
   if(dying){
     const deathDt=Math.min(Math.max(rawDt,0),.033);lastT=ts;
     dyingT-=deathDt;
+    if(typeof updateRespawnCountdownPresentation==='function')updateRespawnCountdownPresentation();
     tickDeathWorld(deathDt);
     tickDeathCamera(deathDt);
     if(dyingT<=0){doRespawn();return;}
@@ -97,6 +98,14 @@ function loop(ts){
     const reticleSpread=effectiveWeaponSpread(activeW,reticlePellet,false,weaponBloom,shotSequence===0);
     const gap=5+Math.min(18,reticleSpread*260);
     crosshair.style.setProperty('--xh-gap',gap.toFixed(1)+'px');
+    if(crosshair.dataset.reticleKey!==activeW.key){
+      const reticleFrame=reticlePresentationFrame(activeW.key);
+      if(reticleFrame){
+        applyPresentationAtlasVariables(crosshair,'reticle',reticleFrame);
+        crosshair.classList.add('generated-reticle');
+      }else crosshair.classList.remove('generated-reticle');
+      crosshair.dataset.reticleKey=activeW.key;
+    }
   }
   gunGrp.visible=!scopeActive;
 
@@ -207,6 +216,7 @@ function loop(ts){
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}
+  if(typeof syncSpawnProtectionPresentation==='function')syncSpawnProtectionPresentation();
   if(playerMineCD>0){
     playerMineCD=Math.max(0,playerMineCD-dt);
     const sec=Math.ceil(playerMineCD);
@@ -226,6 +236,7 @@ function loop(ts){
   if(plr.regen>0){hp=Math.min(hp+plr.regen*dt,plr.maxHp);markHUD();}
   if(plr.armorRegen>0&&armor<plr.maxArmor){armor=Math.min(plr.maxArmor,armor+plr.armorRegen*dt);markHUD();}
   if(combo>0){comboT-=dt;if(comboT<=0)combo=0;}
+  if(typeof syncComboMeterPresentation==='function')syncComboMeterPresentation();
   saveTick-=dt;
   if(saveTick<=0){saveTick=8;saveProgress();}
 
@@ -254,7 +265,7 @@ function loop(ts){
   tickFrontlineObjective(dt,ts);
   tickTacticalMinimap(dt,ts);
   flushHUD();
-  tickProjectiles(dt);tickMines(dt);tickSmoke(dt);tickPickups(dt);syncWorldWeaponPickupArt();
+  tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);tickPickups(dt);syncWorldWeaponPickupArt();
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickCombatImpactFx(dt);tickEnvironment(dt);
 
   // Update ally panel

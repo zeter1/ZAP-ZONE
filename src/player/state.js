@@ -504,6 +504,7 @@ function switchW(idx){
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   weaponEquipTot=w.equipTime||.32;weaponEquipT=weaponEquipTot;weaponReadyT=weaponEquipTot;
   playWeaponMechanicSound('equip',.82,w.key);
+  if(typeof showWeaponSwitchSwipe==='function')showWeaponSwitchSwipe();
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   buildGun(w);wHUD();updateWeaponBar();
   G('mines-panel').style.display=(w.isMine||w.isBomb)?'block':'none';

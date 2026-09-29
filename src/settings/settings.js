@@ -524,3 +524,47 @@ function bindGameSettings(){
 }
 ensureGeneratedCombatPresentation();
 bindGameSettings();
+
+
+// Generated Asset Pack 8 — transient DOM-only presentation helpers.
+let weaponSwitchSwipeTimer=0;
+function showWeaponSwitchSwipe(){
+  const el=byId('weapon-switch-swipe'),asset=GAME_ASSETS.presentationHudV2?.weaponSwitch;
+  if(!el||!asset)return;
+  el.style.backgroundImage='url("'+asset+'")';
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(weaponSwitchSwipeTimer);
+  weaponSwitchSwipeTimer=setTimeout(()=>el.classList.remove('on'),360);
+}
+function showProjectileTrailFx(kind='ballistic'){
+  const layer=byId('projectile-trail-layer'),frame=projectileTrailPresentationFrame(kind);
+  if(!layer||!frame)return;
+  const el=document.createElement('span');
+  el.className='projectile-trail-fx '+kind;
+  applyPresentationAtlasFrame(el,frame);
+  el.style.setProperty('--trail-rot',((Math.random()-.5)*5).toFixed(2)+'deg');
+  layer.appendChild(el);
+  setTimeout(()=>el.remove(),260);
+}
+let spawnProtectionFrame=-1;
+function syncSpawnProtectionPresentation(){
+  const root=byId('spawn-protection-fx'),glyph=byId('spawn-protection-glyph');
+  if(!root||!glyph)return;
+  if(!running||dying||respawnShieldT<=0){
+    root.classList.remove('on');spawnProtectionFrame=-1;return;
+  }
+  const elapsed=Math.max(0,PLAYER_SPAWN_SHIELD_TIME-respawnShieldT);
+  const frame=Math.max(0,Math.min(5,Math.floor(elapsed/Math.max(.001,PLAYER_SPAWN_SHIELD_TIME)*6)));
+  if(frame!==spawnProtectionFrame){
+    applyPresentationAtlasFrame(root,spawnProtectionPresentationFrame(frame));
+    applyPresentationAtlasFrame(glyph,spawnProtectionPresentationFrame(6));
+    spawnProtectionFrame=frame;
+  }
+  root.classList.add('on');
+}
+function syncComboMeterPresentation(){
+  const el=byId('combo');if(!el)return;
+  if(combo<=0){el.classList.remove('generated-meter');return;}
+  applyPresentationAtlasVariables(el,'combo-meter',comboMeterPresentationFrame(combo));
+  el.classList.add('generated-meter');
+}

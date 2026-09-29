@@ -1,5 +1,20 @@
 # Asset pipeline — ZAP ZONE
 
+## Generated Asset Pack 8 (2026-09-29)
+Runtime paths:
+- `assets/ui/combat/reticle-identity-atlas-01.webp` — weapon-class reticle identities layered over the existing dynamic crosshair.
+- `assets/ui/minimap/minimap-marker-atlas-01.webp` — player/ally/pickup/objective/player-deployable tactical markers.
+- `assets/ui/feedback/spawn-protection-atlas-01.webp` — spawn-shield loop plus shield glyph.
+- `assets/ui/feedback/respawn-countdown-atlas-01.webp` — 15-state respawn ring; numeric seconds remain a text fallback.
+- `assets/ui/explosives/explosive-fuse-atlas-01.webp` — safe/arming/armed/danger fuse states projected over mines and bombs.
+- `assets/ui/fx/projectile-trail-atlas-01.webp` — ballistic/sniper/plasma/rocket transient shot trails.
+- `assets/ui/weapons/weapon-switch-swipe-atlas-01.webp` — seven-frame equip/switch swipe.
+- `assets/ui/bots/bot-overhead-frame-atlas-01.webp` — ally/enemy overhead combat frames around the authoritative health bar.
+- `assets/ui/feedback/combo-meter-atlas-01.webp` — escalating combo presentation frame.
+- `assets/ui/pickups/pickup-beacon-atlas-01.webp` — normal/heavy/utility/medkit world-pickup beacon pulses.
+
+Pack 8 follows the same reliability contract as recent generated-art packs: raster art is presentation-only, never a persistent Three.js texture plane; gameplay state stays in existing systems; and procedural/text UI remains the fallback. The minimap intentionally renders only information already available to the player (player, allies, visible pickups, objectives, player-owned deployables and player smoke), so the art does not create a hidden-information advantage.
+
 ## Generated Asset Pack 7 (2026-09-29)
 Runtime paths:
 - `assets/ui/overlays/low-health-vignette-01.webp` — low-HP peripheral damage texture.

@@ -7,6 +7,25 @@ const minimapCanvas=G('frontline-minimap');
 const minimapCtx=minimapCanvas?.getContext('2d',{alpha:false})||null;
 let minimapTickAcc=0;
 const MINIMAP_HZ=10;
+const minimapGeneratedMarkers=typeof Image==='function'?new Image():null;
+let minimapGeneratedMarkersReady=false;
+if(minimapGeneratedMarkers&&GAME_ASSETS.presentationHudV2?.minimapMarkers){
+  minimapGeneratedMarkers.onload=()=>{minimapGeneratedMarkersReady=true;renderTacticalMinimap();};
+  minimapGeneratedMarkers.onerror=()=>{minimapGeneratedMarkersReady=false;};
+  minimapGeneratedMarkers.src=GAME_ASSETS.presentationHudV2.minimapMarkers;
+}
+function minimapGeneratedMarkerCell(kind){
+  return {player:[0,0],ally:[1,0],weapon:[2,0],medkit:[0,1],objectiveActive:[1,1],objectiveNeutral:[2,1],mine:[0,2],bomb:[1,2],smoke:[2,2]}[kind]||null;
+}
+function minimapDrawGeneratedMarker(kind,x,z,size=14,heading=0){
+  const cell=minimapGeneratedMarkerCell(kind);
+  if(!cell||!minimapGeneratedMarkersReady||!minimapGeneratedMarkers)return false;
+  const p=minimapWorldToCanvas(x,z),sw=minimapGeneratedMarkers.naturalWidth/3,sh=minimapGeneratedMarkers.naturalHeight/3;
+  const ctx=minimapCtx;
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-heading);ctx.globalAlpha=.94;
+  ctx.drawImage(minimapGeneratedMarkers,cell[0]*sw,cell[1]*sh,sw,sh,-size/2,-size/2,size,size);
+  ctx.restore();return true;
+}
 
 function minimapWorldToCanvas(x,z){
   const s=minimapCanvas.width/(MINIMAP_WORLD_HALF*2);
@@ -61,9 +80,12 @@ function minimapDrawZone(zone){
     const pulse=.36+(Math.sin(performance.now()*.006)+1)*.12;
     ctx.beginPath();ctx.arc(p.x,p.y,radius+4,0,Math.PI*2);ctx.strokeStyle='rgba(255,225,102,'+pulse+')';ctx.lineWidth=1.6;ctx.stroke();
   }
-  ctx.fillStyle=active?'#fff0a1':owner==='ally'?'#9be6ff':owner==='enemy'?'#ff9aa5':'#c8d0d7';
-  ctx.font='900 9px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText({mid:'Ц',north:'С',south:'Ю',west:'З',east:'В'}[zone.id]||zone.label[0],p.x,p.y);
+  const generated=minimapDrawGeneratedMarker(active?'objectiveActive':'objectiveNeutral',zone.x,zone.z,active?21:16);
+  if(!generated){
+    ctx.fillStyle=active?'#fff0a1':owner==='ally'?'#9be6ff':owner==='enemy'?'#ff9aa5':'#c8d0d7';
+    ctx.font='900 9px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText({mid:'Ц',north:'С',south:'Ю',west:'З',east:'В'}[zone.id]||zone.label[0],p.x,p.y);
+  }
   ctx.restore();
 }
 function minimapDrawTriangle(x,z,heading,color,size=5){
@@ -78,17 +100,29 @@ function renderTacticalMinimap(){
   minimapDrawStatic();
   for(const zone of BOT_MAP_ZONES)minimapDrawZone(zone);
   for(const pk of pickups){
-    if(pk.type!=='weapon'||!pk.m.visible)continue;
+    if(!pk.m.visible||(pk.type!=='weapon'&&pk.type!=='hp'))continue;
+    const kind=pk.type==='hp'?'medkit':'weapon';
+    if(minimapDrawGeneratedMarker(kind,pk.m.position.x,pk.m.position.z,kind==='medkit'?11:12))continue;
     const p=minimapWorldToCanvas(pk.m.position.x,pk.m.position.z);
     minimapCtx.beginPath();minimapCtx.arc(p.x,p.y,1.55,0,Math.PI*2);
-    minimapCtx.fillStyle='rgba(255,205,72,.82)';minimapCtx.fill();
+    minimapCtx.fillStyle=kind==='medkit'?'rgba(78,245,166,.86)':'rgba(255,205,72,.82)';minimapCtx.fill();
+  }
+  // Only player-owned deployables are exposed; generated art never leaks enemy state.
+  for(const mn of mines){
+    if(mn.owner!=='player'||mn.removed)continue;
+    minimapDrawGeneratedMarker(mn.kind==='bomb'?'bomb':'mine',mn.m.position.x,mn.m.position.z,10);
+  }
+  for(const cloud of smokeClouds){
+    if(cloud.team!==null||cloud.life<=0)continue;
+    minimapDrawGeneratedMarker('smoke',cloud.center.x,cloud.center.z,12);
   }
   for(const bot of enemies){
     if(!bot.alive||bot.team!=='ally')continue;
-    const pos=bot.group.position;minimapDrawTriangle(pos.x,pos.z,bot.group.rotation.y,'#5fc9ff',3.6);
+    const pos=bot.group.position;
+    if(!minimapDrawGeneratedMarker('ally',pos.x,pos.z,12,bot.group.rotation.y))minimapDrawTriangle(pos.x,pos.z,bot.group.rotation.y,'#5fc9ff',3.6);
   }
   const playerHeading=Math.atan2(-Math.sin(yaw),-Math.cos(yaw));
-  minimapDrawTriangle(camera.position.x,camera.position.z,playerHeading,'#e6ffff',5.5);
+  if(!minimapDrawGeneratedMarker('player',camera.position.x,camera.position.z,16,playerHeading))minimapDrawTriangle(camera.position.x,camera.position.z,playerHeading,'#e6ffff',5.5);
   const size=minimapCanvas.width;
   minimapCtx.save();minimapCtx.beginPath();minimapCtx.arc(size/2,size/2,size/2-3,0,Math.PI*2);
   minimapCtx.strokeStyle='rgba(154,226,255,.78)';minimapCtx.lineWidth=2;minimapCtx.stroke();minimapCtx.restore();

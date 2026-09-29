@@ -93,6 +93,25 @@ const generatedTacticalHudWebpAssets=[
   'assets/ui/weapons/low-ammo-warning-01.webp','assets/ui/weapons/reload-state-sheet-01.webp',
   'assets/ui/perks/perk-rarity-frames-01.webp','assets/ui/pickups/pickup-notification-frame-01.webp'
 ];
+const generatedTacticalHudV2WebpAssets=[
+  'assets/ui/combat/reticle-identity-atlas-01.webp','assets/ui/minimap/minimap-marker-atlas-01.webp',
+  'assets/ui/feedback/spawn-protection-atlas-01.webp','assets/ui/feedback/respawn-countdown-atlas-01.webp',
+  'assets/ui/explosives/explosive-fuse-atlas-01.webp','assets/ui/fx/projectile-trail-atlas-01.webp',
+  'assets/ui/weapons/weapon-switch-swipe-atlas-01.webp','assets/ui/bots/bot-overhead-frame-atlas-01.webp',
+  'assets/ui/feedback/combo-meter-atlas-01.webp','assets/ui/pickups/pickup-beacon-atlas-01.webp'
+];
+const generatedTacticalHudV2Dimensions=new Map([
+  ['assets/ui/combat/reticle-identity-atlas-01.webp',[168,112]],
+  ['assets/ui/minimap/minimap-marker-atlas-01.webp',[156,156]],
+  ['assets/ui/feedback/spawn-protection-atlas-01.webp',[176,88]],
+  ['assets/ui/feedback/respawn-countdown-atlas-01.webp',[112,112]],
+  ['assets/ui/explosives/explosive-fuse-atlas-01.webp',[144,144]],
+  ['assets/ui/fx/projectile-trail-atlas-01.webp',[176,150]],
+  ['assets/ui/weapons/weapon-switch-swipe-atlas-01.webp',[448,48]],
+  ['assets/ui/bots/bot-overhead-frame-atlas-01.webp',[192,96]],
+  ['assets/ui/feedback/combo-meter-atlas-01.webp',[176,140]],
+  ['assets/ui/pickups/pickup-beacon-atlas-01.webp',[192,144]]
+]);
 const presentationRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
   'assets/ui/zap-zone-logo-01.png','assets/ui/health-icon-tech-01.png','assets/ui/armor-icon-01.png','assets/ui/xp-star-01.png',
@@ -101,7 +120,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -167,6 +186,15 @@ for(const file of generatedCombatTextureWebpAssets){
   const expectedHeight=file.includes('muzzle-flash')||file.includes('plasma-discharge')?256:288;
   if(width!==512||height!==expectedHeight)fail('generated combat texture dimensions invalid: '+file+' ('+width+'x'+height+')');
   if((bytes[20]&0x10)===0)fail('generated combat texture alpha flag missing: '+file);
+}
+for(const file of generatedTacticalHudV2WebpAssets){
+  const bytes=readFileSync(file),expected=generatedTacticalHudV2Dimensions.get(file);
+  if(bytes.length>64*1024)fail('generated tactical HUD v2 asset exceeds 64 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('generated tactical HUD v2 asset must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  if(!expected||width!==expected[0]||height!==expected[1])fail('generated tactical HUD v2 dimensions invalid: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('generated tactical HUD v2 alpha flag missing: '+file);
 }
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
@@ -1070,3 +1098,38 @@ for(const token of [
 ]){if(!catalog.includes(token))fail('generated asset pack 6 catalog/fallback mapping missing: '+token);}
 if(!weapons.includes("scopeFallback:'assets/ui/sniper-scope.svg'"))fail('sniper generated scope must retain SVG fallback');
 if(!pickups.includes("bomb:{maxPx:112"))fail('generated bomb world pickup tuning missing');
+
+
+for(const token of [
+  'presentationHudV2:Object.freeze',
+  "reticles:'assets/ui/combat/reticle-identity-atlas-01.webp'",
+  "minimapMarkers:'assets/ui/minimap/minimap-marker-atlas-01.webp'",
+  "spawnProtection:'assets/ui/feedback/spawn-protection-atlas-01.webp'",
+  "respawnCountdown:'assets/ui/feedback/respawn-countdown-atlas-01.webp'",
+  "explosiveFuse:'assets/ui/explosives/explosive-fuse-atlas-01.webp'",
+  "projectileTrails:'assets/ui/fx/projectile-trail-atlas-01.webp'",
+  "weaponSwitch:'assets/ui/weapons/weapon-switch-swipe-atlas-01.webp'",
+  "botOverhead:'assets/ui/bots/bot-overhead-frame-atlas-01.webp'",
+  "comboMeter:'assets/ui/feedback/combo-meter-atlas-01.webp'",
+  "pickupBeacon:'assets/ui/pickups/pickup-beacon-atlas-01.webp'",
+  'function reticlePresentationFrame','function minimapMarkerPresentationFrame',
+  'function explosiveFusePresentationFrame','function pickupBeaconPresentationFrame'
+])if(!catalog.includes(token))fail('generated tactical HUD v2 catalog contract missing: '+token);
+for(const token of ['id="projectile-trail-layer"','id="explosive-fuse-layer"','id="weapon-switch-swipe"','id="spawn-protection-fx"','id="respawn-countdown"']){
+  if(!html.includes(token))fail('generated tactical HUD v2 DOM anchor missing: '+token);
+}
+for(const token of ['#xhair.generated-reticle::before','#weapon-switch-swipe.on','#spawn-protection-fx.on','#respawn-countdown.on','.projectile-trail-fx','.explosive-fuse-art','.bot-overhead-health','#combo.generated-meter','.world-pickup-beacon-art']){
+  if(!gameCss.includes(token))fail('generated tactical HUD v2 CSS missing: '+token);
+}
+for(const [file,tokens] of new Map([
+  ['src/game/runtime.js',['reticlePresentationFrame','syncSpawnProtectionPresentation','syncComboMeterPresentation','syncExplosiveFuseArt']],
+  ['src/ui/minimap.js',['minimapDrawGeneratedMarker','minimapGeneratedMarkersReady']],
+  ['src/combat/combat.js',['showProjectileTrailFx','explosiveFusePresentationState','syncExplosiveFuseArt']],
+  ['src/entities/bots.js',['bot-overhead-health','botOverheadPresentationFrame']],
+  ['src/entities/pickups.js',['world-pickup-beacon-art','pickupBeaconPresentationFrame']],
+  ['src/player/state.js',['showWeaponSwitchSwipe']],
+  ['src/progression/progression.js',['updateRespawnCountdownPresentation','comboMeterPresentationFrame']]
+])){
+  const source=readFileSync(file,'utf8');
+  for(const token of tokens)if(!source.includes(token))fail('generated tactical HUD v2 runtime wiring missing: '+file+' -> '+token);
+}

@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 8 consumers
+The 2026-09-29 tactical presentation pack adds ten compact alpha WebP atlases for reticles, minimap markers, spawn protection, respawn countdown, explosive fuse state, projectile trails, weapon switching, bot overhead frames, combo feedback and pickup beacons. Ownership stays close to the existing gameplay source: `src/game/runtime.js` owns reticle/shield/combo timing, `src/ui/minimap.js` owns tactical markers, `src/combat/combat.js` owns projectile/fuse presentation, `src/entities/bots.js` owns overhead bars, `src/entities/pickups.js` owns pickup beacons, and `src/player/state.js` emits the equip transition.
+
+All Pack 8 images are DOM/canvas presentation only and keep procedural/text fallbacks. The generated minimap never exposes enemy locations or enemy deployables that were not already available to the player.
+
 ## Pack 7 consumers
 The 2026-09-29 combat-texture pack adds ten generated alpha WebP assets: low-health, directional damage, smoke, ballistic/plasma muzzle sheets, explosion shockwave, suppression, armor-hit, sprint-speed and respawn materialization. Runtime ownership is split deliberately: `src/settings/settings.js` owns screen-space transient overlays, `src/game/runtime.js` owns low-health/sprint strengths, `src/progression/progression.js` owns armor-hit/respawn events, `src/core/engine.js` only emits the explosion presentation hook, and `src/weapons/system.js` consumes the two muzzle spritesheets.
 

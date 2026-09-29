@@ -710,6 +710,10 @@ function shoot(){
   // Muzzle flash
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
   trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1);
+  if(typeof showProjectileTrailFx==='function'){
+    const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
+    if(trailKind)showProjectileTrailFx(trailKind);
+  }
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
     ejectCasing(casingPos,camera.quaternion,false);
@@ -1212,6 +1216,52 @@ function spawnERkt(from,dir,dmg,team,src){
 }
 
 // ─── MINES ──────────────────────────────
+const explosiveFuseArtNodes=new Set();
+const explosiveFuseScreenPos=new THREE.Vector3();
+function explosiveFusePresentationState(mn){
+  if(mn.fall)return 'safe';
+  if(mn.kind==='bomb'){
+    if(!Number.isFinite(mn._presentationInitialFuse))mn._presentationInitialFuse=mn.fuseT;
+    if(mn.fuseT<=8)return 'danger';
+    if(mn._presentationInitialFuse-mn.fuseT<1.5)return 'arming';
+    return 'armed';
+  }
+  return mn.armed?'armed':'arming';
+}
+function ensureExplosiveFuseArt(mn){
+  const layer=G('explosive-fuse-layer');if(!layer)return null;
+  if(mn._fuseArt?.isConnected)return mn._fuseArt;
+  const el=document.createElement('span');
+  el.className='explosive-fuse-art';el._mineRef=mn;
+  layer.appendChild(el);explosiveFuseArtNodes.add(el);mn._fuseArt=el;
+  return el;
+}
+function syncExplosiveFuseArt(){
+  const live=new Set(mines);
+  for(const el of [...explosiveFuseArtNodes]){
+    if(!live.has(el._mineRef)){el.remove();explosiveFuseArtNodes.delete(el);}
+  }
+  for(const mn of mines){
+    const el=ensureExplosiveFuseArt(mn);if(!el||!mn.m)continue;
+    explosiveFuseScreenPos.copy(mn.m.position);explosiveFuseScreenPos.y+=.72;
+    const dist=camera.position.distanceTo(explosiveFuseScreenPos);
+    if(dist>.8&&dist<30&&!wallBetween(camera.position,explosiveFuseScreenPos,wallMeshes)){
+      explosiveFuseScreenPos.project(camera);
+      if(explosiveFuseScreenPos.z>-1&&explosiveFuseScreenPos.z<1&&Math.abs(explosiveFuseScreenPos.x)<1.04&&Math.abs(explosiveFuseScreenPos.y)<1.04){
+        const state=explosiveFusePresentationState(mn);
+        if(el.dataset.state!==state){
+          applyPresentationAtlasFrame(el,explosiveFusePresentationFrame(state));
+          el.dataset.state=state;
+        }
+        el.style.left=((explosiveFuseScreenPos.x*.5+.5)*W).toFixed(1)+'px';
+        el.style.top=((-explosiveFuseScreenPos.y*.5+.5)*H).toFixed(1)+'px';
+        el.style.setProperty('--fuse-scale',Math.max(.62,Math.min(1.05,14/Math.max(8,dist))).toFixed(3));
+        el.style.visibility='visible';continue;
+      }
+    }
+    el.style.visibility='hidden';
+  }
+}
 function tickMines(dt){
   for(let i=mines.length-1;i>=0;i--){
     const mn=mines[i];

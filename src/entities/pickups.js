@@ -78,6 +78,19 @@ function worldWeaponPickupAsset(key){return GAME_ASSETS.generatedWorldWeaponPick
 function worldMedkitPickupAsset(){return GAME_ASSETS.presentation.medkitPickup||'';}
 function hideWorldPickupArt(entry){
   if(entry?.img)entry.img.style.visibility='hidden';
+  if(entry?.beacon)entry.beacon.style.visibility='hidden';
+}
+function pickupBeaconKindForWeapon(key){
+  if(['rocket','sniper','bomb'].includes(key))return 'heavy';
+  if(['mine','smoke'].includes(key))return 'utility';
+  return 'weapon';
+}
+function createWorldPickupBeacon(layer,kind){
+  const beacon=document.createElement('span');
+  beacon.className='world-pickup-beacon-art';
+  applyPresentationAtlasFrame(beacon,pickupBeaconPresentationFrame(kind));
+  beacon.style.visibility='hidden';layer.append(beacon);
+  return beacon;
 }
 function attachWorldWeaponPickupArt(group,key,model){
   const layer=G('world-pickup-art-layer'),asset=worldWeaponPickupAsset(key);
@@ -85,10 +98,11 @@ function attachWorldWeaponPickupArt(group,key,model){
   const img=document.createElement('img');
   img.className='world-weapon-pickup-art';img.alt='';img.decoding='async';img.draggable=false;
   img.dataset.weaponKey=key;img.style.visibility='hidden';img.src=asset;
-  const entry={img,model,key,ready:false,failed:false};
+  const beacon=createWorldPickupBeacon(layer,pickupBeaconKindForWeapon(key));
+  const entry={img,beacon,model,key,ready:false,failed:false};
   group.userData.worldPickupArt=entry;
   img.onload=()=>{entry.ready=true;entry.failed=false;model.visible=false;};
-  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
+  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();beacon.remove();group.userData.worldPickupArt=null;};
   layer.append(img);return entry;
 }
 function attachWorldMedkitPickupArt(group,model){
@@ -97,10 +111,11 @@ function attachWorldMedkitPickupArt(group,model){
   const img=document.createElement('img');
   img.className='world-health-pickup-art';img.alt='';img.decoding='async';img.draggable=false;
   img.dataset.pickupKind='medkit';img.style.visibility='hidden';img.src=asset;
-  const entry={img,model,key:'medkit',ready:false,failed:false};
+  const beacon=createWorldPickupBeacon(layer,'medkit');
+  const entry={img,beacon,model,key:'medkit',ready:false,failed:false};
   group.userData.worldPickupArt=entry;
   img.onload=()=>{entry.ready=true;entry.failed=false;model.visible=false;};
-  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
+  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();beacon.remove();group.userData.worldPickupArt=null;};
   layer.append(img);return entry;
 }
 function syncWorldWeaponPickupArt(){
@@ -133,9 +148,18 @@ function syncWorldWeaponPickupArt(){
     const tilt=Math.sin(pk.bob*.58)*1.2;
     entry.img.style.width=width.toFixed(1)+'px';
     entry.img.style.left=x.toFixed(1)+'px';entry.img.style.top=y.toFixed(1)+'px';
-    entry.img.style.opacity=String(Math.max(.68,Math.min(.98,1-(dist-8)/72)));
+    const opacity=Math.max(.68,Math.min(.98,1-(dist-8)/72));
+    entry.img.style.opacity=String(opacity);
     entry.img.style.transform='translate3d(-50%,-50%,0) rotate('+tilt.toFixed(2)+'deg)';
     entry.img.style.visibility='visible';
+    if(entry.beacon){
+      const beaconWidth=Math.max(34,Math.min(150,width*1.18));
+      entry.beacon.style.width=beaconWidth.toFixed(1)+'px';entry.beacon.style.height=beaconWidth.toFixed(1)+'px';
+      entry.beacon.style.left=x.toFixed(1)+'px';entry.beacon.style.top=(y+Math.max(8,width*.20)).toFixed(1)+'px';
+      entry.beacon.style.opacity=String(opacity*.72);
+      entry.beacon.style.transform='translate3d(-50%,-50%,0) scale('+(1+Math.sin(pk.bob*.8)*.035).toFixed(3)+')';
+      entry.beacon.style.visibility='visible';
+    }
   }
 }
 

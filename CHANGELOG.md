@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-29
 
+### Generated Asset Pack 8 — tactical readability and motion
+- added ten compact alpha WebP atlases for weapon reticles, tactical minimap markers, spawn shielding, the 15-second respawn countdown, explosive fuse states, projectile trails, weapon-switch swipes, bot overhead combat frames, combo feedback and world-pickup beacons;
+- wired every asset into an existing runtime consumer instead of leaving art unused; procedural/text state remains authoritative and acts as a graceful fallback;
+- kept generated raster out of persistent Three.js geometry and preserved direct `file://` compatibility;
+- minimap art is information-safe: it renders the player, allies, objectives, visible pickups, player-owned deployables and player smoke, but does not reveal enemy-only state;
+- structural validation now checks Pack 8 presence, catalog/runtime wiring, VP8X alpha, exact dimensions and a 64 KiB per-asset budget.
+
 ### Generated Asset Pack 7 — combat textures and screen-space feedback
 - added ten optimized alpha WebP combat textures: low-health vignette, directional damage, tactical smoke, ballistic/plasma muzzle sheets, explosion shockwave, suppression, armor hit, sprint speed-lines and respawn materialization;
 - new textures are actually consumed at runtime through the centralized asset catalog: screen overlays stay DOM/CSS presentation-only, the two 4×2 sheets decorate the existing first-person muzzle-flash layer, and the engine only emits a presentation hook for nearby explosions;

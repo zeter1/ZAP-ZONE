@@ -314,7 +314,24 @@ function showArmorBreakFx(){
 let _spT=0,_spEl=null;
 function scorePop(t){if(!_spEl)_spEl=G('score-pop');_spEl.textContent=t;_spEl.style.opacity='1';_spEl.style.top='40%';clearTimeout(_spT);_spT=setTimeout(()=>{_spEl.style.opacity='0';_spEl.style.top='36%';},800);}
 let _msgT=0;function showMsg(t){G('pmsg').textContent=t;G('pmsg').style.opacity='1';clearTimeout(_msgT);_msgT=setTimeout(()=>G('pmsg').style.opacity='0',2200);}
-let _cbT=0;function showCombo(){const c=combo,e=G('combo');e.textContent='🔥 x'+c+' COMBO!';e.style.color=c>5?'#ff4400':c>3?'#ffaa00':'#ffd700';e.style.opacity='1';clearTimeout(_cbT);_cbT=setTimeout(()=>e.style.opacity='0',1000);}
+let _cbT=0;function showCombo(){
+  const c=combo,e=G('combo');
+  e.textContent='🔥 x'+c+' COMBO!';
+  e.style.color=c>5?'#ff4400':c>3?'#ffaa00':'#ffd700';
+  if(typeof applyPresentationAtlasVariables==='function')applyPresentationAtlasVariables(e,'combo-meter',comboMeterPresentationFrame(c));
+  e.classList.add('generated-meter');e.style.opacity='1';
+  clearTimeout(_cbT);_cbT=setTimeout(()=>e.style.opacity='0',1000);
+}
+function updateRespawnCountdownPresentation(){
+  const el=G('respawn-countdown');if(!el)return;
+  if(!dying){el.classList.remove('on');return;}
+  const sec=Math.max(1,Math.min(PLAYER_RESPAWN_DELAY,Math.ceil(dyingT)));
+  const frame=respawnCountdownPresentationFrame(sec);
+  if(frame&&el.dataset.seconds!==String(sec)){
+    applyPresentationAtlasFrame(el,frame);el.dataset.seconds=String(sec);
+  }
+  el.textContent=String(sec);el.classList.add('on');
+}
 let _damageOverlayKey='';
 function setDamageOverlay(alpha=0,color='red'){
   const a=Math.max(0,Math.min(.45,alpha));
@@ -407,7 +424,7 @@ function tickDeathCamera(dt){
 function tickDeathWorld(dt){
   // The battlefield keeps simulating during the killcam, except when bot freeze is explicitly enabled for testing.
   if(!gameSettings.stopBots)for(const en of enemies)if(en.alive)en.update(dt);
-  tickProjectiles(dt);tickMines(dt);tickSmoke(dt);
+  tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);
   tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);
   updateAllyPanel(dt);
@@ -436,6 +453,7 @@ function checkDeath(){
   G('death-msg').style.opacity='1';
   G('battle-result-frame')?.classList.add('on');
   dyingT=PLAYER_RESPAWN_DELAY;
+  updateRespawnCountdownPresentation();
 }
 function doRespawn(){
   cleanupDeathCamera();
@@ -444,6 +462,7 @@ function doRespawn(){
   const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ';
   G('death-msg').style.opacity='0';
   G('battle-result-frame')?.classList.remove('on');
+  G('respawn-countdown')?.classList.remove('on');
   // Keep the live battlefield intact across player deaths. Existing bots,
   // pickups, mines and projectiles remain part of the same 5×5 fight.
   hp=plr.maxHp;

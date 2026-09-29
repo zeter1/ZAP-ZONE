@@ -109,10 +109,8 @@ class Enemy{
     scene.add(this.group);
 
     this.hEl=document.createElement('div');
-    const barCol=team==='ally'?'rgba(0,70,150,.88)':'rgba(120,0,24,.88)';
-    this.hEl.style.cssText='position:fixed;width:52px;height:5px;background:'+barCol+';border:1px solid '+(team==='ally'?'#4dd8ff':'#ff4966')+';border-radius:3px;pointer-events:none;z-index:5;display:none;box-shadow:0 0 8px '+(team==='ally'?'rgba(60,210,255,.7)':'rgba(255,50,80,.7)')+';';
-    this.hFill=document.createElement('div');
-    this.hFill.style.cssText='height:100%;border-radius:2px;width:100%;background:'+(team==='ally'?'#45d5ff':'#ff3655')+';';
+    this.hEl.className='bot-overhead-health';this.hEl.dataset.team=team;this._overheadFrameKey='';
+    this.hFill=document.createElement('div');this.hFill.className='bot-overhead-fill';
     this.hEl.appendChild(this.hFill);document.getElementById('ui').appendChild(this.hEl);
 
     this.weapon=chooseBotWeaponByDistance(22,-1,true,this.role);
@@ -637,11 +635,17 @@ class Enemy{
     this.hEl.style.display=this.uiVis?'block':'none';
     if(this.uiVis){
       const sx=this.uiX,sy=this.uiY;
-      this.hEl.style.left=(sx-24)+'px';this.hEl.style.top=(sy-10)+'px';
-      this.hFill.style.width=(this.hp/this.maxHp*100)+'%';
-      const pct=this.hp/this.maxHp;
+      this.hEl.style.left=(sx-41)+'px';this.hEl.style.top=(sy-22)+'px';
+      const pct=Math.max(0,Math.min(1,this.hp/this.maxHp));
+      this.hFill.style.width=(48*pct).toFixed(1)+'px';
       if(this.team==='ally')this.hFill.style.background=pct>.6?'#45d5ff':pct>.3?'#2f9dff':'#5d72ff';
       else this.hFill.style.background=pct>.6?'#ff3655':pct>.3?'#ff6a3d':'#ff1744';
+      const state=pct<.30?(this.team==='ally'?'broken':'critical'):'normal';
+      const frameKey=this.team+'|'+state;
+      if(frameKey!==this._overheadFrameKey){
+        applyPresentationAtlasFrame(this.hEl,botOverheadPresentationFrame(this.team,state));
+        this._overheadFrameKey=frameKey;
+      }
     }
 
     if(this.team==='enemy'&&dist<1.02&&!this.targetEn&&!wallBetween(this.group.position.clone().setY(1.1),camera.position.clone(),losMeshes))return true;
