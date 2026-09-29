@@ -25,10 +25,11 @@
 - bot aim / muzzle / reload / concrete shot + hit resolution → `src/ai/bot-fire-control.js` + `docs/specs/BOT_FIRE_CONTROL.md`;
 - bot post-shot burst/cadence / RNG order / pause + next-shot schedule → `src/ai/bot-fire-cadence.js` + `docs/specs/BOT_FIRE_CADENCE.md`;
 - individual bot mine/bomb eligibility + deployment execution → `src/ai/bot-deployables.js` + `docs/specs/BOT_DEPLOYABLES.md`;
+- bot high-level state selection / priority ladder / stateCD reschedule → `src/ai/bot-state-policy.js` + `docs/specs/BOT_STATE_POLICY.md`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
-- individual bot FSM / broad fire gate / tactical execution / HP+death lifecycle + cadence initialization/timer decay + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence and deployables owners rather than reimplementing them;
+- individual bot state execution / broad fire gate / tactical execution / HP+death lifecycle + stateCD/cadence timer lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables and state-policy owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
