@@ -116,16 +116,18 @@ test('priority conflicts preserve resupply -> retreat -> support -> cover -> fla
 });
 
 test('engage keeps inclusive ally/enemy range multipliers and map objective priority',()=>{
-  const ally=runSelection({bot:{team:'ally',canSeeTarget:true,weapon:{range:30}},facts:{dist:34.2}});
+  const allyBoundary=30*1.14;
+  const enemyBoundary=30*1.08;
+  const ally=runSelection({bot:{team:'ally',canSeeTarget:true,weapon:{range:30}},facts:{dist:allyBoundary}});
   assert.equal(ally.bot.aiState,'engage');
 
   const allyOutside=runSelection({
     bot:{team:'ally',canSeeTarget:true,weapon:{range:30},lastSeenT:4},
-    facts:{dist:34.200001}
+    facts:{dist:allyBoundary+1e-6}
   });
   assert.equal(allyOutside.bot.aiState,'hunt');
 
-  const enemy=runSelection({bot:{team:'enemy',canSeeTarget:true,weapon:{range:30}},facts:{dist:32.4}});
+  const enemy=runSelection({bot:{team:'enemy',canSeeTarget:true,weapon:{range:30}},facts:{dist:enemyBoundary}});
   assert.equal(enemy.bot.aiState,'engage');
 
   const objectiveFirst=runSelection({
