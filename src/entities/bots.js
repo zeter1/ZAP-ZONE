@@ -416,41 +416,11 @@ class Enemy{
         break;
       }
       case 'engage':{
-        if(!targetPos)break;
-        this.desiredYaw=Math.atan2(dx,dz);
-        this.strafeSwitchT-=dt;
-        if(this.strafeSwitchT<=0){this.strafeDir*=-1;this.strafeSwitchT=.55+Math.random()*.75;}
-        const px=-dz/dist,pz=dx/dist;
-        let optRange=this.weapon.opt*(this.role==='anchor'?1.24:this.role==='assault'?0.78:1.0);
-        if(this.role==='engineer')optRange*=0.92;
-        let strafeM=this.tacticalMode==='suppress'?.48:.82;
-        if(this.tacticalMode==='suppress')optRange*=1.08;
-        if(opponentWeapon){
-          if(opponentWeapon.key==='shotgun')optRange=Math.max(optRange,18);
-          else if(opponentWeapon.isRocket){optRange=Math.max(optRange,17);strafeM=1.02;}
-          else if(opponentWeapon.isSniper){
-            strafeM=1.08;
-            if(this.weapon.key==='shotgun'||this.role==='assault')optRange=Math.min(optRange,21);
-            else optRange=Math.max(optRange,30);
-            this.strafeSwitchT=Math.min(this.strafeSwitchT,.48+Math.random()*.22);
-          }
-        }
-        mx=px*this.strafeDir*spd*strafeM;mz=pz*this.strafeDir*spd*strafeM;
-        const objectivePull=frontlineContested?.40:frontlineBehind?.31:(squadPlan.doctrine==='hold'?.46:0);
-        if(objectivePull>0&&mapObjective&&objectiveDist>squadPlan.zoneRadius*.58){
-          const ox=mapObjective.x-myX,oz=mapObjective.z-myZ,od=Math.max(.001,Math.hypot(ox,oz));
-          mx+=(ox/od)*spd*objectivePull;mz+=(oz/od)*spd*objectivePull;
-        }
-        if(this.role==='flankL'||this.role==='flankR'){
-          const sign=this.role==='flankL'?-1:1;
-          mx+=px*sign*spd*.24;mz+=pz*sign*spd*.24;
-        }
-        if(dist<optRange*.54){mx-=(dx/dist)*spd*.52*this.bravery;mz-=(dz/dist)*spd*.52*this.bravery;}
-        else if(dist>this.weapon.range*.82){mx+=(dx/dist)*spd*.70;mz+=(dz/dist)*spd*.70;}
-        if(this.role==='anchor'&&this.coverPoint){
-          const cdx=this.coverPoint.x-myX,cdz=this.coverPoint.z-myZ;
-          mx+=cdx*.05;mz+=cdz*.05;
-        }
+        const engageMove=runBotEngagementMovement(this,{
+          dt,targetPos,dx,dz,dist,opponentWeapon,spd,myX,myZ,
+          frontlineContested,frontlineBehind,squadPlan,mapObjective,objectiveDist
+        });
+        mx=engageMove.x;mz=engageMove.z;
         break;
       }
       case 'resupply':{

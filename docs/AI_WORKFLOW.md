@@ -32,6 +32,7 @@
 | Bot navigation / collision-limited locomotion | `src/ai/bot-navigation.js` | grenade/mine/noise perception; tactical destination scoring; squad doctrine / target policy |
 | Bot tactical cover/flank destination scoring | `src/ai/bot-positioning.js` | FSM transitions; cover/peek execution; locomotion mechanics; squad doctrine |
 | Bot cover reevaluation / peek / chain / exit execution | `src/ai/bot-cover-execution.js` | cover/flank destination scoring; timer lifecycle; collision-limited locomotion; squad doctrine |
+| Bot engage-state movement intent / strafe + range matchups + objective pull | `src/ai/bot-engagement-movement.js` | FSM selection; weapon selection/fire; squad/frontline fact production; cover execution; final navigation/collision |
 | Bot weapon selection / hold hysteresis / reselection | `src/ai/bot-weapon-policy.js` | weapon data/scoring; FSM/fire gate; shot execution; visual implementation |
 | Bot fire-control execution | `src/ai/bot-fire-control.js` | broad fire gate/post-shot cadence; weapon selection; squad doctrine; projectile primitive ownership |
 | Bot post-shot burst/cadence + RNG ordering | `src/ai/bot-fire-cadence.js` | broad fire gate; constructor/timer lifecycle; shot execution; weapon data |
@@ -40,7 +41,7 @@
 | Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM/combat execution; perception ownership; Frontline capture/state |
 | Frontline objective / capture / save / HUD / marker | `src/game/frontline.js` | map doctrine; individual bot FSM |
 | Bot model / hit meshes / weapon arm rig | `src/entities/bot-presentation.js` | AI decisions; locomotion policy; weapon data |
-| Individual bot state execution / combat policy | `src/entities/bots.js` | progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables/state-policy implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
+| Individual bot state execution / combat policy | `src/entities/bots.js` | progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/cover-execution/engagement-movement/weapon-policy/fire-control/fire-cadence/deployables/state-policy implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
 | Browser game session | `src/game/session.js` | per-frame simulation |
@@ -49,7 +50,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-engagement-movement.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -69,6 +70,7 @@
 - bot dodge execution / RNG order / urgency clamps / optional jump → `docs/specs/BOT_DODGE_RESPONSE.md` → `src/ai/bot-dodge-response.js` → `Enemy.triggerDodge()` seam → damage/rocket producers;
 - bot navigation / collision micro-steps / smoke route / speed caps → `docs/specs/BOT_NAVIGATION.md` → `src/ai/bot-navigation.js` → `src/entities/bots.js` consumer;
 - bot cover reevaluation / peek-side probing / LOS+smoke acceptance / peek envelope / cover chain+exit → `docs/specs/BOT_COVER_EXECUTION.md` → `src/ai/bot-cover-execution.js` → `src/entities/bots.js` consumer;
+- bot engage strafe / role+opponent range matchup / Frontline pull / close-far pressure → `docs/specs/BOT_ENGAGEMENT_MOVEMENT.md` → `src/ai/bot-engagement-movement.js` → `src/entities/bots.js` consumer;
 - bot weapon selection / switch timer / hold hysteresis / unsafe-range reselection → `docs/specs/BOT_WEAPON_POLICY.md` → `src/ai/bot-weapon-policy.js` → `src/entities/bots.js` consumer;
 - bot fire-control / aim / muzzle / reload / shot execution / hit resolution → `docs/specs/BOT_FIRE_CONTROL.md` → `src/ai/bot-fire-control.js` → `src/entities/bots.js` + `src/ai/tactics.js` consumers;
 - bot post-shot burst/cadence / exact RNG order / pause / next-shot timer → `docs/specs/BOT_FIRE_CADENCE.md` → `src/ai/bot-fire-cadence.js` → `src/entities/bots.js` consumer;

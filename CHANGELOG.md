@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot engage-state movement ownership
+- strafe timer/direction, role/tactical optimal-range policy, opponent-weapon matchup, Frontline objective pull, flank bias, close/far correction и anchor cover tether вынесены из `Enemy.update()` в canonical owner `src/ai/bot-engagement-movement.js`;
+- extraction сохраняет snapshot `myX/myZ`, exact strict thresholds, movement-addition order и branch-specific RNG: normal strafe reset draw выполняется раньше optional sniper clamp draw;
+- broad fire gate/shot execution, weapon selection, cover execution, squad/frontline fact production и collision-limited navigation остаются у прежних owners; gameplay balance не менялся;
+- добавлены 7 focused Node 22 regressions, `BOT_ENGAGEMENT_MOVEMENT` spec, AI routing, reverse/authority/load-order guards и отдельный Validate step.
+
 ### Bot cover / peek execution ownership
 - cover reevaluation, peek-side probing, LOS/smoke validation, peek timing/envelope, hold/chaining и cover exit вынесены из большого `Enemy.update()` в canonical owner `src/ai/bot-cover-execution.js`;
 - `src/ai/bot-positioning.js` сохраняет единоличное владение cover/flank destination scoring, `src/ai/bot-navigation.js` — collision-limited locomotion, а constructor/timer lifecycle и final movement остаются в `src/entities/bots.js`;

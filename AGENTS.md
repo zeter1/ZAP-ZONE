@@ -22,6 +22,7 @@
 - bot navigation / wall+smoke steering / speed caps / collision substeps → `src/ai/bot-navigation.js` + `docs/specs/BOT_NAVIGATION.md`;
 - bot tactical cover/flank destination scoring → `src/ai/bot-positioning.js` + `docs/specs/BOT_POSITIONING.md`;
 - bot cover reevaluation / peek probing+timing / hold+chain+exit execution → `src/ai/bot-cover-execution.js` + `docs/specs/BOT_COVER_EXECUTION.md`;
+- bot engage-state strafe/range-matchup/objective-pull movement intent → `src/ai/bot-engagement-movement.js` + `docs/specs/BOT_ENGAGEMENT_MOVEMENT.md`;
 - bot weapon reselection / hold hysteresis / switch timing → `src/ai/bot-weapon-policy.js` + `docs/specs/BOT_WEAPON_POLICY.md`;
 - bot aim / muzzle / reload / concrete shot + hit resolution → `src/ai/bot-fire-control.js` + `docs/specs/BOT_FIRE_CONTROL.md`;
 - bot post-shot burst/cadence / RNG order / pause + next-shot schedule → `src/ai/bot-fire-cadence.js` + `docs/specs/BOT_FIRE_CADENCE.md`;
@@ -30,7 +31,7 @@
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
-- individual bot state orchestration / broad fire gate / flank+objective+engage execution / HP+death lifecycle + stateCD/cadence timer lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, cover-execution, weapon-policy, fire-control, fire-cadence, deployables and state-policy owners rather than reimplementing them;
+- individual bot state orchestration / broad fire gate / flank+objective+support+search execution / HP+death lifecycle + stateCD/cadence timer lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, cover-execution, engagement-movement, weapon-policy, fire-control, fire-cadence, deployables and state-policy owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
 - rendering/arena/collision → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
