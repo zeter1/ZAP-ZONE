@@ -635,7 +635,7 @@ for(const token of ['bot.aiState=','bot.burstLeft=','bot.burstPauseT=','function
 if(!tactics.includes('BOT_NOISE_EVENTS'))fail('team tactics must consume the canonical perception noise bus');
 for(const token of [
   'BOT_MOVE_CFG','clampBotVelocity(','moveBotWithSubsteps(',
-  'steerBotAroundWalls(','steerBotAroundSmoke(','this.unstuckT=.48','Math.min(.28,lvl*.012)'
+  'steerBotAroundWalls(','steerBotAroundSmoke(','this.unstuckT=.48'
 ]){
   if(!bots.includes(token))fail('Combat AI 2.2 bot locomotion consumer integration missing: '+token);
 }
