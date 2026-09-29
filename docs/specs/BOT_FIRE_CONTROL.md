@@ -15,20 +15,21 @@
 
 ## Ownership boundaries
 
-- `src/entities/bots.js` — **when/why to fire**: FSM, reaction timers, fire gate, burst size/pause, `sT`, weapon-switch policy, utility planting и suppression-state reaction.
+- `src/entities/bots.js` — **when/why to enter the fire branch**: FSM, reaction timers, broad fire gate, cadence initialization/timer decay, weapon-switch policy, utility planting и suppression-state reaction.
+- `src/ai/bot-fire-cadence.js` — post-shot `burstLeft`, burst reset/pause, next-shot `sT`, exact cadence RNG order и empty-mag reload handoff. См. `docs/specs/BOT_FIRE_CADENCE.md`.
 - `src/ai/tactics.js` — squad doctrine, suppressor/flanker assignment и coordinated utility policy; muzzle origin берёт у fire-control owner.
 - `src/weapons/system.js` — weapon definitions, damage/range/spread/rate/clip/reload data и shared weapon factories.
 - `src/combat/combat.js` — projectile/collision primitives, player-pressure limiter, friendly-fire queries и suppression plumbing.
 - `src/ai/bot-perception.js` — target/threat sensing; fire-control не выбирает цель.
 - `src/entities/bot-presentation.js` — weapon/body visual rig; fire-control не владеет pose.
 
-Итого: **sense → squad/FSM policy → fire gate/burst policy → fire-control execution → combat primitives**.
+Итого: **sense → squad/FSM policy → fire gate → fire-control execution → post-shot cadence → combat primitives**.
 
 ## Dependency / load-order contract
 
 Canonical classic-script segment:
 
-`combat.js → bot-perception.js → bot-navigation.js → bot-positioning.js → bot-fire-control.js → tactics.js → frontline.js → bot-presentation.js → bots.js`.
+`combat.js → bot-perception.js → bot-navigation.js → bot-positioning.js → bot-fire-control.js → bot-fire-cadence.js → bot-deployables.js → tactics.js → frontline.js → bot-presentation.js → bots.js`.
 
 Fire-control загружается до `tactics.js`, потому что coordinated smoke/frag использует `getBotMuzzlePos(bot)`. Большинство combat/runtime dependencies являются invocation-time: функции вызываются после завершения bootstrap, когда `bots.js` уже создал per-bot state и kill counters.
 
