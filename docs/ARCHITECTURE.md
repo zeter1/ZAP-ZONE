@@ -18,16 +18,17 @@
 14. `src/ai/bot-positioning.js` — per-bot cover/flank destination filtering и scoring.
 15. `src/ai/bot-weapon-policy.js` — post-spawn weapon reselection, hold hysteresis и switch timing.
 16. `src/ai/bot-fire-control.js` — aim/muzzle/reload и concrete shot/hit execution для уже принятого fire intent.
-17. `src/ai/bot-deployables.js` — individual mine/bomb eligibility, role/doctrine probability и deployment side effects.
-18. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
-19. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
-20. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
-21. `src/entities/bots.js` — per-bot FSM, fire gate/burst и tactical execution; progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/deployables owners используются как consumer dependencies.
-22. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
-23. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-24. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
-25. `src/ui/minimap.js` — тактическая миникарта.
-26. `src/game/runtime.js` — frame simulation/render loop и boot.
+17. `src/ai/bot-fire-cadence.js` — post-shot burst reset, pause, next-shot schedule и точный RNG order.
+18. `src/ai/bot-deployables.js` — individual mine/bomb eligibility, role/doctrine probability и deployment side effects.
+19. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
+20. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
+21. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
+22. `src/entities/bots.js` — per-bot FSM, broad fire gate и tactical execution; cadence initialization/timer decay остаются lifecycle-state, а progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables owners используются как consumer dependencies.
+23. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+24. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
+25. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+26. `src/ui/minimap.js` — тактическая миникарта.
+27. `src/game/runtime.js` — frame simulation/render loop и boot.
 
 ## Bot progression-scaling policy owner
 
@@ -303,7 +304,7 @@ HUD союзников показывает текущую doctrine, выбра�
 
 ## Combat AI 2.2 / Adaptive Commander + locomotion stability v22.6
 
-`PLAYER_TACTICAL_PROFILE`, doctrine/recovery decisions, assault-wave planning и coordinated smoke/frag policy принадлежат `src/ai/tactics.js`. `BOT_MOVE_CFG` и velocity/substep guards принадлежат `src/ai/bot-navigation.js`. Fire gate остаётся в `src/entities/bots.js`, individual mine/bomb choice+deployment принадлежат `src/ai/bot-deployables.js`, а concrete firearm execution — `src/ai/bot-fire-control.js`. При pure refactor эти слои нельзя одновременно «улучшать»: ownership extraction обязан сохранять прежние probabilities, timers и balance constants буквально.
+`PLAYER_TACTICAL_PROFILE`, doctrine/recovery decisions, assault-wave planning и coordinated smoke/frag policy принадлежат `src/ai/tactics.js`. `BOT_MOVE_CFG` и velocity/substep guards принадлежат `src/ai/bot-navigation.js`. Fire gate остаётся в `src/entities/bots.js`, individual mine/bomb choice+deployment принадлежат `src/ai/bot-deployables.js`, а concrete firearm execution — `src/ai/bot-fire-control.js`, а post-shot burst/pause/next-shot RNG policy — `src/ai/bot-fire-cadence.js`. При pure refactor эти слои нельзя одновременно «улучшать»: ownership extraction обязан сохранять прежние probabilities, timers и balance constants буквально.
 
 Adaptive Commander работает поверх Map Tactics, не заменяя perception и локальный squad-plan. `PLAYER_TACTICAL_PROFILE` периодически семплирует положение игрока, сглаженную скорость перемещения и время недавнего огня. Длительное нахождение в радиусе небольшой anchor-зоны вместе с недавней стрельбой повышает `campScore`; глубокое продвижение по оси союзной→вражеской стороны классифицируется как rush. Это поведенческий сигнал для выбора командного приказа, а не скрытый debuff игрока.
 
@@ -335,7 +336,7 @@ Runtime всё ещё использует общий `dt <= 0.033`, поэто�
 
 Граница намеренно не совпадает с «всё, где упоминается Frontline». `src/ai/tactics.js` остаётся owner-ом `BOT_MAP_ZONES` и doctrine/map policy; `src/entities/bots.js` остаётся owner-ом индивидуального bot FSM и только читает active objective/presence для tactical execution; `src/ui/minimap.js` только визуализирует objective/zone ownership; `src/player/state.js` вызывает публичный save/restore contract; `src/game/runtime.js` только вызывает tick и boot HUD/marker.
 
-Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-progression-scaling → bot-perception → bot-damage-reaction → bot-suppression-response → bot-dodge-response → bot-navigation → bot-positioning → bot-weapon-policy → bot-fire-control → bot-deployables → tactics → frontline → bot-presentation → bots`; navigation, positioning, weapon-policy, fire-control, deployables, Frontline и presentation являются отдельными prerequisites `bots.js`, при этом presentation не зависит от Frontline. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
+Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-progression-scaling → bot-perception → bot-damage-reaction → bot-suppression-response → bot-dodge-response → bot-navigation → bot-positioning → bot-weapon-policy → bot-fire-control → bot-fire-cadence → bot-deployables → tactics → frontline → bot-presentation → bots`; navigation, positioning, weapon-policy, fire-control, deployables, Frontline и presentation являются отдельными prerequisites `bots.js`, при этом presentation не зависит от Frontline. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
 
 Pure extraction сохраняет буквально `rotateSeconds:44`, `captureSeconds:8.5`, `capturePoints:3`, clamp/restore semantics, capture reward `+150 score / +35 XP`, UI copy и side-effect order. Эти значения нельзя «заодно улучшать» в ownership-refactor; balance/UX change требует отдельной задачи и отдельного evidence.
 
