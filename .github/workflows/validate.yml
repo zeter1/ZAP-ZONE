@@ -54,6 +54,7 @@ jobs:
           node --check scripts/bot-weapon-policy-owner.test.mjs
           node --check scripts/bot-fire-control-owner.test.mjs
           node --check scripts/bot-fire-cadence-owner.test.mjs
+          node --check scripts/bot-state-policy-owner.test.mjs
           node --check scripts/bot-deployables-owner.test.mjs
           node --check scripts/browser-boot-smoke.mjs
       - name: Web build stamp
@@ -84,6 +85,8 @@ jobs:
         run: node --test scripts/bot-fire-control-owner.test.mjs
       - name: Bot fire-cadence regressions
         run: node --test scripts/bot-fire-cadence-owner.test.mjs
+      - name: Bot state-policy regressions
+        run: node --test scripts/bot-state-policy-owner.test.mjs
       - name: Bot deployables regressions
         run: node --test scripts/bot-deployables-owner.test.mjs
 

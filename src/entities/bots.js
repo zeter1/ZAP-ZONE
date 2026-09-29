@@ -30,6 +30,8 @@ function lvlSpdMult(){ return 1 + level * 0.02; }
 
 // Bot fire-control execution owner: src/ai/bot-fire-control.js
 
+// Bot AI state-selection priority owner: src/ai/bot-state-policy.js
+
 class Enemy{
   constructor(x,z,type,team){
     const et=ETYPES[type%ETYPES.length];
@@ -280,17 +282,9 @@ class Enemy{
 
     this.aiT+=dt;this.stateCD-=dt;
     if(this.stateCD<=0){
-      if(this.pickupTarget&&this.pickupTarget.m.visible&&hpPct<.48)this.aiState='resupply';
-      else if(targetPos&&strategicRetreat&&((hpPct<0.25&&dist<20)||(localThreats>=3&&hpPct<.58)))this.aiState='retreat';
-      else if(targetPos&&supportReady&&this.tacticalMode==='support')this.aiState='support';
-      else if(targetPos&&this.coverPoint&&(!this.canSeeTarget||this.role==='anchor'||this.reloadT>0||(localThreats>=3&&hpPct<.72)||this.suppressedT>0))this.aiState='cover';
-      else if(targetPos&&this.flankPoint&&this.flankCommitT>0&&this.tacticalMode==='flank')this.aiState='flank';
-      else if(mapOrderWanted)this.aiState='objective';
-      else if(targetPos&&this.canSeeTarget&&dist<=this.weapon.range*(this.team==='ally'?1.14:1.08))this.aiState='engage';
-      else if(targetPos&&this.lastSeenT<8.5)this.aiState='hunt';
-      else if(targetPos&&this.lastSeenT<14.5)this.aiState='search';
-      else this.aiState=mapObjective?'objective':'patrol';
-      this.stateCD=.22+Math.random()*.30;
+      applyBotStateSelectionPolicy(this,{
+        targetPos,hpPct,strategicRetreat,localThreats,supportReady,mapOrderWanted,mapObjective,dist
+      });
     }
 
     let mx=0,mz=0;

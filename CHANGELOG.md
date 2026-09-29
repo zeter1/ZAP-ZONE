@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-29
 
+### Bot AI state-selection policy ownership
+- strict high-level state-selection ladder вынесен из большого `Enemy.update()` в canonical owner `src/ai/bot-state-policy.js`; `stateCD` decrement/gate, derived tactical facts и state execution остаются в `src/entities/bots.js`;
+- pure extraction сохраняет точный precedence `resupply → retreat → support → cover → flank → objective → engage → hunt → search → fallback`, strict/inclusive threshold semantics, ally/enemy engage-range multipliers и финальный objective/patrol fallback без gameplay rebalance;
+- каждое реальное policy execution по-прежнему потребляет ровно один RNG draw для `stateCD=.22+Math.random()*.30`, а gated updates при `stateCD>0` не вызывают owner; это закреплено controlled-RNG и exact-boundary regressions;
+- добавлены `docs/specs/BOT_STATE_POLICY.md`, AI routing, owner/consumer/reverse/authority/load-order structural guards и отдельный Validate step без ослабления HTTP/`file://` browser gates.
+
 ### Bot post-shot fire-cadence ownership
 - post-shot burst reset, pause, next-shot `sT` и empty-mag reload handoff вынесены из большого `Enemy.update()` в canonical owner `src/ai/bot-fire-cadence.js`; broad fire gate и concrete shot execution остаются у прежних owners;
 - pure extraction сохраняет все weapon/player/suppressing formulas, cadence floors `0.095/0.055`, `fireRateMul` semantics и точный branch-specific RNG order, включая legacy `normalPause` draw, который вычисляется перед enemy-player override;
