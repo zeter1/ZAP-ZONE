@@ -212,7 +212,7 @@ const GAME_ASSETS=versionAssetTree({
     pack18:'assets/ui/fx/player-action-vfx-atlas-18.svg',
     pack19Landing:'assets/ui/fx/landing-impact-vfx-atlas-19.svg',
     pack19SmokeThrow:'assets/ui/fx/smoke-throw-vfx-atlas-19.svg',
-    pack20MineThrow:'assets/ui/fx/player-mine-throw-vfx-atlas-20.svg',
+    pack20GrenadeThrow:'assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg',
     pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
@@ -245,6 +245,9 @@ const GAME_ASSETS=versionAssetTree({
   }),
   // Pack 9 converts generated contact-sheet direction into compact vector runtime
   // derivatives. They stay DOM/CSS-only and keep procedural/text fallbacks.
+  presentationHudV4:Object.freeze({
+    grenadeUi:'assets/ui/equipment/frag-grenade-ui-atlas-20.svg'
+  }),
   presentationHudV3:Object.freeze({
     matchDeploy:'assets/ui/feedback/match-deploy-splash-tech-01.svg',
     frontlineRetarget:'assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
@@ -279,7 +282,8 @@ const GAME_ASSETS=versionAssetTree({
     mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
     bomb:'assets/ui/weapons/fp/player-bomb-fps-01.webp',
     smoke:'assets/ui/weapons/fp/player-smoke-fps-01.webp',
-    sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp'
+    sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp',
+    grenade:'assets/ui/weapons/fp/player-grenade-fps-20.svg'
   }),
   // Generated map-pickup art stays DOM-only: pickups.js projects the real 3D
   // pickup position into screen space and keeps the procedural world model as fallback.
@@ -292,7 +296,8 @@ const GAME_ASSETS=versionAssetTree({
     mine:'assets/ui/pickups/weapons/world-mine-pickup-01.webp',
     bomb:'assets/ui/pickups/weapons/world-bomb-pickup-01.webp',
     smoke:'assets/ui/pickups/weapons/world-smoke-pickup-01.webp',
-    sniper:'assets/ui/pickups/weapons/world-sniper-pickup-01.webp'
+    sniper:'assets/ui/pickups/weapons/world-sniper-pickup-01.webp',
+    grenade:'assets/ui/pickups/weapons/world-grenade-pickup-20.svg'
   }),
   firstPersonSkins:Object.freeze({
     pistol:'assets/weapons/fp/pistol-skin.svg',
@@ -374,6 +379,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.presentationHud),
   ...Object.values(GAME_ASSETS.presentationHudV2),
   ...Object.values(GAME_ASSETS.presentationHudV3),
+  ...Object.values(GAME_ASSETS.presentationHudV4),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedWorldWeaponPickups),
@@ -525,6 +531,7 @@ function botDoctrinePresentationFrame(doctrine){
   return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHud.botDoctrines,col,0,4,1):null;
 }
 function killFeedPresentationFrame(kind){
+  if(kind==='grenade')return presentationAtlasFrame(GAME_ASSETS.presentationHudV4.grenadeUi,1,1,2,2);
   const pos={pistol:[0,0],shotgun:[1,0],rifle:[2,0],rocket:[3,0],plasma:[4,0],sniper:[0,1],mine:[1,1],bomb:[2,1],smoke:[3,1],headshot:[4,1]}[kind];
   return pos?presentationAtlasFrame(GAME_ASSETS.presentationHud.killFeed,pos[0],pos[1],5,2):null;
 }
@@ -643,7 +650,7 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   landingDust:Object.freeze({asset:'pack19Landing',row:0,cols:4,rows:4,frames:8,duration:.58,width:260,height:173}),
   landingMetal:Object.freeze({asset:'pack19Landing',row:2,cols:4,rows:4,frames:8,duration:.54,width:260,height:173}),
   smokeThrow:Object.freeze({asset:'pack19SmokeThrow',row:0,cols:4,rows:2,frames:8,duration:.52,size:430}),
-  mineThrow:Object.freeze({asset:'pack20MineThrow',row:0,cols:4,rows:2,frames:8,duration:.58,size:430}),
+  grenadeThrow:Object.freeze({asset:'pack20GrenadeThrow',row:0,cols:4,rows:2,frames:8,duration:.58,size:430}),
   bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8,duration:.72,size:430})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
