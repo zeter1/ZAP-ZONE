@@ -426,6 +426,105 @@ function syncRocketFlightArt(){
     el.style.visibility='visible';
   }
 }
+
+const PLASMA_FLIGHT_VFX_LOOP=Object.freeze([4,5,6,7,8,9,10,11,9,7,5,6]);
+const plasmaFlightArtNodes=new Set();
+const plasmaFlightScreenPos=new THREE.Vector3();
+const plasmaFlightAheadPos=new THREE.Vector3();
+const plasmaFlightDir=new THREE.Vector3();
+const MAX_PLASMA_FLIGHT_ART=PERF_MODE?8:20;
+let plasmaFlightVisualSequence=0,plasmaFlightAssetState=0,plasmaFlightAssetProbe=null;
+function clearPlasmaFlightArt(){
+  for(const el of [...plasmaFlightArtNodes]){
+    if(el._plasmaRef)el._plasmaRef._plasmaFlightArt=null;
+    el.remove();plasmaFlightArtNodes.delete(el);
+  }
+}
+function initPlasmaFlightAssetProbe(){
+  if(plasmaFlightAssetState!==0||!GAME_PRESENTATION_ASSETS_ENABLED||typeof Image==='undefined'||!GAME_ASSETS.presentationVfx?.pack30PlasmaFlight)return;
+  plasmaFlightAssetState=1;
+  const probe=new Image();plasmaFlightAssetProbe=probe;
+  probe.onload=()=>{plasmaFlightAssetState=2;plasmaFlightAssetProbe=null;};
+  probe.onerror=()=>{plasmaFlightAssetState=-1;plasmaFlightAssetProbe=null;clearPlasmaFlightArt();};
+  probe.src=GAME_ASSETS.presentationVfx.pack30PlasmaFlight;
+}
+function plasmaFlightPresentationAvailable(){
+  if(plasmaFlightAssetState===0)initPlasmaFlightAssetProbe();
+  return plasmaFlightAssetState===2;
+}
+function plasmaFlightFrameIndex(b){
+  const maxLife=Math.max(.001,Number(b?.maxLife)||1);
+  const life=Math.max(0,Number(b?.life)||0);
+  const age=Math.max(0,maxLife-life),lifeRatio=Math.max(0,Math.min(1,life/maxLife));
+  if(age<.12)return Math.min(3,Math.floor(age/.03));
+  if(lifeRatio<.18)return 12+Math.min(3,Math.floor((.18-lifeRatio)/.045));
+  const phase=Number.isInteger(b?._plasmaFlightVfxPhase)?b._plasmaFlightVfxPhase:0;
+  return PLASMA_FLIGHT_VFX_LOOP[(Math.floor((age-.12)*18)+phase)%PLASMA_FLIGHT_VFX_LOOP.length];
+}
+function ensurePlasmaFlightArt(b,team='enemy'){
+  const layer=G('projectile-trail-layer');
+  if(!layer||!plasmaFlightPresentationAvailable()||typeof plasmaFlightPresentationFrame!=='function'||typeof applyPresentationAtlasFrame!=='function')return null;
+  if(b._plasmaFlightArt?.isConnected)return b._plasmaFlightArt;
+  if(plasmaFlightArtNodes.size>=MAX_PLASMA_FLIGHT_ART)return null;
+  const el=document.createElement('span');
+  el.className='plasma-flight-vfx '+(team==='ally'?'ally':'enemy');
+  el._plasmaRef=b;
+  b._plasmaFlightVfxPhase=(plasmaFlightVisualSequence++*3)%PLASMA_FLIGHT_VFX_LOOP.length;
+  layer.appendChild(el);plasmaFlightArtNodes.add(el);b._plasmaFlightArt=el;
+  return el;
+}
+function syncPlasmaFlightArt(){
+  const live=[];
+  for(const b of pBullets)if(b.wKey==='plasma')live.push([b,'ally']);
+  for(const b of eBullets)if(b.wKey==='plasma')live.push([b,b.team==='ally'?'ally':'enemy']);
+  const liveRefs=new Set(live.map(entry=>entry[0]));
+  for(const el of [...plasmaFlightArtNodes]){
+    if(liveRefs.has(el._plasmaRef))continue;
+    if(el._plasmaRef)el._plasmaRef._plasmaFlightArt=null;
+    el.remove();plasmaFlightArtNodes.delete(el);
+  }
+  if(!plasmaFlightPresentationAvailable()){
+    for(const el of plasmaFlightArtNodes)el.style.visibility='hidden';
+    return;
+  }
+  for(const [b,team] of live){
+    const pos=b.pos,existing=b._plasmaFlightArt?.isConnected?b._plasmaFlightArt:null;
+    if(!pos){if(existing)existing.style.visibility='hidden';continue;}
+    plasmaFlightScreenPos.copy(pos).project(camera);
+    const distance=Math.max(.1,camera.position.distanceTo(pos));
+    if(distance>112||plasmaFlightScreenPos.z<-1||plasmaFlightScreenPos.z>1||Math.abs(plasmaFlightScreenPos.x)>1.14||Math.abs(plasmaFlightScreenPos.y)>1.14){
+      if(existing)existing.style.visibility='hidden';continue;
+    }
+    if(typeof wallBetween==='function'&&wallBetween(camera.position,pos,losMeshes)){
+      if(existing)existing.style.visibility='hidden';continue;
+    }
+    plasmaFlightDir.copy(b.vel||_UP);
+    const speed=plasmaFlightDir.length();
+    if(speed<.001){if(existing)existing.style.visibility='hidden';continue;}
+    plasmaFlightDir.multiplyScalar(1/speed);
+    plasmaFlightAheadPos.copy(pos).addScaledVector(plasmaFlightDir,.9).project(camera);
+    const x=(plasmaFlightScreenPos.x*.5+.5)*innerWidth;
+    const y=(-plasmaFlightScreenPos.y*.5+.5)*innerHeight;
+    const ax=(plasmaFlightAheadPos.x*.5+.5)*innerWidth;
+    const ay=(-plasmaFlightAheadPos.y*.5+.5)*innerHeight;
+    const angle=Math.atan2(ay-y,ax-x)*180/Math.PI;
+    const size=Math.max(54,Math.min(152,190/(.82+distance*.045)));
+    const el=existing||ensurePlasmaFlightArt(b,team);
+    if(!el)continue;
+    const frameIndex=plasmaFlightFrameIndex(b);
+    if(b._plasmaFlightVfxFrame!==frameIndex){
+      applyPresentationAtlasFrame(el,plasmaFlightPresentationFrame(frameIndex));
+      b._plasmaFlightVfxFrame=frameIndex;
+    }
+    el.style.left=x.toFixed(1)+'px';el.style.top=y.toFixed(1)+'px';
+    el.style.setProperty('--plasma-flight-size',size.toFixed(1)+'px');
+    el.style.setProperty('--plasma-flight-rot',angle.toFixed(1)+'deg');
+    el.style.setProperty('--plasma-flight-opacity',Math.max(.62,Math.min(.98,1-distance/150)).toFixed(2));
+    el.style.visibility='visible';
+  }
+}
+initPlasmaFlightAssetProbe();
+
 const MAX_PLAYER_BULLETS=180;
 const MAX_ENEMY_BULLETS=260;
 const MAX_ACTIVE_ENEMY_TRACERS=PERF_MODE?28:62;
@@ -800,7 +899,8 @@ function shoot(){
   showGeneratedWeaponShotVfx(w.key);
   if(typeof showProjectileTrailFx==='function'){
     const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
-    if(trailKind)showProjectileTrailFx(trailKind);
+    const trackedPlasmaReady=trailKind==='plasma'&&typeof plasmaFlightPresentationAvailable==='function'&&plasmaFlightPresentationAvailable();
+    if(trailKind)showProjectileTrailFx(trailKind,!trackedPlasmaReady);
   }
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
@@ -1343,6 +1443,8 @@ function tickProjectiles(dt){
     }
     if(b.life<=0||b.travel>=b.range)destroyEnemyBullet(i);
   }
+
+  syncPlasmaFlightArt();
 
   for(let i=pTrs.length-1;i>=0;i--){
     const tr=pTrs[i];tr.life-=dt;

@@ -138,6 +138,7 @@ const generatedCombatVfxPack26Dimensions=new Map([
 const generatedCombatVfxPack27SvgAssets=['assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg','assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg'];
 const generatedRocketFlightPack28SvgAsset='assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg';
 const generatedSurfaceImpactPack29WebpAsset='assets/ui/fx/surface-impact-vfx-atlas-29.webp';
+const generatedPlasmaFlightPack30WebpAsset='assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp';
 const generatedSniperVfxPack23Dimensions=new Map([
   ['assets/ui/fx/sniper-shot-vfx-atlas-23.webp',[768,768]],
   ['assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',[768,768]],
@@ -386,6 +387,24 @@ for(const token of ['concreteImpact29','metalImpact29','techImpact29','heavyImpa
 const pack29Owner=pack29Settings.indexOf("function showGeneratedSurfaceImpactVfx(material,pos,variant='normal')"),pack29Primary=pack29Settings.indexOf('playGeneratedCombatVfx(primaryKind,options)',pack29Owner),pack29Fallback=pack29Settings.indexOf('playGeneratedCombatVfx(fallbackKind,options)',pack29Owner);
 if(pack29Owner<0||pack29Primary<pack29Owner||pack29Fallback<pack29Primary)fail('Pack 29 must prefer the new atlas and retain Pack 10 as graceful fallback');
 for(const token of ['spawnSpark(pos,sparkCol);','spawnSmoke(pos,wood?0x6e513b:metal?0x555c62:0x6b6259);'])if(!pack27Engine.includes(token))fail('Pack 29 must retain procedural wall-impact fallback: '+token);
+
+
+const pack30PlasmaFlightBytes=readFileSync(generatedPlasmaFlightPack30WebpAsset);
+if(pack30PlasmaFlightBytes.length>32*1024)fail('Pack 30 plasma-flight WebP exceeds 32 KiB budget');
+if(pack30PlasmaFlightBytes.length<30||pack30PlasmaFlightBytes.toString('ascii',0,4)!=='RIFF'||pack30PlasmaFlightBytes.toString('ascii',8,12)!=='WEBP'||pack30PlasmaFlightBytes.toString('ascii',12,16)!=='VP8X')fail('Pack 30 plasma-flight asset is not an extended WebP');
+const pack30Flags=pack30PlasmaFlightBytes[20]||0,pack30Width=1+pack30PlasmaFlightBytes.readUIntLE(24,3),pack30Height=1+pack30PlasmaFlightBytes.readUIntLE(27,3);
+if(!(pack30Flags&0x10))fail('Pack 30 plasma-flight WebP must retain alpha');
+if(pack30Width!==256||pack30Height!==256)fail('Pack 30 plasma-flight WebP must be exactly 256x256');
+for(const token of ["pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp'",'function plasmaFlightPresentationFrame'])if(!catalog.includes(token))fail('Pack 30 plasma-flight catalog wiring missing: '+token);
+for(const token of ['PLASMA_FLIGHT_VFX_LOOP','function initPlasmaFlightAssetProbe','function plasmaFlightPresentationAvailable','function ensurePlasmaFlightArt','function syncPlasmaFlightArt','plasmaFlightPresentationFrame(frameIndex)','wallBetween(camera.position,pos,losMeshes)','syncPlasmaFlightArt();'])if(!combatSource.includes(token))fail('Pack 30 plasma-flight runtime wiring missing: '+token);
+for(const token of ["function showProjectileTrailFx(kind='ballistic',visible=true)","const rotation=((Math.random()-.5)*5).toFixed(2)+'deg';","if(!visible)return;"])if(!pack29Settings.includes(token))fail('Pack 30 Pack-8 fallback/RNG compatibility missing: '+token);
+for(const token of ["const trackedPlasmaReady=trailKind==='plasma'","showProjectileTrailFx(trailKind,!trackedPlasmaReady)"])if(!combatSource.includes(token))fail('Pack 30 legacy plasma-trail fallback gate missing: '+token);
+for(const token of ['.plasma-flight-vfx{','.plasma-flight-vfx.ally{','.plasma-flight-vfx.enemy{'])if(!gameCss.includes(token))fail('Pack 30 plasma-flight CSS missing: '+token);
+for(const token of ["const m=mkTracer(color,w.key);","const m=visual?acquireEnemyTracer(w.key,color):null;"])if(!combatSource.includes(token))fail('Pack 30 must retain procedural Three.js plasma tracer fallback: '+token);
+const pack30TrackerStart=combatSource.indexOf('const PLASMA_FLIGHT_VFX_LOOP='),pack30TrackerEnd=combatSource.indexOf('const MAX_PLAYER_BULLETS=',pack30TrackerStart);
+if(pack30TrackerStart<0||pack30TrackerEnd<pack30TrackerStart||combatSource.slice(pack30TrackerStart,pack30TrackerEnd).includes('Math.random()'))fail('Pack 30 tracked presentation must not consume gameplay RNG');
+const pack30EnemyLoop=combatSource.indexOf('// Bot firearm projectiles use the same swept-segment principle as player bullets.'),pack30Sync=combatSource.indexOf('syncPlasmaFlightArt();',pack30EnemyLoop),pack30LegacyLoop=combatSource.indexOf('for(let i=pTrs.length-1;i>=0;i--){',pack30EnemyLoop);
+if(pack30EnemyLoop<0||pack30Sync<pack30EnemyLoop||pack30LegacyLoop<pack30Sync)fail('Pack 30 presentation must sync after authoritative player/enemy bullet simulation and before legacy transient trails');
 
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);

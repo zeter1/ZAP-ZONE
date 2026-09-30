@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated VFX Pack 30 — tracked plasma flight ion sheath
+- integrated the approved 4×4 plasma-flight source as a compact 256×256 alpha-WebP atlas with launch, sustained-flight and breakup/fade stages;
+- player and bot plasma bullets now receive a world-projected ion-sheath layer that follows the real projectile position/velocity, scales with distance and hides when off-screen or occluded;
+- added a bounded deterministic presentation phase with no new gameplay RNG; the old Pack 8 plasma trail remains the load/decode fallback and its historical RNG draw is preserved even when the overlay is suppressed;
+- retained the existing Three.js plasma tracer/core plus all projectile motion/drop, collision, damage, penetration, AI and impact behavior as authoritative fallback;
+- added exact VP8X alpha/dimension/byte-budget plus catalog/runtime/CSS/fallback structural validation.
+
 ### Generated VFX Pack 29 — high-fidelity surface impacts
 - integrated the approved 4×4 impact sheet as a cleaned 320×320 alpha-WebP atlas with concrete, metal, cyan tech-panel and heavy ballistic rows;
 - close/medium wall hits now prefer the new material-aware animation while wood/distant hits and load/playback failure retain Pack 10 as the graceful fallback;

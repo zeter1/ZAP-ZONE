@@ -865,13 +865,15 @@ function showWeaponSwitchSwipe(){
   clearTimeout(weaponSwitchSwipeTimer);
   weaponSwitchSwipeTimer=setTimeout(()=>el.classList.remove('on'),360);
 }
-function showProjectileTrailFx(kind='ballistic'){
+function showProjectileTrailFx(kind='ballistic',visible=true){
   const layer=byId('projectile-trail-layer'),frame=projectileTrailPresentationFrame(kind);
   if(!layer||!frame)return;
+  const rotation=((Math.random()-.5)*5).toFixed(2)+'deg';
+  if(!visible)return;
   const el=document.createElement('span');
   el.className='projectile-trail-fx '+kind;
   applyPresentationAtlasFrame(el,frame);
-  el.style.setProperty('--trail-rot',((Math.random()-.5)*5).toFixed(2)+'deg');
+  el.style.setProperty('--trail-rot',rotation);
   layer.appendChild(el);
   setTimeout(()=>el.remove(),260);
 }
