@@ -7,7 +7,7 @@
 - reused the existing Pack 22 first-person action owner, keeping playback elapsed-time driven and avoiding a second animation pipeline;
 - synchronized rocket art to the authoritative reload timer and suppresses only the generic magazine-drop fallback while the full action is available;
 - starts the mine throw presentation only after the real mine is spawned, preserving ammo, cooldown, trajectory, arming, damage and gameplay RNG;
-- added Pack 24 alpha/dimension/byte-budget validation, runtime catalog wiring and provenance documentation.
+- added Pack 24 alpha/dimension/byte-budget validation, runtime catalog wiring and provenance documentation; narrowed legacy Pack 10/20 structural oracles so they verify the new rocket fallback and grenade-vs-mine boundaries instead of rejecting the Pack 24 helpers by name.
 
 ### Sniper VFX Asset Pack 23 — muzzle, smoke, bullet wake and casing fallback
 - integrated five newly approved SR-9 source sheets as three compact alpha-WebP runtime atlases (~301 KiB total) instead of shipping ~6.4 MiB of source PNGs;

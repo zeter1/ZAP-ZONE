@@ -1251,7 +1251,7 @@ for(const token of [
   'function showGeneratedMagazineDropFx','function showGeneratedSurfaceImpactVfx','function showGeneratedNearMissFx',
   'tickGeneratedCombatVfx(safeDt)','showGeneratedNearMissFx(source,pressure)'
 ])if(!settings.includes(token))fail('generated combat VFX runtime contract missing: '+token);
-for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullRifleReload)showGeneratedMagazineDropFx(w.key)"]){
+for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key)"]){
   if(!combat.includes(token))fail('generated combat VFX player consumer missing: '+token);
 }
 if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');
@@ -1481,7 +1481,8 @@ for(const token of ['function showGeneratedGrenadeThrowVfx','function showGenera
 for(const token of ["weaponDef('grenade','ОСКОЛОЧНАЯ ГРАНАТА'","isGrenade:true","const GRENADE_WEAPON_INDEX","grenade:{width:'50vw'","function weaponSlotKeyLabel(i)"])if(!weapons.includes(token))fail('player frag-grenade weapon contract missing: '+token);
 for(const token of ["Digit0","Numpad0","function throwFragGrenade()","activePlayerFragGrenades()","ownerType:'player'","showGeneratedGrenadeThrowVfx();","if(w.isGrenade){throwFragGrenade();return;}"])if(!combat.includes(token))fail('player frag-grenade combat contract missing: '+token);
 if(!combat.includes("const ownerType=g.ownerType||'bot'")||!combat.includes("applyBlastDamage(pos,g.radius,g.dmg,ownerType"))fail('frag grenade detonation must preserve player/bot ownership');
-if(combat.includes('showGeneratedMineThrowVfx'))fail('pack 20 grenade animation must not be wired to the mine');
+const pack20MineOwner=combat.indexOf('function throwMine(){'),pack20MineEnd=combat.indexOf('function placeBomb(){',pack20MineOwner);
+if(pack20MineOwner>=0&&pack20MineEnd>pack20MineOwner&&combat.slice(pack20MineOwner,pack20MineEnd).includes('showGeneratedGrenadeThrowVfx'))fail('pack 20 grenade animation must not be wired to the mine');
 const pack20GrenadeOwner=combat.indexOf('function throwFragGrenade(){'),pack20GrenadePush=combat.indexOf("ownerType:'player'",pack20GrenadeOwner),pack20GrenadeFx=combat.indexOf("showGeneratedGrenadeThrowVfx();",pack20GrenadePush);
 if(pack20GrenadeOwner<0||pack20GrenadePush<pack20GrenadeOwner||pack20GrenadeFx<pack20GrenadePush)fail('pack 20 grenade-throw VFX must decorate a successfully spawned player grenade');
 const pack20BombOwner=combat.indexOf('function placeBomb(){'),pack20BombPush=combat.indexOf("kind:'bomb'",pack20BombOwner),pack20BombFx=combat.indexOf("showGeneratedBombArmVfx();",pack20BombPush);
