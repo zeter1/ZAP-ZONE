@@ -68,7 +68,7 @@ function mkHpMesh(){
 const WORLD_PICKUP_ART_TUNING=Object.freeze({
   pistol:{maxPx:118,minPx:30,y:.18},shotgun:{maxPx:148,minPx:34,y:.20},rifle:{maxPx:154,minPx:34,y:.20},
   rocket:{maxPx:158,minPx:36,y:.20},plasma:{maxPx:150,minPx:34,y:.20},mine:{maxPx:100,minPx:28,y:.15},
-  bomb:{maxPx:112,minPx:30,y:.16},smoke:{maxPx:84,minPx:26,y:.18},sniper:{maxPx:166,minPx:36,y:.20}
+  bomb:{maxPx:112,minPx:30,y:.16},smoke:{maxPx:84,minPx:26,y:.18},sniper:{maxPx:166,minPx:36,y:.20},grenade:{maxPx:98,minPx:28,y:.16}
 });
 const WORLD_MEDKIT_PICKUP_ART_TUNING=Object.freeze({maxPx:92,minPx:26,y:.16});
 const _worldPickupArtPos=new THREE.Vector3(),_worldPickupArtDir=new THREE.Vector3(),_worldPickupArtScreen=new THREE.Vector3();
@@ -82,7 +82,7 @@ function hideWorldPickupArt(entry){
 }
 function pickupBeaconKindForWeapon(key){
   if(['rocket','sniper','bomb'].includes(key))return 'heavy';
-  if(['mine','smoke'].includes(key))return 'utility';
+  if(['mine','smoke','grenade'].includes(key))return 'utility';
   return 'weapon';
 }
 function createWorldPickupBeacon(layer,kind){
@@ -164,7 +164,7 @@ function syncWorldWeaponPickupArt(){
 }
 
 const WEAPON_SPAWN_PTS=AMO_PTS.slice();
-const WORLD_WEAPON_COPIES=Object.freeze({pistol:2,shotgun:2,rifle:3,rocket:2,plasma:2,mine:1,bomb:1,smoke:1,sniper:2});
+const WORLD_WEAPON_COPIES=Object.freeze({pistol:2,shotgun:2,rifle:3,rocket:2,plasma:2,mine:1,bomb:1,smoke:1,sniper:2,grenade:1});
 const WORLD_WEAPON_KEYS=WEAPONS.flatMap(w=>Array(WORLD_WEAPON_COPIES[w.key]||1).fill(w.key));
 function mkWeaponPickupMesh(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0],g=new THREE.Group();
@@ -292,7 +292,7 @@ function tickPickups(dt){
       if(!result)continue;
       pk.cd=.8;pk.m.visible=false;
       if(typeof showGeneratedPickupCollectionVfx==='function')showGeneratedPickupCollectionVfx(pk);
-      pk.respawn=(w.isRocket||w.isBomb||w.isSniper?20:14)+Math.random()*14;
+      pk.respawn=(w.isRocket||w.isBomb||w.isSniper||w.isGrenade?20:14)+Math.random()*14;
       updateMineHUD();updateWeaponBar();wHUD();
       const pickupIcon=GAME_ASSETS.generatedWorldWeaponPickups[w.key]||w.asset;
       if(result.first)showPickupNotification(pickupIcon,w.asset,'НОВОЕ ОРУЖИЕ',w.label+' · +'+result.added+' патронов','gold');
