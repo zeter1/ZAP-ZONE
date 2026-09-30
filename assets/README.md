@@ -1,3 +1,8 @@
+## Pack 28 consumers
+The approved rocket-flight source is integrated as `ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg`, a compact static 4×3 / 12-frame transparent atlas. `src/combat/combat.js` projects it from each live player/bot rocket into the existing projectile presentation layer, aligns the plume opposite the projected velocity and scales it by camera distance.
+
+Pack 28 is presentation-only and deterministic. Off-screen/occluded overlays are hidden; the existing Three.js rocket body, additive procedural exhaust, smoke/spark particles, physics, collision, damage and explosion remain authoritative/fallback.
+
 ## Pack 27 consumers
 Two newly approved generated VFX sources are integrated as compact scriptless SVG atlases: `ui/fx/player-respawn-gate-vfx-atlas-27.svg` (3×2 / 6 frames) and `ui/fx/terminal-electrical-arc-vfx-atlas-27.svg` (5×2 / 10 frames).
 
