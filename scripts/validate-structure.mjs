@@ -100,6 +100,7 @@ const generatedTacticalHudV2WebpAssets=[
   'assets/ui/weapons/weapon-switch-swipe-atlas-01.webp','assets/ui/bots/bot-overhead-frame-atlas-01.webp',
   'assets/ui/feedback/combo-meter-atlas-01.webp','assets/ui/pickups/pickup-beacon-atlas-01.webp'
 ];
+const generatedCombatVfxAtlas='assets/ui/fx/combat-vfx-atlas-10.webp';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -127,7 +128,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -1151,3 +1152,37 @@ for(const [file,tokens] of new Map([
  ['src/combat/combat.js',['equipmentReadinessPresentationFrame','equipment-ready-art']],
  ['src/game/runtime.js',['allyCalloutPresentationFrame','syncGeneratedMobileControlArt']]
 ])){const source=readFileSync(file,'utf8');for(const token of tokens)if(!source.includes(token))fail('generated tactical HUD v3 runtime wiring missing: '+file+' -> '+token);}
+
+
+{
+  const file=generatedCombatVfxAtlas,bytes=readFileSync(file);
+  if(bytes.length>128*1024)fail('generated combat VFX atlas exceeds 128 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('generated combat VFX atlas must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  if(width!==448||height!==560)fail('generated combat VFX atlas dimensions invalid: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('generated combat VFX atlas alpha flag missing: '+file);
+}
+for(const token of [
+  'presentationVfx:Object.freeze',"combatAtlas:'assets/ui/fx/combat-vfx-atlas-10.webp'",
+  'const GENERATED_COMBAT_VFX_SPECS=Object.freeze','rocketBackblast:Object.freeze({row:0,frames:6',
+  'sniperPressure:Object.freeze({row:1,frames:6','shotgunMuzzle:Object.freeze({row:2,frames:8',
+  'brassCasing:Object.freeze({row:3,frames:8','shotgunShell:Object.freeze({row:4,frames:6',
+  'magazineDrop:Object.freeze({row:5,frames:8','concreteImpact:Object.freeze({row:6,frames:8',
+  'metalImpact:Object.freeze({row:7,frames:8','woodImpact:Object.freeze({row:8,frames:5',
+  'nearMiss:Object.freeze({row:9,frames:5','function generatedCombatVfxSpec','function generatedCombatVfxFrame'
+])if(!catalog.includes(token))fail('generated combat VFX catalog contract missing: '+token);
+for(const token of [
+  'const generatedCombatVfx=[]','GENERATED_COMBAT_VFX_LIMIT','function playGeneratedCombatVfx',
+  'function tickGeneratedCombatVfx','function showGeneratedWeaponShotVfx','function showGeneratedCasingFx',
+  'function showGeneratedMagazineDropFx','function showGeneratedSurfaceImpactVfx','function showGeneratedNearMissFx',
+  'tickGeneratedCombatVfx(safeDt)','showGeneratedNearMissFx(source,pressure)'
+])if(!settings.includes(token))fail('generated combat VFX runtime contract missing: '+token);
+for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell')showGeneratedMagazineDropFx(w.key)"]){
+  if(!combat.includes(token))fail('generated combat VFX player consumer missing: '+token);
+}
+if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');
+if(!engine.includes("showGeneratedSurfaceImpactVfx(material,pos)"))fail('generated material impact presentation hook missing');
+for(const token of ['.generated-combat-vfx-layer','.generated-combat-vfx','data-kind="brassCasing"','data-kind="sniperPressure"']){
+  if(!gameCss.includes(token))fail('generated combat VFX CSS contract missing: '+token);
+}

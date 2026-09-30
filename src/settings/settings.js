@@ -284,6 +284,7 @@ function registerPlayerSuppression(source,weapon=null,closestPoint=null,closestD
   playWhizSound(closestPoint||source,.42+proximity*.64);
   if(sniper)playSniperCrack(null,.72+proximity*.46,true);
   showThreatDirection(source,sniper?'sniper':'bullet',.55+proximity*.55);
+  showGeneratedNearMissFx(source,pressure);
   if(typeof gunSwayX==='number')gunSwayX=Math.max(-.055,Math.min(.055,gunSwayX+(Math.random()-.5)*.010*pressure));
   if(typeof gunSwayY==='number')gunSwayY=Math.max(-.045,Math.min(.045,gunSwayY+(Math.random()-.5)*.008*pressure));
   triggerScreenShake(.045+pressure*.075,.065+pressure*.045);
@@ -465,6 +466,7 @@ function triggerScreenShake(power=.3,duration=.12){
 }
 function tickGamePresentation(dt,ts){
   const safeDt=Math.max(0,Math.min(.05,Number(dt)||0)),fps=byId('fps-counter');
+  tickGeneratedCombatVfx(safeDt);
   playerSuppression=Math.max(0,playerSuppression-safeDt*(playerSuppression>.85?.34:.52));
   playerSuppressionPulse=Math.max(0,playerSuppressionPulse-safeDt*1.35);
   const suppressionReticle=byId('xhair');
@@ -526,6 +528,87 @@ ensureGeneratedCombatPresentation();
 bindGameSettings();
 
 
+
+const generatedCombatVfx=[];
+const GENERATED_COMBAT_VFX_LIMIT=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?8:18;
+function ensureGeneratedCombatVfxLayer(){
+  let layer=byId('generated-combat-vfx-layer');if(layer)return layer;
+  const root=byId('ui');if(!root)return null;
+  layer=document.createElement('div');layer.id='generated-combat-vfx-layer';
+  layer.className='generated-combat-vfx-layer';layer.setAttribute('aria-hidden','true');
+  root.insertBefore(layer,root.firstChild);return layer;
+}
+function removeGeneratedCombatVfx(item){
+  if(!item)return;
+  item.el?.remove();
+  const index=generatedCombatVfx.indexOf(item);if(index>=0)generatedCombatVfx.splice(index,1);
+}
+function playGeneratedCombatVfx(kind,options={}){
+  const spec=typeof generatedCombatVfxSpec==='function'?generatedCombatVfxSpec(kind):null;
+  const first=typeof generatedCombatVfxFrame==='function'?generatedCombatVfxFrame(kind,0):null;
+  const layer=ensureGeneratedCombatVfxLayer();
+  if(!spec||!first||!layer)return false;
+  while(generatedCombatVfx.length>=GENERATED_COMBAT_VFX_LIMIT)removeGeneratedCombatVfx(generatedCombatVfx[0]);
+  const el=document.createElement('span');el.className='generated-combat-vfx';el.dataset.kind=kind;
+  el.style.width=spec.size+'px';el.style.height=spec.size+'px';applyPresentationAtlasFrame(el,first);layer.appendChild(el);
+  const worldPos=options.worldPos?.clone?options.worldPos.clone():null;
+  const item={el,kind,spec,age:0,frame:-1,worldPos,screen:worldPos&&typeof THREE!=='undefined'?new THREE.Vector3():null,
+    anchor:options.anchor||'center',rotation:Number(options.rotation)||0,scale:Math.max(.35,Number(options.scale)||1)};
+  generatedCombatVfx.push(item);positionGeneratedCombatVfx(item);return true;
+}
+function positionGeneratedCombatVfx(item){
+  const el=item?.el;if(!el)return;
+  let x=innerWidth*.5,y=innerHeight*.48,scale=item.scale;
+  if(item.worldPos&&item.screen&&typeof camera!=='undefined'){
+    item.screen.copy(item.worldPos).project(camera);
+    if(item.screen.z<=-1||item.screen.z>=1||Math.abs(item.screen.x)>1.18||Math.abs(item.screen.y)>1.18){el.style.visibility='hidden';return;}
+    x=(item.screen.x*.5+.5)*innerWidth;y=(-item.screen.y*.5+.5)*innerHeight;
+    const dist=camera.position.distanceTo(item.worldPos);scale*=Math.max(.48,Math.min(1.08,12/Math.max(7,dist)));
+  }else{
+    const stage=byId('fp-weapon-art-stage'),flash=byId('fp-weapon-flash');
+    if(item.anchor==='muzzle'&&flash){const r=flash.getBoundingClientRect();x=r.left+r.width*.50;y=r.top+r.height*.50;}
+    else if((item.anchor==='ejection'||item.anchor==='magazine')&&stage){
+      const r=stage.getBoundingClientRect();x=r.left+r.width*(item.anchor==='magazine'?.68:.58);y=r.top+r.height*(item.anchor==='magazine'?.64:.38);
+    }
+  }
+  el.style.visibility='visible';el.style.left=x.toFixed(1)+'px';el.style.top=y.toFixed(1)+'px';
+  el.style.setProperty('--vfx-rot',item.rotation.toFixed(2)+'deg');el.style.setProperty('--vfx-scale',scale.toFixed(3));
+}
+function tickGeneratedCombatVfx(dt){
+  const safeDt=Math.max(0,Math.min(.05,Number(dt)||0));
+  for(let i=generatedCombatVfx.length-1;i>=0;i--){
+    const item=generatedCombatVfx[i];item.age+=safeDt;
+    const progress=Math.max(0,Math.min(1,item.age/Math.max(.001,item.spec.duration)));
+    const frame=Math.min(item.spec.frames-1,Math.floor(progress*item.spec.frames));
+    if(frame!==item.frame){applyPresentationAtlasFrame(item.el,generatedCombatVfxFrame(item.kind,frame));item.frame=frame;}
+    item.el.style.opacity=String(progress>.78?Math.max(0,(1-progress)/.22):1);positionGeneratedCombatVfx(item);
+    if(progress>=1)removeGeneratedCombatVfx(item);
+  }
+}
+function showGeneratedWeaponShotVfx(weaponKey){
+  if(weaponKey==='rocket')return playGeneratedCombatVfx('rocketBackblast',{anchor:'muzzle',scale:1.06});
+  if(weaponKey==='sniper')return playGeneratedCombatVfx('sniperPressure',{anchor:'muzzle',scale:1.02});
+  if(weaponKey==='shotgun')return playGeneratedCombatVfx('shotgunMuzzle',{anchor:'muzzle',scale:1.04});
+  return false;
+}
+function showGeneratedCasingFx(isShotgun=false){return playGeneratedCombatVfx(isShotgun?'shotgunShell':'brassCasing',{anchor:'ejection',rotation:(Math.random()-.5)*24,scale:isShotgun?1.02:.96});}
+function showGeneratedMagazineDropFx(weaponKey){
+  if(!['pistol','rifle','plasma','sniper'].includes(weaponKey))return false;
+  return playGeneratedCombatVfx('magazineDrop',{anchor:'magazine',rotation:(Math.random()-.5)*18,scale:.94});
+}
+function showGeneratedSurfaceImpactVfx(material,pos){
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?72:28;
+  if(now-(showGeneratedSurfaceImpactVfx._last||-999)<minGap)return false;
+  showGeneratedSurfaceImpactVfx._last=now;
+  const kind=material==='metal'?'metalImpact':material==='wood'?'woodImpact':'concreteImpact';
+  return playGeneratedCombatVfx(kind,{worldPos:pos,rotation:(Math.random()-.5)*16,scale:material==='metal'?1.04:1});
+}
+function showGeneratedNearMissFx(source,pressure=.6){
+  const strength=Math.max(.45,Math.min(1.18,Number(pressure)||.6));
+  return playGeneratedCombatVfx('nearMiss',{anchor:'center',rotation:combatBearingDegrees(source),scale:.74+strength*.28});
+}
+
+// Generated Asset Pack 10 — time-based one-shot VFX atlas; procedural effects remain fallback.
 // Generated Asset Pack 8 — transient DOM-only presentation helpers.
 let weaponSwitchSwipeTimer=0;
 function showWeaponSwitchSwipe(){

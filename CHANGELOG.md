@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 10 — animated combat VFX atlas
+- добавлены 10 новых логических one-shot анимаций: backblast ракетницы, pressure blast SR-9, дымовой blast дробовика, латунная гильза, shotgun shell, падающий магазин, concrete/metal/wood impacts и directional near-miss streak;
+- все десять последовательностей упакованы в один 8×10 alpha-WebP mega-atlas 448×560 (56×56 на кадр), чтобы браузер делал один запрос/декод вместо десяти отдельных runtime-файлов;
+- эффекты подключены к реальным player-shot, reload, casing-cycle, wall-impact и suppression events; кадры выбираются по elapsed time, DOM-узлы ограничены бюджетом и удаляются после one-shot;
+- существующие procedural Three.js/CSS эффекты остаются authoritative fallback, gameplay/balance не менялись, generated raster не возвращается в persistent WebGL texture planes;
+- structural validation проверяет VP8X alpha, размер/вес atlas, catalog/runtime/CSS wiring; dual-runtime HTTP(S)/uCoz + прямой file:// сохранён.
+
 ### Generated Asset Pack 9 — vector tactical feedback
 - aligned stale structural regression oracles with the current bot overhead-fill and respawn-countdown DOM contracts so validation checks the intended behavior rather than the old implementation shape;
 - added ten new generated-direction SVG runtime assets for match deployment, Frontline retarget/capture, Second Wind, dodge feedback, perk paths, equipment readiness, ally tactical callouts, pause presentation and mobile controls;

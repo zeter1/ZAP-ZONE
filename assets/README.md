@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 10 consumers
+Ten generated one-shot combat animations are packed into `ui/fx/combat-vfx-atlas-10.webp` as a uniform 8×10 alpha-WebP atlas. Rows represent rocket backblast, SR-9 pressure blast, shotgun muzzle smoke, brass casing, shotgun shell, magazine drop, concrete/metal/wood impacts and near-miss air streak.
+
+Ownership: `src/assets/catalog.js` stores row/frame/duration metadata; `src/settings/settings.js` owns elapsed-time DOM playback, projection, budgets and cleanup; `src/combat/combat.js` emits local-player shot/reload/casing events; `src/game/runtime.js` emits pump/bolt ejection; `src/core/engine.js` emits material-impact presentation. Procedural feedback remains fallback and the generated atlas never becomes persistent Three.js texture geometry.
+
 ## Pack 9 consumers
 The 2026-09-30 pack adds ten SVG runtime derivatives for match deployment, Frontline retarget/capture presentation, Second Wind, dodge feedback, perk-path identity, equipment readiness, ally tactical callouts, pause presentation and mobile controls. Geometric generated art now uses the contact sheet as visual source and commits lightweight SVG derivatives instead of unnecessary raster crops.
 

@@ -754,6 +754,7 @@ function releaseImpactMark(m){
 }
 function wallImpact(pos,col,material='concrete',normal=null){
   const metal=material==='metal',wood=material==='wood';
+  if(typeof showGeneratedSurfaceImpactVfx==='function')showGeneratedSurfaceImpactVfx(material,pos);
   const sparkCount=metal?7:wood?1:3;
   const sparkCol=metal?0xfff1b8:wood?0xd8a064:col;
   for(let i=0;i<sparkCount;i++)spawnSpark(pos,sparkCol);

@@ -718,6 +718,7 @@ function shoot(){
   // Muzzle flash
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
   trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1);
+  showGeneratedWeaponShotVfx(w.key);
   if(typeof showProjectileTrailFx==='function'){
     const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
     if(trailKind)showProjectileTrailFx(trailKind);
@@ -725,6 +726,7 @@ function shoot(){
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
     ejectCasing(casingPos,camera.quaternion,false);
+    showGeneratedCasingFx(false);
   }
 
   if(w.isRocket){
@@ -777,6 +779,7 @@ function doReload(){
     reloadT=Math.max(.30,w.reload*mult);
   }
   reloadTot=reloadT;
+  if(reloadMode!=='shell')showGeneratedMagazineDropFx(w.key);
   const reloadArt=G('reload-state-art');
   if(reloadArt&&typeof applyPresentationAtlasFrame==='function')applyPresentationAtlasFrame(reloadArt,reloadPresentationFrame(reloadMode));
   playWeaponMechanicSound('reload',1,w.key);

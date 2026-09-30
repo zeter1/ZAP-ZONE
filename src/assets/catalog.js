@@ -195,6 +195,11 @@ const GAME_ASSETS=versionAssetTree({
     sprint:'assets/ui/overlays/sprint-speed-lines-01.webp',
     respawn:'assets/ui/overlays/respawn-materialize-01.webp'
   }),
+  // Generated Asset Pack 10 — ten logical one-shot combat animations packed into
+  // one uniform alpha-WebP atlas. Playback remains DOM-only and frame-time driven.
+  presentationVfx:Object.freeze({
+    combatAtlas:'assets/ui/fx/combat-vfx-atlas-10.webp'
+  }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
   presentationHud:Object.freeze({
@@ -350,6 +355,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.presentationStatus),
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
+  ...Object.values(GAME_ASSETS.presentationVfx),
   ...Object.values(GAME_ASSETS.presentationHud),
   ...Object.values(GAME_ASSETS.presentationHudV2),
   ...Object.values(GAME_ASSETS.presentationHudV3),
@@ -580,4 +586,24 @@ function allyCalloutPresentationFrame(kind){
 function mobileControlPresentationFrame(kind){
   const col={fire:0,jump:1,sprint:2,reload:3,mine:4,next:5}[kind];
   return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.mobileControls,col,0,6,1):null;
+}
+
+
+const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
+  rocketBackblast:Object.freeze({row:0,frames:6,duration:.40,size:168}),
+  sniperPressure:Object.freeze({row:1,frames:6,duration:.30,size:158}),
+  shotgunMuzzle:Object.freeze({row:2,frames:8,duration:.46,size:176}),
+  brassCasing:Object.freeze({row:3,frames:8,duration:.54,size:76}),
+  shotgunShell:Object.freeze({row:4,frames:6,duration:.56,size:86}),
+  magazineDrop:Object.freeze({row:5,frames:8,duration:.72,size:104}),
+  concreteImpact:Object.freeze({row:6,frames:8,duration:.50,size:112}),
+  metalImpact:Object.freeze({row:7,frames:8,duration:.38,size:116}),
+  woodImpact:Object.freeze({row:8,frames:5,duration:.46,size:118}),
+  nearMiss:Object.freeze({row:9,frames:5,duration:.25,size:170})
+});
+function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
+function generatedCombatVfxFrame(kind,index=0){
+  const spec=generatedCombatVfxSpec(kind);if(!spec)return null;
+  const frame=Math.max(0,Math.min(spec.frames-1,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.combatAtlas,frame,spec.row,8,10);
 }

@@ -1,5 +1,23 @@
 # Asset pipeline — ZAP ZONE
 
+## Generated Asset Pack 10 (2026-09-30)
+Runtime file:
+- `assets/ui/fx/combat-vfx-atlas-10.webp` — единый 8×10 alpha-WebP mega-atlas 448×560, cell 56×56, <=128 KiB.
+
+Логические rows/consumers:
+- row 0 · `rocket-backblast-sheet-01` · 6 frames → player rocket shot / muzzle anchor;
+- row 1 · `sniper-pressure-blast-sheet-01` · 6 frames → player SR-9 shot / muzzle anchor;
+- row 2 · `shotgun-muzzle-smoke-sheet-01` · 8 frames → player shotgun shot / muzzle anchor;
+- row 3 · `brass-casing-spin-sheet-01` · 8 frames → player pistol/rifle + SR-9 bolt ejection;
+- row 4 · `shotgun-shell-spin-sheet-01` · 6 frames → player pump-cycle ejection;
+- row 5 · `magazine-drop-sheet-01` · 8 frames → non-shell pistol/rifle/plasma/SR-9 reload;
+- row 6 · `concrete-impact-burst-sheet-01` · 8 frames → concrete `wallImpact`;
+- row 7 · `metal-impact-sparks-sheet-01` · 8 frames → metal `wallImpact`;
+- row 8 · `wood-impact-splinter-sheet-01` · 5 frames → wood `wallImpact`;
+- row 9 · `near-miss-air-streak-sheet-01` · 5 frames → player suppression/near-miss event.
+
+Pack 10 intentionally stores ten semantic animations in one physical atlas. The catalog owns row/frame/duration metadata; `src/settings/settings.js` owns bounded DOM playback and cleanup; combat/runtime/engine only emit presentation hooks from existing authoritative events. Playback is elapsed-time based, not callback-count based. Procedural muzzle, casing, wall-impact and suppression feedback remains fallback, and the atlas is never passed to `TextureLoader`, `makeAssetPlane` or `makeAssetSprite`.
+
 ## Generated Asset Pack 9 (2026-09-30)
 Runtime paths:
 - `assets/ui/feedback/match-deploy-splash-tech-01.svg` — first match deployment splash.
@@ -125,6 +143,8 @@ Background/photo-like art: WebP/JPEG. Простые векторные fallback
 ## 2.1. Animated generated assets — canonical browser workflow
 
 Для transient VFX и других коротких анимаций основной generated source по умолчанию — **sprite sheet / texture atlas с alpha**, а не GIF и не набор отдельных PNG-файлов.
+
+Если несколько related one-shot VFX используют одинаковую сетку и общий lifecycle, предпочтителен **один uniform mega-atlas**: одна строка/регион на semantic effect + metadata `row/frameCount/duration`. Это уменьшает request/decode churn и сохраняет отдельные gameplay consumers. Pack 10 — текущий reference: 10 logical effects → один 8×10 WebP atlas.
 
 Почему:
 - один atlas уменьшает количество HTTP/file requests и декодирований;

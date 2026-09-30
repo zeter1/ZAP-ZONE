@@ -198,6 +198,7 @@ function loop(ts){
     if(cycleT>0&&!cycleEjected&&cycleP>.38&&(cycleKind==='pump'||cycleKind==='bolt')){
       const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
       ejectCasing(casingPos,camera.quaternion,cycleKind==='pump');
+      showGeneratedCasingFx(cycleKind==='pump');
       cycleEjected=true;
     }
     const pumpZ=cycleKind==='pump'?cycleWave*.11:0;
