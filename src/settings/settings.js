@@ -615,6 +615,24 @@ function showGeneratedPlasmaImpactVfx(pos){
 function showGeneratedPlasmaReloadVfx(){
   return playGeneratedCombatVfx('plasmaReload',{anchor:'magazine',rotation:0,scale:1});
 }
+function showGeneratedRicochetVfx(pos,surface='concrete'){
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?58:24;
+  if(now-(showGeneratedRicochetVfx._last||-999)<minGap)return false;
+  showGeneratedRicochetVfx._last=now;
+  return playGeneratedCombatVfx('ricochet',{worldPos:pos,rotation:(Math.random()-.5)*(surface==='metal'?18:34),scale:surface==='metal'?1.08:.96});
+}
+function showGeneratedPenetrationExitVfx(pos,surface='concrete'){
+  return playGeneratedCombatVfx('penetrationExit',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:surface==='wood'?.94:1});
+}
+function showGeneratedSmokeDeployVfx(pos){
+  return playGeneratedCombatVfx('smokeDeploy',{worldPos:pos,rotation:(Math.random()-.5)*8,scale:1.02});
+}
+function showGeneratedMineDetonationVfx(pos){
+  return playGeneratedCombatVfx('mineDetonation',{worldPos:pos,rotation:(Math.random()-.5)*8,scale:1.02});
+}
+function showGeneratedBombDetonationVfx(pos){
+  return playGeneratedCombatVfx('bombDetonation',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.08});
+}
 function showGeneratedNearMissFx(source,pressure=.6){
   const strength=Math.max(.45,Math.min(1.18,Number(pressure)||.6));
   return playGeneratedCombatVfx('nearMiss',{anchor:'center',rotation:combatBearingDegrees(source),scale:.74+strength*.28});

@@ -16,6 +16,17 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 12 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-12/` are integrated into one static-frame runtime atlas:
+- `assets/ui/fx/combat-vfx-atlas-12.svg` — 8×5 / 40-frame mega-atlas;
+- row 0: ricochet spark fan;
+- row 1: wall-penetration exit debris;
+- row 2: smoke deployment bloom;
+- row 3: mine shrapnel detonation;
+- row 4: bomb pressure-core detonation.
+
+The atlas is scriptless and has no internal SVG animation. `generatedCombatVfxFrame(...)` now supports a row offset for shared static atlases, while playback remains elapsed-time driven and bounded by the existing Pack 10/11 DOM VFX budget. Player and bot ricochets/penetrations share the same presentation hooks; smoke bloom decorates only cloud deployment; mine/bomb effects decorate existing detonation events. Physics, damage, fuse, smoke density/LOS and audio stay authoritative in current gameplay code, with all procedural presentation retained as fallback.
+
 ## Generated Asset Pack 11 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-11/` are now integrated.
 

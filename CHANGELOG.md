@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 12 — ricochet, penetration, smoke and explosive VFX
+- approved all five candidates from `asset-staging/2026-09-30-vfx-pack-12/` and integrated them into real gameplay events;
+- added one deterministic scriptless 8×5 static-frame SVG mega-atlas for ricochet sparks, penetration exit debris, smoke deployment bloom, mine shrapnel detonation and bomb pressure-core detonation;
+- player and bot projectile paths both emit the new ricochet/penetration presentation, while smoke/mine/bomb VFX attach to the existing authoritative deploy/detonation events;
+- projectile physics, damage, blast radius, fuse timers, smoke LOS/density and audio are unchanged; existing procedural effects remain fallback and generated art stays DOM-only;
+- structural validation now checks atlas dimensions/frame count/byte budget, static SVG safety, catalog/player/consumer wiring and dual-runtime build stamping.
+
 ### Generated Asset Pack 11 — explosion, plasma impact and reload VFX
 - approved the three candidates from `asset-staging/2026-09-30-vfx-pack-11/` and integrated them into real gameplay events instead of leaving staging art unused;
 - added deterministic static-frame SVG sprite atlases for rocket detonation, plasma impact and plasma reload energy-lock, played through the existing bounded elapsed-time VFX player;

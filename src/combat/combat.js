@@ -217,6 +217,7 @@ function deploySmokeCloud(pos,radiusM=1,durationM=1,team=null){
   }
   scene.add(group);
   smokeClouds.push({m:group,center:new THREE.Vector3(pos.x,1.6,pos.z),radius,life:duration,maxLife:duration,age:0,puffs,density:0,team});
+  showGeneratedSmokeDeployVfx(group.position);
   if(!team)showMsg('🌫️ Дымовое облако развёрнуто на '+Math.round(duration)+' сек.');
 }
 const _smokeAB=new THREE.Vector3(),_smokeAC=new THREE.Vector3(),_smokeClosest=new THREE.Vector3();
@@ -1083,6 +1084,7 @@ function tickProjectiles(dt){
       if(pen){
         playSurfaceImpactSound(surface,_hitPos,.62,false);
         wallImpact(pen.exitPoint,b.color,surface,n?n.clone().negate():null);
+        showGeneratedPenetrationExitVfx(pen.exitPoint,surface);
         b.pos.copy(pen.exitPoint).addScaledVector(_stepDir,.08);
         b.vel.multiplyScalar(pen.speedRetention);b.damageScale*=pen.damageRetention;
         b.travel+=wallDist+pen.thickness+.08;b.wallPenetrations++;b.ignoreEnemy=null;
@@ -1098,6 +1100,7 @@ function tickProjectiles(dt){
           b.vel.copy(reflected).multiplyScalar(speed);b.pos.copy(_hitPos).addScaledVector(reflected,ricochet.offset);
           b.damageScale*=ricochet.damageRetention;b.travel+=wallDist+ricochet.offset;b.ricochets++;b.ignoreEnemy=null;
           spawnP(_hitPos,surface==='metal'?0xfff2b8:0xffd69a,.46);
+          showGeneratedRicochetVfx(_hitPos,surface);
           continue;
         }
       }
@@ -1183,6 +1186,7 @@ function tickProjectiles(dt){
       if(pen){
         playSurfaceImpactSound(surface,_hitPos,.54,false);
         wallImpact(pen.exitPoint,b.color,surface,n?n.clone().negate():null);
+        showGeneratedPenetrationExitVfx(pen.exitPoint,surface);
         b.pos.copy(pen.exitPoint).addScaledVector(_stepDir,.08);
         b.vel.multiplyScalar(pen.speedRetention);
         b.damage*=pen.damageRetention;b.playerDamage*=pen.damageRetention;
@@ -1199,6 +1203,7 @@ function tickProjectiles(dt){
           b.vel.copy(reflected).multiplyScalar(speed);b.pos.copy(_hitPos).addScaledVector(reflected,ricochet.offset);
           b.damage*=ricochet.damageRetention;b.playerDamage*=ricochet.damageRetention;b.travel+=wallDist+ricochet.offset;b.ricochets++;
           spawnP(_hitPos,surface==='metal'?0xfff1b8:0xffd69a,.52);
+          showGeneratedRicochetVfx(_hitPos,surface);
           continue;
         }
       }
@@ -1305,6 +1310,7 @@ function tickMines(dt){
       playExplosionSound(pos,1.08);
       const bombProximity=Math.max(0,1-camera.position.distanceTo(pos)/90);if(bombProximity>0)triggerScreenShake(bombProximity*.78,.22);
       explode(pos,ownerType==='player'?0xffb000:0xff3b18,18);
+      showGeneratedBombDetonationVfx(pos);
       spawnBombBlastWave(pos,radius,ownerType);
       applyBlastDamage(pos,radius,mn.dmg||BOMB_BASE_DAMAGE,ownerType,mn.src||null,'bomb',.18,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
       mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
@@ -1340,6 +1346,7 @@ function tickMines(dt){
     playExplosionSound(pos,.88);
     const mineProximity=Math.max(0,1-camera.position.distanceTo(pos)/55);if(mineProximity>0)triggerScreenShake(mineProximity*.52,.14);
     explode(pos,0xff4400,6);
+    showGeneratedMineDetonationVfx(pos);
     applyBlastDamage(pos,radius,mn.dmg||WEAPONS[5].dmg,ownerType,mn.src||null,'mine',.25,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
     mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
   }
