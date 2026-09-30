@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+  <radialGradient id="r-core"><stop offset="0" stop-color="#fffdf0"/><stop offset=".28" stop-color="#ffe88f"/><stop offset=".68" stop-color="#ff8a25" stop-opacity=".88"/><stop offset="1" stop-color="#ff4a12" stop-opacity="0"/></radialGradient>
+  <filter id="r-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g transform="translate(150 270)">
+  <circle r="26" fill="url(#r-core)" filter="url(#r-glow)"><animate attributeName="r" values="8;34;19;4" dur=".62s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.72;0" dur=".62s" repeatCount="indefinite"/></circle>
+  <circle r="31" fill="none" stroke="#ffd86a" stroke-width="6" opacity=".8"><animate attributeName="r" values="12;46;76" dur=".62s" repeatCount="indefinite"/><animate attributeName="stroke-width" values="8;4;1" dur=".62s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.36;0" dur=".62s" repeatCount="indefinite"/></circle>
+  <g fill="none" stroke-linecap="round" filter="url(#r-glow)">
+    <path d="M5 -3 C70 -58 146 -92 250 -106" stroke="#fff7c6" stroke-width="9" stroke-dasharray="36 220"><animate attributeName="stroke-dashoffset" values="34;-190" dur=".62s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.82;0" dur=".62s" repeatCount="indefinite"/></path>
+    <path d="M4 1 C82 -28 162 -26 286 -8" stroke="#ffd35a" stroke-width="7" stroke-dasharray="28 245"><animate attributeName="stroke-dashoffset" values="28;-216" dur=".62s" begin=".03s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.95;.7;0" dur=".62s" repeatCount="indefinite"/></path>
+    <path d="M3 4 C72 18 151 52 242 112" stroke="#ff9e34" stroke-width="6" stroke-dasharray="24 230"><animate attributeName="stroke-dashoffset" values="24;-204" dur=".62s" begin=".055s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.9;.55;0" dur=".62s" repeatCount="indefinite"/></path>
+    <path d="M0 -2 C50 -82 110 -138 178 -178" stroke="#ffe479" stroke-width="5" stroke-dasharray="20 190"><animate attributeName="stroke-dashoffset" values="20;-166" dur=".62s" begin=".08s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.82;.4;0" dur=".62s" repeatCount="indefinite"/></path>
+    <path d="M0 4 C58 54 112 120 154 188" stroke="#ff7427" stroke-width="5" stroke-dasharray="18 190"><animate attributeName="stroke-dashoffset" values="18;-164" dur=".62s" begin=".105s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.8;.38;0" dur=".62s" repeatCount="indefinite"/></path>
+  </g>
+  <g fill="#fff1a4" filter="url(#r-glow)">
+    <circle cx="95" cy="-73" r="6"><animate attributeName="opacity" values="0;1;0" dur=".62s" repeatCount="indefinite"/></circle>
+    <circle cx="142" cy="12" r="5"><animate attributeName="opacity" values="0;.9;0" dur=".62s" begin=".05s" repeatCount="indefinite"/></circle>
+    <circle cx="109" cy="68" r="4"><animate attributeName="opacity" values="0;.82;0" dur=".62s" begin=".08s" repeatCount="indefinite"/></circle>
+  </g>
+</g>
+</svg>

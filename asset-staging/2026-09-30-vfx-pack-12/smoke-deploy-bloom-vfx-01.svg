@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+  <radialGradient id="s-puff"><stop offset="0" stop-color="#e7eef0" stop-opacity=".82"/><stop offset=".52" stop-color="#9ba9ad" stop-opacity=".6"/><stop offset="1" stop-color="#526066" stop-opacity="0"/></radialGradient>
+  <radialGradient id="s-core"><stop offset="0" stop-color="#efffff"/><stop offset=".32" stop-color="#a8e9dd" stop-opacity=".9"/><stop offset="1" stop-color="#70bdb0" stop-opacity="0"/></radialGradient>
+  <filter id="s-soft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="18"/></filter>
+  <filter id="s-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g transform="translate(256 312)">
+  <circle r="24" fill="url(#s-core)" filter="url(#s-glow)"><animate attributeName="r" values="8;42;28;8" dur=".72s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.35;0" dur=".72s" repeatCount="indefinite"/></circle>
+  <ellipse rx="44" ry="13" fill="none" stroke="#c8f4eb" stroke-width="7"><animate attributeName="rx" values="18;82;150" dur=".92s" repeatCount="indefinite"/><animate attributeName="ry" values="6;20;34" dur=".92s" repeatCount="indefinite"/><animate attributeName="stroke-width" values="8;4;1" dur=".92s" repeatCount="indefinite"/><animate attributeName="opacity" values=".85;.42;0" dur=".92s" repeatCount="indefinite"/></ellipse>
+  <g fill="url(#s-puff)" filter="url(#s-soft)">
+    <circle cx="-58" cy="-10" r="40"><animate attributeName="r" values="16;48;84" dur="1.4s" repeatCount="indefinite"/><animate attributeName="cy" values="-6;-52;-104" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.72;.48;0" dur="1.4s" repeatCount="indefinite"/></circle>
+    <circle cx="2" cy="-24" r="48"><animate attributeName="r" values="18;58;98" dur="1.4s" begin=".08s" repeatCount="indefinite"/><animate attributeName="cy" values="-18;-74;-132" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.82;.52;0" dur="1.4s" begin=".08s" repeatCount="indefinite"/></circle>
+    <circle cx="62" cy="-6" r="42"><animate attributeName="r" values="16;52;90" dur="1.4s" begin=".15s" repeatCount="indefinite"/><animate attributeName="cy" values="-2;-46;-96" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.72;.46;0" dur="1.4s" begin=".15s" repeatCount="indefinite"/></circle>
+    <circle cx="-20" cy="12" r="35"><animate attributeName="r" values="12;45;76" dur="1.4s" begin=".20s" repeatCount="indefinite"/><animate attributeName="cy" values="8;-30;-76" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.6;.4;0" dur="1.4s" begin=".20s" repeatCount="indefinite"/></circle>
+  </g>
+  <g stroke="#d8ffff" stroke-linecap="round" filter="url(#s-glow)">
+    <path d="M-10 -4 C-34 -44 -32 -74 -12 -100" fill="none" stroke-width="4"><animate attributeName="opacity" values="0;.72;0" dur=".7s" repeatCount="indefinite"/></path>
+    <path d="M12 -4 C34 -38 40 -70 22 -96" fill="none" stroke-width="3"><animate attributeName="opacity" values="0;.62;0" dur=".7s" begin=".06s" repeatCount="indefinite"/></path>
+  </g>
+</g>
+</svg>
