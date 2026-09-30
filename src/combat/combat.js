@@ -880,6 +880,7 @@ function spawnBotFragGrenade(from,target,team,src){
     rx:8+Math.random()*5,rz:7+Math.random()*4,fuse:1.72+Math.random()*.22,
     team,src,ownerType:'bot',dmg:78*(src?.baseDmgMul||1),radius:5.4,bounces:0
   });
+  if(typeof showGeneratedGrenadeFlightVfx==='function')showGeneratedGrenadeFlightVfx(m);
   return true;
 }
 function throwFragGrenade(){
@@ -902,6 +903,7 @@ function throwFragGrenade(){
     dmg:grenadeW.dmg*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*plr.explosiveDamageM,
     radius:5.8*plr.explosiveRadiusM,bounces:0
   });
+  if(typeof showGeneratedGrenadeFlightVfx==='function')showGeneratedGrenadeFlightVfx(m);
   if(typeof showGeneratedGrenadeThrowVfx==='function')showGeneratedGrenadeThrowVfx();
   if(!testingInfiniteAmmoEnabled())setWeaponAmmo(grenadeIdx,grenadeAmmo-1);
   if(!testingInfiniteAmmoEnabled()&&grenadeAmmo-1<=0&&weaponReserveValue(grenadeIdx)<=0)updateWeaponBar();
@@ -1025,7 +1027,13 @@ function tickBotGrenades(dt){
       if(Math.abs(g.vy)>.9){g.vy=Math.abs(g.vy)*.34;g.vx*=.76;g.vz*=.76;g.bounces++;}
       else{g.vy=0;g.vx*=.90;g.vz*=.90;}
     }
-    if(g.fuse>0)continue;
+    if(g.fuse>0){
+      if(!g._generatedFuseVfx&&g.fuse<=.78&&g.m.position.distanceToSquared(camera.position)<625){
+        g._generatedFuseVfx=true;
+        if(typeof showGeneratedGrenadeFuseVfx==='function')showGeneratedGrenadeFuseVfx(g.m);
+      }
+      continue;
+    }
     const pos=g.m.position.clone();pos.y=Math.max(.14,pos.y);
     const ownerType=g.ownerType||'bot',ownerTeam=ownerType==='player'?'ally':g.team;
     const blastDistance=camera.position.distanceTo(pos),proximity=Math.max(.18,1-blastDistance/70);

@@ -213,7 +213,10 @@ const GAME_ASSETS=versionAssetTree({
     pack19Landing:'assets/ui/fx/landing-impact-vfx-atlas-19.svg',
     pack19SmokeThrow:'assets/ui/fx/smoke-throw-vfx-atlas-19.svg',
     pack20GrenadeThrow:'assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg',
-    pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'
+    pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg',
+    pack21GrenadeMotion:'assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg',
+    pack21GrenadeBlast:'assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg',
+    pack21GrenadeDebris:'assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -651,7 +654,13 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   landingMetal:Object.freeze({asset:'pack19Landing',row:2,cols:4,rows:4,frames:8,duration:.54,width:260,height:173}),
   smokeThrow:Object.freeze({asset:'pack19SmokeThrow',row:0,cols:4,rows:2,frames:8,duration:.52,size:430}),
   grenadeThrow:Object.freeze({asset:'pack20GrenadeThrow',row:0,cols:4,rows:2,frames:8,duration:.58,size:430}),
-  bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8,duration:.72,size:430})
+  bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8,duration:.72,size:430}),
+  grenadeFlight:Object.freeze({asset:'pack21GrenadeMotion',row:0,cols:8,rows:2,frames:8,duration:1.82,size:116}),
+  grenadeFuse:Object.freeze({asset:'pack21GrenadeMotion',row:1,cols:8,rows:2,frames:8,duration:.78,size:134}),
+  grenadeExplosion21:Object.freeze({asset:'pack21GrenadeBlast',row:0,cols:4,rows:4,frames:8,duration:.76,size:306}),
+  grenadeSmoke21:Object.freeze({asset:'pack21GrenadeBlast',row:2,cols:4,rows:4,frames:8,duration:1.35,size:286}),
+  grenadeDebris21:Object.freeze({asset:'pack21GrenadeDebris',row:0,cols:8,rows:3,frames:16,duration:.92,size:260}),
+  grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris',row:2,cols:8,rows:3,frames:5,duration:2.60,size:180})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){

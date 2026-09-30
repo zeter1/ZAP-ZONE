@@ -552,13 +552,16 @@ function playGeneratedCombatVfx(kind,options={}){
   while(generatedCombatVfx.length>=GENERATED_COMBAT_VFX_LIMIT)removeGeneratedCombatVfx(generatedCombatVfx[0]);
   const el=document.createElement('span');el.className='generated-combat-vfx';el.dataset.kind=kind;
   el.style.width=(spec.width||spec.size)+'px';el.style.height=(spec.height||spec.size)+'px';applyPresentationAtlasFrame(el,first);layer.appendChild(el);
-  const worldPos=options.worldPos?.clone?options.worldPos.clone():null;
-  const item={el,kind,spec,age:0,frame:-1,worldPos,screen:worldPos&&typeof THREE!=='undefined'?new THREE.Vector3():null,
+  const worldObject=options.worldObject?.position?.clone?options.worldObject:null;
+  const worldPos=worldObject?worldObject.position.clone():(options.worldPos?.clone?options.worldPos.clone():null);
+  const item={el,kind,spec,age:0,delay:Math.max(0,Number(options.delay)||0),frame:-1,worldPos,worldObject,
+    screen:worldPos&&typeof THREE!=='undefined'?new THREE.Vector3():null,
     anchor:options.anchor||'center',rotation:Number(options.rotation)||0,scale:Math.max(.35,Number(options.scale)||1)};
-  generatedCombatVfx.push(item);positionGeneratedCombatVfx(item);return true;
+  generatedCombatVfx.push(item);positionGeneratedCombatVfx(item);if(item.delay>0)el.style.visibility='hidden';return true;
 }
 function positionGeneratedCombatVfx(item){
   const el=item?.el;if(!el)return;
+  if(item.worldObject?.position?.clone&&item.worldPos)item.worldPos.copy(item.worldObject.position);
   let x=innerWidth*.5,y=innerHeight*.48,scale=item.scale;
   if(item.worldPos&&item.screen&&typeof camera!=='undefined'){
     item.screen.copy(item.worldPos).project(camera);
@@ -596,7 +599,9 @@ function tickGeneratedCombatVfx(dt){
   const safeDt=Math.max(0,Math.min(.05,Number(dt)||0));
   for(let i=generatedCombatVfx.length-1;i>=0;i--){
     const item=generatedCombatVfx[i];item.age+=safeDt;
-    const progress=Math.max(0,Math.min(1,item.age/Math.max(.001,item.spec.duration)));
+    if(item.age<item.delay){item.el.style.visibility='hidden';continue;}
+    const activeAge=item.age-item.delay;
+    const progress=Math.max(0,Math.min(1,activeAge/Math.max(.001,item.spec.duration)));
     const frame=Math.min(item.spec.frames-1,Math.floor(progress*item.spec.frames));
     if(frame!==item.frame){applyPresentationAtlasFrame(item.el,generatedCombatVfxFrame(item.kind,frame));item.frame=frame;}
     item.el.style.opacity=String(progress>.78?Math.max(0,(1-progress)/.22):1);positionGeneratedCombatVfx(item);
@@ -678,7 +683,20 @@ function showGeneratedBombDetonationVfx(pos){
   return playGeneratedCombatVfx('bombDetonation',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.08});
 }
 function showGeneratedFragGrenadeVfx(pos){
-  return playGeneratedCombatVfx('fragGrenade',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:.96+Math.random()*.10});
+  const base=playGeneratedCombatVfx('fragGrenade',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:.96+Math.random()*.10});
+  playGeneratedCombatVfx('grenadeExplosion21',{worldPos:pos,rotation:(Math.random()-.5)*8,scale:1.02});
+  playGeneratedCombatVfx('grenadeDebris21',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:1.00});
+  playGeneratedCombatVfx('grenadeSmoke21',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.00,delay:.16});
+  playGeneratedCombatVfx('grenadeScorch21',{worldPos:pos,rotation:(Math.random()-.5)*12,scale:.92,delay:.42});
+  return base;
+}
+function showGeneratedGrenadeFlightVfx(source){
+  if(!source?.position?.clone)return false;
+  return playGeneratedCombatVfx('grenadeFlight',{worldObject:source,rotation:0,scale:.92});
+}
+function showGeneratedGrenadeFuseVfx(source){
+  if(!source?.position?.clone)return false;
+  return playGeneratedCombatVfx('grenadeFuse',{worldObject:source,rotation:0,scale:1});
 }
 function generatedWorldDirectionDegrees(pos,yaw=0){
   if(!pos?.clone||typeof THREE==='undefined'||typeof camera==='undefined')return 0;

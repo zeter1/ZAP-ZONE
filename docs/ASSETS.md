@@ -18,6 +18,23 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Grenade VFX Asset Pack 21 — selected sheet #2 (2026-09-30)
+The user explicitly selected the **second generated grenade sheet** from the current dialog. It is treated as reviewed art direction under the same-dialog source exception. The heavy 1774×887 raster concept sheet is not duplicated into runtime; its stable source identity is recorded in staging and three compact scriptless SVG atlases reproduce the useful missing states.
+
+Runtime derivatives:
+- `assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg` — 8 flight-trail frames + 8 live-fuse warning frames;
+- `assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg` — 8 realistic fireball frames + 8 post-blast smoke frames;
+- `assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg` — 16 fragment/debris frames + 5 hot-to-dark scorch frames.
+
+Integration rules:
+- flight trail follows the authoritative Three.js grenade object through the existing DOM VFX layer; no duplicate gameplay projectile is created;
+- fuse warning begins only in the last 0.78 s and only for grenades within 25 m of the camera;
+- detonation retains Pack 15's stylized shrapnel bloom and layers Pack 21 fireball/debris/smoke/scorch presentation on the same authoritative explosion event;
+- smoke and scorch use delayed elapsed-time playback so the fireball leads the sequence naturally;
+- damage, radius, fuse duration, bounce physics, ammo, ownership and XP remain unchanged.
+
+The generic VFX player now supports optional tracked `worldObject` positioning and presentation-only `delay`; existing callers use the previous zero-delay/static-world behavior. All Pack 21 assets are static SVG (no scripts/self-running animation/raster embedding) and stay out of persistent Three.js texture geometry.
+
 ## Grenade + Bomb Asset Pack 20 (2026-09-30)
 Pack 20 adds a real player fragmentation grenade instead of repurposing the mine, and keeps the separately approved bomb placement/arming asset as a real runtime effect.
 
