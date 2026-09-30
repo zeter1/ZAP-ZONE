@@ -1,3 +1,10 @@
+## Pack 27 consumers
+Two newly approved generated VFX sources are integrated as compact scriptless SVG atlases: `ui/fx/player-respawn-gate-vfx-atlas-27.svg` (3×2 / 6 frames) and `ui/fx/terminal-electrical-arc-vfx-atlas-27.svg` (5×2 / 10 frames).
+
+`src/settings/settings.js` reuses the existing bounded elapsed-time DOM VFX player. Player respawn keeps the existing `respawn-materialize-01.webp` overlay as fallback and adds the energy-gate sequence only after the authoritative respawn state has been applied. `src/core/engine.js` marks the four existing Zone Net terminals as presentation-reactive and emits the arc only for nearby wall-impact events with a per-terminal cooldown.
+
+Pack 27 is presentation-only: respawn timing, spawn protection, terminal collision, bullet damage, penetration, ricochet, AI, score and gameplay RNG are unchanged.
+
 ## Pack 26 consumers
 Two newly approved generated source sheets are integrated as compact presentation-only alpha-WebP atlases: `ui/fx/weapon-discharge-vfx-atlas-26.webp` (4×2 / 8 frames) and `ui/fx/heavy-explosion-vfx-atlas-26.webp` (4×2 / 8 frames). The first atlas gives pistol/rifle shots a warmer ballistic discharge sequence and plasma a distinct cyan energy discharge. The second provides an ignition-to-smoke heavy blast sequence.
 

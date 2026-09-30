@@ -32,6 +32,22 @@ Integration rules:
 - no new gameplay RNG draw is introduced by variation selection; ammo, damage, blast radius, projectile physics, recoil, cadence and timing stay authoritative and unchanged;
 - source generator rasters are not duplicated in Git; provenance and source identities are recorded in `asset-staging/2026-09-30-vfx-pack-26/README.md`.
 
+## Generated VFX Pack 27 — respawn materialization + reactive terminals (2026-09-30)
+The two generated sources shown in the current ChatGPT dialog were explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivatives:
+- `assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg` — scriptless 3×2 / 6-frame energy-gate sequence, viewBox 768×512;
+- `assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg` — scriptless 5×2 / 10-frame cable/arc/spark/smoke sequence, viewBox 900×480.
+
+Integration rules:
+- the player respawn effect is triggered from the existing authoritative respawn path and layers over the existing generated respawn overlay instead of replacing it;
+- the terminal effect is emitted only by `wallImpact()` when the impact point is close to one of the four existing arena terminals; it is throttled per terminal and never owns hit detection;
+- terminal collision/material/penetration semantics are not changed merely to get a prettier effect;
+- both atlases are DOM-projected, elapsed-time driven, static SVG frames with no internal animation, scripts or embedded raster data;
+- respawn duration, spawn protection, HP/ammo, bullet damage, ricochet/penetration, AI state and gameplay RNG remain authoritative in existing systems.
+
+The heavy generator rasters are not duplicated in Git. Provenance and exact consumer/fallback mapping are recorded in `asset-staging/2026-09-30-vfx-pack-27/README.md`.
+
 ## Generated Weapon Action VFX Pack 25 (2026-09-30)
 The two newly generated first-person action sheets were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 

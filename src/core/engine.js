@@ -180,7 +180,7 @@ function mapPenetrationInfo(obj,hitPoint,worldDir){
 })();
 
 // ─── MAP ────────────────────────────────
-const wallMeshes=[],losMeshes=[];
+const wallMeshes=[],losMeshes=[],reactivePowerNodes=[];
 const minimapStaticGeometry=[];
 // Store wall AABBs for collision
 const wallAABBs=[];
@@ -265,6 +265,7 @@ function createSupplyCrate(x,z,h,variant=0){
 function createArenaTerminal(x,z,ry=0){
   const body=box(1.05,1.75,.68,0x34414b,x,.875,z,ry);
   if(body.userData.minimap)body.userData.minimap.kind='terminal';
+  body.userData.electricalReactive=true;reactivePowerNodes.push(body);
   body.material=new THREE.MeshStandardMaterial({color:0x1c2730,roughness:.42,metalness:.64});
   const bezel=new THREE.Mesh(
     new THREE.BoxGeometry(.84,.78,.07),
@@ -752,9 +753,27 @@ function releaseImpactMark(m){
   if(impactMarkPool.length<IMPACT_MARK_MAX)impactMarkPool.push(m);
   else{scene.remove(m);m.material.dispose();}
 }
+function reactivePowerNodeAt(pos){
+  if(!pos)return null;
+  for(const node of reactivePowerNodes){
+    if(!node?.position)continue;
+    const dx=pos.x-node.position.x,dy=pos.y-node.position.y,dz=pos.z-node.position.z;
+    if(dx*dx+dy*dy+dz*dz<=1.70)return node;
+  }
+  return null;
+}
 function wallImpact(pos,col,material='concrete',normal=null){
   const metal=material==='metal',wood=material==='wood';
   if(typeof showGeneratedSurfaceImpactVfx==='function')showGeneratedSurfaceImpactVfx(material,pos);
+  const powerNode=reactivePowerNodeAt(pos);
+  if(powerNode&&typeof showGeneratedTerminalArcVfx==='function'){
+    const now=performance.now();
+    if(now>=(powerNode.userData.nextArcVfxAt||0)){
+      powerNode.userData.nextArcVfxAt=now+480;
+      const vfxPos=powerNode.position.clone();vfxPos.y+=.12;
+      showGeneratedTerminalArcVfx(vfxPos);
+    }
+  }
   const sparkCount=metal?7:wood?1:3;
   const sparkCol=metal?0xfff1b8:wood?0xd8a064:col;
   for(let i=0;i<sparkCount;i++)spawnSpark(pos,sparkCol);

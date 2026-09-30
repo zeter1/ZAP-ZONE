@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated VFX Pack 27 — respawn materialization + reactive terminals
+- integrated the two newly approved VFX concepts as compact static SVG atlases: a six-frame player respawn energy gate and a ten-frame terminal electrical breakdown sequence;
+- player respawn now layers the new gate animation over the existing respawn materialize overlay while preserving the authoritative 15-second death/respawn flow and spawn protection;
+- arena terminals now emit a throttled electrical arc presentation when bullet impacts occur close to their existing collision body; the terminal remains nondestructible and the effect changes no damage, penetration, ricochet, stun or AI state;
+- kept both effects DOM-only, elapsed-time driven and scriptless, with existing procedural/Pack 7/16 presentation retained as fallback.
+
 ### Generated VFX Pack 26 — weapon discharge + heavy explosion diversity
 - integrated the two newly approved source sheets as two compact alpha-WebP atlases: an eight-frame ballistic/energy discharge sheet and an eight-frame heavy ignition-to-smoke explosion sequence;
 - pistol/rifle shots now receive a dedicated ballistic discharge layer and plasma receives a separate cyan energy-discharge presentation through the existing successful-shot hook;

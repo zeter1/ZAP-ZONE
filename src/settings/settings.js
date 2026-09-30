@@ -457,6 +457,7 @@ function triggerExplosionShockwave(source,radius=3){
 function showRespawnMaterializeFx(){
   const el=ensureCombatOverlay('respawn-materialize-overlay','respawn');if(!el)return;
   el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  playGeneratedCombatVfx('playerRespawnGate27',{anchor:'respawnGate',rotation:0,scale:1});
   clearTimeout(respawnMaterializeTimer);respawnMaterializeTimer=setTimeout(()=>el.classList.remove('on'),1150);
 }
 
@@ -569,7 +570,8 @@ function positionGeneratedCombatVfx(item){
     x=(item.screen.x*.5+.5)*innerWidth;y=(-item.screen.y*.5+.5)*innerHeight;
     const dist=camera.position.distanceTo(item.worldPos);scale*=Math.max(.48,Math.min(1.08,12/Math.max(7,dist)));
   }else{
-    if(item.anchor==='footstep'){x=innerWidth*.5;y=innerHeight*.88;}
+    if(item.anchor==='respawnGate'){x=innerWidth*.5;y=innerHeight*.69;scale*=Math.min(1.08,Math.max(.82,innerHeight/820));}
+    else if(item.anchor==='footstep'){x=innerWidth*.5;y=innerHeight*.88;}
     else if(item.anchor==='landing'){x=innerWidth*.5;y=innerHeight*.86;}
     else if(item.anchor==='recovery'){x=innerWidth*.5;y=innerHeight*.62;}
     else{
@@ -645,6 +647,12 @@ function showGeneratedSurfaceImpactVfx(material,pos){
   showGeneratedSurfaceImpactVfx._last=now;
   const kind=material==='metal'?'metalImpact':material==='wood'?'woodImpact':'concreteImpact';
   return playGeneratedCombatVfx(kind,{worldPos:pos,rotation:(Math.random()-.5)*16,scale:material==='metal'?1.04:1});
+}
+function showGeneratedTerminalArcVfx(pos){
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?260:140;
+  if(now-(showGeneratedTerminalArcVfx._last||-999)<minGap)return false;
+  showGeneratedTerminalArcVfx._last=now;
+  return playGeneratedCombatVfx('terminalArc27',{worldPos:pos,rotation:0,scale:1});
 }
 function showGeneratedRocketExplosionVfx(pos){
   const base=playGeneratedCombatVfx('rocketExplosion',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.08});
