@@ -1,3 +1,8 @@
+## Pack 25 consumers
+Two approved first-person action sources are integrated as compact scriptless SVG runtime atlases: `ui/fx/pistol-reload-vfx-atlas-25.svg` (4×3 / 12 frames) and `ui/fx/shotgun-pump-vfx-atlas-25.svg` (4×2 / 8 frames). `src/weapons/system.js` reuses the existing first-person action layer; `src/combat/combat.js` starts them only from the authoritative pistol reload and shotgun cycle states.
+
+Pack 25 is presentation-only. Pistol tactical reload skips the late slide-rack frames while empty reload uses the complete source sequence. Shotgun keeps the existing real Three.js shell ejection; the legacy Pack 10 shell overlay is hidden only while the full pump action is active. Existing reload/cycle timing, ammo, recoil, ballistics, damage and procedural/generated fallbacks remain authoritative.
+
 ## Pack 24 consumers
 Two newly approved first-person action sources are integrated as `ui/fx/rocket-reload-vfx-atlas-24.webp` (4×3 / 12 frames) and `ui/fx/mine-throw-vfx-atlas-24.webp` (6×1 / 6 frames). `src/weapons/system.js` reuses the Pack 22 action layer; `src/combat/combat.js` starts rocket reload only from the authoritative reload timer and mine throw only after the real mine has been spawned.
 

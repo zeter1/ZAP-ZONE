@@ -223,7 +223,9 @@ const GAME_ASSETS=versionAssetTree({
     pack23SniperBallistics:'assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',
     pack23SniperCasing:'assets/ui/fx/sniper-casing-vfx-atlas-23.webp',
     pack24RocketReload:'assets/ui/fx/rocket-reload-vfx-atlas-24.webp',
-    pack24MineThrow:'assets/ui/fx/mine-throw-vfx-atlas-24.webp'
+    pack24MineThrow:'assets/ui/fx/mine-throw-vfx-atlas-24.webp',
+    pack25PistolReload:'assets/ui/fx/pistol-reload-vfx-atlas-25.svg',
+    pack25ShotgunPump:'assets/ui/fx/shotgun-pump-vfx-atlas-25.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -677,7 +679,10 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   sniperSupersonic23:Object.freeze({asset:'pack23SniperBallistics',row:2,cols:4,rows:4,frames:8,duration:.14,size:540}),
   sniperCasing23:Object.freeze({asset:'pack23SniperCasing',row:0,cols:4,rows:3,frames:12,duration:.55,size:180}),
   rocketReload24:Object.freeze({asset:'pack24RocketReload',row:0,cols:4,rows:3,frames:12,duration:2.85,width:450,height:338}),
-  mineThrow24:Object.freeze({asset:'pack24MineThrow',row:0,cols:6,rows:1,frames:6,duration:.58,width:430,height:323})
+  mineThrow24:Object.freeze({asset:'pack24MineThrow',row:0,cols:6,rows:1,frames:6,duration:.58,width:430,height:323}),
+  pistolReloadTactical25:Object.freeze({asset:'pack25PistolReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.10,width:450,height:400}),
+  pistolReloadEmpty25:Object.freeze({asset:'pack25PistolReload',row:0,cols:4,rows:3,frames:12,duration:1.35,width:450,height:400}),
+  shotgunPump25:Object.freeze({asset:'pack25ShotgunPump',row:0,cols:4,rows:2,frames:8,duration:.62,width:500,height:500})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){

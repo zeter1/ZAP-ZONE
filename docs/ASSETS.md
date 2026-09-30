@@ -18,6 +18,23 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Weapon Action VFX Pack 25 (2026-09-30)
+The two first-person source sheets generated and visually approved in the current ChatGPT dialog are integrated under the same-dialog source exception. The reviewed raster sheets remain source/reference; runtime uses compact scriptless SVG remasters so the action layer stays sharp, deterministic and cheap to load in both hosted and direct file mode.
+
+Runtime derivatives:
+- `assets/ui/fx/pistol-reload-vfx-atlas-25.svg` — 4×3 / 12 static frames for magazine release, replacement magazine seating, optional slide rack and return to ready;
+- `assets/ui/fx/shotgun-pump-vfx-atlas-25.svg` — 4×2 / 8 static frames for fore-end travel, chamber opening, visible shell ejection, chamber closure and return to firing grip.
+
+Integration rules:
+- both assets reuse the existing Pack 22/24 first-person action owner and elapsed-time playback; no second animation scheduler is introduced;
+- pistol tactical reload uses frames 0–7 then the final ready frame, while an empty reload uses all twelve frames including the slide-rack phase; both are stretched to the authoritative existing `reloadTot/reloadT` duration;
+- shotgun pump starts only when the existing `cycleTime` state is created after a successful shot and is stretched to that real `cycleTot`;
+- the real Three.js shotgun shell ejection still happens at the existing cycle threshold; only the older Pack 10 2D shell overlay is suppressed while the full Pack 25 pump action is active, avoiding a duplicate casing;
+- pistol magazine-drop and shotgun shell-spin remain fallback presentation if the full first-person action cannot run;
+- ammo transfer, cycle/reload timing, fire cadence, spread, recoil, damage, projectile simulation and gameplay RNG are unchanged.
+
+Provenance and the reviewed source identities are recorded in `asset-staging/2026-09-30-vfx-pack-25/README.md`.
+
 ## Generated Weapon Utility Action VFX Pack 24 (2026-09-30)
 The two newly generated first-person action sequences were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 

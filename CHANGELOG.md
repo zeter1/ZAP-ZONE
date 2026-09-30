@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Weapon Action VFX Pack 25 — pistol reload + shotgun pump cycle
+- integrated the two newly approved first-person action sources as deterministic scriptless SVG atlases: a twelve-frame pistol reload and an eight-frame shotgun pump/ejection cycle;
+- reused the existing Pack 22/24 elapsed-time first-person action owner instead of adding another scheduler;
+- pistol tactical reload skips the late slide-rack phase while empty reload uses the complete sequence, both synchronized to the real existing reload timer;
+- shotgun pump presentation starts from the existing post-shot cycle state, keeps the real Three.js shell ejection, and suppresses only the duplicate Pack 10 2D shell overlay while the full action is active;
+- preserved ammo transfer, cycle/reload timing, cadence, recoil, spread, damage, ballistics and gameplay RNG; added Pack 25 asset safety, wiring and fallback-boundary validation plus provenance documentation.
+
 ### Generated Weapon Utility Action VFX Pack 24 — rocket reload + mine throw
 - integrated both newly approved first-person action sequences as compact alpha-WebP atlases: a twelve-frame rocket-launcher reload and a six-frame mine throw/deploy;
 - reused the existing Pack 22 first-person action owner, keeping playback elapsed-time driven and avoiding a second animation pipeline;

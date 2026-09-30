@@ -121,6 +121,7 @@ const generatedGrenadePack21SvgAssets=['assets/ui/fx/frag-grenade-flight-fuse-at
 const generatedWeaponActionPack22WebpAssets=['assets/ui/fx/rifle-reload-vfx-atlas-22.webp','assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp'];
 const generatedSniperVfxPack23WebpAssets=['assets/ui/fx/sniper-shot-vfx-atlas-23.webp','assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp','assets/ui/fx/sniper-casing-vfx-atlas-23.webp'];
 const generatedWeaponActionPack24WebpAssets=['assets/ui/fx/rocket-reload-vfx-atlas-24.webp','assets/ui/fx/mine-throw-vfx-atlas-24.webp'];
+const generatedWeaponActionPack25SvgAssets=['assets/ui/fx/pistol-reload-vfx-atlas-25.svg','assets/ui/fx/shotgun-pump-vfx-atlas-25.svg'];
 const generatedWeaponActionPack24Dimensions=new Map([
   ['assets/ui/fx/rocket-reload-vfx-atlas-24.webp',[720,405]],
   ['assets/ui/fx/mine-throw-vfx-atlas-24.webp',[1080,135]]
@@ -168,7 +169,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets,...generatedGrenadePack21SvgAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets,...generatedGrenadePack21SvgAssets,...generatedWeaponActionPack25SvgAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -260,6 +261,12 @@ for(const file of generatedWeaponActionPack24WebpAssets){
   if(!expected||width!==expected[0]||height!==expected[1])fail('generated Pack 24 weapon-action dimensions invalid: '+file+' ('+width+'x'+height+')');
   if((bytes[20]&0x10)===0)fail('generated Pack 24 weapon-action alpha flag missing: '+file);
 }
+for(const file of generatedWeaponActionPack25SvgAssets){
+  const svg=readFileSync(file,'utf8');
+  if(Buffer.byteLength(svg)>96*1024)fail('generated Pack 25 weapon-action SVG exceeds 96 KiB budget: '+file);
+  if(!/<svg\b/i.test(svg)||!/<\/svg>\s*$/i.test(svg))fail('generated Pack 25 weapon-action SVG envelope invalid: '+file);
+  if(/<script\b|<animate\b|<animateTransform\b|<set\b/i.test(svg))fail('generated Pack 25 weapon-action SVG must be static/scriptless: '+file);
+}
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
   'data-generated-src="assets/ui/feedback/levelup-core-tech-01.webp"',
@@ -298,6 +305,10 @@ for(const token of ["pack23SniperShot:'assets/ui/fx/sniper-shot-vfx-atlas-23.web
 for(const token of ["pack24RocketReload:'assets/ui/fx/rocket-reload-vfx-atlas-24.webp'","pack24MineThrow:'assets/ui/fx/mine-throw-vfx-atlas-24.webp'","rocketReload24:Object.freeze","mineThrow24:Object.freeze"])if(!catalog.includes(token))fail('Pack 24 action catalog wiring missing: '+token);
 for(const token of ['function showGeneratedRocketReloadVfx','function showGeneratedMineThrowVfx'])if(!weaponSystem.includes(token))fail('Pack 24 first-person action owner missing: '+token);
 for(const token of ['showGeneratedRocketReloadVfx(reloadTot)','showGeneratedMineThrowVfx()','!fullRocketReload'])if(!combatSource.includes(token))fail('Pack 24 combat consumer missing: '+token);
+for(const token of ["pack25PistolReload:'assets/ui/fx/pistol-reload-vfx-atlas-25.svg'","pack25ShotgunPump:'assets/ui/fx/shotgun-pump-vfx-atlas-25.svg'","pistolReloadTactical25:Object.freeze","pistolReloadEmpty25:Object.freeze","shotgunPump25:Object.freeze"])if(!catalog.includes(token))fail('Pack 25 action catalog wiring missing: '+token);
+for(const token of ['function showGeneratedPistolReloadVfx','function showGeneratedShotgunPumpVfx'])if(!weaponSystem.includes(token))fail('Pack 25 first-person action owner missing: '+token);
+for(const token of ['showGeneratedPistolReloadVfx(reloadMode,reloadTot)',"showGeneratedShotgunPumpVfx(cycleTot)",'!fullPistolReload'])if(!combatSource.includes(token))fail('Pack 25 combat consumer missing: '+token);
+for(const token of ["isGeneratedFirstPersonActionActive('shotgunPump25')",'!fullBoltAction&&!fullPumpAction'])if(!runtimeSource.includes(token))fail('Pack 25 pump fallback boundary missing: '+token);
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
 for(const token of ["cycleKind==='bolt'&&typeof showGeneratedSniperCasingFx==='function'","showGeneratedSniperCasingFx();"])if(!runtimeSource.includes(token))fail('Pack 23 sniper casing fallback consumer missing: '+token);
