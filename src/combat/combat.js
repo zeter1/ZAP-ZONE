@@ -816,6 +816,7 @@ function throwMine(){
   const m=mkMine();m.position.copy(camera.position.clone().addScaledVector(dir,.6));scene.add(m);
   const vv=dir.clone().multiplyScalar(9);vv.y+=5;
   mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z,fall:true,life:Infinity,armed:false,aT:1.5,checkT:.08,ph:0,team:'player',owner:'player',dmg:mineW.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.mineDamageM*plr.explosiveDamageM,radius:9*plr.explosiveRadiusM*plr.mineRadiusM});
+  if(typeof showGeneratedMineThrowVfx==='function')showGeneratedMineThrowVfx();
   playerMineCD=MINE_COOLDOWN_SECONDS*plr.mineCooldownM;
   mineHudSecond=-1;updateMineHUD();
 }
@@ -847,6 +848,7 @@ function placeBomb(){
     dmg:BOMB_BASE_DAMAGE*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*plr.bombDamageM*plr.explosiveDamageM,
     radius:BOMB_BLAST_RADIUS*plr.bombRadiusM*plr.explosiveRadiusM
   });
+  if(typeof showGeneratedBombArmVfx==='function')showGeneratedBombArmVfx();
   playerBombCD=BOMB_COOLDOWN_SECONDS;
   bombHudSecond=-1;updateMineHUD();
   showMsg('🧨 Фитиль зажжён: мощный взрыв через 45 секунд!');

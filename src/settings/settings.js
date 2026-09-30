@@ -571,7 +571,15 @@ function positionGeneratedCombatVfx(item){
     else if(item.anchor==='recovery'){x=innerWidth*.5;y=innerHeight*.62;}
     else{
       const stage=byId('fp-weapon-art-stage'),flash=byId('fp-weapon-flash');
-      if(item.anchor==='smokeThrow'){
+      if(item.anchor==='mineThrow'){
+        if(stage){const r=stage.getBoundingClientRect();x=r.left+r.width*.58;y=r.top+r.height*.55;}
+        else{x=innerWidth*.60;y=innerHeight*.68;}
+      }
+      else if(item.anchor==='bombArm'){
+        if(stage){const r=stage.getBoundingClientRect();x=r.left+r.width*.58;y=r.top+r.height*.56;}
+        else{x=innerWidth*.60;y=innerHeight*.69;}
+      }
+      else if(item.anchor==='smokeThrow'){
         if(stage){const r=stage.getBoundingClientRect();x=r.left+r.width*.58;y=r.top+r.height*.55;}
         else{x=innerWidth*.60;y=innerHeight*.68;}
       }
@@ -649,6 +657,8 @@ function showGeneratedLandingVfx(surface='concrete',impactSpeed=0){
   return playGeneratedCombatVfx(kind,{anchor:'landing',rotation:0,scale});
 }
 function showGeneratedSmokeThrowVfx(){return playGeneratedCombatVfx('smokeThrow',{anchor:'smokeThrow',rotation:0,scale:1});}
+function showGeneratedMineThrowVfx(){return playGeneratedCombatVfx('mineThrow',{anchor:'mineThrow',rotation:0,scale:1});}
+function showGeneratedBombArmVfx(){return playGeneratedCombatVfx('bombArm',{anchor:'bombArm',rotation:0,scale:1});}
 function showGeneratedRicochetVfx(pos,surface='concrete'){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?58:24;
   if(now-(showGeneratedRicochetVfx._last||-999)<minGap)return false;

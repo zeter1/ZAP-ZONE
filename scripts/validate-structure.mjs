@@ -115,6 +115,7 @@ const generatedCombatVfxPack16SvgAtlas='assets/ui/fx/bot-action-vfx-atlas-16.svg
 const generatedCombatVfxPack17SvgAtlas='assets/ui/fx/interaction-vfx-atlas-17.svg';
 const generatedCombatVfxPack18SvgAtlas='assets/ui/fx/player-action-vfx-atlas-18.svg';
 const generatedCombatVfxPack19SvgAssets=['assets/ui/fx/landing-impact-vfx-atlas-19.svg','assets/ui/fx/smoke-throw-vfx-atlas-19.svg'];
+const generatedCombatVfxPack20SvgAssets=['assets/ui/fx/player-mine-throw-vfx-atlas-20.svg','assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'];
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -1404,3 +1405,18 @@ if(pack19LandingAirborne<0||pack19LandingSpeed<pack19LandingAirborne||pack19Land
 const pack19SmokeOwner=combat.indexOf('function throwSmokeGrenade(){'),pack19SmokePush=combat.indexOf('smokeGrenades.push({m,vx:v.x,vy:v.y,vz:v.z',pack19SmokeOwner),pack19SmokeFx=combat.indexOf("showGeneratedSmokeThrowVfx();",pack19SmokePush);
 if(pack19SmokeOwner<0||pack19SmokePush<pack19SmokeOwner||pack19SmokeFx<pack19SmokePush)fail('pack 19 smoke-throw VFX must decorate a successfully spawned player grenade');
 for(const token of ['.generated-combat-vfx[data-kind="landingDust"]','.generated-combat-vfx[data-kind="landingMetal"]','.generated-combat-vfx[data-kind="smokeThrow"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 19 CSS missing: '+token);
+
+{
+  const mineThrow=readFileSync(generatedCombatVfxPack20SvgAssets[0],'utf8'),bombArm=readFileSync(generatedCombatVfxPack20SvgAssets[1],'utf8');
+  if(Buffer.byteLength(mineThrow)>48*1024||Buffer.byteLength(bombArm)>48*1024)fail('generated combat VFX pack 20 SVG atlas exceeds 48 KiB budget');
+  if(!mineThrow.includes('viewBox="0 0 512 256"')||!bombArm.includes('viewBox="0 0 512 256"'))fail('generated combat VFX pack 20 viewBox invalid');
+  for(const source of [mineThrow,bombArm])if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime VFX pack 20 atlases must be static, scriptless and self-contained');
+  if((mineThrow.match(/class="frame row-/g)||[]).length!==8||(bombArm.match(/class="frame row-/g)||[]).length!==8)fail('pack 20 atlases must each contain exactly 4 x 2 static frames');
+}
+for(const token of ["pack20MineThrow:'assets/ui/fx/player-mine-throw-vfx-atlas-20.svg'","pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'","mineThrow:Object.freeze({asset:'pack20MineThrow',row:0,cols:4,rows:2,frames:8","bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 20 catalog contract missing: '+token);
+for(const token of ['function showGeneratedMineThrowVfx','function showGeneratedBombArmVfx',"item.anchor==='mineThrow'","item.anchor==='bombArm'"])if(!settings.includes(token))fail('generated combat VFX pack 20 runtime helper missing: '+token);
+const pack20MineOwner=combat.indexOf('function throwMine(){'),pack20MinePush=combat.indexOf('mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z',pack20MineOwner),pack20MineFx=combat.indexOf("showGeneratedMineThrowVfx();",pack20MinePush);
+if(pack20MineOwner<0||pack20MinePush<pack20MineOwner||pack20MineFx<pack20MinePush)fail('pack 20 mine-throw VFX must decorate a successfully spawned player mine');
+const pack20BombOwner=combat.indexOf('function placeBomb(){'),pack20BombPush=combat.indexOf("kind:'bomb'",pack20BombOwner),pack20BombFx=combat.indexOf("showGeneratedBombArmVfx();",pack20BombPush);
+if(pack20BombOwner<0||pack20BombPush<pack20BombOwner||pack20BombFx<pack20BombPush)fail('pack 20 bomb-arm VFX must decorate a successfully placed player bomb');
+for(const token of ['.generated-combat-vfx[data-kind="mineThrow"]','.generated-combat-vfx[data-kind="bombArm"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 20 CSS missing: '+token);
