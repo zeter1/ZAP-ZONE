@@ -18,6 +18,21 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Rocket Flight VFX Pack 28 (2026-09-30)
+The generated 4×3 rocket-exhaust source sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivative:
+- `assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg` — 768×576, scriptless 4×3 / 12-frame transparent SVG atlas preserving the approved white-hot/blue core, orange flame, sparks and grey-smoke silhouette.
+
+Integration rules:
+- `src/combat/combat.js` keeps the existing Three.js rocket object authoritative and projects only presentation art into the existing `#projectile-trail-layer`;
+- the atlas follows both player and bot rockets from their real world position and projected velocity, scales with camera distance, and hides when off-screen or blocked by world LOS geometry;
+- ignition uses frames 0–3, sustained flight loops deterministically across frames 4–9 with a per-rocket presentation phase; gameplay RNG is not consumed;
+- the existing additive Three.js flame meshes plus procedural smoke/sparks remain compatibility/fallback presentation;
+- rocket speed, acceleration, collision, warning logic, damage, blast radius, ownership, AI and explosion timing remain unchanged.
+
+The heavy reviewed source PNG is not duplicated in Git. Generation identity and source/runtime mapping are recorded in `asset-staging/2026-09-30-vfx-pack-28/README.md`.
+
 ## Generated Weapon Discharge + Heavy Explosion VFX Pack 26 (2026-09-30)
 The two newly generated source sheets were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 
