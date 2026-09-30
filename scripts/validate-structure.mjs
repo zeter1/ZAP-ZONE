@@ -64,7 +64,7 @@ const generatedPerkPack6WebpAssets=[
 const generatedFirstPersonWebpAssets=[
   'assets/ui/weapons/fp/player-pistol-fps-01.webp','assets/ui/weapons/fp/player-shotgun-fps-01.webp',
   'assets/ui/weapons/fp/player-rifle-fps-01.webp','assets/ui/weapons/fp/player-rocket-fps-01.webp',
-  'assets/ui/weapons/fp/player-plasma-fps-01.webp','assets/ui/weapons/fp/player-mine-fps-01.webp',
+  'assets/ui/weapons/fp/player-plasma-fps-31.webp','assets/ui/weapons/fp/player-mine-fps-01.webp',
   'assets/ui/weapons/fp/player-bomb-fps-01.webp','assets/ui/weapons/fp/player-smoke-fps-01.webp','assets/ui/weapons/fp/player-sniper-fps-01.webp'
 ];
 const generatedWorldPickupWebpAssets=[
@@ -1381,7 +1381,7 @@ for(const token of [
   'function showGeneratedMagazineDropFx','function showGeneratedSurfaceImpactVfx','function showGeneratedNearMissFx',
   'tickGeneratedCombatVfx(safeDt)','showGeneratedNearMissFx(source,pressure)'
 ])if(!settings.includes(token))fail('generated combat VFX runtime contract missing: '+token);
-for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key)"]){
+for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload&&!fullPlasmaReload)showGeneratedMagazineDropFx(w.key)"]){
   if(!combat.includes(token))fail('generated combat VFX player consumer missing: '+token);
 }
 if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');
@@ -1408,7 +1408,7 @@ for(const token of [
 for(const token of ['function showGeneratedRocketExplosionVfx','function showGeneratedPlasmaImpactVfx','function showGeneratedPlasmaReloadVfx']){
   if(!settings.includes(token))fail('generated combat VFX pack 11 runtime helper missing: '+token);
 }
-for(const token of ["showGeneratedRocketExplosionVfx(pos)","if(w.key==='plasma')showGeneratedPlasmaImpactVfx(hitFx)","if(completedWeapon.key==='plasma')showGeneratedPlasmaReloadVfx()"]){
+for(const token of ["showGeneratedRocketExplosionVfx(pos)","if(w.key==='plasma')showGeneratedPlasmaImpactVfx(hitFx)","if(completedWeapon.key==='plasma'&&!usedFullPresentation)showGeneratedPlasmaReloadVfx()"]){
   if(!combat.includes(token))fail('generated combat VFX pack 11 consumer missing: '+token);
 }
 for(const token of ['.generated-combat-vfx-layer','.generated-combat-vfx','data-kind="brassCasing"','data-kind="sniperPressure"','data-kind="rocketExplosion"','data-kind="plasmaImpact"','data-kind="plasmaReload"']){
