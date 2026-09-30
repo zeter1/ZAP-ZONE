@@ -1106,7 +1106,7 @@ if(!tactics.includes('const frontlineBias=s=>'))fail('Frontline map bias must st
 const engine=readFileSync('src/core/engine.js','utf8');
 if(!engine.includes("typeof triggerExplosionShockwave==='function'"))fail('explosion shockwave presentation hook missing');
 for(const file of presentationRasterAssets)if(engine.includes(file))fail('generated raster presentation asset must stay out of WebGL engine scene: '+file);
-for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null)',"typeof syncWorldWeaponPickupArt==='function'"]){
+for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null,impactVariant=\'normal\')',"typeof syncWorldWeaponPickupArt==='function'"]){
   if(!engine.includes(token))fail('polished engine FX/material/cover integration missing: '+token);
 }
 if(engine.includes('makeAssetPlane(')||engine.includes('makeAssetSprite(')||engine.includes('gameTexture(')){
@@ -1344,7 +1344,7 @@ for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(f
   if(!combat.includes(token))fail('generated combat VFX player consumer missing: '+token);
 }
 if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');
-if(!engine.includes("showGeneratedSurfaceImpactVfx(material,pos)"))fail('generated material impact presentation hook missing');
+if(!engine.includes("showGeneratedSurfaceImpactVfx(material,pos,vfxVariant)"))fail('generated material impact presentation hook missing');
 
 for(const [file,viewBox,maxBytes] of [
   ['assets/ui/fx/rocket-explosion-fireball-atlas-11.svg','0 0 512 384',32*1024],
