@@ -889,7 +889,7 @@ if(presentation.includes('makeAssetPlane(')||bots.includes('makeAssetPlane('))fa
 if(bots.includes('this.wEl')||bots.includes('updateBadge()')||bots.includes("ally?'СВОЙ':'ВРАГ'")){
   fail('bot overhead text badges must stay removed; only health bars are allowed above bots');
 }
-for(const token of ["this.hEl=document.createElement('div')","this.hFill=document.createElement('div')","this.hEl.style.display=this.uiVis?'block':'none'","this.hFill.style.width=(this.hp/this.maxHp*100)+'%'"]){
+for(const token of ["this.hEl=document.createElement('div')","this.hFill=document.createElement('div')","this.hEl.style.display=this.uiVis?'block':'none'","const pct=Math.max(0,Math.min(1,this.hp/this.maxHp))","this.hFill.style.width=(48*pct).toFixed(1)+'px'"]){
   if(!bots.includes(token))fail('bot overhead health bar missing: '+token);
 }
 for(const token of ['suppressorSince:-999','suppressorGeneration:0','const suppressorEligible=','priorSuppressor']){
@@ -1003,7 +1003,7 @@ const css=readFileSync('src/styles/game.css','utf8');
 for(const token of ['id="setting-stop-bots"','id="setting-infinite-ammo"','id="setting-all-weapons"']){
   if(!html.includes(token))fail('testing settings DOM missing: '+token);
 }
-if(!/<div id="battle-result-frame"[^>]*>\s*<div id="death-msg"/.test(html))fail('death message must stay inside the bottom result frame');
+if(!/<div id="battle-result-frame"[^>]*>\s*(?:<div id="respawn-countdown"[^>]*><\/div>\s*)?<div id="death-msg"/.test(html))fail('death message must stay inside the bottom result frame');
 for(const token of ['stopBots:false','infiniteAmmo:false','allWeapons:false',"gameSettings.stopBots=stopBots.checked","gameSettings.infiniteAmmo=infiniteAmmo.checked","gameSettings.allWeapons=allWeapons.checked"]){
   if(!settings.includes(token))fail('testing settings persistence/binding missing: '+token);
 }

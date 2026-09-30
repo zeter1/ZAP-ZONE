@@ -3,6 +3,7 @@
 ## Unreleased — 2026-09-30
 
 ### Generated Asset Pack 9 — vector tactical feedback
+- aligned stale structural regression oracles with the current bot overhead-fill and respawn-countdown DOM contracts so validation checks the intended behavior rather than the old implementation shape;
 - added ten new generated-direction SVG runtime assets for match deployment, Frontline retarget/capture, Second Wind, dodge feedback, perk paths, equipment readiness, ally tactical callouts, pause presentation and mobile controls;
 - wired every asset into a real UI/gameplay consumer while keeping text/procedural state authoritative;
 - introduced an SVG derivative workflow for geometric generated HUD art to improve DPI clarity, payload size and HTTP(S)/file:// reliability;
