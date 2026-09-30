@@ -314,6 +314,7 @@ function showKillMedal(ctx={}){
 }
 let _armorBreakT=0;
 function showArmorBreakFx(){
+  if(typeof showGeneratedPlayerArmorBreakVfx==='function')showGeneratedPlayerArmorBreakVfx();
   const root=G('armor-break-fx');if(!root)return;
   root.classList.remove('on');void root.offsetWidth;root.classList.add('on');
   clearTimeout(_armorBreakT);_armorBreakT=setTimeout(()=>root.classList.remove('on'),650);
