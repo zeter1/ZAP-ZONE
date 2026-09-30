@@ -226,6 +226,7 @@ function playFootstepSound(source=null,running=false,isBot=false,surface=null){
   const rate=(running?1.08:.94)*(.94+Math.random()*.12);
   const played=playBufferSfx(key,intensity,source,isBot?42:18,rate);
   if(!played&&!isBot)synthNoise(running?.055:.045,running?.018:.012,ground==='metal'?1500:ground==='gravel'?760:520);
+  if(typeof showGeneratedFootstepVfx==='function')showGeneratedFootstepVfx(source,ground,running,isBot);
 }
 function tickPlayerFootsteps(distance,running,onGround){
   const d=Math.max(0,Math.min(.65,Number(distance)||0));
@@ -565,10 +566,14 @@ function positionGeneratedCombatVfx(item){
     x=(item.screen.x*.5+.5)*innerWidth;y=(-item.screen.y*.5+.5)*innerHeight;
     const dist=camera.position.distanceTo(item.worldPos);scale*=Math.max(.48,Math.min(1.08,12/Math.max(7,dist)));
   }else{
-    const stage=byId('fp-weapon-art-stage'),flash=byId('fp-weapon-flash');
-    if(item.anchor==='muzzle'&&flash){const r=flash.getBoundingClientRect();x=r.left+r.width*.50;y=r.top+r.height*.50;}
-    else if((item.anchor==='ejection'||item.anchor==='magazine')&&stage){
-      const r=stage.getBoundingClientRect();x=r.left+r.width*(item.anchor==='magazine'?.68:.58);y=r.top+r.height*(item.anchor==='magazine'?.64:.38);
+    if(item.anchor==='footstep'){x=innerWidth*.5;y=innerHeight*.88;}
+    else if(item.anchor==='recovery'){x=innerWidth*.5;y=innerHeight*.62;}
+    else{
+      const stage=byId('fp-weapon-art-stage'),flash=byId('fp-weapon-flash');
+      if(item.anchor==='muzzle'&&flash){const r=flash.getBoundingClientRect();x=r.left+r.width*.50;y=r.top+r.height*.50;}
+      else if((item.anchor==='ejection'||item.anchor==='magazine')&&stage){
+        const r=stage.getBoundingClientRect();x=r.left+r.width*(item.anchor==='magazine'?.68:.58);y=r.top+r.height*(item.anchor==='magazine'?.64:.38);
+      }
     }
   }
   el.style.visibility='visible';el.style.left=x.toFixed(1)+'px';el.style.top=y.toFixed(1)+'px';
@@ -614,6 +619,22 @@ function showGeneratedPlasmaImpactVfx(pos){
 }
 function showGeneratedPlasmaReloadVfx(){
   return playGeneratedCombatVfx('plasmaReload',{anchor:'magazine',rotation:0,scale:1});
+}
+function showGeneratedShotgunShellInsertVfx(){
+  return playGeneratedCombatVfx('shotgunShellInsert',{anchor:'magazine',rotation:-6,scale:1});
+}
+function showGeneratedFootstepVfx(source=null,surface='concrete',running=false,isBot=false){
+  const kind=surface==='water'?'footstepWater':surface==='metal'?'footstepMetal':'footstepDust';
+  const scale=running?1.04:.90;
+  if(isBot){
+    const base=combatSourcePosition(source);if(!base?.clone)return false;
+    const pos=base.clone();pos.y=Math.max(.04,Number(pos.y)||0)+.04;
+    return playGeneratedCombatVfx(kind,{worldPos:pos,rotation:0,scale});
+  }
+  return playGeneratedCombatVfx(kind,{anchor:'footstep',rotation:0,scale});
+}
+function showGeneratedMedkitRecoveryVfx(mode='heal'){
+  return playGeneratedCombatVfx(mode==='armor'?'medkitArmor':'medkitHeal',{anchor:'recovery',rotation:0,scale:1});
 }
 function showGeneratedRicochetVfx(pos,surface='concrete'){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?58:24;

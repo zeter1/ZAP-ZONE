@@ -780,3 +780,13 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .generated-combat-vfx[data-kind="botHit"]{filter:drop-shadow(0 0 9px rgba(255,190,72,.58)) drop-shadow(0 0 14px rgba(255,94,32,.22));}
 .generated-combat-vfx[data-kind="pickupCollect"]{filter:drop-shadow(0 0 11px rgba(89,238,230,.52)) drop-shadow(0 0 17px rgba(70,170,255,.20));}
 @media(max-width:760px){.generated-combat-vfx[data-kind="botReload"]{max-width:155px;max-height:155px}.generated-combat-vfx[data-kind="botHit"]{max-width:132px;max-height:132px}.generated-combat-vfx[data-kind="pickupCollect"]{max-width:150px;max-height:150px}}
+
+
+/* Generated Asset Pack 18 — shotgun shell insert, surface footsteps and medkit recovery. */
+.generated-combat-vfx[data-kind="shotgunShellInsert"]{mix-blend-mode:normal;filter:drop-shadow(0 4px 5px rgba(0,0,0,.58)) drop-shadow(0 0 9px rgba(255,163,55,.30));}
+.generated-combat-vfx[data-kind="footstepMetal"]{filter:drop-shadow(0 0 10px rgba(255,161,42,.46)) drop-shadow(0 0 8px rgba(83,216,255,.20));}
+.generated-combat-vfx[data-kind="footstepDust"]{mix-blend-mode:normal;filter:drop-shadow(0 5px 6px rgba(0,0,0,.30));}
+.generated-combat-vfx[data-kind="footstepWater"]{filter:drop-shadow(0 0 10px rgba(82,206,255,.40));}
+.generated-combat-vfx[data-kind="medkitHeal"]{filter:drop-shadow(0 0 15px rgba(86,255,104,.56)) drop-shadow(0 0 24px rgba(52,198,78,.20));}
+.generated-combat-vfx[data-kind="medkitArmor"]{filter:drop-shadow(0 0 15px rgba(91,226,255,.58)) drop-shadow(0 0 24px rgba(73,111,255,.22));}
+@media(max-width:760px){.generated-combat-vfx[data-kind="shotgunShellInsert"]{max-width:104px;max-height:104px}.generated-combat-vfx[data-kind^="footstep"]{max-width:118px;max-height:118px}.generated-combat-vfx[data-kind="medkitHeal"],.generated-combat-vfx[data-kind="medkitArmor"]{max-width:190px;max-height:190px}}
