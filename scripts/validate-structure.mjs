@@ -118,6 +118,7 @@ const generatedCombatVfxPack19SvgAssets=['assets/ui/fx/landing-impact-vfx-atlas-
 const generatedCombatVfxPack20SvgAssets=['assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg','assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'];
 const generatedGrenadePack20SvgAssets=['assets/ui/weapons/fp/player-grenade-fps-20.svg','assets/ui/pickups/weapons/world-grenade-pickup-20.svg','assets/ui/equipment/frag-grenade-ui-atlas-20.svg'];
 const generatedGrenadePack21SvgAssets=['assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg','assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg','assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg'];
+const generatedWeaponActionPack22WebpAssets=['assets/ui/fx/rifle-reload-vfx-atlas-22.webp','assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp'];
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -145,7 +146,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -174,7 +175,7 @@ for(const file of ['src/styles/game.css','version.json','scripts/stamp-web-build
 for(const file of requiredScripts)if(!html.includes("'"+file+"'"))fail('cache bootstrap does not load '+file);
 if(!html.includes('id="game-styles"')||!html.includes('href="src/styles/game.css?v='))fail('index does not load versioned game.css');
 if(requiredScripts.some(file=>html.includes('<script src="'+file)))fail('local game scripts must load through cache bootstrap');
-for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"','id="frontline-capture-burst"','id="battle-result-frame"','id="world-pickup-art-layer"','id="fp-weapon-art-wrap"','id="fp-weapon-art-stage"','id="fp-weapon-art"','id="fp-weapon-flash"','id="reload-state-art"','id="pickup-toast"']){
+for(const token of ['id="combat-medal"','id="status-icons"','id="armor-break-fx"','id="hitmarker"','id="damage-direction"','id="threat-direction"','id="settings-modal"','id="fps-counter"','id="sniper-scope"','id="frontline-map"','id="frontline-minimap"','id="frontline-map-hint"','id="left-tactical-stack"','id="frontline-objective"','id="frontline-track"','id="frontline-bearing"','id="frontline-capture-burst"','id="battle-result-frame"','id="world-pickup-art-layer"','id="fp-weapon-art-wrap"','id="fp-weapon-art-stage"','id="fp-weapon-art"','id="fp-weapon-action"','id="fp-weapon-flash"','id="reload-state-art"','id="pickup-toast"']){
   if(!html.includes(token))fail('HUD integration missing: '+token);
 }
 if(/<style>[\s\S]{200,}<\/style>/i.test(html))fail('large inline style returned');
@@ -221,6 +222,15 @@ for(const file of generatedTacticalHudV2WebpAssets){
   if(!expected||width!==expected[0]||height!==expected[1])fail('generated tactical HUD v2 dimensions invalid: '+file+' ('+width+'x'+height+')');
   if((bytes[20]&0x10)===0)fail('generated tactical HUD v2 alpha flag missing: '+file);
 }
+for(const file of generatedWeaponActionPack22WebpAssets){
+  const bytes=readFileSync(file);
+  if(bytes.length>160*1024)fail('generated Pack 22 weapon-action atlas exceeds 160 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('generated Pack 22 weapon-action atlas must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  if(width!==720||height!==480)fail('generated Pack 22 weapon-action atlas must be 720x480: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('generated Pack 22 weapon-action atlas alpha flag missing: '+file);
+}
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
   'data-generated-src="assets/ui/feedback/levelup-core-tech-01.webp"',
@@ -246,6 +256,15 @@ for(const file of audioAssets){
 const catalog=readFileSync('src/assets/catalog.js','utf8');
 for(const file of [...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)')||!catalog.includes('function perkFallbackAsset(id,path)'))fail('per-id perk asset resolver/fallback missing');
+for(const token of ["pack22RifleReload:'assets/ui/fx/rifle-reload-vfx-atlas-22.webp'","pack22SniperBolt:'assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp'","rifleReloadTactical:Object.freeze","rifleReloadEmpty:Object.freeze","sniperBoltCycle:Object.freeze","Array.isArray(spec.sequence)"])if(!catalog.includes(token))fail('Pack 22 catalog wiring missing: '+token);
+const weaponSystem=readFileSync('src/weapons/system.js','utf8');
+for(const token of ['fpGeneratedWeaponAction','showGeneratedRifleReloadVfx','showGeneratedSniperBoltCycleVfx','tickGeneratedFirstPersonAction','generatedFirstPersonActionBlocksScope','id=\'fp-weapon-action\''])if(!weaponSystem.includes(token)&&token!=="id='fp-weapon-action'")fail('Pack 22 first-person action owner missing: '+token);
+const combatSource=readFileSync('src/combat/combat.js','utf8');
+for(const token of ['showGeneratedRifleReloadVfx(reloadMode,reloadTot)','showGeneratedSniperBoltCycleVfx(cycleTot)','!fullRifleReload'])if(!combatSource.includes(token))fail('Pack 22 combat consumer missing: '+token);
+const runtimeSource=readFileSync('src/game/runtime.js','utf8');
+for(const token of ['generatedFirstPersonActionBlocksScope()',"isGeneratedFirstPersonActionActive('sniperBoltCycle')",'tickGeneratedFirstPersonAction(dt)'])if(!runtimeSource.includes(token))fail('Pack 22 runtime consumer missing: '+token);
+for(const token of ['#fp-weapon-action{','#fp-weapon-action.on{'])if(!gameCss.includes(token))fail('Pack 22 action CSS missing: '+token);
+if(!html.includes('id="fp-weapon-action"'))fail('Pack 22 action DOM missing');
 for(const token of ["id==='damage'","id==='reload'","id==='mobility'||id==='sprint_drive'"]){
   if(!catalog.includes(token))fail('generated perk presentation mapping missing: '+token);
 }

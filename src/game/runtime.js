@@ -49,7 +49,8 @@ function loop(ts){
   if(sprintExitT>0)sprintExitT=Math.max(0,sprintExitT-dt);
   if(cycleT>0){cycleT=Math.max(0,cycleT-dt);if(cycleT<=0){cycleKind='';cycleTot=0;}}
   const scopedWeapon=activeW.aimMode==='scope';
-  const adsWanted=!IS_TOUCH&&scopedWeapon&&zooming?1:0;
+  const actionBlocksScope=typeof generatedFirstPersonActionBlocksScope==='function'&&generatedFirstPersonActionBlocksScope();
+  const adsWanted=!IS_TOUCH&&scopedWeapon&&zooming&&!actionBlocksScope?1:0;
   const adsTime=adsWanted>adsBlend?(activeW.adsIn||.18):(activeW.adsOut||.12);
   const adsStep=dt/Math.max(.04,adsTime);
   adsBlend+=Math.max(-adsStep,Math.min(adsStep,adsWanted-adsBlend));
@@ -72,7 +73,7 @@ function loop(ts){
 
   _euler.x=effPitch;_euler.y=effYaw;camera.quaternion.setFromEuler(_euler);
 
-  const scopeActive=!IS_TOUCH&&scopedWeapon&&adsBlend>.88;
+  const scopeActive=!actionBlocksScope&&!IS_TOUCH&&scopedWeapon&&adsBlend>.88;
   const scopedFov=scopedWeapon?(activeW.zoomFov||ZOOM_FOV):BASE_FOV;
   const scopeBreath=activeW.isSniper?Math.sin(ts*.00145)*.10*adsBlend:0;
   const targetFov=BASE_FOV+(scopedFov-BASE_FOV)*adsBlend+scopeBreath;
@@ -208,7 +209,8 @@ function loop(ts){
     if(cycleT>0&&!cycleEjected&&cycleP>.38&&(cycleKind==='pump'||cycleKind==='bolt')){
       const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
       ejectCasing(casingPos,camera.quaternion,cycleKind==='pump');
-      showGeneratedCasingFx(cycleKind==='pump');
+      const fullBoltAction=cycleKind==='bolt'&&typeof isGeneratedFirstPersonActionActive==='function'&&isGeneratedFirstPersonActionActive('sniperBoltCycle');
+      if(!fullBoltAction)showGeneratedCasingFx(cycleKind==='pump');
       cycleEjected=true;
     }
     const pumpZ=cycleKind==='pump'?cycleWave*.11:0;
@@ -218,6 +220,7 @@ function loop(ts){
     gunGrp.rotation.x=recoil*recoilVis.pitch+gunSwayY*.8*swayM+cycleRot;gunGrp.rotation.y=-gunSwayX*.9*swayM;gunGrp.rotation.z=bobSide*.8*bobM+recoil*recoilVis.roll+(cycleKind==='bolt'?cycleWave*.08:0);
   }
   if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/FP_MUZZLE_FLASH_SECONDS)*.72;if(flashM)flashM.material.opacity=beamT/FP_MUZZLE_FLASH_SECONDS;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
+  if(typeof tickGeneratedFirstPersonAction==='function')tickGeneratedFirstPersonAction(dt);
   syncGeneratedFirstPersonWeaponArt(gunGrp.visible);
 
   if(sCD>0)sCD-=dt;

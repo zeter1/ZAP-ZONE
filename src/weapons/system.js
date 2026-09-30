@@ -521,7 +521,53 @@ function setProceduralFirstPersonRigVisible(visible){
   for(const child of gunGrp.children)child.visible=visible;
 }
 let fpGeneratedWeaponModel=null,fpGeneratedWeaponPending=null,fpGeneratedWeaponActive=false,fpGeneratedWeaponLoading=false,fpGeneratedWeaponLoadId=0;
+let fpGeneratedWeaponAction=null;
+function stopGeneratedFirstPersonAction(){
+  const action=G('fp-weapon-action'),img=G('fp-weapon-art');
+  if(action){
+    action.classList.remove('on');action.style.opacity='0';
+    action.style.removeProperty('background-image');action.style.removeProperty('background-size');action.style.removeProperty('background-position');
+  }
+  if(img)img.style.opacity='';
+  fpGeneratedWeaponAction=null;
+}
+function playGeneratedFirstPersonAction(kind,duration=0){
+  const action=G('fp-weapon-action'),img=G('fp-weapon-art');
+  const spec=typeof generatedCombatVfxSpec==='function'?generatedCombatVfxSpec(kind):null;
+  const first=typeof generatedCombatVfxFrame==='function'?generatedCombatVfxFrame(kind,0):null;
+  if(!fpGeneratedWeaponActive||!action||!img||!spec||!first)return false;
+  stopGeneratedFirstPersonAction();
+  fpGeneratedWeaponAction={kind,spec,age:0,duration:Math.max(.12,Number(duration)||spec.duration),frame:-1};
+  img.style.opacity='0';action.style.opacity='1';action.classList.add('on');
+  applyPresentationAtlasFrame(action,first);
+  return true;
+}
+function tickGeneratedFirstPersonAction(dt){
+  const state=fpGeneratedWeaponAction,action=G('fp-weapon-action');
+  if(!state||!action)return;
+  state.age+=Math.max(0,Math.min(.05,Number(dt)||0));
+  const progress=Math.max(0,Math.min(1,state.age/Math.max(.001,state.duration)));
+  const frame=Math.min(state.spec.frames-1,Math.floor(progress*state.spec.frames));
+  if(frame!==state.frame){
+    applyPresentationAtlasFrame(action,generatedCombatVfxFrame(state.kind,frame));
+    state.frame=frame;
+  }
+  if(progress>=1)stopGeneratedFirstPersonAction();
+}
+function showGeneratedRifleReloadVfx(mode='tactical',duration=0){
+  return playGeneratedFirstPersonAction(mode==='empty'?'rifleReloadEmpty':'rifleReloadTactical',duration);
+}
+function showGeneratedSniperBoltCycleVfx(duration=0){
+  return playGeneratedFirstPersonAction('sniperBoltCycle',duration);
+}
+function isGeneratedFirstPersonActionActive(kind=''){
+  return !!fpGeneratedWeaponAction&&(!kind||fpGeneratedWeaponAction.kind===kind);
+}
+function generatedFirstPersonActionBlocksScope(){
+  return isGeneratedFirstPersonActionActive('sniperBoltCycle');
+}
 function hideGeneratedFirstPersonWeaponArt(showProcedural=true){
+  stopGeneratedFirstPersonAction();
   const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash'),img=G('fp-weapon-art');
   if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');}
   if(flash)flash.style.opacity='0';
@@ -576,8 +622,9 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   if(!running){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
   ensureGeneratedFirstPersonWeaponArtLoaded();
   if(!fpGeneratedWeaponActive){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
-  const show=Boolean(visible);
-  wrap.classList.toggle('shown',show);wrap.classList.toggle('scope-hidden',!visible);
+  const actionVisible=!!fpGeneratedWeaponAction;
+  const show=Boolean(visible)||actionVisible;
+  wrap.classList.toggle('shown',show);wrap.classList.toggle('scope-hidden',!show);
   if(!show){if(flash)flash.style.opacity='0';return;}
   // Preserve the baked first-person angle: gameplay sway/recoil may move the art,
   // but must not drag it across the center-bottom HUD or rotate it into a poster-like pose.
@@ -599,7 +646,7 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   if(flash){
     const life=Math.max(0,Math.min(1,beamT/FP_MUZZLE_FLASH_SECONDS));
     const flashScale=(tune.flashScale||0)*(.72+life*.42);
-    flash.style.opacity=visible&&life>0&&flashScale>0?String(Math.pow(life,.55)):'0';
+    flash.style.opacity=!actionVisible&&visible&&life>0&&flashScale>0?String(Math.pow(life,.55)):'0';
     flash.style.setProperty('--fp-flash-pop',flashScale.toFixed(3));
     flash.style.setProperty('--fp-flash-twist',((((shotSequence%5)-2)*1.8)).toFixed(1)+'deg');
     const frame=Math.abs(shotSequence)%8,col=frame%4,row=frame>=4?1:0;

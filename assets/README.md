@@ -1,3 +1,8 @@
+## Pack 22 consumers
+Two approved first-person weapon-action sheets are integrated as `ui/fx/rifle-reload-vfx-atlas-22.webp` and `ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp`. `src/weapons/system.js` owns the temporary action layer inside the existing first-person DOM stage; `src/combat/combat.js` starts actions only from real rifle reload / SR-9 cycle events, and `src/game/runtime.js` advances them from elapsed time.
+
+Rifle tactical reload skips the late charging phase while empty reload uses all twelve source frames. SR-9 bolt cycling temporarily hides scope presentation, but the existing cycle timer, world casing ejection, weapon blocking and procedural animation remain authoritative/fallback. Both 720×480 alpha-WebP atlases are presentation-only and never become persistent Three.js textures.
+
 ## Pack 18 consumers
 Three source previews approved in the current ChatGPT dialog are integrated as `ui/fx/player-action-vfx-atlas-18.svg`, a deterministic 4×7 static-frame SVG atlas. Rows 0–1 decorate each successful shotgun shell insert; rows 2–4 decorate the existing distance-driven metal, concrete/gravel and water footsteps; rows 5–6 distinguish real HP recovery from medkit-to-armor conversion.
 

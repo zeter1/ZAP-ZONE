@@ -18,6 +18,22 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Weapon Action VFX Pack 22 (2026-09-30)
+The two first-person source sheets generated and reviewed in the current ChatGPT dialog are approved for runtime integration under the same-dialog source exception.
+
+Runtime derivatives:
+- `assets/ui/fx/rifle-reload-vfx-atlas-22.webp` — 720×480 alpha WebP, 4×3 source grid; tactical reload uses frames 0–7 then 11, while empty reload uses all 12;
+- `assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp` — 720×480 alpha WebP, 4×3 / 12 frames for SR-9 bolt lift, extraction/ejection, chambering, lock and return.
+
+Integration rules:
+- playback is elapsed-time driven by the authoritative existing `reloadTot/reloadT` and `cycleTot/cycleT` durations rather than internal image animation;
+- action art temporarily replaces the normal generated first-person weapon image inside the same bounded DOM stage, so the static weapon is never double-rendered underneath;
+- SR-9 scope presentation is hidden only while the bolt action is active and can return if ADS is still held afterwards;
+- rifle magazine-drop and sniper generic casing presentation remain fallbacks when the full action atlas cannot start; the real Three.js casing ejection remains unchanged;
+- no ammo transfer, reload/cycle duration, damage, recoil, cadence, projectile or RNG semantics are owned by Pack 22.
+
+The 1536×1024 reviewed source rasters are not duplicated in Git. Provenance is recorded in `asset-staging/2026-09-30-vfx-pack-22/README.md`.
+
 ## Grenade VFX Asset Pack 21 — selected sheet #2 (2026-09-30)
 The user explicitly selected the **second generated grenade sheet** from the current dialog. It is treated as reviewed art direction under the same-dialog source exception. The heavy 1774×887 raster concept sheet is not duplicated into runtime; its stable source identity is recorded in staging and three compact scriptless SVG atlases reproduce the useful missing states.
 

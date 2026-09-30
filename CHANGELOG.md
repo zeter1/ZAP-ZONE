@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Weapon Action VFX Pack 22 — rifle reload + SR-9 bolt cycle
+- integrated both newly approved first-person source sheets as two compact 720×480 alpha-WebP 4×3 runtime atlases instead of shipping the 1536×1024 source rasters;
+- rifle tactical reload uses a shortened nine-frame path while empty reload uses the complete twelve-frame sequence, both synchronized to the authoritative existing reload timer and ammo transfer;
+- SR-9 now plays the complete twelve-frame bolt lift/extract/eject/chamber/lock sequence over the real existing cycle timer; the world casing ejection remains authoritative and the old generic casing overlay is suppressed only while the full bolt animation is active;
+- generated weapon-action art temporarily replaces the static first-person render and hides the sniper scope during bolt operation, preventing double weapons while keeping the procedural weapon animation and existing VFX as load/decode fallbacks;
+- no reload/cycle timing, ammo, recoil, damage, fire cadence, projectile behavior or gameplay RNG was changed; structural validation covers WebP alpha/dimensions/budgets and all Pack 22 wiring.
+
 ### Grenade VFX Asset Pack 21 — selected sheet #2
 - integrated the user-selected second grenade concept sheet as three compact scriptless runtime atlases instead of shipping the heavy source raster;
 - added a tracked flight trail and close-range last-0.78-second live-fuse warning for both player and bot fragmentation grenades;

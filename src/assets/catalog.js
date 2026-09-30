@@ -216,7 +216,9 @@ const GAME_ASSETS=versionAssetTree({
     pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg',
     pack21GrenadeMotion:'assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg',
     pack21GrenadeBlast:'assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg',
-    pack21GrenadeDebris:'assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg'
+    pack21GrenadeDebris:'assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg',
+    pack22RifleReload:'assets/ui/fx/rifle-reload-vfx-atlas-22.webp',
+    pack22SniperBolt:'assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -660,15 +662,19 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   grenadeExplosion21:Object.freeze({asset:'pack21GrenadeBlast',row:0,cols:4,rows:4,frames:8,duration:.76,size:306}),
   grenadeSmoke21:Object.freeze({asset:'pack21GrenadeBlast',row:2,cols:4,rows:4,frames:8,duration:1.35,size:286}),
   grenadeDebris21:Object.freeze({asset:'pack21GrenadeDebris',row:0,cols:8,rows:3,frames:16,duration:.92,size:260}),
-  grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris',row:2,cols:8,rows:3,frames:5,duration:2.60,size:180})
+  grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris',row:2,cols:8,rows:3,frames:5,duration:2.60,size:180}),
+  rifleReloadTactical:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.45,width:450,height:400}),
+  rifleReloadEmpty:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:12,duration:2.05,width:450,height:400}),
+  sniperBoltCycle:Object.freeze({asset:'pack22SniperBolt',row:0,cols:4,rows:3,frames:12,duration:.95,width:500,height:444})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){
   const spec=generatedCombatVfxSpec(kind);if(!spec)return null;
   const frame=Math.max(0,Math.min(spec.frames-1,Math.floor(Number(index)||0)));
+  const sourceFrame=Array.isArray(spec.sequence)?(spec.sequence[frame]??frame):frame;
   if(spec.asset){
     const cols=Math.max(1,spec.cols||1),rows=Math.max(1,spec.rows||1);
-    return presentationAtlasFrame(GAME_ASSETS.presentationVfx[spec.asset],frame%cols,(spec.row||0)+Math.floor(frame/cols),cols,rows);
+    return presentationAtlasFrame(GAME_ASSETS.presentationVfx[spec.asset],sourceFrame%cols,(spec.row||0)+Math.floor(sourceFrame/cols),cols,rows);
   }
-  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.combatAtlas,frame,spec.row,8,10);
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.combatAtlas,sourceFrame,spec.row,8,10);
 }
