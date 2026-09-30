@@ -85,7 +85,7 @@ let perkRerollsLeft=0;
 function increaseClips(mult,includeBomb=false){
   syncCurrentAmmo();
   WEAPONS.forEach((w,i)=>{
-    if((w.isBomb&&!includeBomb)||w.isSmoke)return;
+    if((w.isBomb&&!includeBomb)||w.isSmoke||w.isGrenade)return;
     const old=w.clip;
     w.clip=Math.max(old+1,Math.round(old*mult));
     const gain=w.clip-old;
@@ -93,7 +93,7 @@ function increaseClips(mult,includeBomb=false){
   });
   ammo=weaponAmmo[curW];
 }
-function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isMine||w.isBomb||w.isSmoke)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
+function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isMine||w.isBomb||w.isSmoke||w.isGrenade)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
 function accelerateReload(mult){WEAPONS.forEach(w=>{w.reload=Math.max(.32,w.reload*mult);});}
 
 const ALL_PERKS=[
