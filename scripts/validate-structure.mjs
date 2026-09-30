@@ -1214,7 +1214,7 @@ for(const token of [
   'function showGeneratedMagazineDropFx','function showGeneratedSurfaceImpactVfx','function showGeneratedNearMissFx',
   'tickGeneratedCombatVfx(safeDt)','showGeneratedNearMissFx(source,pressure)'
 ])if(!settings.includes(token))fail('generated combat VFX runtime contract missing: '+token);
-for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell')showGeneratedMagazineDropFx(w.key)"]){
+for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullRifleReload)showGeneratedMagazineDropFx(w.key)"]){
   if(!combat.includes(token))fail('generated combat VFX player consumer missing: '+token);
 }
 if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');
@@ -1262,7 +1262,7 @@ for(const token of [
   "smokeDeploy:Object.freeze({asset:'pack12',row:2,cols:8,rows:5,frames:8",
   "mineDetonation:Object.freeze({asset:'pack12',row:3,cols:8,rows:5,frames:8",
   "bombDetonation:Object.freeze({asset:'pack12',row:4,cols:8,rows:5,frames:8",
-  "(spec.row||0)+Math.floor(frame/cols)"
+  "(spec.row||0)+Math.floor(sourceFrame/cols)"
 ])if(!catalog.includes(token))fail('generated combat VFX pack 12 catalog contract missing: '+token);
 for(const token of [
   'function showGeneratedRicochetVfx','function showGeneratedPenetrationExitVfx','function showGeneratedSmokeDeployVfx',
