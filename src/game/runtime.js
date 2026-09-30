@@ -137,8 +137,17 @@ function loop(ts){
   wasWeaponSprinting=sprintingNow;
   if(crosshair)crosshair.classList.toggle('weapon-lowered',sprintingNow||weaponEquipT>0||sprintExitT>0);
   if((K['Space']||mobileInput.jumpQueued)&&onGnd){jumpV=6*plr.jumpM;onGnd=false;mobileInput.jumpQueued=false;}
+  const wasAirborne=!onGnd;
   jumpV-=22*dt;camera.position.y+=jumpV*dt;
-  if(camera.position.y<=1.75){camera.position.y=1.75;onGnd=true;jumpV=0;}
+  if(camera.position.y<=1.75){
+    const landingSpeed=wasAirborne?Math.max(0,-jumpV):0;
+    camera.position.y=1.75;
+    if(wasAirborne&&landingSpeed>=4.2&&typeof showGeneratedLandingVfx==='function'){
+      const surface=typeof footstepSurfaceAt==='function'?footstepSurfaceAt(null):'concrete';
+      showGeneratedLandingVfx(surface,landingSpeed);
+    }
+    onGnd=true;jumpV=0;
+  }
 
   // Apply movement with wall collision
   let newX=camera.position.x+_mv.x*dt;

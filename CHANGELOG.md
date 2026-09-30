@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 19 — landing impact and first-person smoke throw
+- integrated the two newly approved source previews as compact deterministic scriptless SVG atlases: a two-material landing impact sequence and an eight-frame first-person smoke-grenade throw;
+- landing VFX fires only on the real airborne-to-ground transition, scales from impact speed, uses dust for concrete/gravel, energy/sparks for metal and intentionally skips water;
+- player smoke throws now receive a short local hand/grenade release animation only after the authoritative 3D grenade has been spawned; grenade physics, ammo, cooldown and Pack 12 smoke deployment remain unchanged;
+- both effects reuse the existing bounded elapsed-time DOM VFX player, add no gameplay RNG draws and retain current procedural/3D presentation as fallback;
+- structural validation now covers atlas safety/count/byte budgets, catalog/runtime/consumer/CSS wiring and the complete runtime asset set through Pack 19.
+
 ### Generated Asset Pack 18 — shotgun reload, footsteps and medkit recovery
 - integrated the three newly approved source previews as one deterministic scriptless 4×7 SVG runtime atlas;
 - each actually inserted shotgun shell now receives a synchronized local insert VFX, while metal/concrete-gravel/water footsteps decorate the existing distance-driven player/bot stride events;
