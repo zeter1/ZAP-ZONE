@@ -117,6 +117,7 @@ const generatedCombatVfxPack18SvgAtlas='assets/ui/fx/player-action-vfx-atlas-18.
 const generatedCombatVfxPack19SvgAssets=['assets/ui/fx/landing-impact-vfx-atlas-19.svg','assets/ui/fx/smoke-throw-vfx-atlas-19.svg'];
 const generatedCombatVfxPack20SvgAssets=['assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg','assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'];
 const generatedGrenadePack20SvgAssets=['assets/ui/weapons/fp/player-grenade-fps-20.svg','assets/ui/pickups/weapons/world-grenade-pickup-20.svg','assets/ui/equipment/frag-grenade-ui-atlas-20.svg'];
+const generatedGrenadePack21SvgAssets=['assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg','assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg','assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg'];
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -155,7 +156,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets,...generatedGrenadePack21SvgAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1430,3 +1431,22 @@ if(pack20GrenadeOwner<0||pack20GrenadePush<pack20GrenadeOwner||pack20GrenadeFx<p
 const pack20BombOwner=combat.indexOf('function placeBomb(){'),pack20BombPush=combat.indexOf("kind:'bomb'",pack20BombOwner),pack20BombFx=combat.indexOf("showGeneratedBombArmVfx();",pack20BombPush);
 if(pack20BombOwner<0||pack20BombPush<pack20BombOwner||pack20BombFx<pack20BombPush)fail('pack 20 bomb-arm VFX must decorate a successfully placed player bomb');
 for(const token of ['.generated-combat-vfx[data-kind="grenadeThrow"]','.generated-combat-vfx[data-kind="bombArm"]'])if(!gameCss.includes(token))fail('generated grenade/bomb pack 20 CSS missing: '+token);
+
+
+{
+  const [motion,blast,debris]=generatedGrenadePack21SvgAssets.map(file=>readFileSync(file,'utf8'));
+  if(Buffer.byteLength(motion)>64*1024||Buffer.byteLength(blast)>64*1024||Buffer.byteLength(debris)>72*1024)fail('generated grenade pack 21 SVG atlas exceeds byte budget');
+  if(!motion.includes('viewBox="0 0 1024 256"')||!blast.includes('viewBox="0 0 512 512"')||!debris.includes('viewBox="0 0 1024 384"'))fail('generated grenade pack 21 viewBox invalid');
+  for(const source of [motion,blast,debris])if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime grenade pack 21 atlases must be static, scriptless and self-contained');
+  if((motion.match(/class="frame row-/g)||[]).length!==16)fail('pack 21 motion atlas must contain 16 frames');
+  if((blast.match(/class="frame row-/g)||[]).length!==16)fail('pack 21 blast atlas must contain 16 frames');
+  if((debris.match(/class="frame row-/g)||[]).length!==21)fail('pack 21 debris/scorch atlas must contain 21 frames');
+}
+for(const token of ["pack21GrenadeMotion:'assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg'","pack21GrenadeBlast:'assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg'","pack21GrenadeDebris:'assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg'","grenadeFlight:Object.freeze({asset:'pack21GrenadeMotion'","grenadeFuse:Object.freeze({asset:'pack21GrenadeMotion'","grenadeExplosion21:Object.freeze({asset:'pack21GrenadeBlast'","grenadeSmoke21:Object.freeze({asset:'pack21GrenadeBlast'","grenadeDebris21:Object.freeze({asset:'pack21GrenadeDebris'","grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris'"])if(!catalog.includes(token))fail('generated grenade pack 21 catalog contract missing: '+token);
+for(const token of ['worldObject=options.worldObject?.position?.clone','delay:Math.max(0,Number(options.delay)||0)','if(item.worldObject?.position?.clone&&item.worldPos)','if(item.age<item.delay)','function showGeneratedGrenadeFlightVfx','function showGeneratedGrenadeFuseVfx',"playGeneratedCombatVfx('grenadeExplosion21'","playGeneratedCombatVfx('grenadeSmoke21'","playGeneratedCombatVfx('grenadeDebris21'","playGeneratedCombatVfx('grenadeScorch21'"])if(!settings.includes(token))fail('generated grenade pack 21 runtime helper missing: '+token);
+for(const token of ["showGeneratedGrenadeFlightVfx(m);","g.fuse<=.78","showGeneratedGrenadeFuseVfx(g.m);","showGeneratedFragGrenadeVfx(pos);"])if(!combat.includes(token))fail('generated grenade pack 21 combat consumer missing: '+token);
+const pack21BotPush=combat.indexOf("ownerType:'bot'"),pack21BotFlight=combat.indexOf("showGeneratedGrenadeFlightVfx(m);",pack21BotPush);
+if(pack21BotPush<0||pack21BotFlight<pack21BotPush)fail('pack 21 bot grenade flight VFX must follow a successfully spawned grenade');
+const pack21PlayerOwner=combat.indexOf("ownerType:'player'"),pack21PlayerFlight=combat.indexOf("showGeneratedGrenadeFlightVfx(m);",pack21PlayerOwner);
+if(pack21PlayerOwner<0||pack21PlayerFlight<pack21PlayerOwner)fail('pack 21 player grenade flight VFX must follow a successfully spawned grenade');
+for(const token of ['.generated-combat-vfx[data-kind="grenadeFlight"]','.generated-combat-vfx[data-kind="grenadeFuse"]','.generated-combat-vfx[data-kind="grenadeExplosion21"]','.generated-combat-vfx[data-kind="grenadeSmoke21"]','.generated-combat-vfx[data-kind="grenadeDebris21"]','.generated-combat-vfx[data-kind="grenadeScorch21"]'])if(!gameCss.includes(token))fail('generated grenade pack 21 CSS missing: '+token);
