@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="640" height="640">
+<defs>
+  <radialGradient id="core"><stop offset="0" stop-color="#fff"/><stop offset=".18" stop-color="#dfffff"/><stop offset=".45" stop-color="#52eaff"/><stop offset="1" stop-color="#1474ff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="beam"><stop stop-color="#fff"/><stop offset=".22" stop-color="#9cf7ff"/><stop offset=".58" stop-color="#25c9ff"/><stop offset="1" stop-color="#2868ff" stop-opacity="0"/></linearGradient>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<g transform="translate(160 320)">
+  <ellipse rx="128" ry="118" fill="#1ca7ff" opacity="0" filter="url(#soft)"><animate attributeName="opacity" values="0;.22;.34;.16;0" keyTimes="0;.08;.24;.62;1" dur=".74s" repeatCount="indefinite"/><animate attributeName="rx" values="48;100;150;178" dur=".74s" repeatCount="indefinite"/><animate attributeName="ry" values="44;88;120;142" dur=".74s" repeatCount="indefinite"/></ellipse>
+  <circle r="26" fill="url(#core)" filter="url(#glow)"><animate attributeName="r" values="8;34;27;12;2" keyTimes="0;.14;.34;.62;1" dur=".74s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;.52;0" keyTimes="0;.08;.28;.72;1" dur=".74s" repeatCount="indefinite"/></circle>
+  <g opacity="0" filter="url(#glow)">
+    <path d="M8 -16 C94 -84 198 -78 384 -25 C262 -3 158 6 20 8Z" fill="url(#beam)"/>
+    <path d="M10 12 C112 22 232 42 405 78 C258 93 130 62 24 34Z" fill="url(#beam)" opacity=".64"/>
+    <animate attributeName="opacity" values="0;1;.82;.36;0" keyTimes="0;.14;.34;.64;1" dur=".74s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="scale" values=".18 .36;1 .72;1.14 1;1.28 1.08" dur=".74s" repeatCount="indefinite"/>
+  </g>
+  <g fill="none" stroke-linecap="round" filter="url(#glow)">
+    <path d="M24 -8 C92 -150 176 -85 260 -142 S390 -88 455 -150" stroke="#bdfaff" stroke-width="5" stroke-dasharray="18 14"><animate attributeName="stroke-dashoffset" values="180;0;-130" dur=".74s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.9;.52;0" keyTimes="0;.2;.55;1" dur=".74s" repeatCount="indefinite"/></path>
+    <path d="M28 20 C120 135 176 82 274 132 S390 88 470 138" stroke="#40d9ff" stroke-width="4" stroke-dasharray="10 17"><animate attributeName="stroke-dashoffset" values="-130;20;160" dur=".74s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.72;.42;0" keyTimes="0;.18;.58;1" dur=".74s" repeatCount="indefinite"/></path>
+  </g>
+  <g fill="#dfffff" filter="url(#glow)">
+    <circle r="5"><animateMotion path="M12,-12 C105,-118 225,-145 420,-190" dur=".74s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.8;0" dur=".74s" repeatCount="indefinite"/></circle>
+    <circle r="3"><animateMotion path="M18,4 C122,-58 270,-50 470,-72" dur=".68s" begin="-.11s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.9;.7;0" dur=".68s" begin="-.11s" repeatCount="indefinite"/></circle>
+    <circle r="4"><animateMotion path="M14,18 C138,84 250,132 438,184" dur=".78s" begin="-.18s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.55;0" dur=".78s" begin="-.18s" repeatCount="indefinite"/></circle>
+    <circle r="2.5"><animateMotion path="M22,-2 C164,12 302,6 492,18" dur=".62s" begin="-.07s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;.5;0" dur=".62s" begin="-.07s" repeatCount="indefinite"/></circle>
+  </g>
+  <ellipse rx="42" ry="42" fill="none" stroke="#aefaff" stroke-width="5" opacity="0"><animate attributeName="rx" values="28;88;172" dur=".74s" repeatCount="indefinite"/><animate attributeName="ry" values="28;72;132" dur=".74s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.8;.25;0" keyTimes="0;.17;.56;1" dur=".74s" repeatCount="indefinite"/></ellipse>
+</g></svg>

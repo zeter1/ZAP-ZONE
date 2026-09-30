@@ -7,9 +7,9 @@
 - один датированный batch = один понятный набор кандидатов;
 - у каждого кандидата должен быть consumer/event/fallback и план runtime derivative;
 - staging-файлы нельзя импортировать из `src/**`, `index.html`, `src/assets/catalog.js` или runtime CSS;
-- после одобрения VFX обычно переводится в alpha-WebP sprite sheet/atlas и проигрывается по elapsed time;
+- после одобрения VFX обычно переводится в alpha-WebP/static SVG sprite sheet/atlas и проигрывается по elapsed time;
 - после интеграции обязательно сохранить procedural/SVG fallback, если он уже существует.
 
-Текущий batch: `2026-09-30-vfx-pack-15/` — **INTEGRATED**, 2 VFX source-candidates retained as archive/provenance.
+Текущий batch: `2026-09-30-vfx-pack-16/` — **PENDING REVIEW**, 3 VFX source-candidates, runtime не изменён.
 
-Предыдущий batch: `2026-09-30-vfx-pack-14/` — **INTEGRATED**, staging retained as archive/provenance.
+Предыдущий batch: `2026-09-30-vfx-pack-15/` — **INTEGRATED**, 2 VFX source-candidates retained as archive/provenance.
