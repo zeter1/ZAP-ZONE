@@ -795,7 +795,10 @@ function doReload(){
   const fullRifleReload=w.key==='rifle'&&typeof showGeneratedRifleReloadVfx==='function'
     ?showGeneratedRifleReloadVfx(reloadMode,reloadTot)
     :false;
-  if(reloadMode!=='shell'&&!fullRifleReload)showGeneratedMagazineDropFx(w.key);
+  const fullRocketReload=w.key==='rocket'&&typeof showGeneratedRocketReloadVfx==='function'
+    ?showGeneratedRocketReloadVfx(reloadTot)
+    :false;
+  if(reloadMode!=='shell'&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key);
   const reloadArt=G('reload-state-art');
   if(reloadArt&&typeof applyPresentationAtlasFrame==='function')applyPresentationAtlasFrame(reloadArt,reloadPresentationFrame(reloadMode));
   playWeaponMechanicSound('reload',1,w.key);
@@ -824,6 +827,7 @@ function throwMine(){
   const m=mkMine();m.position.copy(camera.position.clone().addScaledVector(dir,.6));scene.add(m);
   const vv=dir.clone().multiplyScalar(9);vv.y+=5;
   mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z,fall:true,life:Infinity,armed:false,aT:1.5,checkT:.08,ph:0,team:'player',owner:'player',dmg:mineW.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.mineDamageM*plr.explosiveDamageM,radius:9*plr.explosiveRadiusM*plr.mineRadiusM});
+  if(typeof showGeneratedMineThrowVfx==='function')showGeneratedMineThrowVfx();
   playerMineCD=MINE_COOLDOWN_SECONDS*plr.mineCooldownM;
   mineHudSecond=-1;updateMineHUD();
 }

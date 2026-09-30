@@ -557,6 +557,12 @@ function tickGeneratedFirstPersonAction(dt){
 function showGeneratedRifleReloadVfx(mode='tactical',duration=0){
   return playGeneratedFirstPersonAction(mode==='empty'?'rifleReloadEmpty':'rifleReloadTactical',duration);
 }
+function showGeneratedRocketReloadVfx(duration=0){
+  return playGeneratedFirstPersonAction('rocketReload24',duration);
+}
+function showGeneratedMineThrowVfx(duration=0){
+  return playGeneratedFirstPersonAction('mineThrow24',duration);
+}
 function showGeneratedSniperBoltCycleVfx(duration=0){
   return playGeneratedFirstPersonAction('sniperBoltCycle',duration);
 }

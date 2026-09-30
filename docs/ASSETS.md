@@ -18,6 +18,22 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Weapon Utility Action VFX Pack 24 (2026-09-30)
+The two newly generated first-person action sequences were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivatives:
+- `assets/ui/fx/rocket-reload-vfx-atlas-24.webp` — 720×405 alpha WebP, 4×3 / 12 frames;
+- `assets/ui/fx/mine-throw-vfx-atlas-24.webp` — 1080×135 alpha WebP, 6×1 / 6 frames.
+
+Integration rules:
+- both assets reuse the existing Pack 22 first-person action layer instead of creating another animation owner;
+- rocket playback is stretched to the authoritative `reloadTot` duration; it replaces only presentation and suppresses Pack 10 magazine-drop while the full action is active;
+- mine playback is emitted only after the authoritative mine object is already in the live `mines` collection;
+- static generated first-person art and procedural Three.js remain fallback if the action atlas cannot start;
+- reload timing, ammo transfer, mine ammo/cooldown/flight/arming, damage, recoil and gameplay RNG remain unchanged.
+
+The reviewed 1536×1024 RGBA contact sheet is not duplicated in Git. The source mapping, exact derivative dimensions and fallback contract are recorded in `asset-staging/2026-09-30-vfx-pack-24/README.md`.
+
 ## Sniper VFX Asset Pack 23 (2026-09-30)
 Five generated SR-9 source sheets reviewed in the current ChatGPT dialog are integrated under the same-dialog source exception. They cover muzzle flash/smoke, post-shot smoke, visible rifle bullet flight, supersonic pressure wake and rotating brass casings.
 

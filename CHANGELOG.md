@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Weapon Utility Action VFX Pack 24 — rocket reload + mine throw
+- integrated both newly approved first-person action sequences as compact alpha-WebP atlases: a twelve-frame rocket-launcher reload and a six-frame mine throw/deploy;
+- reused the existing Pack 22 first-person action owner, keeping playback elapsed-time driven and avoiding a second animation pipeline;
+- synchronized rocket art to the authoritative reload timer and suppresses only the generic magazine-drop fallback while the full action is available;
+- starts the mine throw presentation only after the real mine is spawned, preserving ammo, cooldown, trajectory, arming, damage and gameplay RNG;
+- added Pack 24 alpha/dimension/byte-budget validation, runtime catalog wiring and provenance documentation.
+
 ### Sniper VFX Asset Pack 23 — muzzle, smoke, bullet wake and casing fallback
 - integrated five newly approved SR-9 source sheets as three compact alpha-WebP runtime atlases (~301 KiB total) instead of shipping ~6.4 MiB of source PNGs;
 - added a dedicated high-energy muzzle flash plus delayed smoke plume to every player SR-9 shot;

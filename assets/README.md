@@ -1,3 +1,8 @@
+## Pack 24 consumers
+Two newly approved first-person action sources are integrated as `ui/fx/rocket-reload-vfx-atlas-24.webp` (4×3 / 12 frames) and `ui/fx/mine-throw-vfx-atlas-24.webp` (6×1 / 6 frames). `src/weapons/system.js` reuses the Pack 22 action layer; `src/combat/combat.js` starts rocket reload only from the authoritative reload timer and mine throw only after the real mine has been spawned.
+
+Pack 24 is presentation-only. Rocket ammo transfer/reload timing and mine ammo/cooldown/trajectory/arming stay authoritative. The generic magazine-drop overlay remains the rocket fallback when the full action atlas cannot start, while the ordinary generated/procedural first-person mine remains fallback for the throw animation.
+
 ## Pack 23 consumers
 Five approved SR-9 source sheets are compacted into three runtime WebP atlases: `ui/fx/sniper-shot-vfx-atlas-23.webp`, `ui/fx/sniper-ballistics-vfx-atlas-23.webp` and `ui/fx/sniper-casing-vfx-atlas-23.webp`. `src/settings/settings.js` owns muzzle/smoke/ballistic playback and aligns the projectile overlay from the current first-person muzzle toward the reticle; `src/game/runtime.js` uses the dedicated casing atlas only when Pack 22's full bolt animation is unavailable.
 
