@@ -720,6 +720,7 @@ function shoot(){
   if(w.cycleTime){
     cycleTot=w.cycleTime;cycleT=cycleTot;cycleKind=w.fireMode;cycleEjected=false;
     weaponReadyT=Math.max(weaponReadyT,cycleTot);
+    if(w.key==='shotgun'&&typeof showGeneratedShotgunPumpVfx==='function')showGeneratedShotgunPumpVfx(cycleTot);
     if(w.isSniper&&typeof showGeneratedSniperBoltCycleVfx==='function')showGeneratedSniperBoltCycleVfx(cycleTot);
   }
 
@@ -792,13 +793,16 @@ function doReload(){
     reloadT=Math.max(.30,w.reload*mult);
   }
   reloadTot=reloadT;
+  const fullPistolReload=w.key==='pistol'&&typeof showGeneratedPistolReloadVfx==='function'
+    ?showGeneratedPistolReloadVfx(reloadMode,reloadTot)
+    :false;
   const fullRifleReload=w.key==='rifle'&&typeof showGeneratedRifleReloadVfx==='function'
     ?showGeneratedRifleReloadVfx(reloadMode,reloadTot)
     :false;
   const fullRocketReload=w.key==='rocket'&&typeof showGeneratedRocketReloadVfx==='function'
     ?showGeneratedRocketReloadVfx(reloadTot)
     :false;
-  if(reloadMode!=='shell'&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key);
+  if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key);
   const reloadArt=G('reload-state-art');
   if(reloadArt&&typeof applyPresentationAtlasFrame==='function')applyPresentationAtlasFrame(reloadArt,reloadPresentationFrame(reloadMode));
   playWeaponMechanicSound('reload',1,w.key);
