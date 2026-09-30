@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Grenade VFX Asset Pack 21 — selected sheet #2
+- integrated the user-selected second grenade concept sheet as three compact scriptless runtime atlases instead of shipping the heavy source raster;
+- added a tracked flight trail and close-range last-0.78-second live-fuse warning for both player and bot fragmentation grenades;
+- layered a realistic fireball, additional debris, delayed post-explosion smoke and a short scorch/ground-impact stage onto the existing authoritative grenade detonation;
+- retained Pack 15 shrapnel bloom and all existing grenade damage, fuse, bounce, ammo, ownership and reward behavior;
+- extended the shared DOM VFX player with optional moving-world-object tracking and delayed presentation, with structural regression contracts for atlas safety, wiring and consumers.
+
 ### Grenade + Bomb Asset Pack 20
 - added a real player fragmentation grenade as the tenth weapon/utility slot (`0`) without shifting the existing pistol-through-sniper indices or old save-array positions;
 - added small-capacity grenade pickup economy, procedural fallback geometry, owner-aware bounce/fuse/blast behavior, self-damage and player kill/XP attribution;
