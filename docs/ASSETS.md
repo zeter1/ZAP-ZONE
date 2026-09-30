@@ -59,6 +59,20 @@ All eight files are presentation-only raster art. They must never be passed to `
 
 Этот документ — обязательный operational contract для человека, ChatGPT/Codex и других AI-агентов при создании, изменении и публикации игровых ассетов.
 
+## 0. Pre-generation duplicate gate
+
+Перед каждой новой генерацией сначала доказать, что asset действительно новый и нужен текущей игре. Это отдельный gate до image generation, а не проверка после неё.
+
+Минимальный порядок:
+1. прочитать начало этого файла и `assets/README.md`, чтобы увидеть уже интегрированные generated packs;
+2. проверить последние generated-asset commits и реальные runtime filenames в `assets/ui/**`;
+3. найти конкретный consumer/callsite, который сейчас остаётся procedural/text-only или визуально слабее соседних систем;
+4. зарезервировать semantic ASCII filename и назначение до генерации;
+5. не генерировать новый вариант существующего asset без явной задачи на replacement;
+6. после генерации считать изображение **source candidate**, пока оно не прошло runtime derivative → consumer wiring → fallback → validation → screenshot gate.
+
+Для pack из нескольких изображений сначала фиксировать короткий manifest: `filename → owner/consumer → event/state → fallback → target runtime envelope`. Это уменьшает дубли между разными ChatGPT-сессиями и не даёт складывать «красивые, но неиспользуемые» файлы в репозиторий.
+
 ## 1. Сначала определить владельца ассета
 
 Перед генерацией или заменой изображения определить реальный consumer:
