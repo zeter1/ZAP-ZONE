@@ -452,6 +452,7 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
   if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
   if(b.markerEligible||w.key==='plasma'){spawnSpark(hitFx,b.color);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
   if(b.markerEligible)spawnCombatImpact(hitFx,weaponImpactType(w,isCrit));
+  if(isCrit)showGeneratedCriticalHitVfx(hitFx);
   if(w.key==='plasma')showGeneratedPlasmaImpactVfx(hitFx);
   if(hd){
     spawnHeadshotFx(hitFx,lethalHeadshot);
