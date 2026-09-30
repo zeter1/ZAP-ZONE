@@ -1,3 +1,8 @@
+## Pack 30 consumers
+The approved plasma-flight source is integrated as `ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp`, a compact 4×4 / 16-frame alpha-WebP atlas. `src/combat/combat.js` projects it from each live player/bot plasma bullet using the real projectile position and velocity, with distance scaling, LOS/off-screen culling and a bounded DOM-node budget.
+
+Pack 30 is presentation-only and deterministic. The existing Three.js plasma tracer remains authoritative/fallback. Pack 8's one-shot plasma trail remains a load/decode fallback; when Pack 30 is ready that older overlay is hidden while its legacy RNG draw is still consumed to preserve gameplay RNG ordering.
+
 ## Pack 29 consumers
 The approved surface-impact source is integrated as `ui/fx/surface-impact-vfx-atlas-29.webp`, a 320×320 alpha-WebP 4×4 atlas. Rows are concrete/dust, metal/ricochet, cyan tech-panel impact and heavy ballistic debris; the runtime player stretches selected source frames into short elapsed-time sequences without self-running image animation.
 

@@ -231,7 +231,8 @@ const GAME_ASSETS=versionAssetTree({
     pack27RespawnGate:'assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg',
     pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg',
     pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg',
-    pack29SurfaceImpact:'assets/ui/fx/surface-impact-vfx-atlas-29.webp'
+    pack29SurfaceImpact:'assets/ui/fx/surface-impact-vfx-atlas-29.webp',
+    pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -601,6 +602,10 @@ function projectileTrailPresentationFrame(kind){
 function rocketFlightPresentationFrame(index=0){
   const frame=Math.max(0,Math.min(11,Math.floor(Number(index)||0)));
   return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack28RocketFlight,frame%4,Math.floor(frame/4),4,3);
+}
+function plasmaFlightPresentationFrame(index=0){
+  const frame=Math.max(0,Math.min(15,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack30PlasmaFlight,frame%4,Math.floor(frame/4),4,4);
 }
 function botOverheadPresentationFrame(team,state='normal'){
   const col=team==='enemy'?1:0,row=state==='armor'?1:state==='critical'||state==='broken'?2:0;

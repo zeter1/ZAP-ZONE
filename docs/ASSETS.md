@@ -18,6 +18,22 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Plasma Flight VFX Pack 30 (2026-09-30)
+The generated 4×4 plasma bolt / ion-sheath source sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivative:
+- `assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp` — 256×256 VP8X alpha-WebP, 4×4 / 16 frames, 64×64 per cell, 24,616 bytes; SHA-256 `4e6a814a7a6010f956a1a4b885a56dca1efdc64b06e58976f58c3da084dfa4a6`.
+
+Integration rules:
+- `src/combat/combat.js` tracks the real player/bot plasma bullets in `pBullets` / `eBullets`; no duplicate gameplay projectile is created;
+- frames 0–3 form the launch/charge-in, frames 4–11 provide deterministic sustained-flight variation, and frames 12–15 cover late-life breakup/fade;
+- presentation is projected from each authoritative bullet position and velocity, distance-scaled, capped, hidden off-screen and behind LOS geometry, and consumes no gameplay RNG;
+- a lightweight image probe gates the tracked layer. Until the atlas loads, or after a load failure, Pack 8's existing plasma trail remains the visual fallback;
+- when Pack 30 is ready the old Pack 8 plasma overlay is hidden, but its existing trail-rotation RNG draw is deliberately still consumed so gameplay RNG ordering cannot shift;
+- the existing Three.js plasma tracer/core, projectile motion/drop, collision, damage, penetration, AI and impact VFX remain authoritative/fallback.
+
+The heavy reviewed 1254×1254 source PNG is intentionally not duplicated in Git. ChatGPT generation identity `86aabc48-76a6-4ac5-b768-9377f28bb473` and source/runtime mapping are recorded in `asset-staging/2026-09-30-vfx-pack-30/README.md`.
+
 ## Generated Surface Impact VFX Pack 29 (2026-09-30)
 The generated 4×4 surface-impact source sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 
