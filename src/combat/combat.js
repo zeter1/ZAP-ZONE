@@ -994,6 +994,7 @@ function tickBotGrenades(dt){
     if(g.fuse>0)continue;
     const pos=g.m.position.clone();pos.y=Math.max(.14,pos.y);
     playExplosionSound(pos,.80);explode(pos,g.team==='ally'?0x4caeff:0xff5a2a,7);spawnCombatImpact(pos,'rocket');
+    showGeneratedFragGrenadeVfx(pos);
     applyBlastDamage(pos,g.radius,g.dmg,'bot',g.src,'grenade',.28,g.team);
     destroySceneObject(g.m);botGrenades.splice(i,1);
   }

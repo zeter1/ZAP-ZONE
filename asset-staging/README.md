@@ -10,6 +10,6 @@
 - после одобрения VFX обычно переводится в alpha-WebP sprite sheet/atlas и проигрывается по elapsed time;
 - после интеграции обязательно сохранить procedural/SVG fallback, если он уже существует.
 
-Текущий batch: `2026-09-30-vfx-pack-15/` — **AWAITING USER APPROVAL**, 2 VFX source-candidates, **NOT INTEGRATED**.
+Текущий batch: `2026-09-30-vfx-pack-15/` — **INTEGRATED**, 2 VFX source-candidates retained as archive/provenance.
 
 Предыдущий batch: `2026-09-30-vfx-pack-14/` — **INTEGRATED**, staging retained as archive/provenance.

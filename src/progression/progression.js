@@ -369,6 +369,7 @@ function showAnn(t){const e=G('ann');e.textContent=t;e.style.opacity='1';setTime
 // ─── DEATH CAMERA ────────────────────────
 function cleanupDeathCamera(){
   deathCamActive=false;deathCamElapsed=0;deathCamKiller=null;
+  if(typeof resetGeneratedPlayerDeathVfx==='function')resetGeneratedPlayerDeathVfx();
   if(deathBody){destroySceneObject(deathBody);deathBody=null;}
   gunGrp.visible=true;
   G('xhair').style.opacity='1';
@@ -469,6 +470,7 @@ function checkDeath(){
   // Захват мыши во время киллкамеры не отпускаем: иначе браузер часто не даёт
   // вернуть его автоматически после возрождения, появляется курсор и ломается обзор.
   startDeathCamera(killer);
+  if(typeof showGeneratedPlayerDeathVfx==='function')showGeneratedPlayerDeathVfx();
   G('death-flash').style.background='radial-gradient(circle at center,rgba(170,0,0,.05) 34%,rgba(145,0,0,.72) 100%)';
   G('death-flash').style.opacity='1';
   const deathTxt=G('death-msg').querySelector('span');if(deathTxt)deathTxt.textContent='ВЫ ПОГИБЛИ'+(deathReason?' · '+deathReason.toUpperCase():'');

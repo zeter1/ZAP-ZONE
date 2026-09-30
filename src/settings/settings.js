@@ -633,6 +633,9 @@ function showGeneratedMineDetonationVfx(pos){
 function showGeneratedBombDetonationVfx(pos){
   return playGeneratedCombatVfx('bombDetonation',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.08});
 }
+function showGeneratedFragGrenadeVfx(pos){
+  return playGeneratedCombatVfx('fragGrenade',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:.96+Math.random()*.10});
+}
 function generatedWorldDirectionDegrees(pos,yaw=0){
   if(!pos?.clone||typeof THREE==='undefined'||typeof camera==='undefined')return 0;
   const start=pos.clone().project(camera);
@@ -666,6 +669,41 @@ function showGeneratedCriticalHitVfx(pos){
 }
 function showGeneratedPlayerArmorBreakVfx(){
   return playGeneratedCombatVfx('playerArmorBreak',{anchor:'center',rotation:(Math.random()-.5)*8,scale:1});
+}
+let generatedPlayerDeathVfxAge=-1,generatedPlayerDeathVfxFrameIndex=-1,generatedPlayerDeathReducedMotion=false;
+const GENERATED_PLAYER_DEATH_VFX_DURATION=1.18;
+function ensureGeneratedPlayerDeathVfx(){
+  let el=byId('player-death-vfx');if(el)return el;
+  el=document.createElement('div');el.id='player-death-vfx';el.setAttribute('aria-hidden','true');
+  const flash=byId('death-flash');
+  if(flash?.parentNode)flash.parentNode.insertBefore(el,flash.nextSibling);else document.body.appendChild(el);
+  return el;
+}
+function playerDeathVfxFrame(index=0){
+  const frame=Math.max(0,Math.min(7,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack15Death,frame,0,8,1);
+}
+function showGeneratedPlayerDeathVfx(){
+  const el=ensureGeneratedPlayerDeathVfx(),frame=playerDeathVfxFrame(0);if(!el||!frame)return false;
+  generatedPlayerDeathReducedMotion=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  generatedPlayerDeathVfxAge=0;generatedPlayerDeathVfxFrameIndex=generatedPlayerDeathReducedMotion?1:0;
+  applyPresentationAtlasFrame(el,playerDeathVfxFrame(generatedPlayerDeathVfxFrameIndex));
+  el.style.opacity='1';el.classList.add('on');return true;
+}
+function tickGeneratedPlayerDeathVfx(dt){
+  if(generatedPlayerDeathVfxAge<0)return;
+  const el=byId('player-death-vfx');if(!el){generatedPlayerDeathVfxAge=-1;return;}
+  const duration=generatedPlayerDeathReducedMotion?0.55:GENERATED_PLAYER_DEATH_VFX_DURATION;
+  generatedPlayerDeathVfxAge+=Math.max(0,Math.min(.05,Number(dt)||0));
+  const progress=Math.max(0,Math.min(1,generatedPlayerDeathVfxAge/Math.max(.001,duration)));
+  const frame=generatedPlayerDeathReducedMotion?1:Math.min(7,Math.floor(progress*8));
+  if(frame!==generatedPlayerDeathVfxFrameIndex){applyPresentationAtlasFrame(el,playerDeathVfxFrame(frame));generatedPlayerDeathVfxFrameIndex=frame;}
+  el.style.opacity=String(generatedPlayerDeathReducedMotion?Math.max(0,1-progress):progress>.72?Math.max(0,(1-progress)/.28):1);
+  if(progress>=1)resetGeneratedPlayerDeathVfx();
+}
+function resetGeneratedPlayerDeathVfx(){
+  generatedPlayerDeathVfxAge=-1;generatedPlayerDeathVfxFrameIndex=-1;generatedPlayerDeathReducedMotion=false;
+  const el=byId('player-death-vfx');if(!el)return;el.classList.remove('on');el.style.opacity='0';
 }
 function showGeneratedNearMissFx(source,pressure=.6){
   const strength=Math.max(.45,Math.min(1.18,Number(pressure)||.6));

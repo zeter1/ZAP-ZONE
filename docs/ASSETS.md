@@ -16,6 +16,15 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 15 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-15/` are integrated as two deterministic scriptless runtime atlases:
+- `assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg` — 8×1 static frames for bot frag-grenade detonation;
+- `assets/ui/fx/player-death-signal-collapse-atlas-15.svg` — 8×1 16:9 static frames for the short player death → kill-camera transition.
+
+`src/combat/combat.js::tickBotGrenades()` emits the frag decoration after the existing procedural explosion/impact event, while `src/progression/progression.js::checkDeath()` starts the death overlay only after `startDeathCamera(killer)` has transferred view ownership. The death atlas advances from the dedicated dying loop in `src/game/runtime.js`, so the effect remains elapsed-time driven even while ordinary gameplay presentation ticking is paused. `cleanupDeathCamera()` owns cleanup. A reduced-motion preference keeps a brief static pulse instead of fracture/glitch frame motion.
+
+Damage, fuse timing, blast radius, team filtering, respawn delay, kill-camera ownership, death text and existing procedural/CSS/audio fallbacks remain authoritative and unchanged. The animated staging SVGs remain provenance/review sources only.
+
 ## Generated Asset Pack 14 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-14/` are integrated into one deterministic scriptless atlas:
 - `assets/ui/fx/player-feedback-vfx-atlas-14.svg` — 8×2 / 16 static frames;

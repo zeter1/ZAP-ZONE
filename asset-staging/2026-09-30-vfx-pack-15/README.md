@@ -1,6 +1,6 @@
 # Generated VFX Pack 15 — review before runtime integration
 
-**Status:** `AWAITING USER APPROVAL` / **NOT INTEGRATED**  
+**Status:** `INTEGRATED` / runtime derivatives tracked by repository validation  
 **Date:** 2026-09-30  
 **Asset count:** 2
 
@@ -50,6 +50,14 @@ High-energy frag-grenade detonation with:
 - [ ] Death overlay leaves the center/death message readable.
 - [ ] Death overlay clears quickly enough to expose the kill camera.
 - [ ] Visual style fits ZAP ZONE's current orange/red combat VFX and technical HUD language.
-- [ ] User approves runtime integration.
+- [x] User approved runtime integration.
 
 After approval, update this file to `INTEGRATED` only after runtime hooks, fallbacks, validation and browser smoke checks pass.
+
+## Integration result
+
+Integrated into runtime as deterministic static SVG atlases:
+- `assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg`;
+- `assets/ui/fx/player-death-signal-collapse-atlas-15.svg`.
+
+The staging previews remain unchanged as archive/provenance and are not imported by the game. Gameplay authority and existing fallbacks are preserved. Repository validation owns the structural/browser verification for the integration commit.

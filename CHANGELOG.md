@@ -2,6 +2,14 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 15 — frag grenade and player death-transition VFX
+- approved both candidates from `asset-staging/2026-09-30-vfx-pack-15/` and integrated them as deterministic scriptless 8-frame SVG runtime atlases;
+- bot frag-grenade detonation now adds a distinct shrapnel/dust bloom after the existing procedural explosion/impact event, without changing fuse, damage, radius or team logic;
+- player death now adds a short edge-focused signal-collapse transition after the kill camera takes ownership; the center remains readable for death text and the effect advances from the dedicated dying loop;
+- reduced-motion preference uses a brief static fade instead of fracture/glitch frame motion, while cleanup stays bound to death-camera cleanup and the exact 15-second respawn remains unchanged;
+- structural validation covers atlas safety/frame count/byte budgets, catalog/runtime/consumer/CSS wiring, and the integration participates in the existing dual-runtime build stamp and browser smoke gates.
+
+
 ### Generated Asset Pack 14 — critical-hit and player armor-break VFX
 - approved both candidates from `asset-staging/2026-09-30-vfx-pack-14/` and integrated them as one deterministic scriptless 8×2 SVG runtime atlas;
 - player critical hits now add a short world-projected gold/cyan overcharge burst on top of the existing procedural critical impact, with bounded playback and mobile throttling;

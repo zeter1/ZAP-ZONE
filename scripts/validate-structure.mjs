@@ -109,6 +109,8 @@ const generatedCombatVfxPack11SvgAssets=[
 const generatedCombatVfxPack12SvgAtlas='assets/ui/fx/combat-vfx-atlas-12.svg';
 const generatedCombatVfxPack13SvgAtlas='assets/ui/fx/bot-combat-vfx-atlas-13.svg';
 const generatedCombatVfxPack14SvgAtlas='assets/ui/fx/player-feedback-vfx-atlas-14.svg';
+const generatedCombatVfxPack15FragSvgAtlas='assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg';
+const generatedPlayerDeathVfxPack15SvgAtlas='assets/ui/fx/player-death-signal-collapse-atlas-15.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -147,7 +149,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1283,3 +1285,31 @@ const pack14ArmorEvent=progression.indexOf('if(armorBefore>0&&armor<=0)showArmor
 const pack14ArmorHelper=progression.indexOf("if(typeof showGeneratedPlayerArmorBreakVfx==='function')showGeneratedPlayerArmorBreakVfx();");
 if(pack14ArmorEvent<0||pack14ArmorHelper<0)fail('pack 14 armor-break VFX must attach to the centralized armor depletion event');
 for(const token of ['.generated-combat-vfx[data-kind="criticalHit"]','.generated-combat-vfx[data-kind="playerArmorBreak"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 14 CSS missing: '+token);
+
+{
+  const source=readFileSync(generatedCombatVfxPack15FragSvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>32*1024)fail('generated combat VFX pack 15 frag SVG atlas exceeds 32 KiB budget');
+  if(!source.includes('viewBox="0 0 896 112"'))fail('generated combat VFX pack 15 frag viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b/i.test(source))fail('runtime VFX pack 15 frag atlas must be scriptless static deterministic frames');
+  if((source.match(/class="frame frag-frame"/g)||[]).length!==8)fail('generated combat VFX pack 15 frag atlas must contain exactly 8 static frames');
+}
+{
+  const source=readFileSync(generatedPlayerDeathVfxPack15SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>40*1024)fail('generated player death VFX pack 15 SVG atlas exceeds 40 KiB budget');
+  if(!source.includes('viewBox="0 0 2560 180"'))fail('generated player death VFX pack 15 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b/i.test(source))fail('runtime player death VFX pack 15 atlas must be scriptless static deterministic frames');
+  if((source.match(/class="frame death-frame"/g)||[]).length!==8)fail('generated player death VFX pack 15 atlas must contain exactly 8 static frames');
+}
+for(const token of ["pack15Frag:'assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg'","pack15Death:'assets/ui/fx/player-death-signal-collapse-atlas-15.svg'","fragGrenade:Object.freeze({asset:'pack15Frag',row:0,cols:8,rows:1,frames:8"])if(!catalog.includes(token))fail('generated VFX pack 15 catalog contract missing: '+token);
+for(const token of ['function showGeneratedFragGrenadeVfx','function showGeneratedPlayerDeathVfx','function tickGeneratedPlayerDeathVfx','function resetGeneratedPlayerDeathVfx'])if(!settings.includes(token))fail('generated VFX pack 15 runtime helper missing: '+token);
+const pack15FragRoot=combat.indexOf('function tickBotGrenades(dt)');
+const pack15FragFallback=combat.indexOf("spawnCombatImpact(pos,'rocket');",pack15FragRoot);
+const pack15FragGenerated=combat.indexOf('showGeneratedFragGrenadeVfx(pos);',pack15FragRoot);
+if(pack15FragRoot<0||pack15FragFallback<pack15FragRoot||pack15FragGenerated<pack15FragFallback)fail('pack 15 frag VFX must decorate the authoritative bot grenade detonation after fallback impact');
+const pack15DeathRoot=progression.indexOf('function checkDeath()');
+const pack15DeathCamera=progression.indexOf('startDeathCamera(killer);',pack15DeathRoot);
+const pack15DeathGenerated=progression.indexOf("if(typeof showGeneratedPlayerDeathVfx==='function')showGeneratedPlayerDeathVfx();",pack15DeathRoot);
+if(pack15DeathRoot<0||pack15DeathCamera<pack15DeathRoot||pack15DeathGenerated<pack15DeathCamera)fail('pack 15 death VFX must start only after the kill camera owns the death view');
+if(!progression.includes("if(typeof resetGeneratedPlayerDeathVfx==='function')resetGeneratedPlayerDeathVfx();"))fail('pack 15 death VFX cleanup missing from death-camera cleanup');
+if(!runtime.includes("if(typeof tickGeneratedPlayerDeathVfx==='function')tickGeneratedPlayerDeathVfx(deathDt);"))fail('pack 15 death VFX must advance in the dedicated dying loop');
+for(const token of ['.generated-combat-vfx[data-kind="fragGrenade"]','#player-death-vfx{','#player-death-vfx.on{'])if(!gameCss.includes(token))fail('generated VFX pack 15 CSS missing: '+token);

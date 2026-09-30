@@ -204,7 +204,9 @@ const GAME_ASSETS=versionAssetTree({
     plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg',
     pack12:'assets/ui/fx/combat-vfx-atlas-12.svg',
     pack13:'assets/ui/fx/bot-combat-vfx-atlas-13.svg',
-    pack14:'assets/ui/fx/player-feedback-vfx-atlas-14.svg'
+    pack14:'assets/ui/fx/player-feedback-vfx-atlas-14.svg',
+    pack15Frag:'assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg',
+    pack15Death:'assets/ui/fx/player-death-signal-collapse-atlas-15.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -617,7 +619,8 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   botMuzzle:Object.freeze({asset:'pack13',row:0,cols:8,rows:2,frames:8,duration:.38,size:154}),
   botDeath:Object.freeze({asset:'pack13',row:1,cols:8,rows:2,frames:8,duration:.95,size:232}),
   criticalHit:Object.freeze({asset:'pack14',row:0,cols:8,rows:2,frames:8,duration:.70,size:184}),
-  playerArmorBreak:Object.freeze({asset:'pack14',row:1,cols:8,rows:2,frames:8,duration:.90,size:286})
+  playerArmorBreak:Object.freeze({asset:'pack14',row:1,cols:8,rows:2,frames:8,duration:.90,size:286}),
+  fragGrenade:Object.freeze({asset:'pack15Frag',row:0,cols:8,rows:1,frames:8,duration:.82,size:248})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){

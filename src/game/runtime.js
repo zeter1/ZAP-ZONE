@@ -28,6 +28,7 @@ function loop(ts){
     const deathDt=Math.min(Math.max(rawDt,0),.033);lastT=ts;
     dyingT-=deathDt;
     if(typeof updateRespawnCountdownPresentation==='function')updateRespawnCountdownPresentation();
+    if(typeof tickGeneratedPlayerDeathVfx==='function')tickGeneratedPlayerDeathVfx(deathDt);
     tickDeathWorld(deathDt);
     tickDeathCamera(deathDt);
     if(dyingT<=0){doRespawn();return;}

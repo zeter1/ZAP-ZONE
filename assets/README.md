@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 15 consumers
+The two approved staging candidates are integrated as separate deterministic static SVG atlases. `ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg` decorates the authoritative bot frag-grenade fuse detonation in `src/combat/combat.js`; `ui/fx/player-death-signal-collapse-atlas-15.svg` is a short full-screen transition started by `src/progression/progression.js::checkDeath()` after the kill camera takes ownership and advanced by the dedicated dying branch in `src/game/runtime.js`.
+
+Both are presentation-only. Procedural explosions, impact art, death radial flash, death text, kill camera, audio and the exact 15-second respawn remain fallback/authority. The original animated sources stay under `asset-staging/2026-09-30-vfx-pack-15/` as provenance.
+
 ## Pack 14 consumers
 Two approved player-feedback VFX are integrated as `ui/fx/player-feedback-vfx-atlas-14.svg`, an 8×2 deterministic static-frame SVG atlas. Row 0 decorates real player critical hits emitted from `src/combat/combat.js::resolvePlayerBulletHit()`; row 1 decorates the centralized player armor-depletion event through `src/progression/progression.js::showArmorBreakFx()`. `src/settings/settings.js` owns elapsed-time playback, world projection, variation, budgeting and cleanup.
 
