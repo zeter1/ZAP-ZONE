@@ -225,7 +225,9 @@ const GAME_ASSETS=versionAssetTree({
     pack24RocketReload:'assets/ui/fx/rocket-reload-vfx-atlas-24.webp',
     pack24MineThrow:'assets/ui/fx/mine-throw-vfx-atlas-24.webp',
     pack25PistolReload:'assets/ui/fx/pistol-reload-vfx-atlas-25.webp',
-    pack25ShotgunPump:'assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp'
+    pack25ShotgunPump:'assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp',
+    pack26Discharge:'assets/ui/fx/weapon-discharge-vfx-atlas-26.webp',
+    pack26HeavyExplosion:'assets/ui/fx/heavy-explosion-vfx-atlas-26.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -682,7 +684,10 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   mineThrow24:Object.freeze({asset:'pack24MineThrow',row:0,cols:6,rows:1,frames:6,duration:.58,width:430,height:323}),
   pistolReloadTactical25:Object.freeze({asset:'pack25PistolReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.10,width:450,height:338}),
   pistolReloadEmpty25:Object.freeze({asset:'pack25PistolReload',row:0,cols:4,rows:3,frames:12,duration:1.35,width:450,height:338}),
-  shotgunPump25:Object.freeze({asset:'pack25ShotgunPump',row:0,cols:4,rows:2,frames:8,duration:.62,width:450,height:338})
+  shotgunPump25:Object.freeze({asset:'pack25ShotgunPump',row:0,cols:4,rows:2,frames:8,duration:.62,width:450,height:338}),
+  ballisticDischarge26:Object.freeze({asset:'pack26Discharge',row:0,cols:4,rows:2,frames:4,duration:.18,width:220,height:165}),
+  energyDischarge26:Object.freeze({asset:'pack26Discharge',row:1,cols:4,rows:2,frames:4,duration:.24,width:236,height:177}),
+  heavyExplosion26:Object.freeze({asset:'pack26HeavyExplosion',row:0,cols:4,rows:2,frames:8,duration:1.12,width:280,height:210})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){

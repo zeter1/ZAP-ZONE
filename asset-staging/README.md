@@ -10,7 +10,11 @@
 - после одобрения VFX обычно переводится в alpha-WebP/static SVG sprite sheet/atlas и проигрывается по elapsed time;
 - после интеграции обязательно сохранить procedural/SVG fallback, если он уже существует.
 
-Текущий batch: `2026-09-30-vfx-pack-24/` — **INTEGRATED**, 2 first-person action sources reviewed in-dialog; heavy contact sheet omitted after explicit approval, provenance and runtime mapping retained in the batch README.
+Текущий batch: `2026-09-30-vfx-pack-26/` — **INTEGRATED**, 2 generated source sheets reviewed in-dialog; compact discharge/heavy-explosion WebP derivatives are runtime-wired while heavy source rasters are omitted under the explicit same-dialog approval exception.
+
+Предыдущий batch: `2026-09-30-vfx-pack-25/` — **INTEGRATED**, pistol reload + shotgun pump action atlases.
+
+Более ранний batch: `2026-09-30-vfx-pack-24/` — **INTEGRATED**, rocket reload + mine throw action atlases.
 
 Более ранний batch: `2026-09-30-vfx-pack-18/` — **INTEGRATED**, 3 source previews reviewed in-dialog; heavy raster originals intentionally omitted after explicit same-dialog approval, provenance/consumer mapping retained in the batch README.
 

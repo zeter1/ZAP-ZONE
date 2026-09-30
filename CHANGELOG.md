@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated VFX Pack 26 — weapon discharge + heavy explosion diversity
+- integrated the two newly approved source sheets as two compact alpha-WebP atlases: an eight-frame ballistic/energy discharge sheet and an eight-frame heavy ignition-to-smoke explosion sequence;
+- pistol/rifle shots now receive a dedicated ballistic discharge layer and plasma receives a separate cyan energy-discharge presentation through the existing successful-shot hook;
+- retained Pack 11 rocket and Pack 12 bomb detonation visuals as primary/fallback layers while adding a deterministic heavy-blast variation (every third rocket, every bomb) without consuming gameplay RNG;
+- kept all Pack 26 art DOM-only, added exact VP8X/alpha/dimension/byte-budget and wiring regression checks, and preserved ammo, damage, blast radius, physics, recoil, cadence and timing.
+
 ### Generated Weapon Action VFX Pack 25 — pistol reload + shotgun pump
 - integrated the two newly approved first-person action sheets as compact alpha-WebP atlases with 4:3 padded frame cells, preventing aspect distortion in the existing action stage;
 - pistol tactical reload follows frames 0–7 then 11, while empty reload uses all twelve frames; both synchronize to the authoritative reload timer and suppress only the generic magazine-drop fallback while active;

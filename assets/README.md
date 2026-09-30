@@ -1,3 +1,8 @@
+## Pack 26 consumers
+Two newly approved generated source sheets are integrated as compact presentation-only alpha-WebP atlases: `ui/fx/weapon-discharge-vfx-atlas-26.webp` (4×2 / 8 frames) and `ui/fx/heavy-explosion-vfx-atlas-26.webp` (4×2 / 8 frames). The first atlas gives pistol/rifle shots a warmer ballistic discharge sequence and plasma a distinct cyan energy discharge. The second provides an ignition-to-smoke heavy blast sequence.
+
+`src/settings/settings.js` owns playback through the existing elapsed-time DOM VFX layer. The current `src/combat/combat.js` shot/rocket/bomb hooks stay authoritative: every third rocket can receive the heavy visual layer and each bomb receives it after the existing Pack 12 detonation layer. Existing procedural/Pack 10–12 visuals remain fallback, and Pack 26 changes no ammo, damage, blast radius, projectile physics, timing or gameplay RNG.
+
 ## Pack 25 consumers
 Two approved first-person action sheets are integrated as `ui/fx/pistol-reload-vfx-atlas-25.webp` (4×3 / 12 frames) and `ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp` (4×2 / 8 frames). Both atlases use 4:3 padded frame cells so the existing `#fp-weapon-action` stage preserves weapon/hand proportions instead of stretching the generated sources.
 

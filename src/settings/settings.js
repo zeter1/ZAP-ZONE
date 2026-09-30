@@ -629,6 +629,8 @@ function showGeneratedWeaponShotVfx(weaponKey){
   if(weaponKey==='rocket')return playGeneratedCombatVfx('rocketBackblast',{anchor:'muzzle',scale:1.06});
   if(weaponKey==='sniper')return showGeneratedSniperShotVfx();
   if(weaponKey==='shotgun')return playGeneratedCombatVfx('shotgunMuzzle',{anchor:'muzzle',scale:1.04});
+  if(weaponKey==='plasma')return playGeneratedCombatVfx('energyDischarge26',{anchor:'muzzle',scale:1.04});
+  if(weaponKey==='pistol'||weaponKey==='rifle')return playGeneratedCombatVfx('ballisticDischarge26',{anchor:'muzzle',scale:weaponKey==='rifle'?1.02:.88});
   return false;
 }
 function showGeneratedCasingFx(isShotgun=false){return playGeneratedCombatVfx(isShotgun?'shotgunShell':'brassCasing',{anchor:'ejection',rotation:(Math.random()-.5)*24,scale:isShotgun?1.02:.96});}
@@ -645,7 +647,10 @@ function showGeneratedSurfaceImpactVfx(material,pos){
   return playGeneratedCombatVfx(kind,{worldPos:pos,rotation:(Math.random()-.5)*16,scale:material==='metal'?1.04:1});
 }
 function showGeneratedRocketExplosionVfx(pos){
-  return playGeneratedCombatVfx('rocketExplosion',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.08});
+  const base=playGeneratedCombatVfx('rocketExplosion',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.08});
+  const seq=(showGeneratedRocketExplosionVfx._seq=(showGeneratedRocketExplosionVfx._seq||0)+1);
+  if(seq%3===0)playGeneratedCombatVfx('heavyExplosion26',{worldPos:pos,rotation:((seq%5)-2)*2,scale:1.02,delay:.025});
+  return base;
 }
 function showGeneratedPlasmaImpactVfx(pos){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?86:52;
@@ -698,7 +703,10 @@ function showGeneratedMineDetonationVfx(pos){
   return playGeneratedCombatVfx('mineDetonation',{worldPos:pos,rotation:(Math.random()-.5)*8,scale:1.02});
 }
 function showGeneratedBombDetonationVfx(pos){
-  return playGeneratedCombatVfx('bombDetonation',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.08});
+  const base=playGeneratedCombatVfx('bombDetonation',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.08});
+  const seq=(showGeneratedBombDetonationVfx._seq=(showGeneratedBombDetonationVfx._seq||0)+1);
+  playGeneratedCombatVfx('heavyExplosion26',{worldPos:pos,rotation:seq%2?3:-3,scale:1.14,delay:.035});
+  return base;
 }
 function showGeneratedFragGrenadeVfx(pos){
   const base=playGeneratedCombatVfx('fragGrenade',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:.96+Math.random()*.10});

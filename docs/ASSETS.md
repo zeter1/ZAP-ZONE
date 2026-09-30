@@ -18,6 +18,20 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Weapon Discharge + Heavy Explosion VFX Pack 26 (2026-09-30)
+The two newly generated source sheets were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivatives:
+- `assets/ui/fx/weapon-discharge-vfx-atlas-26.webp` — 512×192 alpha WebP, 4×2 / 8 frames: row 0 ballistic discharge for pistol/rifle, row 1 cyan energy discharge for plasma;
+- `assets/ui/fx/heavy-explosion-vfx-atlas-26.webp` — 512×192 alpha WebP, 4×2 / 8 representative ignition/fire/smoke stages.
+
+Integration rules:
+- both assets use the existing DOM-only elapsed-time VFX player; they are not loaded into persistent WebGL planes/sprites;
+- pistol/rifle/plasma discharge starts only from the existing successful-shot hook;
+- the existing rocket Pack 11 explosion remains primary/fallback and Pack 26 decorates every third rocket deterministically; the existing bomb Pack 12 detonation remains primary/fallback and Pack 26 adds the heavier fire/smoke layer;
+- no new gameplay RNG draw is introduced by variation selection; ammo, damage, blast radius, projectile physics, recoil, cadence and timing stay authoritative and unchanged;
+- source generator rasters are not duplicated in Git; provenance and source identities are recorded in `asset-staging/2026-09-30-vfx-pack-26/README.md`.
+
 ## Generated Weapon Action VFX Pack 25 (2026-09-30)
 The two newly generated first-person action sheets were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 

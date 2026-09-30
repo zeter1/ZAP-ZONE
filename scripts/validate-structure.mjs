@@ -130,6 +130,11 @@ const generatedWeaponActionPack25Dimensions=new Map([
   ['assets/ui/fx/pistol-reload-vfx-atlas-25.webp',[960,540]],
   ['assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp',[1024,384]]
 ]);
+const generatedCombatVfxPack26WebpAssets=['assets/ui/fx/weapon-discharge-vfx-atlas-26.webp','assets/ui/fx/heavy-explosion-vfx-atlas-26.webp'];
+const generatedCombatVfxPack26Dimensions=new Map([
+  ['assets/ui/fx/weapon-discharge-vfx-atlas-26.webp',[512,192]],
+  ['assets/ui/fx/heavy-explosion-vfx-atlas-26.webp',[512,192]]
+]);
 const generatedSniperVfxPack23Dimensions=new Map([
   ['assets/ui/fx/sniper-shot-vfx-atlas-23.webp',[768,768]],
   ['assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',[768,768]],
@@ -162,7 +167,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets,...generatedSniperVfxPack23WebpAssets,...generatedWeaponActionPack24WebpAssets,...generatedWeaponActionPack25WebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets,...generatedSniperVfxPack23WebpAssets,...generatedWeaponActionPack24WebpAssets,...generatedWeaponActionPack25WebpAssets,...generatedCombatVfxPack26WebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -274,6 +279,15 @@ for(const file of generatedWeaponActionPack25WebpAssets){
   if(!expected||width!==expected[0]||height!==expected[1])fail('generated Pack 25 weapon-action dimensions invalid: '+file+' ('+width+'x'+height+')');
   if((bytes[20]&0x10)===0)fail('generated Pack 25 weapon-action alpha flag missing: '+file);
 }
+for(const file of generatedCombatVfxPack26WebpAssets){
+  const bytes=readFileSync(file),expected=generatedCombatVfxPack26Dimensions.get(file);
+  if(bytes.length>96*1024)fail('generated Pack 26 VFX atlas exceeds 96 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('generated Pack 26 VFX atlas must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  if(!expected||width!==expected[0]||height!==expected[1])fail('generated Pack 26 VFX dimensions invalid: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('generated Pack 26 VFX alpha flag missing: '+file);
+}
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
   'data-generated-src="assets/ui/feedback/levelup-core-tech-01.webp"',
@@ -316,6 +330,15 @@ for(const token of ["pack25PistolReload:'assets/ui/fx/pistol-reload-vfx-atlas-25
 for(const token of ['function showGeneratedPistolReloadVfx','function showGeneratedShotgunPumpVfx'])if(!weaponSystem.includes(token))fail('Pack 25 first-person action owner missing: '+token);
 for(const token of ['showGeneratedPistolReloadVfx(reloadMode,reloadTot)',"showGeneratedShotgunPumpVfx(cycleTot)",'!fullPistolReload'])if(!combatSource.includes(token))fail('Pack 25 combat consumer missing: '+token);
 for(const token of ["isGeneratedFirstPersonActionActive('shotgunPump25')",'!fullShotgunPump'])if(!runtimeSource.includes(token))fail('Pack 25 runtime fallback wiring missing: '+token);
+for(const token of ["pack26Discharge:'assets/ui/fx/weapon-discharge-vfx-atlas-26.webp'","pack26HeavyExplosion:'assets/ui/fx/heavy-explosion-vfx-atlas-26.webp'","ballisticDischarge26:Object.freeze","energyDischarge26:Object.freeze","heavyExplosion26:Object.freeze"])if(!catalog.includes(token))fail('Pack 26 VFX catalog wiring missing: '+token);
+const pack26Settings=readFileSync('src/settings/settings.js','utf8');
+for(const token of ["weaponKey==='plasma')return playGeneratedCombatVfx('energyDischarge26'","weaponKey==='pistol'||weaponKey==='rifle'","playGeneratedCombatVfx('heavyExplosion26'"])if(!pack26Settings.includes(token))fail('Pack 26 runtime wiring missing: '+token);
+for(const token of ['ballisticDischarge26','energyDischarge26','heavyExplosion26'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 26 VFX CSS missing: '+token);
+for(const token of ['showGeneratedWeaponShotVfx(w.key);','showGeneratedRocketExplosionVfx(pos);','showGeneratedBombDetonationVfx(pos);'])if(!combatSource.includes(token))fail('Pack 26 authoritative combat event hook missing: '+token);
+const pack26Rocket=pack26Settings.indexOf('function showGeneratedRocketExplosionVfx'),pack26RocketFallback=pack26Settings.indexOf("playGeneratedCombatVfx('rocketExplosion'",pack26Rocket),pack26RocketHeavy=pack26Settings.indexOf("playGeneratedCombatVfx('heavyExplosion26'",pack26Rocket);
+if(pack26Rocket<0||pack26RocketFallback<pack26Rocket||pack26RocketHeavy<pack26RocketFallback)fail('Pack 26 rocket heavy variation must decorate the existing rocket VFX fallback');
+const pack26Bomb=pack26Settings.indexOf('function showGeneratedBombDetonationVfx'),pack26BombFallback=pack26Settings.indexOf("playGeneratedCombatVfx('bombDetonation'",pack26Bomb),pack26BombHeavy=pack26Settings.indexOf("playGeneratedCombatVfx('heavyExplosion26'",pack26Bomb);
+if(pack26Bomb<0||pack26BombFallback<pack26Bomb||pack26BombHeavy<pack26BombFallback)fail('Pack 26 bomb heavy variation must decorate the existing bomb VFX fallback');
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
 for(const token of ["cycleKind==='bolt'&&typeof showGeneratedSniperCasingFx==='function'","showGeneratedSniperCasingFx();"])if(!runtimeSource.includes(token))fail('Pack 23 sniper casing fallback consumer missing: '+token);
