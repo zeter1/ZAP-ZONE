@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" fill="none">
+  <defs>
+    <radialGradient id="armor-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".18" stop-color="#bffcff"/>
+      <stop offset=".48" stop-color="#38dfff"/>
+      <stop offset=".74" stop-color="#408dff" stop-opacity=".62"/>
+      <stop offset="1" stop-color="#7a4dff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="armor-edge" x1=".15" y1=".1" x2=".85" y2=".9">
+      <stop stop-color="#edffff"/>
+      <stop offset=".34" stop-color="#61eeff"/>
+      <stop offset=".72" stop-color="#4d8dff"/>
+      <stop offset="1" stop-color="#a06cff"/>
+    </linearGradient>
+    <filter id="armor-glow" x="-90%" y="-90%" width="280%" height="280%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="armor-soft" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(320 320)">
+    <circle r="70" fill="#2399ff" opacity=".38" filter="url(#armor-soft)">
+      <animate attributeName="r" values="46;92;144;188;202" keyTimes="0;.18;.42;.72;1" dur="1.55s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.58;.34;.08;0" keyTimes="0;.08;.4;.72;1" dur="1.55s" repeatCount="indefinite"/>
+    </circle>
+
+    <g filter="url(#armor-glow)">
+      <circle r="24" fill="url(#armor-core)">
+        <animate attributeName="r" values="12;34;58;24;0" keyTimes="0;.12;.28;.54;.78" dur="1.55s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;1;.56;0;0" keyTimes="0;.06;.2;.5;.78;1" dur="1.55s" repeatCount="indefinite"/>
+      </circle>
+
+      <g stroke="url(#armor-edge)" stroke-width="5" fill="#2fc6ff" fill-opacity=".11">
+        <path d="M0-118 L102-59 L102 59 L0 118 L-102 59 L-102-59 Z"/>
+        <path d="M0-72 L62-36 L62 36 L0 72 L-62 36 L-62-36 Z"/>
+        <animate attributeName="opacity" values="0;.96;.9;.46;0;0" keyTimes="0;.08;.34;.58;.8;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" type="scale" values=".48;.78;1;1.08;1.18" keyTimes="0;.12;.34;.6;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+
+      <g stroke="#d8ffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M0-102 L-14-54 L4-22 L-18 18 L-7 68"/>
+        <path d="M88-50 L42-44 L18-12 L51 17 L84 38"/>
+        <path d="M82 49 L39 38 L12 13 L-6 43 L10 88"/>
+        <path d="M-79 46 L-43 30 L-18 4 L-45-20 L-87-15"/>
+        <path d="M-62-65 L-31-39 L-6-17 L17-49 L41-80"/>
+        <animate attributeName="stroke-dasharray" values="0 180;38 142;88 92;180 0" keyTimes="0;.2;.44;1" dur="1.55s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;.9;.22;0" keyTimes="0;.14;.4;.68;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+
+      <circle r="110" stroke="#57eaff" stroke-width="3" stroke-dasharray="9 14">
+        <animate attributeName="r" values="78;112;148;190" keyTimes="0;.24;.56;1" dur="1.55s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;.85;.36;0" keyTimes="0;.15;.6;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" type="rotate" values="0;-38;-86" keyTimes="0;.56;1" dur="1.55s" repeatCount="indefinite"/>
+      </circle>
+
+      <g stroke="url(#armor-edge)" stroke-width="5" stroke-linecap="round">
+        <path d="M-18-30 C-52-68-75-112-88-150"/>
+        <path d="M20-24 C54-58 92-90 121-122"/>
+        <path d="M28 22 C70 50 103 85 132 116"/>
+        <path d="M-22 25 C-60 54-96 84-132 108"/>
+        <path d="M-6 34 C-12 78-8 118 6 154"/>
+        <animate attributeName="opacity" values="0;.94;.62;.12;0" keyTimes="0;.16;.42;.72;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+    </g>
+
+    <g fill="#43cfff" fill-opacity=".34" stroke="#d8ffff" stroke-width="3">
+      <g>
+        <path d="M-20-108 L8-124 L31-96 L2-78 Z"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-24 -42;-42 -88;-56 -126" keyTimes="0;.24;.42;.7;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" additive="sum" type="rotate" values="0;0;-24;-58;-92" keyTimes="0;.24;.48;.74;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <path d="M71-72 L105-63 L106-30 L78-23 Z"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 0;38 -20;78 -48;122 -70" keyTimes="0;.24;.44;.72;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" additive="sum" type="rotate" values="0;0;35;82;128" keyTimes="0;.24;.48;.76;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <path d="M80 30 L108 44 L93 76 L62 62 Z"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 0;38 28;78 68;116 112" keyTimes="0;.24;.45;.72;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" additive="sum" type="rotate" values="0;0;-28;-68;-112" keyTimes="0;.24;.48;.76;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <path d="M-16 78 L17 91 L5 124 L-27 111 Z"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-6 42;-10 88;-14 132" keyTimes="0;.24;.44;.72;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" additive="sum" type="rotate" values="0;0;24;66;104" keyTimes="0;.24;.48;.76;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <path d="M-96 20 L-66 12 L-54 42 L-84 60 Z"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-40 12;-82 34;-126 56" keyTimes="0;.24;.44;.72;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" additive="sum" type="rotate" values="0;0;-34;-84;-136" keyTimes="0;.24;.48;.76;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <path d="M-82-62 L-51-79 L-31-50 L-58-31 Z"/>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 0;-34 -30;-72 -70;-112 -108" keyTimes="0;.24;.44;.72;1" dur="1.55s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" additive="sum" type="rotate" values="0;0;30;74;118" keyTimes="0;.24;.48;.76;1" dur="1.55s" repeatCount="indefinite"/>
+      </g>
+      <animate attributeName="opacity" values="0;0;.95;.82;.18;0" keyTimes="0;.18;.34;.58;.82;1" dur="1.55s" repeatCount="indefinite"/>
+    </g>
+
+    <g fill="#a9f7ff" filter="url(#armor-glow)">
+      <circle cx="-126" cy="-44" r="3"/><circle cx="126" cy="-62" r="4"/>
+      <circle cx="118" cy="82" r="3"/><circle cx="-106" cy="96" r="3.5"/>
+      <circle cx="-34" cy="138" r="2.5"/><circle cx="48" cy="-142" r="3"/>
+      <animate attributeName="opacity" values="0;0;1;.62;0" keyTimes="0;.22;.4;.72;1" dur="1.55s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values=".45;.7;1.18;1.66;1.95" keyTimes="0;.25;.46;.74;1" dur="1.55s" repeatCount="indefinite"/>
+    </g>
+  </g>
+</svg>
