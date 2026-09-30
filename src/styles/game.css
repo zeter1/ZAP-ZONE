@@ -712,6 +712,9 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 #respawn-countdown.on{opacity:.90;visibility:visible;}
 .projectile-trail-fx{position:absolute;left:50%;top:50%;width:280px;height:92px;transform-origin:8% 50%;transform:translate(-7%,-50%) rotate(var(--trail-rot,0deg)) scaleX(-1);opacity:0;background-repeat:no-repeat;mix-blend-mode:screen;filter:drop-shadow(0 0 9px rgba(80,210,255,.42));animation:pack8Trail .25s ease-out both;}
 .projectile-trail-fx.sniper{width:360px;height:72px}.projectile-trail-fx.plasma{width:310px;height:96px}.projectile-trail-fx.rocket{width:330px;height:110px}
+.rocket-flight-vfx{position:absolute;visibility:hidden;width:var(--rocket-flight-size,150px);height:var(--rocket-flight-size,150px);transform-origin:7% 50%;transform:translate(-7%,-50%) rotate(var(--rocket-flight-rot,0deg));opacity:var(--rocket-flight-opacity,.94);pointer-events:none;background-repeat:no-repeat;mix-blend-mode:screen;filter:drop-shadow(0 0 8px rgba(255,126,28,.66)) drop-shadow(0 0 3px rgba(125,220,255,.42));will-change:left,top,width,height,transform,opacity,background-position;}
+.rocket-flight-vfx.ally{filter:drop-shadow(0 0 8px rgba(255,142,36,.64)) drop-shadow(0 0 5px rgba(88,205,255,.52));}
+.rocket-flight-vfx.enemy{filter:drop-shadow(0 0 9px rgba(255,82,28,.72)) drop-shadow(0 0 4px rgba(255,176,70,.38));}
 @keyframes pack8Trail{0%{opacity:.92;transform:translate(-6%,-50%) rotate(var(--trail-rot,0deg)) scaleX(-1) scale(.82)}55%{opacity:.70}100%{opacity:0;transform:translate(-20%,-50%) rotate(var(--trail-rot,0deg)) scaleX(-1) scale(1.06)}}
 .explosive-fuse-art{position:absolute;width:54px;height:54px;visibility:hidden;transform:translate(-50%,-50%) scale(var(--fuse-scale,1));transform-origin:50% 50%;background-repeat:no-repeat;mix-blend-mode:screen;filter:drop-shadow(0 0 8px rgba(255,150,50,.28));animation:pack8FusePulse .75s ease-in-out infinite alternate;}
 @keyframes pack8FusePulse{from{opacity:.76}to{opacity:1}}
