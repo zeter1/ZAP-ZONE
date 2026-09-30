@@ -136,6 +136,7 @@ const generatedCombatVfxPack26Dimensions=new Map([
   ['assets/ui/fx/heavy-explosion-vfx-atlas-26.webp',[512,192]]
 ]);
 const generatedCombatVfxPack27SvgAssets=['assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg','assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg'];
+const generatedRocketFlightPack28SvgAsset='assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg';
 const generatedSniperVfxPack23Dimensions=new Map([
   ['assets/ui/fx/sniper-shot-vfx-atlas-23.webp',[768,768]],
   ['assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',[768,768]],
@@ -179,7 +180,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets,...generatedGrenadePack21SvgAssets,...generatedCombatVfxPack27SvgAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets,...generatedGrenadePack21SvgAssets,...generatedCombatVfxPack27SvgAssets,generatedRocketFlightPack28SvgAsset];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -356,6 +357,18 @@ const pack27RespawnOwner=pack27Settings.indexOf('function showRespawnMaterialize
 if(pack27RespawnOwner<0||pack27RespawnFallback<pack27RespawnOwner||pack27RespawnGenerated<pack27RespawnFallback)fail('Pack 27 respawn gate must decorate the existing respawn overlay fallback');
 const pack27WallOwner=pack27Engine.indexOf('function wallImpact('),pack27SurfaceFallback=pack27Engine.indexOf("showGeneratedSurfaceImpactVfx(material,pos)",pack27WallOwner),pack27Arc=pack27Engine.indexOf("showGeneratedTerminalArcVfx(vfxPos)",pack27WallOwner);
 if(pack27WallOwner<0||pack27SurfaceFallback<pack27WallOwner||pack27Arc<pack27SurfaceFallback)fail('Pack 27 terminal arc must decorate the existing wall impact path');
+
+const pack28RocketFlightSource=readFileSync(generatedRocketFlightPack28SvgAsset,'utf8');
+if(Buffer.byteLength(pack28RocketFlightSource)>24*1024)fail('Pack 28 rocket-flight SVG atlas exceeds 24 KiB budget');
+if(!pack28RocketFlightSource.includes('width="768" height="576" viewBox="0 0 768 576"'))fail('Pack 28 rocket-flight SVG atlas dimensions invalid');
+if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(pack28RocketFlightSource))fail('Pack 28 rocket-flight atlas must be static, scriptless and self-contained');
+if((pack28RocketFlightSource.match(/<g transform="translate\(/g)||[]).length!==12)fail('Pack 28 rocket-flight atlas must contain exactly 12 static frame groups');
+for(const token of ["pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg'",'function rocketFlightPresentationFrame'])if(!catalog.includes(token))fail('Pack 28 rocket-flight catalog wiring missing: '+token);
+for(const token of ['ROCKET_FLIGHT_VFX_LOOP','function ensureRocketFlightArt','function syncRocketFlightArt','rocketFlightPresentationFrame(frameIndex)','wallBetween(camera.position,pos,losMeshes)','syncRocketFlightArt();'])if(!combatSource.includes(token))fail('Pack 28 rocket-flight runtime wiring missing: '+token);
+for(const token of ['g.userData.flames=[flameOuter,flameCore,glow];','spawnSmoke(r.m.position,0x4b4f55);'])if(!combatSource.includes(token))fail('Pack 28 procedural rocket fallback missing: '+token);
+for(const token of ['.rocket-flight-vfx{','.rocket-flight-vfx.ally{','.rocket-flight-vfx.enemy{'])if(!gameCss.includes(token))fail('Pack 28 rocket-flight CSS missing: '+token);
+const pack28EnemyTick=combatSource.indexOf('processRockets(eRkts);'),pack28PlayerTick=combatSource.indexOf('processRockets(pRkts);',pack28EnemyTick),pack28Sync=combatSource.indexOf('syncRocketFlightArt();',pack28PlayerTick);
+if(pack28EnemyTick<0||pack28PlayerTick<pack28EnemyTick||pack28Sync<pack28PlayerTick)fail('Pack 28 rocket-flight presentation must sync after authoritative rocket simulation');
 
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
