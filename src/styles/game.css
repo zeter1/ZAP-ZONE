@@ -759,4 +759,6 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .generated-combat-vfx[data-kind="sniperPressure"],.generated-combat-vfx[data-kind="nearMiss"]{filter:drop-shadow(0 0 8px rgba(170,230,255,.28));}
 .generated-combat-vfx[data-kind="rocketExplosion"]{filter:drop-shadow(0 0 13px rgba(255,112,24,.55));}
 .generated-combat-vfx[data-kind="plasmaImpact"],.generated-combat-vfx[data-kind="plasmaReload"]{filter:drop-shadow(0 0 12px rgba(91,236,255,.48)) drop-shadow(0 0 18px rgba(165,75,255,.25));}
-@media(max-width:760px){.generated-combat-vfx{max-width:150px;max-height:150px}.generated-combat-vfx[data-kind="plasmaReload"]{max-width:230px;max-height:130px}}
+.generated-combat-vfx[data-kind="criticalHit"]{filter:drop-shadow(0 0 11px rgba(255,202,70,.58)) drop-shadow(0 0 18px rgba(86,231,255,.20));}
+.generated-combat-vfx[data-kind="playerArmorBreak"]{filter:drop-shadow(0 0 13px rgba(78,225,255,.58)) drop-shadow(0 0 21px rgba(116,83,255,.28));}
+@media(max-width:760px){.generated-combat-vfx{max-width:150px;max-height:150px}.generated-combat-vfx[data-kind="plasmaReload"]{max-width:230px;max-height:130px}.generated-combat-vfx[data-kind="playerArmorBreak"]{max-width:225px;max-height:225px}}
