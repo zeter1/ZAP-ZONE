@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="576" viewBox="0 0 768 576" aria-label="Rocket flight exhaust VFX atlas 28"><defs>
+  <linearGradient id="flameOuter" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c8f4ff"/><stop offset=".08" stop-color="#fff"/><stop offset=".25" stop-color="#fff4b2"/><stop offset=".55" stop-color="#ff9a18"/><stop offset=".82" stop-color="#ff4a08" stop-opacity=".86"/><stop offset="1" stop-color="#ff2b00" stop-opacity="0"/></linearGradient>
+  <linearGradient id="flameCore" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7edfff"/><stop offset=".12" stop-color="#eaffff"/><stop offset=".42" stop-color="#fff"/><stop offset=".75" stop-color="#ffd45b" stop-opacity=".96"/><stop offset="1" stop-color="#ff6b09" stop-opacity="0"/></linearGradient>
+  <linearGradient id="smoke" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4f4a48" stop-opacity=".58"/><stop offset=".52" stop-color="#35383c" stop-opacity=".48"/><stop offset="1" stop-color="#6d7379" stop-opacity="0"/></linearGradient>
+  <radialGradient id="hot"><stop offset="0" stop-color="#fff"/><stop offset=".32" stop-color="#e8fbff"/><stop offset=".65" stop-color="#7fdcff" stop-opacity=".85"/><stop offset="1" stop-color="#2aa8ff" stop-opacity="0"/></radialGradient>
+  <filter id="glow" x="-30%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft" x="-25%" y="-50%" width="160%" height="200%"><feGaussianBlur stdDeviation="3.2"/></filter>
+</defs><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g><g transform="translate(NaN NaN)">
+    <g filter="url(#soft)"></g>
+    <path d="M 22 96 C 44 NaN, NaN NaN, NaN NaN C NaN NaN, NaN NaN, 22 96 Z" fill="url(#flameOuter)" opacity=".92" filter="url(#glow)"/>
+    <path d="M 24 96 C 44 NaN, NaN NaN, NaN 93 C NaN 100, NaN NaN, 24 96 Z" fill="url(#flameCore)" opacity=".98" filter="url(#glow)"/>
+    <ellipse cx="25" cy="96" rx="NaN" ry="NaN" fill="url(#hot)" opacity=".96" filter="url(#glow)"/>
+    
+  </g></svg>
