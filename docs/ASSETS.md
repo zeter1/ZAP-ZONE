@@ -121,6 +121,67 @@ All eight files are presentation-only raster art. They must never be passed to `
 
 Background/photo-like art: WebP/JPEG. Простые векторные fallback: SVG. Не конвертировать SVG в тяжёлый raster без пользы.
 
+
+## 2.1. Animated generated assets — canonical browser workflow
+
+Для transient VFX и других коротких анимаций основной generated source по умолчанию — **sprite sheet / texture atlas с alpha**, а не GIF и не набор отдельных PNG-файлов.
+
+Почему:
+- один atlas уменьшает количество HTTP/file requests и декодирований;
+- кадр можно детерминированно выбирать по gameplay-time, а не надеяться на внутренний таймер animated image;
+- эффект можно запускать, останавливать, ускорять, обрывать и синхронизировать с выстрелом/попаданием/reload;
+- один и тот же runtime derivative можно использовать через CSS background-position, DOM/canvas projection или отдельный bounded consumer;
+- generated animation не становится gameplay-state authority: событие игры остаётся источником истины, atlas только визуализирует его.
+
+### Preferred source contract
+
+До генерации зафиксировать:
+- semantic filename;
+- consumer/owner;
+- trigger/event;
+- rows × columns;
+- frame count;
+- intended frame duration/FPS;
+- loop mode: one-shot / hold-last / loop;
+- screen/world anchor;
+- fallback;
+- runtime target size/budget.
+
+Для коротких one-shot VFX начинать с равномерной сетки 4×2 или 4×4. Все кадры должны иметь одинаковый viewpoint/scale/anchor, прозрачный фон и последовательное движение без случайного перескока объекта между ячейками.
+
+### Runtime playback
+
+1. **Gameplay-synchronised effect:** переключать frame index от реального elapsed time через существующий game loop / `requestAnimationFrame` timestamp. Не считать «1 callback = 1 frame»: high-refresh дисплеи иначе ускорят анимацию.
+2. **Чисто декоративный постоянный loop:** допустим CSS `background-position` + `steps(...)`, если loop не несёт gameplay-смысла.
+3. Не держать невидимый loop постоянно активным; hidden/inactive effect должен быть paused/removed.
+4. Предзагружать только assets, которые реально нужны раннему экрану; остальные — lazy-load перед первым consumer. Перед reveal желательно дождаться decode/load success и сохранить procedural/text fallback.
+5. Не раскладывать 8–16 кадров одного эффекта в отдельные runtime files без доказанной причины.
+
+### Format policy
+
+- runtime atlas с alpha: WebP по умолчанию;
+- PNG/APNG — только когда lossless edge fidelity или конкретная lossless animation действительно оправданы;
+- animated WebP/APNG могут использоваться как автономные декоративные loops, но **не являются default для gameplay-synchronised VFX**, потому что код теряет удобный direct control над конкретным кадром;
+- GIF не использовать как основной игровой VFX-format: для этого проекта atlas + controlled playback даёт лучшее управление и обычно меньший runtime overhead;
+- geometric HUD art по-прежнему сначала рассматривать как SVG, а не raster animation.
+
+### Current ZAP-ZONE safety boundary
+
+Generated animated raster остаётся presentation-only и не отменяет текущий запрет на persistent Three.js generated texture planes/sprites. Если позже понадобится настоящий world-space textured VFX pipeline, это отдельная задача с browser/uCoz evidence, memory/performance profiling и новым regression contract. Для будущих тяжёлых GPU texture pipelines отдельно оценивать KTX2/Basis, но не тащить его в текущий DOM/CSS asset path без измеримой пользы.
+
+### Verification gate
+
+Animated asset считается готовым к интеграции только после:
+- проверенного frame grid/alpha;
+- стабильного anchor между кадрами;
+- frame-time independent playback;
+- trigger/stop cleanup без orphan DOM elements/timers;
+- fallback при load/decode failure;
+- dual-runtime HTTP(S) + direct `file://`;
+- browser screenshot/runtime proof на desktop и хотя бы mobile-low path;
+- size/signature/wiring checks в `scripts/validate-structure.mjs` после фактического runtime подключения.
+
+
 ## 3. Имена и каталоги
 
 Runtime-файлы используют ASCII kebab-case и смысловое имя:
