@@ -2,12 +2,12 @@
 
 ## Unreleased — 2026-09-30
 
-### Generated Asset Pack 20 — first-person mine throw and bomb arming
-- integrated both approved previews as deterministic scriptless 4×2 SVG atlases;
-- adapted the grenade-throw choreography to the existing throwable mine because the player has no separate frag-grenade slot;
-- successful mine throws now receive a grip/release/follow-through animation; successful bomb placement receives a planting, arming-ring and confirmation sequence;
-- both effects trigger only after the authoritative gameplay object is created; mine physics/arming and bomb fuse/damage/radius/ammo/cooldown remain unchanged;
-- structural validation and normal build/browser gates cover the integration.
+### Grenade + Bomb Asset Pack 20
+- added a real player fragmentation grenade as the tenth weapon/utility slot (`0`) without shifting the existing pistol-through-sniper indices or old save-array positions;
+- added small-capacity grenade pickup economy, procedural fallback geometry, owner-aware bounce/fuse/blast behavior, self-damage and player kill/XP attribution;
+- integrated generated-direction first-person, map-pickup and 2×2 HUD identity art plus an eight-frame throw VFX; existing Pack 15 shrapnel bloom remains the detonation effect;
+- integrated the separately approved second asset: an eight-frame bomb placement/arming animation that fires only after successful authoritative bomb placement;
+- structural validation now covers the new weapon identity, required assets, player/bot grenade ownership, VFX hooks and pickup distribution.
 
 ### Generated Asset Pack 19 — landing impact and first-person smoke throw
 - integrated the two newly approved source previews as compact deterministic scriptless SVG atlases: a two-material landing impact sequence and an eight-frame first-person smoke-grenade throw;
