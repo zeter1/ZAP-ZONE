@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" fill="none">
+  <title>ZAP ZONE player death signal collapse VFX preview</title>
+  <desc>Transparent 16:9 looping source preview for a short death transition layered over the kill camera. Runtime integration should use deterministic static frames and preserve the death message.</desc>
+  <defs>
+    <radialGradient id="edge" cx="50%" cy="47%" r="73%">
+      <stop offset="0" stop-color="#5d0000" stop-opacity="0"/>
+      <stop offset=".50" stop-color="#780007" stop-opacity=".08"/>
+      <stop offset=".78" stop-color="#a30712" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#190004" stop-opacity=".92"/>
+    </radialGradient>
+    <radialGradient id="pulse" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".86"/>
+      <stop offset=".13" stop-color="#ffd9d9" stop-opacity=".73"/>
+      <stop offset=".31" stop-color="#ff4e58" stop-opacity=".46"/>
+      <stop offset=".66" stop-color="#ca071d" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#70000b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fracture" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff4f4"/>
+      <stop offset=".16" stop-color="#ffb9bd"/>
+      <stop offset=".55" stop-color="#ff3344"/>
+      <stop offset="1" stop-color="#7d0010" stop-opacity=".08"/>
+    </linearGradient>
+    <linearGradient id="cyanGhost" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#9ff7ff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#6eeeff" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#6eeeff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="redGhost" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#ff3150" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#ff3150" stop-opacity=".62"/>
+      <stop offset="1" stop-color="#ff3150" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="9" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
+    <pattern id="scan" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="2" fill="#ff4455" opacity=".10"/>
+    </pattern>
+    <clipPath id="screen"><rect width="1280" height="720" rx="0"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#screen)">
+    <!-- Peripheral collapse keeps the center readable for death text / killcam -->
+    <rect width="1280" height="720" fill="url(#edge)" opacity="0">
+      <animate attributeName="opacity" values="0;.98;.72;.48;.18;0" keyTimes="0;.08;.24;.50;.78;1" dur="1.72s" repeatCount="indefinite"/>
+    </rect>
+    <rect width="1280" height="720" fill="url(#scan)" opacity="0">
+      <animate attributeName="opacity" values="0;.38;.18;.10;0" keyTimes="0;.10;.30;.62;1" dur="1.72s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Impact iris: fast, then clears to reveal kill camera -->
+    <g transform="translate(640 350)" filter="url(#glow)">
+      <circle r="24" fill="url(#pulse)" opacity="0">
+        <animate attributeName="r" values="18;96;208;338;430" keyTimes="0;.08;.20;.42;1" dur="1.72s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;.68;.16;0" keyTimes="0;.035;.20;.50;1" dur="1.72s" repeatCount="indefinite"/>
+      </circle>
+      <circle r="46" stroke="#ffd9dc" stroke-width="7" opacity="0">
+        <animate attributeName="r" values="42;132;280;470" keyTimes="0;.15;.42;1" dur="1.72s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-width" values="8;5;2.5;1" keyTimes="0;.20;.52;1" dur="1.72s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;.72;.24;0" keyTimes="0;.10;.50;1" dur="1.72s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Fracture lines enter from edges rather than covering the death message zone -->
+    <g stroke="url(#fracture)" stroke-linecap="round" stroke-linejoin="round" opacity="0" filter="url(#glow)">
+      <path d="M0 118 L162 165 L246 244 L311 266" stroke-width="7"/>
+      <path d="M0 524 L132 490 L231 420 L309 405" stroke-width="6"/>
+      <path d="M1280 128 L1124 177 L1031 255 L961 276" stroke-width="7"/>
+      <path d="M1280 558 L1140 510 L1047 441 L968 418" stroke-width="6"/>
+      <path d="M207 0 L289 90 L340 153 L371 218" stroke-width="5"/>
+      <path d="M1073 0 L995 86 L940 157 L911 221" stroke-width="5"/>
+      <path d="M224 720 L300 631 L355 554 L388 494" stroke-width="5"/>
+      <path d="M1057 720 L982 632 L927 560 L892 496" stroke-width="5"/>
+      <animate attributeName="opacity" values="0;.92;.70;.28;0" keyTimes="0;.10;.30;.66;1" dur="1.72s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="1 560;120 440;330 230;560 0" keyTimes="0;.18;.45;1" dur="1.72s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Angular glass/signal fragments -->
+    <g fill="#310008" stroke="#ff5965" stroke-width="2" opacity="0">
+      <path d="M115 167 L194 185 L232 232 L154 218 Z"/>
+      <path d="M1065 169 L1147 151 L1122 222 L1042 235 Z"/>
+      <path d="M89 474 L181 448 L213 504 L130 534 Z"/>
+      <path d="M1080 465 L1168 499 L1119 547 L1048 507 Z"/>
+      <path d="M277 78 L331 117 L305 174 L254 126 Z"/>
+      <path d="M1002 79 L947 120 L974 174 L1024 127 Z"/>
+      <path d="M291 603 L348 564 L372 622 L317 661 Z"/>
+      <path d="M985 606 L931 568 L905 623 L961 663 Z"/>
+      <animate attributeName="opacity" values="0;0;.74;.48;0" keyTimes="0;.12;.27;.62;1" dur="1.72s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values=".94;1;1.03;1.08" keyTimes="0;.25;.60;1" dur="1.72s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Short chromatic signal tear; intentionally sparse, not a full-screen glitch -->
+    <g opacity="0">
+      <rect x="66" y="260" width="365" height="5" fill="url(#redGhost)"/>
+      <rect x="868" y="293" width="340" height="4" fill="url(#cyanGhost)"/>
+      <rect x="94" y="436" width="292" height="4" fill="url(#cyanGhost)"/>
+      <rect x="902" y="470" width="302" height="5" fill="url(#redGhost)"/>
+      <rect x="250" y="106" width="226" height="3" fill="url(#cyanGhost)"/>
+      <rect x="813" y="588" width="254" height="3" fill="url(#redGhost)"/>
+      <animate attributeName="opacity" values="0;0;.68;.22;0" keyTimes="0;.09;.21;.48;1" dur="1.72s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="translate" values="-20 0;17 0;-9 0;0 0" keyTimes="0;.22;.48;1" dur="1.72s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Soft side blackout wedges guide the eye back into the killcam -->
+    <g opacity="0" filter="url(#blur)">
+      <path d="M-90-50 L380-20 L218 770 L-110 780 Z" fill="#100004"/>
+      <path d="M1370-50 L900-20 L1060 770 L1390 780 Z" fill="#100004"/>
+      <animate attributeName="opacity" values="0;.68;.52;.30;0" keyTimes="0;.12;.34;.70;1" dur="1.72s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Tiny sparks at the edge of the visible field -->
+    <g fill="#ffb1b7" opacity="0" filter="url(#glow)">
+      <circle cx="238" cy="248" r="3.5"/><circle cx="1032" cy="242" r="3.3"/>
+      <circle cx="304" cy="516" r="3"/><circle cx="975" cy="524" r="3.2"/>
+      <circle cx="141" cy="352" r="2.8"/><circle cx="1143" cy="367" r="2.8"/>
+      <animate attributeName="opacity" values="0;0;.9;.40;0" keyTimes="0;.12;.27;.56;1" dur="1.72s" repeatCount="indefinite"/>
+    </g>
+  </g>
+</svg>

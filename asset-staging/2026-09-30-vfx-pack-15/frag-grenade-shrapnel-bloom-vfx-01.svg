@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" fill="none">
+  <title>ZAP ZONE frag grenade shrapnel bloom VFX preview</title>
+  <desc>Transparent looping source preview for a short one-shot frag grenade detonation. Runtime integration should use deterministic static atlas frames.</desc>
+  <defs>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".13" stop-color="#fff9c8"/>
+      <stop offset=".31" stop-color="#ffd25a"/>
+      <stop offset=".55" stop-color="#ff7d21"/>
+      <stop offset=".78" stop-color="#ef2e15" stop-opacity=".76"/>
+      <stop offset="1" stop-color="#5a100b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fffde6"/>
+      <stop offset=".24" stop-color="#ffd85f"/>
+      <stop offset=".62" stop-color="#ff741d"/>
+      <stop offset="1" stop-color="#ff2e18" stop-opacity=".15"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#ffffff"/>
+      <stop offset=".18" stop-color="#fff2a4"/>
+      <stop offset=".56" stop-color="#ff9a28"/>
+      <stop offset="1" stop-color="#e83d16" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="smoke" cx="45%" cy="40%" r="65%">
+      <stop offset="0" stop-color="#5f625f" stop-opacity=".72"/>
+      <stop offset=".5" stop-color="#34383a" stop-opacity=".52"/>
+      <stop offset="1" stop-color="#17191b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <filter id="smoke-soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="11"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(320 320)">
+    <!-- Ground pressure / dust ring -->
+    <ellipse cx="0" cy="72" rx="36" ry="11" stroke="#f2b76b" stroke-width="5" opacity="0">
+      <animate attributeName="rx" values="34;70;148;225;268" keyTimes="0;.18;.43;.72;1" dur="1.58s" repeatCount="indefinite"/>
+      <animate attributeName="ry" values="10;19;34;49;58" keyTimes="0;.18;.43;.72;1" dur="1.58s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-width" values="7;5;3;1.7;1" keyTimes="0;.2;.48;.76;1" dur="1.58s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.82;.55;.18;0" keyTimes="0;.11;.42;.78;1" dur="1.58s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <!-- Hot flash and shock rings -->
+    <circle r="20" fill="#ff6a18" opacity="0" filter="url(#soft)">
+      <animate attributeName="r" values="16;74;142;184;205" keyTimes="0;.13;.35;.64;1" dur="1.58s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.86;.42;.10;0" keyTimes="0;.07;.34;.68;1" dur="1.58s" repeatCount="indefinite"/>
+    </circle>
+    <g filter="url(#glow)">
+      <circle r="10" fill="url(#core)">
+        <animate attributeName="r" values="7;48;76;44;0;0" keyTimes="0;.07;.17;.34;.56;1" dur="1.58s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;1;.78;0;0" keyTimes="0;.035;.17;.36;.58;1" dur="1.58s" repeatCount="indefinite"/>
+      </circle>
+      <circle r="26" stroke="url(#ring)" stroke-width="10" opacity="0">
+        <animate attributeName="r" values="26;72;142;204;244" keyTimes="0;.17;.42;.72;1" dur="1.58s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-width" values="11;8;4;2;1" keyTimes="0;.18;.46;.74;1" dur="1.58s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;.98;.67;.20;0" keyTimes="0;.08;.38;.73;1" dur="1.58s" repeatCount="indefinite"/>
+      </circle>
+      <circle r="40" stroke="#fff7c5" stroke-width="2.6" stroke-dasharray="7 16" opacity="0">
+        <animate attributeName="r" values="38;92;160;226" keyTimes="0;.24;.57;1" dur="1.58s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;.82;.31;0" keyTimes="0;.13;.55;1" dur="1.58s" repeatCount="indefinite"/>
+        <animateTransform attributeName="transform" type="rotate" values="-7;22;55" keyTimes="0;.52;1" dur="1.58s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Primary shrapnel fan. Asymmetry is deliberate; runtime can add rotation/scale variation. -->
+    <g stroke="url(#spark)" stroke-linecap="round" opacity="0" filter="url(#glow)">
+      <path d="M-8-20 L-28-168" stroke-width="8"/>
+      <path d="M16-16 L68-142" stroke-width="6"/>
+      <path d="M23 0 L158-63" stroke-width="7"/>
+      <path d="M18 17 L139 72" stroke-width="5"/>
+      <path d="M2 24 L38 164" stroke-width="7"/>
+      <path d="M-18 20 L-109 132" stroke-width="6"/>
+      <path d="M-25 4 L-170 38" stroke-width="5"/>
+      <path d="M-19-13 L-128-104" stroke-width="7"/>
+      <path d="M6-22 L27-113" stroke-width="4"/>
+      <path d="M22-8 L116-91" stroke-width="4"/>
+      <path d="M22 10 L105 102" stroke-width="4"/>
+      <path d="M-9 23 L-43 118" stroke-width="4"/>
+      <animate attributeName="opacity" values="0;1;.91;.26;0" keyTimes="0;.07;.26;.59;1" dur="1.58s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values=".24;.60;1;1.32;1.46" keyTimes="0;.09;.31;.62;1" dur="1.58s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Dark metal fragments with ember edges -->
+    <g fill="#242628" stroke="#ff8d2d" stroke-width="2.2" opacity="0">
+      <path d="M-19-59 L-2-81 L15-61 L3-42 Z"/>
+      <path d="M70-30 L94-39 L101-14 L77 1 Z"/>
+      <path d="M65 48 L89 65 L72 91 L50 72 Z"/>
+      <path d="M-18 74 L-2 102 L-31 112 L-48 83 Z"/>
+      <path d="M-77 25 L-106 37 L-111 9 L-82-9 Z"/>
+      <path d="M-61-50 L-78-75 L-49-89 L-32-61 Z"/>
+      <path d="M32-74 L50-99 L68-77 L53-52 Z"/>
+      <path d="M-57 58 L-82 75 L-96 50 L-71 36 Z"/>
+      <animate attributeName="opacity" values="0;0;.95;.76;0" keyTimes="0;.12;.28;.68;1" dur="1.58s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values=".25;.58;1.06;1.62;2.00" keyTimes="0;.16;.36;.68;1" dur="1.58s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Dust/smoke plumes, delayed after flash -->
+    <g filter="url(#smoke-soft)" opacity="0">
+      <circle cx="-50" cy="46" r="40" fill="url(#smoke)"/>
+      <circle cx="14" cy="62" r="52" fill="url(#smoke)"/>
+      <circle cx="65" cy="38" r="38" fill="url(#smoke)"/>
+      <circle cx="-11" cy="9" r="35" fill="url(#smoke)"/>
+      <animate attributeName="opacity" values="0;0;.18;.55;.22;0" keyTimes="0;.18;.29;.54;.79;1" dur="1.58s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 -5;0 -22;0 -42" keyTimes="0;.2;.36;.67;1" dur="1.58s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" additive="sum" type="scale" values=".55;.72;1;1.33;1.65" keyTimes="0;.24;.45;.72;1" dur="1.58s" repeatCount="indefinite"/>
+    </g>
+
+    <!-- Secondary incandescent micro-fragments -->
+    <g fill="#ffe47b" opacity="0" filter="url(#glow)">
+      <circle cx="-136" cy="-36" r="4"/><circle cx="123" cy="-78" r="3.5"/>
+      <circle cx="145" cy="58" r="3"/><circle cx="73" cy="137" r="3.8"/>
+      <circle cx="-99" cy="128" r="3.1"/><circle cx="-158" cy="58" r="2.7"/>
+      <circle cx="-62" cy="-142" r="3.2"/><circle cx="37" cy="-155" r="2.7"/>
+      <animate attributeName="opacity" values="0;0;1;.72;0" keyTimes="0;.13;.31;.64;1" dur="1.58s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values=".34;.63;1.05;1.52;1.84" keyTimes="0;.17;.35;.68;1" dur="1.58s" repeatCount="indefinite"/>
+    </g>
+  </g>
+</svg>
