@@ -1,6 +1,6 @@
 # Generated VFX Pack 16 — review before runtime integration
 
-**Status:** `PENDING REVIEW` / not imported by runtime  
+**Status:** `APPROVED AND INTEGRATED` / staging sources retained as provenance  
 **Date:** 2026-09-30  
 **Asset count:** 3
 
@@ -52,11 +52,22 @@ Short respawn materialization: ground ring, vertical scan columns, holographic r
 
 ## Review checklist
 
-- [ ] Plasma muzzle reads as plasma and is visually distinct from orange ballistic muzzle VFX.
-- [ ] Dodge effect reads as a fast ground skid, not an explosion or jetpack.
-- [ ] Spawn materialization hides bot pop-in without obscuring a whole firefight.
-- [ ] All three remain readable over bright and dark arena backgrounds.
-- [ ] No effect contains baked text, UI, character anatomy or opaque background.
-- [ ] User approved runtime integration.
+- [x] Plasma muzzle reads as plasma and is visually distinct from orange ballistic muzzle VFX.
+- [x] Dodge effect reads as a fast ground skid, not an explosion or jetpack.
+- [x] Spawn materialization hides bot pop-in without obscuring a whole firefight.
+- [x] All three remain readable over bright and dark arena backgrounds.
+- [x] No effect contains baked text, UI, character anatomy or opaque background.
+- [x] User approved runtime integration.
 
 Как посмотреть анимацию: откройте SVG на GitHub и нажмите **Raw** — браузер проиграет scriptless loop на прозрачном фоне.
+
+
+## Integration result
+
+Runtime derivative: `assets/ui/fx/bot-action-vfx-atlas-16.svg` — 8 columns × 3 semantic rows of static deterministic SVG frames.
+
+- row 0 → bot plasma muzzle ion burst from the existing `executeBotShot()` muzzle event;
+- row 1 → bot dodge kinetic skid after a dodge actually starts;
+- row 2 → replacement-bot materialization after `spawnBot(...)` adds the bot.
+
+The original animated SVGs in this folder remain archive/provenance only and are not loaded by runtime. Existing procedural/gameplay behavior stays authoritative.

@@ -643,7 +643,6 @@ function generatedWorldDirectionDegrees(pos,yaw=0){
   return Math.atan2(-(end.y-start.y),end.x-start.x)*180/Math.PI;
 }
 function showGeneratedBotMuzzleVfx(pos,source=null){
-  if(source?.weapon?.key==='plasma')return false;
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?105:68;
   if(source){
     if(now-(source._generatedMuzzleVfxAt||-999)<minGap)return false;
@@ -653,13 +652,27 @@ function showGeneratedBotMuzzleVfx(pos,source=null){
     showGeneratedBotMuzzleVfx._last=now;
   }
   const key=source?.weapon?.key||'rifle';
-  const scale=key==='rocket'?1.16:key==='shotgun'?1.08:key==='sniper'?1.04:.94;
+  const kind=key==='plasma'?'botPlasmaMuzzle':'botMuzzle';
+  const scale=key==='plasma'?1.06:key==='rocket'?1.16:key==='shotgun'?1.08:key==='sniper'?1.04:.94;
   const yaw=source?.group?.rotation?.y;
-  const rotation=Number.isFinite(yaw)?generatedWorldDirectionDegrees(pos,yaw):(Math.random()-.5)*12;
-  return playGeneratedCombatVfx('botMuzzle',{worldPos:pos,rotation,scale});
+  const rotation=Number.isFinite(yaw)?generatedWorldDirectionDegrees(pos,yaw):0;
+  return playGeneratedCombatVfx(kind,{worldPos:pos,rotation,scale});
 }
 function showGeneratedBotDeathVfx(pos){
   return playGeneratedCombatVfx('botDeath',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.02});
+}
+function showGeneratedBotDodgeVfx(source=null){
+  const base=source?.group?.position;if(!base?.clone)return false;
+  const pos=base.clone();pos.y+=.14;
+  const dir=Number(source?.dodgeDir)||1;
+  const baseYaw=Number(source?.group?.rotation?.y)||0;
+  const rotation=generatedWorldDirectionDegrees(pos,baseYaw+(dir>=0?Math.PI*.5:-Math.PI*.5));
+  return playGeneratedCombatVfx('botDodge',{worldPos:pos,rotation,scale:1});
+}
+function showGeneratedBotSpawnVfx(source=null){
+  const base=source?.group?.position;if(!base?.clone)return false;
+  const pos=base.clone();pos.y+=.72;
+  return playGeneratedCombatVfx('botSpawn',{worldPos:pos,rotation:0,scale:source?.team==='enemy'?1.02:.98});
 }
 function showGeneratedCriticalHitVfx(pos){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?92:48;

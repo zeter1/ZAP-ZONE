@@ -16,6 +16,14 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 16 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-16/` are integrated as one deterministic scriptless 8×3 SVG runtime atlas:
+- `assets/ui/fx/bot-action-vfx-atlas-16.svg` — row 0 bot plasma muzzle ion burst, row 1 bot kinetic dodge skid, row 2 replacement-bot spawn materialization.
+
+The existing bounded elapsed-time DOM VFX player in `src/settings/settings.js` owns playback/projection/cleanup. `showGeneratedBotMuzzleVfx(...)` now selects the plasma row for plasma weapons while preserving the existing Pack 13 ballistic row. `Enemy.triggerDodge(...)` emits the dodge decoration only after `applyBotDodgeResponse(...)` actually starts a dodge, without adding visual RNG draws. `spawnBot(team, showSpawnVfx=true)` decorates replacement spawns after the new bot is added; `spawnInitial()` explicitly passes `false` so match startup cannot create a mass VFX burst.
+
+Fire cadence, projectile spawning, hit/damage logic, dodge duration/speed/cooldown/RNG order, spawn position/timing/team counts and procedural bot models remain authoritative and unchanged. Staging SVG loops remain provenance/review sources only; runtime uses static frames.
+
 ## Generated Asset Pack 15 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-15/` are integrated as two deterministic scriptless runtime atlases:
 - `assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg` — 8×1 static frames for bot frag-grenade detonation;

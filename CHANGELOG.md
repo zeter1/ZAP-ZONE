@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 16 — bot plasma muzzle, dodge and respawn VFX
+- approved all three candidates from `asset-staging/2026-09-30-vfx-pack-16/` and integrated them as one deterministic scriptless 8×3 SVG runtime atlas;
+- bot plasma shots now use a dedicated cyan ion-burst row through the existing authoritative muzzle hook, while Pack 13 remains the ballistic/rocket muzzle presentation;
+- a successful bot dodge now emits one ground-level kinetic skid effect after the canonical dodge response starts, without changing dodge RNG order, duration, speed, cooldown or jump policy;
+- replacement bots now materialize with a short world-projected spawn effect after creation; initial match population explicitly suppresses the effect to avoid a startup burst;
+- structural validation covers static-frame safety/count/byte budget, catalog/runtime/consumer/CSS wiring, and the existing dual-runtime build stamp/browser smoke gates verify the integrated runtime.
+
 ### Generated Asset Pack 15 — frag grenade and player death-transition VFX
 - approved both candidates from `asset-staging/2026-09-30-vfx-pack-15/` and integrated them as deterministic scriptless 8-frame SVG runtime atlases;
 - bot frag-grenade detonation now adds a distinct shrapnel/dust bloom after the existing procedural explosion/impact event, without changing fuse, damage, radius or team logic;

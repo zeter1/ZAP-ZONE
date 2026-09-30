@@ -111,6 +111,7 @@ const generatedCombatVfxPack13SvgAtlas='assets/ui/fx/bot-combat-vfx-atlas-13.svg
 const generatedCombatVfxPack14SvgAtlas='assets/ui/fx/player-feedback-vfx-atlas-14.svg';
 const generatedCombatVfxPack15FragSvgAtlas='assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg';
 const generatedPlayerDeathVfxPack15SvgAtlas='assets/ui/fx/player-death-signal-collapse-atlas-15.svg';
+const generatedCombatVfxPack16SvgAtlas='assets/ui/fx/bot-action-vfx-atlas-16.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -149,7 +150,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1313,3 +1314,29 @@ if(pack15DeathRoot<0||pack15DeathCamera<pack15DeathRoot||pack15DeathGenerated<pa
 if(!progression.includes("if(typeof resetGeneratedPlayerDeathVfx==='function')resetGeneratedPlayerDeathVfx();"))fail('pack 15 death VFX cleanup missing from death-camera cleanup');
 if(!runtime.includes("if(typeof tickGeneratedPlayerDeathVfx==='function')tickGeneratedPlayerDeathVfx(deathDt);"))fail('pack 15 death VFX must advance in the dedicated dying loop');
 for(const token of ['.generated-combat-vfx[data-kind="fragGrenade"]','#player-death-vfx{','#player-death-vfx.on{'])if(!gameCss.includes(token))fail('generated VFX pack 15 CSS missing: '+token);
+
+
+// Generated Asset Pack 16 — bot plasma muzzle, dodge skid and replacement-spawn materialization.
+{
+  const source=readFileSync(generatedCombatVfxPack16SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>40*1024)fail('generated combat VFX pack 16 SVG atlas exceeds 40 KiB budget');
+  if(!source.includes('viewBox="0 0 448 168"'))fail('generated combat VFX pack 16 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b/i.test(source))fail('runtime VFX pack 16 atlas must be scriptless static deterministic frames');
+  if((source.match(/class="frame row-/g)||[]).length!==24)fail('generated combat VFX pack 16 atlas must contain exactly 3 x 8 static frames');
+}
+for(const token of ["pack16:'assets/ui/fx/bot-action-vfx-atlas-16.svg'","botPlasmaMuzzle:Object.freeze({asset:'pack16',row:0,cols:8,rows:3,frames:8","botDodge:Object.freeze({asset:'pack16',row:1,cols:8,rows:3,frames:8","botSpawn:Object.freeze({asset:'pack16',row:2,cols:8,rows:3,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 16 catalog contract missing: '+token);
+for(const token of ['function showGeneratedBotDodgeVfx','function showGeneratedBotSpawnVfx',"const kind=key==='plasma'?'botPlasmaMuzzle':'botMuzzle'"])if(!settings.includes(token))fail('generated combat VFX pack 16 runtime helper missing: '+token);
+if(settings.includes("if(source?.weapon?.key==='plasma')return false;"))fail('pack 16 plasma muzzle must no longer be excluded from generated bot muzzle presentation');
+const pack16MuzzleFallback=fireControl.indexOf("trigMuzzle(from,shotCol");
+const pack16MuzzleGenerated=fireControl.indexOf('showGeneratedBotMuzzleVfx(from,bot);');
+if(pack16MuzzleFallback<0||pack16MuzzleGenerated<pack16MuzzleFallback)fail('pack 16 plasma muzzle must decorate the existing authoritative bot muzzle event');
+const pack16DodgeOwner=bots.indexOf('triggerDodge(preferredDir=0,urgency=1){');
+const pack16DodgeApply=bots.indexOf('applyBotDodgeResponse(this,preferredDir,urgency);',pack16DodgeOwner);
+const pack16DodgeGenerated=bots.indexOf('showGeneratedBotDodgeVfx(this);',pack16DodgeOwner);
+if(pack16DodgeOwner<0||pack16DodgeApply<pack16DodgeOwner||pack16DodgeGenerated<pack16DodgeApply)fail('pack 16 dodge VFX must emit only after the authoritative dodge response starts');
+const pack16SpawnOwner=bots.indexOf('function spawnBot(team,showSpawnVfx=true){');
+const pack16SpawnPush=bots.indexOf('enemies.push(en);',pack16SpawnOwner);
+const pack16SpawnGenerated=bots.indexOf('showGeneratedBotSpawnVfx(en);',pack16SpawnOwner);
+if(pack16SpawnOwner<0||pack16SpawnPush<pack16SpawnOwner||pack16SpawnGenerated<pack16SpawnPush)fail('pack 16 spawn VFX must decorate a successfully created replacement bot');
+for(const token of ["spawnBot('ally',false)","spawnBot('enemy',false)"])if(!bots.includes(token))fail('pack 16 initial population must suppress mass spawn VFX: '+token);
+for(const token of ['.generated-combat-vfx[data-kind="botPlasmaMuzzle"]','.generated-combat-vfx[data-kind="botDodge"]','.generated-combat-vfx[data-kind="botSpawn"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 16 CSS missing: '+token);

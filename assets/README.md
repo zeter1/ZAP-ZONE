@@ -1,3 +1,7 @@
+Generated Asset Pack 16 integrates the three approved bot-action candidates from `asset-staging/2026-09-30-vfx-pack-16/` as `ui/fx/bot-action-vfx-atlas-16.svg`, a deterministic 8×3 static-frame SVG atlas. Row 0 decorates bot plasma muzzle events through the existing fire-control shot hook; row 1 decorates a successfully started bot dodge; row 2 decorates replacement-bot spawns while initial match population explicitly suppresses the materialization burst.
+
+Pack 16 is presentation-only. Existing procedural muzzle, movement/jump, bot geometry and spawn logic remain fallback/authority. The VFX layer is DOM-projected, bounded, elapsed-time driven and off-screen hidden; dodge/spawn helpers add no gameplay RNG draws. The animated staging originals remain archive/provenance and are not imported at runtime.
+
 # Assets — quick map
 
 ## Pack 15 consumers

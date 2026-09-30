@@ -157,7 +157,9 @@ class Enemy{
 
 
   triggerDodge(preferredDir=0,urgency=1){
+    const dodgeStarted=this.dodgeT<=0&&this.dodgeCD<=0;
     applyBotDodgeResponse(this,preferredDir,urgency);
+    if(dodgeStarted&&this.dodgeT>0&&typeof showGeneratedBotDodgeVfx==='function')showGeneratedBotDodgeVfx(this);
   }
 
   registerSuppression(source,intensity=.6){
@@ -811,7 +813,7 @@ function updateTeamScore(){
 }
 function countTeam(t){let c=0;for(const e of enemies)if(e.alive&&e.team===t)c++;return c;}
 function getAliveTeamPositions(team){return enemies.filter(e=>e.alive&&e.team===team).map(e=>[e.group.position.x,e.group.position.z]);}
-function spawnBot(team){
+function spawnBot(team,showSpawnVfx=true){
   const pool=team==='ally'?ALLY_SPAWN_POOL:ENEMY_SPAWN_POOL;
   const used=[[camera.position.x,camera.position.z],...enemies.filter(e=>e.alive).map(e=>[e.group.position.x,e.group.position.z])];
   const farFrom=team==='enemy'?[camera.position.x,camera.position.z]:null;
@@ -822,13 +824,14 @@ function spawnBot(team){
   if(Math.random()<.16)typ=0;
   const en=new Enemy(pt[0],pt[1],typ,team);
   enemies.push(en);
+  if(showSpawnVfx&&typeof showGeneratedBotSpawnVfx==='function')showGeneratedBotSpawnVfx(en);
 }
 function spawnInitial(){
   const plan=generateSpawnPlan();
   applyPlayerSpawn(plan.player);
   plan.allies.forEach((pt)=>{enemies.push(new Enemy(pt[0],pt[1],1+Math.floor(Math.random()*3),'ally'));});
   plan.enemies.forEach((pt)=>{enemies.push(new Enemy(pt[0],pt[1],1+Math.floor(Math.random()*3),'enemy'));});
-  while(countTeam('ally')<ALLY_BOT_TARGET)spawnBot('ally');
-  while(countTeam('enemy')<TEAM_SIZE)spawnBot('enemy');
+  while(countTeam('ally')<ALLY_BOT_TARGET)spawnBot('ally',false);
+  while(countTeam('enemy')<TEAM_SIZE)spawnBot('enemy',false);
   updateTeamScore();
 }
