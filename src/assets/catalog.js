@@ -211,7 +211,9 @@ const GAME_ASSETS=versionAssetTree({
     pack17:'assets/ui/fx/interaction-vfx-atlas-17.svg',
     pack18:'assets/ui/fx/player-action-vfx-atlas-18.svg',
     pack19Landing:'assets/ui/fx/landing-impact-vfx-atlas-19.svg',
-    pack19SmokeThrow:'assets/ui/fx/smoke-throw-vfx-atlas-19.svg'
+    pack19SmokeThrow:'assets/ui/fx/smoke-throw-vfx-atlas-19.svg',
+    pack20MineThrow:'assets/ui/fx/player-mine-throw-vfx-atlas-20.svg',
+    pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -640,7 +642,9 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   medkitArmor:Object.freeze({asset:'pack18',row:6,cols:4,rows:7,frames:4,duration:.78,size:228}),
   landingDust:Object.freeze({asset:'pack19Landing',row:0,cols:4,rows:4,frames:8,duration:.58,width:260,height:173}),
   landingMetal:Object.freeze({asset:'pack19Landing',row:2,cols:4,rows:4,frames:8,duration:.54,width:260,height:173}),
-  smokeThrow:Object.freeze({asset:'pack19SmokeThrow',row:0,cols:4,rows:2,frames:8,duration:.52,size:430})
+  smokeThrow:Object.freeze({asset:'pack19SmokeThrow',row:0,cols:4,rows:2,frames:8,duration:.52,size:430}),
+  mineThrow:Object.freeze({asset:'pack20MineThrow',row:0,cols:4,rows:2,frames:8,duration:.58,size:430}),
+  bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8,duration:.72,size:430})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){
