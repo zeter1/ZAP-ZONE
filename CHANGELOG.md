@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated VFX Pack 28 — tracked rocket flight exhaust
+- integrated the newly approved 4×3 rocket-exhaust concept as a compact static 12-frame SVG runtime atlas instead of shipping the heavy source PNG;
+- player and bot rockets now receive a world-projected exhaust plume aligned opposite their actual screen-space velocity, distance-scaled and hidden when off-screen or occluded;
+- ignition and sustained-burn frame selection are elapsed-time driven and deterministic, with no gameplay RNG draw;
+- retained the existing Three.js rocket body, additive procedural flame, smoke/spark trail and all projectile physics/collision/damage/explosion behavior as authoritative fallback; structural validation covers the atlas, wiring and fallback contract.
+
 ### Generated VFX Pack 27 — respawn materialization + reactive terminals
 - integrated the two newly approved VFX concepts as compact static SVG atlases: a six-frame player respawn energy gate and a ten-frame terminal electrical breakdown sequence;
 - player respawn now layers the new gate animation over the existing respawn materialize overlay while preserving the authoritative 15-second death/respawn flow and spawn protection;
