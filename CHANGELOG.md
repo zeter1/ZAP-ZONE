@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 13 — bot muzzle and armor-rupture VFX
+- approved both candidates from `asset-staging/2026-09-30-vfx-pack-13/` and integrated them as one deterministic scriptless 8×2 SVG runtime atlas;
+- bot firearm/rocket shots now decorate the existing authoritative muzzle event with a world-projected, screen-oriented generated blast; plasma intentionally keeps its existing cyan presentation;
+- bot death now emits a short armor-rupture burst before model disposal while preserving the existing gibs and procedural particles;
+- generated muzzle playback is throttled per bot and shares the existing bounded elapsed-time DOM VFX player; off-screen cleanup/projection behavior remains centralized;
+- fire cadence, accuracy, projectiles, damage, kill rewards, death physics and respawn are unchanged; structural validation and dual-runtime build stamping cover the new integration.
+
 ### Generated Asset Pack 12 — ricochet, penetration, smoke and explosive VFX
 - approved all five candidates from `asset-staging/2026-09-30-vfx-pack-12/` and integrated them into real gameplay events;
 - added one deterministic scriptless 8×5 static-frame SVG mega-atlas for ricochet sparks, penetration exit debris, smoke deployment bloom, mine shrapnel detonation and bomb pressure-core detonation;

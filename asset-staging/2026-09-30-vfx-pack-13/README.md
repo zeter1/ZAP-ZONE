@@ -1,6 +1,6 @@
 # VFX Pack 13 — staging review (2026-09-30)
 
-Статус: **AWAITING USER APPROVAL — NOT IN RUNTIME**.
+Статус: **APPROVED AND INTEGRATED — staging copies retained as provenance**.
 
 Этот batch содержит ровно два новых world-combat VFX, выбранных после duplicate gate по текущим Pack 7–12 и фактическим consumer-ам игры. Оба файла — прозрачные scriptless animated SVG source-candidates. Они намеренно лежат только в `asset-staging/` и не загружаются игрой до отдельного одобрения.
 
@@ -9,9 +9,9 @@
 | `bot-world-muzzle-blast-vfx-01.svg` | У игрока уже есть generated muzzle sheets/backblast, а выстрелы ботов в мире визуально всё ещё завершаются общим procedural `trigMuzzle(...)`. На дистанции это слабее читается, особенно при перестрелке нескольких ботов. | `src/ai/bot-fire-control.js::executeBotShot()` сразу после authoritative shot/noise/audio и рядом с `trigMuzzle(from,...)`; world position = bot muzzle `from`. | текущий Three.js/procedural muzzle + tracer/casing/audio | row 0 в 8×2 static-frame SVG atlas, 8 frames, one-shot ~0.38 s; world-projected DOM VFX с throttle/budget |
 | `bot-armor-rupture-death-vfx-01.svg` | `Bot.die()` сейчас использует геометрические gibs + пять простых частиц. Короткий armor-rupture burst даст смерти читаемый удар, горячие искры, пластины и дым без изменения damage/physics. | `src/entities/bots.js::Bot.die()` до удаления/утилизации bot group, world position = bot center/chest. | текущие gibs + `spawnP(...)` particles | row 1 в 8×2 static-frame SVG atlas, 8 frames, one-shot ~0.95 s; world-projected DOM VFX, bounded cleanup |
 
-## Integration intent after approval
+## Integrated runtime result
 
-Планируемый runtime derivative: `assets/ui/fx/bot-combat-vfx-atlas-13.svg` — один scriptless static-frame atlas: 2 semantic rows × 8 frames. Playback должен переиспользовать существующий `playGeneratedCombatVfx(...)`/elapsed-time pipeline, чтобы не заводить вторую систему анимации.
+Runtime derivative: `assets/ui/fx/bot-combat-vfx-atlas-13.svg` — один scriptless static-frame atlas: 2 semantic rows × 8 frames. Playback переиспользует существующий `playGeneratedCombatVfx(...)`/elapsed-time pipeline; source-preview SVG остаются только в staging.
 
 Важно:
 - muzzle VFX не меняет fire cadence, hit chance, projectile spawning, sound или tracer policy;
@@ -19,7 +19,7 @@
 - current procedural effects остаются fallback;
 - staging SVG — preview/provenance, не gameplay-time authority;
 - при интеграции world effects должны скрываться off-screen/behind-camera и делить существующий bounded VFX budget;
-- для частых bot shots нужен отдельный короткий throttle, чтобы автоматическое оружие не создавало DOM churn.
+- для частых bot shots используется per-bot throttle, чтобы автоматическое оружие не создавало лишний DOM churn.
 
 ## Browser/VFX rationale
 
