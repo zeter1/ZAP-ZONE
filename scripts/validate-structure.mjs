@@ -281,7 +281,8 @@ for(const token of ['generatedFirstPersonActionBlocksScope()',"isGeneratedFirstP
 for(const token of ['#fp-weapon-action{','#fp-weapon-action.on{'])if(!gameCss.includes(token))fail('Pack 22 action CSS missing: '+token);
 if(!html.includes('id="fp-weapon-action"'))fail('Pack 22 action DOM missing');
 for(const token of ["pack23SniperShot:'assets/ui/fx/sniper-shot-vfx-atlas-23.webp'","pack23SniperBallistics:'assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp'","pack23SniperCasing:'assets/ui/fx/sniper-casing-vfx-atlas-23.webp'","sniperMuzzle23:Object.freeze","sniperSmoke23:Object.freeze","sniperBullet23:Object.freeze","sniperSupersonic23:Object.freeze","sniperCasing23:Object.freeze"])if(!catalog.includes(token))fail('Pack 23 sniper catalog wiring missing: '+token);
-for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
+const pack23Settings=readFileSync('src/settings/settings.js','utf8');
+for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
 for(const token of ["cycleKind==='bolt'&&typeof showGeneratedSniperCasingFx==='function'","showGeneratedSniperCasingFx();"])if(!runtimeSource.includes(token))fail('Pack 23 sniper casing fallback consumer missing: '+token);
 for(const token of ['sniperMuzzle23','sniperSmoke23','sniperBullet23','sniperSupersonic23','sniperCasing23'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 23 sniper CSS missing: '+token);
 for(const token of ["id==='damage'","id==='reload'","id==='mobility'||id==='sprint_drive'"]){
