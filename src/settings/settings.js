@@ -567,10 +567,15 @@ function positionGeneratedCombatVfx(item){
     const dist=camera.position.distanceTo(item.worldPos);scale*=Math.max(.48,Math.min(1.08,12/Math.max(7,dist)));
   }else{
     if(item.anchor==='footstep'){x=innerWidth*.5;y=innerHeight*.88;}
+    else if(item.anchor==='landing'){x=innerWidth*.5;y=innerHeight*.86;}
     else if(item.anchor==='recovery'){x=innerWidth*.5;y=innerHeight*.62;}
     else{
       const stage=byId('fp-weapon-art-stage'),flash=byId('fp-weapon-flash');
-      if(item.anchor==='muzzle'&&flash){const r=flash.getBoundingClientRect();x=r.left+r.width*.50;y=r.top+r.height*.50;}
+      if(item.anchor==='smokeThrow'){
+        if(stage){const r=stage.getBoundingClientRect();x=r.left+r.width*.58;y=r.top+r.height*.55;}
+        else{x=innerWidth*.60;y=innerHeight*.68;}
+      }
+      else if(item.anchor==='muzzle'&&flash){const r=flash.getBoundingClientRect();x=r.left+r.width*.50;y=r.top+r.height*.50;}
       else if((item.anchor==='ejection'||item.anchor==='magazine')&&stage){
         const r=stage.getBoundingClientRect();x=r.left+r.width*(item.anchor==='magazine'?.68:.58);y=r.top+r.height*(item.anchor==='magazine'?.64:.38);
       }
@@ -636,6 +641,14 @@ function showGeneratedFootstepVfx(source=null,surface='concrete',running=false,i
 function showGeneratedMedkitRecoveryVfx(mode='heal'){
   return playGeneratedCombatVfx(mode==='armor'?'medkitArmor':'medkitHeal',{anchor:'recovery',rotation:0,scale:1});
 }
+function showGeneratedLandingVfx(surface='concrete',impactSpeed=0){
+  const speed=Math.max(0,Number(impactSpeed)||0);
+  if(surface==='water'||speed<4.2)return false;
+  const kind=surface==='metal'?'landingMetal':'landingDust';
+  const scale=Math.max(.82,Math.min(1.18,.78+speed*.045));
+  return playGeneratedCombatVfx(kind,{anchor:'landing',rotation:0,scale});
+}
+function showGeneratedSmokeThrowVfx(){return playGeneratedCombatVfx('smokeThrow',{anchor:'smokeThrow',rotation:0,scale:1});}
 function showGeneratedRicochetVfx(pos,surface='concrete'){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?58:24;
   if(now-(showGeneratedRicochetVfx._last||-999)<minGap)return false;

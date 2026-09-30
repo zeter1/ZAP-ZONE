@@ -114,6 +114,7 @@ const generatedPlayerDeathVfxPack15SvgAtlas='assets/ui/fx/player-death-signal-co
 const generatedCombatVfxPack16SvgAtlas='assets/ui/fx/bot-action-vfx-atlas-16.svg';
 const generatedCombatVfxPack17SvgAtlas='assets/ui/fx/interaction-vfx-atlas-17.svg';
 const generatedCombatVfxPack18SvgAtlas='assets/ui/fx/player-action-vfx-atlas-18.svg';
+const generatedCombatVfxPack19SvgAssets=['assets/ui/fx/landing-impact-vfx-atlas-19.svg','assets/ui/fx/smoke-throw-vfx-atlas-19.svg'];
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -152,7 +153,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1386,3 +1387,20 @@ const pack18FootstepOwner=settings.indexOf('function playFootstepSound('),pack18
 if(pack18FootstepOwner<0||pack18FootstepFx<pack18FootstepOwner)fail('pack 18 footsteps must decorate the existing distance-driven footstep event');
 for(const token of ["showGeneratedMedkitRecoveryVfx('armor');","showGeneratedMedkitRecoveryVfx('heal');"])if(!pickups.includes(token))fail('pack 18 medkit recovery consumer missing: '+token);
 for(const token of ['.generated-combat-vfx[data-kind="shotgunShellInsert"]','.generated-combat-vfx[data-kind="footstepMetal"]','.generated-combat-vfx[data-kind="footstepDust"]','.generated-combat-vfx[data-kind="footstepWater"]','.generated-combat-vfx[data-kind="medkitHeal"]','.generated-combat-vfx[data-kind="medkitArmor"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 18 CSS missing: '+token);
+
+// Generated Asset Pack 19 — landing impact and first-person smoke throw.
+{
+  const landing=readFileSync(generatedCombatVfxPack19SvgAssets[0],'utf8'),smokeThrow=readFileSync(generatedCombatVfxPack19SvgAssets[1],'utf8');
+  if(Buffer.byteLength(landing)>32*1024||Buffer.byteLength(smokeThrow)>24*1024)fail('generated combat VFX pack 19 SVG atlas exceeds byte budget');
+  if(!landing.includes('viewBox="0 0 384 256"')||!smokeThrow.includes('viewBox="0 0 512 256"'))fail('generated combat VFX pack 19 viewBox invalid');
+  for(const source of [landing,smokeThrow])if(/<animate\\b|<animateTransform\\b|<script\\b|<image\\b|<foreignObject\\b/i.test(source))fail('runtime VFX pack 19 atlases must be static, scriptless and self-contained');
+  if((landing.match(/class="frame row-/g)||[]).length!==16)fail('pack 19 landing atlas must contain exactly 4 x 4 static frames');
+  if((smokeThrow.match(/class="frame row-/g)||[]).length!==8)fail('pack 19 smoke throw atlas must contain exactly 4 x 2 static frames');
+}
+for(const token of ["pack19Landing:'assets/ui/fx/landing-impact-vfx-atlas-19.svg'","pack19SmokeThrow:'assets/ui/fx/smoke-throw-vfx-atlas-19.svg'","landingDust:Object.freeze({asset:'pack19Landing',row:0,cols:4,rows:4,frames:8","landingMetal:Object.freeze({asset:'pack19Landing',row:2,cols:4,rows:4,frames:8","smokeThrow:Object.freeze({asset:'pack19SmokeThrow',row:0,cols:4,rows:2,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 19 catalog contract missing: '+token);
+for(const token of ['function showGeneratedLandingVfx','function showGeneratedSmokeThrowVfx',"item.anchor==='landing'","item.anchor==='smokeThrow'","surface==='water'||speed<4.2"])if(!settings.includes(token))fail('generated combat VFX pack 19 runtime helper missing: '+token);
+const pack19LandingAirborne=runtime.indexOf('const wasAirborne=!onGnd;'),pack19LandingSpeed=runtime.indexOf('const landingSpeed=wasAirborne?Math.max(0,-jumpV):0;',pack19LandingAirborne),pack19LandingFx=runtime.indexOf('showGeneratedLandingVfx(surface,landingSpeed);',pack19LandingSpeed),pack19LandingReset=runtime.indexOf('onGnd=true;jumpV=0;',pack19LandingFx);
+if(pack19LandingAirborne<0||pack19LandingSpeed<pack19LandingAirborne||pack19LandingFx<pack19LandingSpeed||pack19LandingReset<pack19LandingFx)fail('pack 19 landing VFX must decorate the real airborne-to-ground transition before reset');
+const pack19SmokeOwner=combat.indexOf('function throwSmokeGrenade(){'),pack19SmokePush=combat.indexOf('smokeGrenades.push({m,vx:v.x,vy:v.y,vz:v.z',pack19SmokeOwner),pack19SmokeFx=combat.indexOf("showGeneratedSmokeThrowVfx();",pack19SmokePush);
+if(pack19SmokeOwner<0||pack19SmokePush<pack19SmokeOwner||pack19SmokeFx<pack19SmokePush)fail('pack 19 smoke-throw VFX must decorate a successfully spawned player grenade');
+for(const token of ['.generated-combat-vfx[data-kind="landingDust"]','.generated-combat-vfx[data-kind="landingMetal"]','.generated-combat-vfx[data-kind="smokeThrow"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 19 CSS missing: '+token);

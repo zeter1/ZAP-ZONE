@@ -18,6 +18,15 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 19 (2026-09-30)
+Two transparent source previews were generated and visually approved in the current ChatGPT dialog, then converted into deterministic scriptless SVG runtime atlases under the same-dialog approval exception:
+- `assets/ui/fx/landing-impact-vfx-atlas-19.svg` — 4×4 / 16 static frames: rows 0–1 concrete/gravel dust landing, rows 2–3 metal energy/spark landing;
+- `assets/ui/fx/smoke-throw-vfx-atlas-19.svg` — 4×2 / 8 static frames: first-person smoke-grenade grip, throw/release and short smoke-trail presentation.
+
+Landing playback is emitted only on the real airborne → grounded transition in `src/game/runtime.js`; low-speed contacts are ignored and water intentionally keeps Pack 18's splash/footstep presentation instead of a dust/metal impact. The smoke throw atlas decorates only a successfully spawned player grenade in `src/combat/combat.js::throwSmokeGrenade()`; the existing `mkSmokeGrenade()` object, trajectory, bounce, cooldown, ammo and Pack 12 smoke deployment remain authoritative.
+
+Both assets reuse the bounded elapsed-time DOM VFX player in `src/settings/settings.js`. They are presentation-only, contain no self-running SVG animation/script, add no gameplay RNG draws, and never enter persistent Three.js texture geometry. Heavy reviewed raster sources are intentionally not duplicated in Git; provenance and consumer/fallback mapping live in `asset-staging/2026-09-30-vfx-pack-19/README.md`.
+
 ## Generated Asset Pack 18 (2026-09-30)
 Approved source previews were reviewed directly in the current ChatGPT dialog and integrated under the same-dialog approval exception as one deterministic scriptless 4×7 SVG runtime atlas:
 - rows 0–1: eight-frame first-person shotgun shell-insert sequence;

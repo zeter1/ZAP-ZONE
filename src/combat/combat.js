@@ -895,6 +895,7 @@ function throwSmokeGrenade(){
   m.position.copy(camera.position).addScaledVector(dir,.72);m.position.y-=.12;scene.add(m);
   const v=dir.clone().multiplyScalar(12.5);v.y+=5.2;
   smokeGrenades.push({m,vx:v.x,vy:v.y,vz:v.z,rx:7+Math.random()*5,rz:6+Math.random()*5,age:0,life:3,grounded:false,trailT:.02});
+  if(typeof showGeneratedSmokeThrowVfx==='function')showGeneratedSmokeThrowVfx();
   if(!testingInfiniteAmmoEnabled())setWeaponAmmo(smokeIdx,smokeAmmo-1);
   if(!testingInfiniteAmmoEnabled()&&smokeAmmo-1<=0&&weaponReserveValue(smokeIdx)<=0)updateWeaponBar();
   sCD=smokeW.rate;recoil=.45;
