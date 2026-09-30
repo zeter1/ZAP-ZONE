@@ -229,7 +229,8 @@ const GAME_ASSETS=versionAssetTree({
     pack26Discharge:'assets/ui/fx/weapon-discharge-vfx-atlas-26.webp',
     pack26HeavyExplosion:'assets/ui/fx/heavy-explosion-vfx-atlas-26.webp',
     pack27RespawnGate:'assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg',
-    pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg'
+    pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg',
+    pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -595,6 +596,10 @@ function explosiveFusePresentationFrame(state){
 function projectileTrailPresentationFrame(kind){
   const row={ballistic:0,sniper:1,plasma:2,rocket:3,impact:4}[kind];
   return Number.isInteger(row)?presentationAtlasFrame(GAME_ASSETS.presentationHudV2.projectileTrails,0,row,1,5):null;
+}
+function rocketFlightPresentationFrame(index=0){
+  const frame=Math.max(0,Math.min(11,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack28RocketFlight,frame%4,Math.floor(frame/4),4,3);
 }
 function botOverheadPresentationFrame(team,state='normal'){
   const col=team==='enemy'?1:0,row=state==='armor'?1:state==='critical'||state==='broken'?2:0;
