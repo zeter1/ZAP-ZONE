@@ -306,8 +306,10 @@ function tickPickups(dt){
       if(plr.overhealArmor<=0||armor>=plr.maxArmor){pk.cd=.35;continue;}
       const gain=Math.min(plr.overhealArmor,plr.maxArmor-armor);
       armor+=gain;markHUD();showPickupNotification(GAME_ASSETS.presentation.medkitPickup,GAME_ASSETS.pickups.medkit,'АПТЕЧКА → БРОНЯ','+'+Math.round(gain)+' брони','blue');
+      if(typeof showGeneratedMedkitRecoveryVfx==='function')showGeneratedMedkitRecoveryVfx('armor');
     }else{
       const before=hp;hp=Math.min(hp+heal,plr.maxHp);markHUD();showPickupNotification(GAME_ASSETS.presentation.medkitPickup,GAME_ASSETS.pickups.medkit,'АПТЕЧКА','+'+Math.round(hp-before)+' HP','green');
+      if(typeof showGeneratedMedkitRecoveryVfx==='function')showGeneratedMedkitRecoveryVfx('heal');
     }
     pk.cd=.8;pk.m.visible=false;
     if(typeof showGeneratedPickupCollectionVfx==='function')showGeneratedPickupCollectionVfx(pk);

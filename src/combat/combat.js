@@ -671,6 +671,7 @@ function completePlayerReloadStep(){
   if(reloadMode==='shell'){
     if(ammo<w.clip&&uAmmo>0){
       ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playWeaponMechanicSound('shell',1,w.key);
+      if(w.key==='shotgun'&&typeof showGeneratedShotgunShellInsertVfx==='function')showGeneratedShotgunShellInsertVfx();
       G('rmsg').textContent=`ПАТРОН ${ammo} / ${w.clip} · ЛКМ — ПРЕРВАТЬ`;
     }
     if(ammo>=w.clip||uAmmo<=0){finishPlayerReload(true);return;}

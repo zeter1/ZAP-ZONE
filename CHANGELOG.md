@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 18 — shotgun reload, footsteps and medkit recovery
+- integrated the three newly approved source previews as one deterministic scriptless 4×7 SVG runtime atlas;
+- each actually inserted shotgun shell now receives a synchronized local insert VFX, while metal/concrete-gravel/water footsteps decorate the existing distance-driven player/bot stride events;
+- medkit feedback now visually distinguishes real HP recovery from overheal-to-armor conversion without changing healing values or pickup economy;
+- all effects remain DOM-only, bounded and elapsed-time driven; existing audio/procedural feedback remains fallback and the new presentation adds no gameplay RNG draws;
+- asset documentation now records a same-dialog approval path that avoids duplicating heavy reviewed source rasters in Git while retaining a staging manifest.
+
 ### Generated Asset Pack 17 — bot reload/hit and pickup collection VFX
 - integrated all three approved Pack 17 candidates as one deterministic scriptless 8×3 SVG runtime atlas;
 - bot reload gets mag-lock presentation after the authoritative timer/sound, nonlethal bot hits get directional sparks after the existing reaction/RNG path, and successful pickups get a collection-collapse effect;

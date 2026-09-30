@@ -12,9 +12,24 @@
 5. только после одобрения сделать runtime derivative (для коротких VFX обычно alpha-WebP sprite sheet/atlas), подключить consumer и fallback, затем выполнить validation/smoke/screenshot gate;
 6. после успешной интеграции staging-source можно оставить как provenance/reference или удалить отдельным осознанным cleanup-коммитом.
 
+Исключение для уже просмотренного в текущем диалоге source: если пользователь **сначала увидел generated preview прямо в чате, затем в этом же диалоге явно разрешил интеграцию**, тяжёлый исходный raster не обязательно дублировать в Git. В `asset-staging/YYYY-MM-DD-<pack>/README.md` всё равно фиксируются provenance, consumer/event/fallback и runtime derivative. Это исключение нельзя использовать для непросмотренных кандидатов или чтобы обойти review gate.
+
 Почему staging находится вне `assets/**`: каталог `assets/` является runtime surface и проверяется CI как часть игры. `asset-staging/` — не runtime и не должен случайно подхватываться catalog/loader-ами до одобрения.
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
+
+## Generated Asset Pack 18 (2026-09-30)
+Approved source previews were reviewed directly in the current ChatGPT dialog and integrated under the same-dialog approval exception as one deterministic scriptless 4×7 SVG runtime atlas:
+- rows 0–1: eight-frame first-person shotgun shell-insert sequence;
+- row 2: metal foot-contact spark burst;
+- row 3: concrete/gravel dust kick;
+- row 4: water footstep splash;
+- row 5: HP medkit recovery pulse;
+- row 6: overheal-to-armor shield pulse.
+
+`src/settings/settings.js` reuses the bounded elapsed-time DOM VFX player. Shell insert emits only after a shell is actually added to the shotgun magazine; footsteps decorate the existing distance-driven footstep event without adding gameplay RNG draws; medkit recovery emits only after a real HP or armor increase. Existing audio, movement, reload timing, pickup economy and procedural/HUD fallbacks remain authoritative.
+
+Runtime derivative: `assets/ui/fx/player-action-vfx-atlas-18.svg`. The original heavy raster previews are not duplicated in Git; `asset-staging/2026-09-30-vfx-pack-18/README.md` records provenance and the approved mapping.
 
 ## Generated Asset Pack 17 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-17/` are integrated as one deterministic scriptless 8×3 SVG runtime atlas:

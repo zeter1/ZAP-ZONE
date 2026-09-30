@@ -113,6 +113,7 @@ const generatedCombatVfxPack15FragSvgAtlas='assets/ui/fx/frag-grenade-shrapnel-b
 const generatedPlayerDeathVfxPack15SvgAtlas='assets/ui/fx/player-death-signal-collapse-atlas-15.svg';
 const generatedCombatVfxPack16SvgAtlas='assets/ui/fx/bot-action-vfx-atlas-16.svg';
 const generatedCombatVfxPack17SvgAtlas='assets/ui/fx/interaction-vfx-atlas-17.svg';
+const generatedCombatVfxPack18SvgAtlas='assets/ui/fx/player-action-vfx-atlas-18.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -1359,3 +1360,29 @@ const pack17HitOwner=bots.indexOf('hurt(dmg,dir,fromTeam,source=null){'),pack17H
 if(pack17HitOwner<0||pack17HitReaction<pack17HitOwner||pack17HitGenerated<pack17HitReaction||pack17HitDeath<pack17HitGenerated)fail('pack 17 bot-hit VFX must be nonlethal and must not replace death handling');
 if((pickups.match(/showGeneratedPickupCollectionVfx\(pk\);/g)||[]).length!==2)fail('pack 17 pickup collection VFX must decorate exactly weapon and medkit success paths');
 for(const token of ['.generated-combat-vfx[data-kind="botReload"]','.generated-combat-vfx[data-kind="botHit"]','.generated-combat-vfx[data-kind="pickupCollect"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 17 CSS missing: '+token);
+
+
+// Generated Asset Pack 18 — player reload, surface footsteps and medkit recovery.
+{
+  const source=readFileSync(generatedCombatVfxPack18SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>56*1024)fail('generated combat VFX pack 18 SVG atlas exceeds 56 KiB budget');
+  if(!source.includes('viewBox="0 0 256 448"'))fail('generated combat VFX pack 18 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime VFX pack 18 atlas must be static, scriptless and self-contained');
+  if((source.match(/class="frame row-/g)||[]).length!==28)fail('generated combat VFX pack 18 atlas must contain exactly 4 x 7 static frames');
+}
+for(const token of [
+  "pack18:'assets/ui/fx/player-action-vfx-atlas-18.svg'",
+  "shotgunShellInsert:Object.freeze({asset:'pack18',row:0,cols:4,rows:7,frames:8",
+  "footstepMetal:Object.freeze({asset:'pack18',row:2,cols:4,rows:7,frames:4",
+  "footstepDust:Object.freeze({asset:'pack18',row:3,cols:4,rows:7,frames:4",
+  "footstepWater:Object.freeze({asset:'pack18',row:4,cols:4,rows:7,frames:4",
+  "medkitHeal:Object.freeze({asset:'pack18',row:5,cols:4,rows:7,frames:4",
+  "medkitArmor:Object.freeze({asset:'pack18',row:6,cols:4,rows:7,frames:4"
+])if(!catalog.includes(token))fail('generated combat VFX pack 18 catalog contract missing: '+token);
+for(const token of ['function showGeneratedShotgunShellInsertVfx','function showGeneratedFootstepVfx','function showGeneratedMedkitRecoveryVfx',"item.anchor==='footstep'","item.anchor==='recovery'"])if(!settings.includes(token))fail('generated combat VFX pack 18 runtime helper missing: '+token);
+const pack18ShellOwner=combat.indexOf('function completePlayerReloadStep(){'),pack18ShellSound=combat.indexOf("playWeaponMechanicSound('shell',1,w.key);",pack18ShellOwner),pack18ShellFx=combat.indexOf("showGeneratedShotgunShellInsertVfx();",pack18ShellOwner);
+if(pack18ShellOwner<0||pack18ShellSound<pack18ShellOwner||pack18ShellFx<pack18ShellSound)fail('pack 18 shell-insert VFX must decorate the authoritative inserted-shell transition after sound');
+const pack18FootstepOwner=settings.indexOf('function playFootstepSound('),pack18FootstepFx=settings.indexOf('showGeneratedFootstepVfx(source,ground,running,isBot);',pack18FootstepOwner);
+if(pack18FootstepOwner<0||pack18FootstepFx<pack18FootstepOwner)fail('pack 18 footsteps must decorate the existing distance-driven footstep event');
+for(const token of ["showGeneratedMedkitRecoveryVfx('armor');","showGeneratedMedkitRecoveryVfx('heal');"])if(!pickups.includes(token))fail('pack 18 medkit recovery consumer missing: '+token);
+for(const token of ['.generated-combat-vfx[data-kind="shotgunShellInsert"]','.generated-combat-vfx[data-kind="footstepMetal"]','.generated-combat-vfx[data-kind="footstepDust"]','.generated-combat-vfx[data-kind="footstepWater"]','.generated-combat-vfx[data-kind="medkitHeal"]','.generated-combat-vfx[data-kind="medkitArmor"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 18 CSS missing: '+token);

@@ -208,7 +208,8 @@ const GAME_ASSETS=versionAssetTree({
     pack15Frag:'assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg',
     pack15Death:'assets/ui/fx/player-death-signal-collapse-atlas-15.svg',
     pack16:'assets/ui/fx/bot-action-vfx-atlas-16.svg',
-    pack17:'assets/ui/fx/interaction-vfx-atlas-17.svg'
+    pack17:'assets/ui/fx/interaction-vfx-atlas-17.svg',
+    pack18:'assets/ui/fx/player-action-vfx-atlas-18.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -628,7 +629,13 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   botSpawn:Object.freeze({asset:'pack16',row:2,cols:8,rows:3,frames:8,duration:1.18,size:238}),
   botReload:Object.freeze({asset:'pack17',row:0,cols:8,rows:3,frames:8,duration:.68,size:178}),
   botHit:Object.freeze({asset:'pack17',row:1,cols:8,rows:3,frames:8,duration:.40,size:148}),
-  pickupCollect:Object.freeze({asset:'pack17',row:2,cols:8,rows:3,frames:8,duration:.72,size:174})
+  pickupCollect:Object.freeze({asset:'pack17',row:2,cols:8,rows:3,frames:8,duration:.72,size:174}),
+  shotgunShellInsert:Object.freeze({asset:'pack18',row:0,cols:4,rows:7,frames:8,duration:.36,width:118,height:118}),
+  footstepMetal:Object.freeze({asset:'pack18',row:2,cols:4,rows:7,frames:4,duration:.40,size:132}),
+  footstepDust:Object.freeze({asset:'pack18',row:3,cols:4,rows:7,frames:4,duration:.52,size:138}),
+  footstepWater:Object.freeze({asset:'pack18',row:4,cols:4,rows:7,frames:4,duration:.58,size:146}),
+  medkitHeal:Object.freeze({asset:'pack18',row:5,cols:4,rows:7,frames:4,duration:.72,size:228}),
+  medkitArmor:Object.freeze({asset:'pack18',row:6,cols:4,rows:7,frames:4,duration:.78,size:228})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){
