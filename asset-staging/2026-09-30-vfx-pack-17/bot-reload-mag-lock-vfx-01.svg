@@ -77,14 +77,14 @@
   </g>
 
   <g>
-    <g>
-      <animateTransform attributeName="transform" type="translate" values="0 -6;0 0;0 36" keyTimes="0;.25;1" dur="1.05s" repeatCount="indefinite"/>
-      <g transform="translate(128 159)">
-        <animateTransform attributeName="transform" additive="sum" type="rotate" values="-5;2;12" dur="1.05s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 -6;0 0;0 36" keyTimes="0;.25;1" dur="1.05s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".08;.95;.82;0" keyTimes="0;.2;.66;1" dur="1.05s" repeatCount="indefinite"/>
+    <g transform="translate(128 159)">
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="-5;2;12" dur="1.05s" repeatCount="indefinite"/>
         <path d="M-15 -23 L14 -23 L11 20 L-11 20 Z" fill="url(#r-mag)" stroke="#b9ecff" stroke-width="1.8" opacity=".95"/>
         <path d="M-10 -16 L9 -16 M-9 -6 L8 -6" stroke="#68cfe8" stroke-width="1.4" opacity=".72"/>
       </g>
-      <animate attributeName="opacity" values=".08;.95;.82;0" keyTimes="0;.2;.66;1" dur="1.05s" repeatCount="indefinite"/>
     </g>
   </g>
 

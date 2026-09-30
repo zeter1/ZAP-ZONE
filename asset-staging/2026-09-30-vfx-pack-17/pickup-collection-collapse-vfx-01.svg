@@ -31,9 +31,9 @@
   </ellipse>
 
   <g fill="none" stroke="url(#p-spectrum)" filter="url(#p-glow)">
-    <polygon points="128,50 190,85 190,157 128,192 66,157 66,85" stroke-width="4" opacity=".8">
-      <animateTransform attributeName="transform" type="rotate" values="0 128 121;30 128 121;70 128 121" dur=".96s" repeatCount="indefinite"/>
-      <animateTransform attributeName="transform" additive="sum" type="scale" values="1.12 1.12;.92 .92;.34 .34;.05 .05" keyTimes="0;.38;.77;1" dur=".96s" repeatCount="indefinite"/>
+    <polygon points="128,42 198,81 198,161 128,201 58,161 58,81" stroke-width="4" opacity=".8">
+      <animateTransform attributeName="transform" type="rotate" values="0 128 121;24 128 121;54 128 121" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="points" values="128,42 198,81 198,161 128,201 58,161 58,81;128,68 176,95 176,149 128,176 80,149 80,95;128,101 145,111 145,131 128,141 111,131 111,111;128,118 133,120 133,124 128,127 123,124 123,120" keyTimes="0;.38;.77;1" dur=".96s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values=".04;.86;.58;0" keyTimes="0;.18;.62;1" dur=".96s" repeatCount="indefinite"/>
     </polygon>
     <circle cx="128" cy="121" r="52" stroke-width="2.6" stroke-dasharray="18 10" opacity=".66">
