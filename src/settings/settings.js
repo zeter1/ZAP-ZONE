@@ -633,6 +633,31 @@ function showGeneratedMineDetonationVfx(pos){
 function showGeneratedBombDetonationVfx(pos){
   return playGeneratedCombatVfx('bombDetonation',{worldPos:pos,rotation:(Math.random()-.5)*6,scale:1.08});
 }
+function generatedWorldDirectionDegrees(pos,yaw=0){
+  if(!pos?.clone||typeof THREE==='undefined'||typeof camera==='undefined')return 0;
+  const start=pos.clone().project(camera);
+  const end=pos.clone().add(new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)).multiplyScalar(1.25)).project(camera);
+  return Math.atan2(-(end.y-start.y),end.x-start.x)*180/Math.PI;
+}
+function showGeneratedBotMuzzleVfx(pos,source=null){
+  if(source?.weapon?.key==='plasma')return false;
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?105:68;
+  if(source){
+    if(now-(source._generatedMuzzleVfxAt||-999)<minGap)return false;
+    source._generatedMuzzleVfxAt=now;
+  }else{
+    if(now-(showGeneratedBotMuzzleVfx._last||-999)<minGap)return false;
+    showGeneratedBotMuzzleVfx._last=now;
+  }
+  const key=source?.weapon?.key||'rifle';
+  const scale=key==='rocket'?1.16:key==='shotgun'?1.08:key==='sniper'?1.04:.94;
+  const yaw=source?.group?.rotation?.y;
+  const rotation=Number.isFinite(yaw)?generatedWorldDirectionDegrees(pos,yaw):(Math.random()-.5)*12;
+  return playGeneratedCombatVfx('botMuzzle',{worldPos:pos,rotation,scale});
+}
+function showGeneratedBotDeathVfx(pos){
+  return playGeneratedCombatVfx('botDeath',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.02});
+}
 function showGeneratedNearMissFx(source,pressure=.6){
   const strength=Math.max(.45,Math.min(1.18,Number(pressure)||.6));
   return playGeneratedCombatVfx('nearMiss',{anchor:'center',rotation:combatBearingDegrees(source),scale:.74+strength*.28});

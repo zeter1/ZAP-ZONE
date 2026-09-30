@@ -112,6 +112,7 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
   emitBotCombatNoise(from,bot,wp,wp.isRocket?'rocket':'shot');
   playWeaponShotSound(wp.key,bot.team==='enemy'?1:.72,from);
   trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.isSniper?1.38:wp.key==='shotgun'?1.2:1);
+  showGeneratedBotMuzzleVfx(from,bot);
   if(wp.key!=='rocket'&&wp.key!=='plasma'){
     const q=new THREE.Quaternion().setFromAxisAngle(_UP,bot.group.rotation.y);
     ejectCasing(from.clone().add(new THREE.Vector3(0,.08,0)),q,wp.key==='shotgun');

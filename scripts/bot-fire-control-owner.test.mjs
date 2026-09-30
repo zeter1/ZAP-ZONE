@@ -34,6 +34,7 @@ function createHarness(overrides={}){
     emitBotCombatNoise:(...args)=>events.push(['noise',...args]),
     playWeaponShotSound:(...args)=>events.push(['shot-sound',...args]),
     trigMuzzle:(...args)=>events.push(['muzzle',...args]),
+    showGeneratedBotMuzzleVfx:(...args)=>events.push(['generated-muzzle',...args]),
     _UP:new Vec3(0,1,0),ejectCasing:(...args)=>events.push(['casing',...args]),
     spawnERkt:(...args)=>events.push(['rocket',...args]),
     BOT_DAMAGE_BOOST:1,EXPLOSION_DAMAGE_BOOST:1,
@@ -118,6 +119,7 @@ test('hitscan execution preserves damage, kill accounting and ammo consumption',
   assert.equal(bot.kills,1);
   assert.equal(context.allyKills,1);
   assert.equal(context.events.some(e=>e[0]==='trace'),true);
+  assert.equal(context.events.some(e=>e[0]==='generated-muzzle'),true);
   assert.equal(context.events.some(e=>e[0]==='kill-feed'),true);
 });
 

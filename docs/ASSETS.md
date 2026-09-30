@@ -16,6 +16,14 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 13 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-13/` are integrated into one deterministic scriptless atlas:
+- `assets/ui/fx/bot-combat-vfx-atlas-13.svg` — 8×2 / 16 static frames;
+- row 0: world-space bot muzzle blast for non-plasma firearm/rocket shots;
+- row 1: bot armor-rupture/death burst.
+
+`src/settings/settings.js` reuses the bounded elapsed-time combat VFX player. Muzzle playback is throttled per bot, projected at the authoritative muzzle position and screen-oriented from the bot yaw; plasma keeps its existing cyan procedural presentation instead of receiving the orange ballistic atlas. `src/ai/bot-fire-control.js` emits the muzzle decoration only after the existing procedural muzzle/audio/noise event, while `src/entities/bots.js::Bot.die()` emits the death burst before group disposal. Fire cadence, accuracy, projectiles, damage, rewards, gibs and respawn logic are unchanged; procedural presentation remains fallback.
+
 ## Generated Asset Pack 12 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-12/` are integrated into one static-frame runtime atlas:
 - `assets/ui/fx/combat-vfx-atlas-12.svg` — 8×5 / 40-frame mega-atlas;

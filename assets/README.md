@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 13 consumers
+Two approved bot-combat VFX are integrated as `ui/fx/bot-combat-vfx-atlas-13.svg`, an 8×2 static-frame SVG atlas. Row 0 decorates real bot muzzle events through `src/ai/bot-fire-control.js`; row 1 decorates `Bot.die()` through `src/entities/bots.js`. `src/settings/settings.js` owns elapsed-time playback, per-bot muzzle throttling, world projection/orientation, budgeting and cleanup.
+
+The pack is presentation-only. Existing procedural muzzle flashes, gibs and particles remain fallback; fire cadence, hit logic, projectile spawning, damage, kills and respawn are unchanged. The animated staging originals remain under `asset-staging/2026-09-30-vfx-pack-13/` as provenance.
+
 ## Pack 12 consumers
 Five approved staging VFX are integrated as one deterministic 8×5 static-frame SVG mega-atlas: ricochet spark fan, wall-penetration exit debris, smoke deployment bloom, mine shrapnel detonation and bomb pressure-core detonation. `src/assets/catalog.js` owns row/frame/duration metadata, `src/settings/settings.js` reuses the existing bounded elapsed-time DOM VFX player, and `src/combat/combat.js` emits only from existing authoritative projectile/smoke/explosive events.
 
