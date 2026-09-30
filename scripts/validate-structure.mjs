@@ -335,7 +335,7 @@ for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','per
 const weapons=readFileSync('src/weapons/system.js','utf8');
 for(const token of ["GAME_ASSETS.presentationCombat?.plasmaMuzzle","GAME_ASSETS.presentationCombat?.ballisticMuzzle","--fp-flash-x","--fp-flash-y"])if(!weapons.includes(token))fail('generated muzzle-flash sheet wiring missing: '+token);
 const weaponDefs=[...weapons.matchAll(/weaponDef\('([^']+)'/g)].map(m=>m[1]);
-if(weaponDefs.length!==9)fail('expected 9 weapon definitions, found '+weaponDefs.length);
+if(weaponDefs.length!==10)fail('expected 10 weapon definitions, found '+weaponDefs.length);
 if(!weaponDefs.includes('sniper'))fail('sniper weapon definition missing');
 for(const token of ["fireMode:'bolt'","isSniper:true","aimMode:'scope'","hitscan:true","oneShot:true","headshotMult:2.55","muzzleVelocity:85","bulletGravity:4.8","reloadStyle:'shell'","equipTime:.26","sprintRecover:.12","tacticalReloadM:.88","emptyReloadM:1.08","cycleTimes:WEAPONS.map","function weaponDamageScaleAtDistance"]){
   if(!weapons.includes(token))fail('weapon physics/handling integration missing: '+token);
