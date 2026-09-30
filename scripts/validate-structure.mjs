@@ -125,6 +125,11 @@ const generatedWeaponActionPack24Dimensions=new Map([
   ['assets/ui/fx/rocket-reload-vfx-atlas-24.webp',[720,405]],
   ['assets/ui/fx/mine-throw-vfx-atlas-24.webp',[1080,135]]
 ]);
+const generatedWeaponActionPack25WebpAssets=['assets/ui/fx/pistol-reload-vfx-atlas-25.webp','assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp'];
+const generatedWeaponActionPack25Dimensions=new Map([
+  ['assets/ui/fx/pistol-reload-vfx-atlas-25.webp',[960,540]],
+  ['assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp',[1024,384]]
+]);
 const generatedSniperVfxPack23Dimensions=new Map([
   ['assets/ui/fx/sniper-shot-vfx-atlas-23.webp',[768,768]],
   ['assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',[768,768]],
@@ -157,7 +162,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets,...generatedSniperVfxPack23WebpAssets,...generatedWeaponActionPack24WebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets,...generatedSniperVfxPack23WebpAssets,...generatedWeaponActionPack24WebpAssets,...generatedWeaponActionPack25WebpAssets
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -260,6 +265,15 @@ for(const file of generatedWeaponActionPack24WebpAssets){
   if(!expected||width!==expected[0]||height!==expected[1])fail('generated Pack 24 weapon-action dimensions invalid: '+file+' ('+width+'x'+height+')');
   if((bytes[20]&0x10)===0)fail('generated Pack 24 weapon-action alpha flag missing: '+file);
 }
+for(const file of generatedWeaponActionPack25WebpAssets){
+  const bytes=readFileSync(file),expected=generatedWeaponActionPack25Dimensions.get(file);
+  if(bytes.length>128*1024)fail('generated Pack 25 weapon-action atlas exceeds 128 KiB budget: '+file);
+  if(bytes.length<30||bytes.subarray(12,16).toString()!=='VP8X')fail('generated Pack 25 weapon-action atlas must use VP8X alpha envelope: '+file);
+  const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+  const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+  if(!expected||width!==expected[0]||height!==expected[1])fail('generated Pack 25 weapon-action dimensions invalid: '+file+' ('+width+'x'+height+')');
+  if((bytes[20]&0x10)===0)fail('generated Pack 25 weapon-action alpha flag missing: '+file);
+}
 if(!html.includes('src="assets/ui/logo.svg"')||!html.includes('data-generated-src="assets/ui/zap-zone-logo-01.png"')||!html.includes('data-fallback-src="assets/ui/logo.svg"'))fail('generated logo/fallback wiring missing');
 for(const token of [
   'data-generated-src="assets/ui/feedback/levelup-core-tech-01.webp"',
@@ -298,6 +312,10 @@ for(const token of ["pack23SniperShot:'assets/ui/fx/sniper-shot-vfx-atlas-23.web
 for(const token of ["pack24RocketReload:'assets/ui/fx/rocket-reload-vfx-atlas-24.webp'","pack24MineThrow:'assets/ui/fx/mine-throw-vfx-atlas-24.webp'","rocketReload24:Object.freeze","mineThrow24:Object.freeze"])if(!catalog.includes(token))fail('Pack 24 action catalog wiring missing: '+token);
 for(const token of ['function showGeneratedRocketReloadVfx','function showGeneratedMineThrowVfx'])if(!weaponSystem.includes(token))fail('Pack 24 first-person action owner missing: '+token);
 for(const token of ['showGeneratedRocketReloadVfx(reloadTot)','showGeneratedMineThrowVfx()','!fullRocketReload'])if(!combatSource.includes(token))fail('Pack 24 combat consumer missing: '+token);
+for(const token of ["pack25PistolReload:'assets/ui/fx/pistol-reload-vfx-atlas-25.webp'","pack25ShotgunPump:'assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp'","pistolReloadTactical25:Object.freeze","pistolReloadEmpty25:Object.freeze","shotgunPump25:Object.freeze"])if(!catalog.includes(token))fail('Pack 25 action catalog wiring missing: '+token);
+for(const token of ['function showGeneratedPistolReloadVfx','function showGeneratedShotgunPumpVfx'])if(!weaponSystem.includes(token))fail('Pack 25 first-person action owner missing: '+token);
+for(const token of ['showGeneratedPistolReloadVfx(reloadMode,reloadTot)',"showGeneratedShotgunPumpVfx(cycleTot)",'!fullPistolReload'])if(!combatSource.includes(token))fail('Pack 25 combat consumer missing: '+token);
+for(const token of ["isGeneratedFirstPersonActionActive('shotgunPump25')",'!fullShotgunPump'])if(!runtimeSource.includes(token))fail('Pack 25 runtime fallback wiring missing: '+token);
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
 for(const token of ["cycleKind==='bolt'&&typeof showGeneratedSniperCasingFx==='function'","showGeneratedSniperCasingFx();"])if(!runtimeSource.includes(token))fail('Pack 23 sniper casing fallback consumer missing: '+token);
@@ -1251,7 +1269,7 @@ for(const token of [
   'function showGeneratedMagazineDropFx','function showGeneratedSurfaceImpactVfx','function showGeneratedNearMissFx',
   'tickGeneratedCombatVfx(safeDt)','showGeneratedNearMissFx(source,pressure)'
 ])if(!settings.includes(token))fail('generated combat VFX runtime contract missing: '+token);
-for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key)"]){
+for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(false)',"if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key)"]){
   if(!combat.includes(token))fail('generated combat VFX player consumer missing: '+token);
 }
 if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');

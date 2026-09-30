@@ -18,6 +18,22 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Weapon Action VFX Pack 25 (2026-09-30)
+The two newly generated first-person action sheets were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivatives:
+- `assets/ui/fx/pistol-reload-vfx-atlas-25.webp` — 960×540 alpha WebP, 4×3 / 12 frames. Each frame is padded to a 4:3 cell before WebP encoding so the existing first-person action stage does not stretch the approved hands/weapon silhouette.
+- `assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp` — 1024×384 alpha WebP, 4×2 / 8 frames with 4:3 padded cells; the source weapon proportions remain unchanged.
+
+Integration rules:
+- both actions reuse the Pack 22 first-person elapsed-time action owner; no second animation loop or timer is introduced;
+- pistol tactical reload uses frames 0–7 then 11, skipping the late slide-rack phase, while an empty reload uses all twelve frames; both are stretched to the authoritative existing `reloadTot` duration;
+- the full pistol action suppresses only the generic Pack 10 magazine-drop overlay while it is available; procedural/generated static pistol presentation remains the fallback;
+- shotgun pump playback starts only from the existing authoritative `cycleTime` state after a real shot; the real Three.js shell ejection remains unchanged, while the old DOM shell-spin overlay is suppressed only when the full pump atlas is active;
+- ammo transfer, reload/cycle duration, firing cadence, recoil, damage, pellet simulation, casing physics and gameplay RNG remain unchanged.
+
+The heavy reviewed generator sources are not duplicated in Git. Provenance and consumer/fallback mapping are recorded in `asset-staging/2026-09-30-vfx-pack-25/README.md`.
+
 ## Generated Weapon Utility Action VFX Pack 24 (2026-09-30)
 The two newly generated first-person action sequences were reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 

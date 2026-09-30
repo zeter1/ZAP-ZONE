@@ -554,6 +554,9 @@ function tickGeneratedFirstPersonAction(dt){
   }
   if(progress>=1)stopGeneratedFirstPersonAction();
 }
+function showGeneratedPistolReloadVfx(mode='tactical',duration=0){
+  return playGeneratedFirstPersonAction(mode==='empty'?'pistolReloadEmpty25':'pistolReloadTactical25',duration);
+}
 function showGeneratedRifleReloadVfx(mode='tactical',duration=0){
   return playGeneratedFirstPersonAction(mode==='empty'?'rifleReloadEmpty':'rifleReloadTactical',duration);
 }
@@ -562,6 +565,9 @@ function showGeneratedRocketReloadVfx(duration=0){
 }
 function showGeneratedMineThrowVfx(duration=0){
   return playGeneratedFirstPersonAction('mineThrow24',duration);
+}
+function showGeneratedShotgunPumpVfx(duration=0){
+  return playGeneratedFirstPersonAction('shotgunPump25',duration);
 }
 function showGeneratedSniperBoltCycleVfx(duration=0){
   return playGeneratedFirstPersonAction('sniperBoltCycle',duration);
