@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 12 consumers
+Five approved staging VFX are integrated as one deterministic 8×5 static-frame SVG mega-atlas: ricochet spark fan, wall-penetration exit debris, smoke deployment bloom, mine shrapnel detonation and bomb pressure-core detonation. `src/assets/catalog.js` owns row/frame/duration metadata, `src/settings/settings.js` reuses the existing bounded elapsed-time DOM VFX player, and `src/combat/combat.js` emits only from existing authoritative projectile/smoke/explosive events.
+
+The atlas is presentation-only: projectile physics, penetration/ricochet policy, smoke LOS/density, fuse timers and blast damage/radius remain unchanged. Existing procedural particles, smoke puffs, explosion geometry, audio and screen shake remain fallback. The original animated SVG candidates stay under `asset-staging/2026-09-30-vfx-pack-12/` as provenance.
+
 ## Pack 11 consumers
 Three approved staging VFX are integrated as deterministic static-frame SVG atlases: rocket explosion (4×3), plasma impact (4×3) and plasma reload energy-lock (4×2). `src/assets/catalog.js` owns atlas metadata, the existing bounded VFX player in `src/settings/settings.js` owns elapsed-time playback/projection/cleanup, and `src/combat/combat.js` emits the rocket detonation, plasma hit and completed plasma reload events.
 

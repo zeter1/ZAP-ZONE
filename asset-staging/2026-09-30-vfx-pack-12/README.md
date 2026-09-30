@@ -1,6 +1,6 @@
 # VFX Pack 12 — staging review (2026-09-30)
 
-Статус: **PENDING VISUAL REVIEW — NOT INTEGRATED**.
+Статус: **APPROVED AND INTEGRATED — staging copies retained as provenance**.
 
 Этот batch закрывает пять событий, которые в текущем runtime остаются procedural-only или визуально заметно слабее уже интегрированных Pack 10/11. Все пять файлов — прозрачные scriptless animated SVG source-candidates. Они намеренно лежат только в `asset-staging/` и не загружаются игрой до отдельного одобрения.
 
@@ -14,7 +14,7 @@
 
 ## Integration intent after approval
 
-Предпочтительный runtime derivative — один uniform alpha mega-atlas Pack 12: 5 semantic rows × 8 frames. Playback должен использовать существующий bounded `playGeneratedCombatVfx(...)` / elapsed-time pipeline из Pack 10/11, с projection/off-screen hiding/cleanup и без persistent Three.js texture planes.
+Runtime derivative: `assets/ui/fx/combat-vfx-atlas-12.svg` — один scriptless static-frame SVG mega-atlas, 5 semantic rows × 8 frames. Playback использует существующий bounded `playGeneratedCombatVfx(...)` / elapsed-time pipeline из Pack 10/11, с projection/off-screen hiding/cleanup и без persistent Three.js texture planes.
 
 Важно:
 - smoke candidate — только короткий deployment bloom; реальная плотность/LOS/длительность дыма остаются в существующей Three.js gameplay-системе;

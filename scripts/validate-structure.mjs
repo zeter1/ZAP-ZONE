@@ -106,6 +106,7 @@ const generatedCombatVfxPack11SvgAssets=[
   'assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg',
   'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'
 ];
+const generatedCombatVfxPack12SvgAtlas='assets/ui/fx/combat-vfx-atlas-12.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -144,7 +145,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1216,3 +1217,33 @@ for(const token of ["showGeneratedRocketExplosionVfx(pos)","if(w.key==='plasma')
 for(const token of ['.generated-combat-vfx-layer','.generated-combat-vfx','data-kind="brassCasing"','data-kind="sniperPressure"','data-kind="rocketExplosion"','data-kind="plasmaImpact"','data-kind="plasmaReload"']){
   if(!gameCss.includes(token))fail('generated combat VFX CSS contract missing: '+token);
 }
+
+{
+  const source=readFileSync(generatedCombatVfxPack12SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>48*1024)fail('generated combat VFX pack 12 SVG atlas exceeds 48 KiB budget');
+  if(!source.includes('viewBox="0 0 448 280"'))fail('generated combat VFX pack 12 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b/i.test(source))fail('runtime VFX pack 12 atlas must be scriptless static deterministic frames');
+  if((source.match(/class="frame row-/g)||[]).length!==40)fail('generated combat VFX pack 12 atlas must contain exactly 5 x 8 static frames');
+}
+for(const token of [
+  "pack12:'assets/ui/fx/combat-vfx-atlas-12.svg'",
+  "ricochet:Object.freeze({asset:'pack12',row:0,cols:8,rows:5,frames:8",
+  "penetrationExit:Object.freeze({asset:'pack12',row:1,cols:8,rows:5,frames:8",
+  "smokeDeploy:Object.freeze({asset:'pack12',row:2,cols:8,rows:5,frames:8",
+  "mineDetonation:Object.freeze({asset:'pack12',row:3,cols:8,rows:5,frames:8",
+  "bombDetonation:Object.freeze({asset:'pack12',row:4,cols:8,rows:5,frames:8",
+  "(spec.row||0)+Math.floor(frame/cols)"
+])if(!catalog.includes(token))fail('generated combat VFX pack 12 catalog contract missing: '+token);
+for(const token of [
+  'function showGeneratedRicochetVfx','function showGeneratedPenetrationExitVfx','function showGeneratedSmokeDeployVfx',
+  'function showGeneratedMineDetonationVfx','function showGeneratedBombDetonationVfx'
+])if(!settings.includes(token))fail('generated combat VFX pack 12 runtime helper missing: '+token);
+for(const token of [
+  'showGeneratedPenetrationExitVfx(pen.exitPoint,surface);',
+  'showGeneratedRicochetVfx(_hitPos,surface);',
+  'showGeneratedSmokeDeployVfx(group.position);',
+  'showGeneratedMineDetonationVfx(pos);',
+  'showGeneratedBombDetonationVfx(pos);'
+])if(!combat.includes(token))fail('generated combat VFX pack 12 consumer missing: '+token);
+if((combat.match(/showGeneratedPenetrationExitVfx\(pen\.exitPoint,surface\);/g)||[]).length!==2)fail('pack 12 penetration exit VFX must cover player and bot projectile paths');
+if((combat.match(/showGeneratedRicochetVfx\(_hitPos,surface\);/g)||[]).length!==2)fail('pack 12 ricochet VFX must cover player and bot projectile paths');

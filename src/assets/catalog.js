@@ -201,7 +201,8 @@ const GAME_ASSETS=versionAssetTree({
     combatAtlas:'assets/ui/fx/combat-vfx-atlas-10.webp',
     rocketExplosion:'assets/ui/fx/rocket-explosion-fireball-atlas-11.svg',
     plasmaImpact:'assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg',
-    plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'
+    plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg',
+    pack12:'assets/ui/fx/combat-vfx-atlas-12.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -605,7 +606,12 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   nearMiss:Object.freeze({row:9,frames:5,duration:.25,size:170}),
   rocketExplosion:Object.freeze({asset:'rocketExplosion',cols:4,rows:3,frames:12,duration:1.00,size:260}),
   plasmaImpact:Object.freeze({asset:'plasmaImpact',cols:4,rows:3,frames:12,duration:.82,size:190}),
-  plasmaReload:Object.freeze({asset:'plasmaReload',cols:4,rows:2,frames:8,duration:1.05,width:286,height:161})
+  plasmaReload:Object.freeze({asset:'plasmaReload',cols:4,rows:2,frames:8,duration:1.05,width:286,height:161}),
+  ricochet:Object.freeze({asset:'pack12',row:0,cols:8,rows:5,frames:8,duration:.62,size:148}),
+  penetrationExit:Object.freeze({asset:'pack12',row:1,cols:8,rows:5,frames:8,duration:.78,size:134}),
+  smokeDeploy:Object.freeze({asset:'pack12',row:2,cols:8,rows:5,frames:8,duration:1.40,size:260}),
+  mineDetonation:Object.freeze({asset:'pack12',row:3,cols:8,rows:5,frames:8,duration:.82,size:236}),
+  bombDetonation:Object.freeze({asset:'pack12',row:4,cols:8,rows:5,frames:8,duration:1.08,size:300})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){
@@ -613,7 +619,7 @@ function generatedCombatVfxFrame(kind,index=0){
   const frame=Math.max(0,Math.min(spec.frames-1,Math.floor(Number(index)||0)));
   if(spec.asset){
     const cols=Math.max(1,spec.cols||1),rows=Math.max(1,spec.rows||1);
-    return presentationAtlasFrame(GAME_ASSETS.presentationVfx[spec.asset],frame%cols,Math.floor(frame/cols),cols,rows);
+    return presentationAtlasFrame(GAME_ASSETS.presentationVfx[spec.asset],frame%cols,(spec.row||0)+Math.floor(frame/cols),cols,rows);
   }
   return presentationAtlasFrame(GAME_ASSETS.presentationVfx.combatAtlas,frame,spec.row,8,10);
 }
