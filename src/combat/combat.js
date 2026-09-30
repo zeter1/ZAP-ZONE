@@ -361,6 +361,71 @@ function mkTracer(col,key='default'){
 
 // ─── PROJECTILE ARRAYS ──────────────────
 const pRkts=[],eRkts=[],pTrs=[],pBullets=[],eBullets=[],botGrenades=[],mines=[],smokeGrenades=[],smokeClouds=[];
+const ROCKET_FLIGHT_VFX_LOOP=Object.freeze([4,5,6,7,8,9,8,7,6,5]);
+const rocketFlightArtNodes=new Set();
+const rocketFlightScreenPos=new THREE.Vector3();
+const rocketFlightAheadPos=new THREE.Vector3();
+const rocketFlightDir=new THREE.Vector3();
+let rocketFlightVisualSequence=0;
+function rocketFlightFrameIndex(r){
+  const age=Math.max(0,Number(r?.fT)||0);
+  if(age<.18)return Math.min(3,Math.floor(age/.045));
+  const phase=Number.isInteger(r?._flightVfxPhase)?r._flightVfxPhase:0;
+  return ROCKET_FLIGHT_VFX_LOOP[(Math.floor((age-.18)*16)+phase)%ROCKET_FLIGHT_VFX_LOOP.length];
+}
+function ensureRocketFlightArt(r){
+  const layer=G('projectile-trail-layer');
+  if(!layer||typeof rocketFlightPresentationFrame!=='function'||typeof applyPresentationAtlasFrame!=='function')return null;
+  if(r._flightArt?.isConnected)return r._flightArt;
+  const el=document.createElement('span');
+  const rocketTeam=r.ownerType==='player'?'ally':(r._src?.team||r.team||'enemy');
+  el.className='rocket-flight-vfx '+(rocketTeam==='ally'?'ally':'enemy');
+  el._rocketRef=r;
+  r._flightVfxPhase=(rocketFlightVisualSequence++*3)%ROCKET_FLIGHT_VFX_LOOP.length;
+  layer.appendChild(el);rocketFlightArtNodes.add(el);r._flightArt=el;
+  return el;
+}
+function syncRocketFlightArt(){
+  const live=new Set([...eRkts,...pRkts]);
+  for(const el of [...rocketFlightArtNodes]){
+    if(live.has(el._rocketRef))continue;
+    if(el._rocketRef)el._rocketRef._flightArt=null;
+    el.remove();rocketFlightArtNodes.delete(el);
+  }
+  for(const r of live){
+    const el=ensureRocketFlightArt(r),pos=r.m?.position;
+    if(!el||!pos){if(el)el.style.visibility='hidden';continue;}
+    rocketFlightScreenPos.copy(pos).project(camera);
+    if(rocketFlightScreenPos.z<-1||rocketFlightScreenPos.z>1||Math.abs(rocketFlightScreenPos.x)>1.18||Math.abs(rocketFlightScreenPos.y)>1.18){
+      el.style.visibility='hidden';continue;
+    }
+    if(typeof wallBetween==='function'&&wallBetween(camera.position,pos,losMeshes)){
+      el.style.visibility='hidden';continue;
+    }
+    rocketFlightDir.set(r.vx||0,r.vy||0,r.vz||0);
+    const speed=rocketFlightDir.length();
+    if(speed<.001){el.style.visibility='hidden';continue;}
+    rocketFlightDir.multiplyScalar(1/speed);
+    rocketFlightAheadPos.copy(pos).addScaledVector(rocketFlightDir,1.25).project(camera);
+    const x=(rocketFlightScreenPos.x*.5+.5)*innerWidth;
+    const y=(-rocketFlightScreenPos.y*.5+.5)*innerHeight;
+    const ax=(rocketFlightAheadPos.x*.5+.5)*innerWidth;
+    const ay=(-rocketFlightAheadPos.y*.5+.5)*innerHeight;
+    const tailAngle=Math.atan2(ay-y,ax-x)*180/Math.PI+180;
+    const distance=Math.max(.1,camera.position.distanceTo(pos));
+    const size=Math.max(72,Math.min(210,260/(.82+distance*.042)));
+    const frameIndex=rocketFlightFrameIndex(r);
+    if(r._flightVfxFrame!==frameIndex){
+      applyPresentationAtlasFrame(el,rocketFlightPresentationFrame(frameIndex));
+      r._flightVfxFrame=frameIndex;
+    }
+    el.style.left=x.toFixed(1)+'px';el.style.top=y.toFixed(1)+'px';
+    el.style.setProperty('--rocket-flight-size',size.toFixed(1)+'px');
+    el.style.setProperty('--rocket-flight-rot',tailAngle.toFixed(1)+'deg');
+    el.style.setProperty('--rocket-flight-opacity',Math.max(.72,Math.min(.98,1-distance/280)).toFixed(2));
+    el.style.visibility='visible';
+  }
+}
 const MAX_PLAYER_BULLETS=180;
 const MAX_ENEMY_BULLETS=260;
 const MAX_ACTIVE_ENEMY_TRACERS=PERF_MODE?28:62;
@@ -1104,6 +1169,7 @@ function tickProjectiles(dt){
   };
   processRockets(eRkts);
   processRockets(pRkts);
+  syncRocketFlightArt();
   tickBotGrenades(dt);
 
   // Player firearm projectiles use swept segment collision, so fast rounds cannot tunnel through bots or walls.
