@@ -6,7 +6,7 @@ const requiredScripts=[
   'src/settings/settings.js','src/combat/projectile-ricochet.js','src/combat/combat.js','src/ai/bot-progression-scaling.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-suppression-response.js','src/ai/bot-dodge-response.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-cover-execution.js','src/ai/bot-engagement-movement.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-fire-cadence.js','src/ai/bot-deployables.js','src/ai/bot-state-policy.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
   'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
 ];
-const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg']
+const weaponAssets=['pistol.svg','shotgun.svg','rifle.svg','rocket.svg','plasma.svg','mine.svg','bomb.svg','smoke.svg','sniper.svg','grenade.svg']
   .map(name=>'assets/weapons/'+name);
 const audioAssets=['pistol.wav','rifle.wav','shotgun.wav','sniper.wav','rocket-launch.wav','plasma.wav','explosion.wav','ricochet.wav','whiz.wav','objective-capture.wav','tail-open.wav','tail-tight.wav','sniper-crack.wav','footstep-walk.wav','footstep-run.wav','hit-body.wav','hit-armor.wav','hit-head.wav','battlefield-loop.wav','reload-mag.wav','reload-done.wav','shell-insert.wav','bolt-cycle.wav','pump-cycle.wav','equip.wav','footstep-metal.wav','footstep-gravel.wav','footstep-water.wav']
   .map(name=>'assets/audio/'+name);
@@ -115,7 +115,8 @@ const generatedCombatVfxPack16SvgAtlas='assets/ui/fx/bot-action-vfx-atlas-16.svg
 const generatedCombatVfxPack17SvgAtlas='assets/ui/fx/interaction-vfx-atlas-17.svg';
 const generatedCombatVfxPack18SvgAtlas='assets/ui/fx/player-action-vfx-atlas-18.svg';
 const generatedCombatVfxPack19SvgAssets=['assets/ui/fx/landing-impact-vfx-atlas-19.svg','assets/ui/fx/smoke-throw-vfx-atlas-19.svg'];
-const generatedCombatVfxPack20SvgAssets=['assets/ui/fx/player-mine-throw-vfx-atlas-20.svg','assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'];
+const generatedCombatVfxPack20SvgAssets=['assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg','assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'];
+const generatedGrenadePack20SvgAssets=['assets/ui/weapons/fp/player-grenade-fps-20.svg','assets/ui/pickups/weapons/world-grenade-pickup-20.svg','assets/ui/equipment/frag-grenade-ui-atlas-20.svg'];
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -154,7 +155,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas,generatedCombatVfxPack15FragSvgAtlas,generatedPlayerDeathVfxPack15SvgAtlas,generatedCombatVfxPack16SvgAtlas,generatedCombatVfxPack17SvgAtlas,generatedCombatVfxPack18SvgAtlas,...generatedCombatVfxPack19SvgAssets,...generatedCombatVfxPack20SvgAssets,...generatedGrenadePack20SvgAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -387,7 +388,7 @@ for(const token of ['function playSfx','GAME_AUDIO_ASSETS','function playBufferS
 }
 
 const pickups=readFileSync('src/entities/pickups.js','utf8');
-for(const token of ['WORLD_WEAPON_COPIES','WEAPONS.flatMap','pistol:2','shotgun:2','rifle:3','rocket:2','plasma:2','sniper:2','function randomWeaponReserve','grantWeapon(idx,reserveGrant)','relocateWeaponPickup(pk)']){
+for(const token of ['WORLD_WEAPON_COPIES','WEAPONS.flatMap','pistol:2','shotgun:2','rifle:3','rocket:2','plasma:2','sniper:2','grenade:1','function randomWeaponReserve','grantWeapon(idx,reserveGrant)','relocateWeaponPickup(pk)']){
   if(!pickups.includes(token))fail('dynamic weapon pickup economy missing: '+token);
 }
 for(const token of ['WORLD_PICKUP_ART_TUNING','WORLD_MEDKIT_PICKUP_ART_TUNING','function worldWeaponPickupAsset','function attachWorldWeaponPickupArt','function attachWorldMedkitPickupArt','function syncWorldWeaponPickupArt','GAME_ASSETS.generatedWorldWeaponPickups','GAME_ASSETS.presentation.medkitPickup','new THREE.Raycaster()','intersectObjects(wallMeshes,false)','model.visible=false','g.userData.proceduralWeaponModel=model']){
@@ -419,7 +420,7 @@ for(const [label,section,ownerFlag] of [['player',playerProjectileSection,'true'
 }
 for(const forbidden of ['const ricochetChance=surface===','const ricochetLimit=surface===','const limit=surface===\'metal\'?.46','const chance=surface===\'metal\'?.76'])if(combat.includes(forbidden))fail('duplicate inline ricochet policy returned to combat.js: '+forbidden);
 if(!combat.includes("document.addEventListener('wheel'")||!combat.includes('cycleOwnedWeapon(e.deltaY>0?1:-1)'))fail('mouse wheel must cycle owned weapons only');
-for(const token of ['if(!infiniteAmmo&&ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValue(mineIdx)<=0)updateWeaponBar();','weaponReserveValue(bombIdx)<=0)updateWeaponBar();','weaponReserveValue(smokeIdx)<=0)updateWeaponBar();']){
+for(const token of ['if(!infiniteAmmo&&ammo<=0&&uAmmo<=0)updateWeaponBar();','weaponReserveValue(mineIdx)<=0)updateWeaponBar();','weaponReserveValue(bombIdx)<=0)updateWeaponBar();','weaponReserveValue(smokeIdx)<=0)updateWeaponBar();','weaponReserveValue(grenadeIdx)<=0)updateWeaponBar();']){
   if(!combat.includes(token))fail('depleted weapon bar retirement missing: '+token);
 }
 
@@ -1407,16 +1408,25 @@ if(pack19SmokeOwner<0||pack19SmokePush<pack19SmokeOwner||pack19SmokeFx<pack19Smo
 for(const token of ['.generated-combat-vfx[data-kind="landingDust"]','.generated-combat-vfx[data-kind="landingMetal"]','.generated-combat-vfx[data-kind="smokeThrow"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 19 CSS missing: '+token);
 
 {
-  const mineThrow=readFileSync(generatedCombatVfxPack20SvgAssets[0],'utf8'),bombArm=readFileSync(generatedCombatVfxPack20SvgAssets[1],'utf8');
-  if(Buffer.byteLength(mineThrow)>48*1024||Buffer.byteLength(bombArm)>48*1024)fail('generated combat VFX pack 20 SVG atlas exceeds 48 KiB budget');
-  if(!mineThrow.includes('viewBox="0 0 512 256"')||!bombArm.includes('viewBox="0 0 512 256"'))fail('generated combat VFX pack 20 viewBox invalid');
-  for(const source of [mineThrow,bombArm])if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime VFX pack 20 atlases must be static, scriptless and self-contained');
-  if((mineThrow.match(/class="frame row-/g)||[]).length!==8||(bombArm.match(/class="frame row-/g)||[]).length!==8)fail('pack 20 atlases must each contain exactly 4 x 2 static frames');
+  const grenadeThrow=readFileSync(generatedCombatVfxPack20SvgAssets[0],'utf8'),bombArm=readFileSync(generatedCombatVfxPack20SvgAssets[1],'utf8');
+  if(Buffer.byteLength(grenadeThrow)>48*1024||Buffer.byteLength(bombArm)>48*1024)fail('generated combat VFX pack 20 SVG atlas exceeds 48 KiB budget');
+  if(!grenadeThrow.includes('viewBox="0 0 512 256"')||!bombArm.includes('viewBox="0 0 512 256"'))fail('generated combat VFX pack 20 viewBox invalid');
+  for(const source of [grenadeThrow,bombArm])if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime VFX pack 20 atlases must be static, scriptless and self-contained');
+  if((grenadeThrow.match(/class="frame row-/g)||[]).length!==8||(bombArm.match(/class="frame row-/g)||[]).length!==8)fail('pack 20 atlases must each contain exactly 4 x 2 static frames');
 }
-for(const token of ["pack20MineThrow:'assets/ui/fx/player-mine-throw-vfx-atlas-20.svg'","pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'","mineThrow:Object.freeze({asset:'pack20MineThrow',row:0,cols:4,rows:2,frames:8","bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 20 catalog contract missing: '+token);
-for(const token of ['function showGeneratedMineThrowVfx','function showGeneratedBombArmVfx',"item.anchor==='mineThrow'","item.anchor==='bombArm'"])if(!settings.includes(token))fail('generated combat VFX pack 20 runtime helper missing: '+token);
-const pack20MineOwner=combat.indexOf('function throwMine(){'),pack20MinePush=combat.indexOf('mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z',pack20MineOwner),pack20MineFx=combat.indexOf("showGeneratedMineThrowVfx();",pack20MinePush);
-if(pack20MineOwner<0||pack20MinePush<pack20MineOwner||pack20MineFx<pack20MinePush)fail('pack 20 mine-throw VFX must decorate a successfully spawned player mine');
+for(const file of generatedGrenadePack20SvgAssets){
+  const source=readFileSync(file,'utf8');
+  if(Buffer.byteLength(source)>96*1024)fail('generated grenade pack 20 SVG exceeds 96 KiB: '+file);
+  if(/<script\b|<foreignObject\b/i.test(source))fail('generated grenade pack 20 SVG must be scriptless: '+file);
+}
+for(const token of ["pack20GrenadeThrow:'assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg'","pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg'","grenadeThrow:Object.freeze({asset:'pack20GrenadeThrow',row:0,cols:4,rows:2,frames:8","bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8","grenade:'assets/ui/weapons/fp/player-grenade-fps-20.svg'","grenade:'assets/ui/pickups/weapons/world-grenade-pickup-20.svg'","grenadeUi:'assets/ui/equipment/frag-grenade-ui-atlas-20.svg'"])if(!catalog.includes(token))fail('generated grenade/bomb pack 20 catalog contract missing: '+token);
+for(const token of ['function showGeneratedGrenadeThrowVfx','function showGeneratedBombArmVfx',"item.anchor==='grenadeThrow'","item.anchor==='bombArm'"])if(!settings.includes(token))fail('generated grenade/bomb pack 20 runtime helper missing: '+token);
+for(const token of ["weaponDef('grenade','ОСКОЛОЧНАЯ ГРАНАТА'","isGrenade:true","const GRENADE_WEAPON_INDEX","grenade:{width:'50vw'","function weaponSlotKeyLabel(i)"])if(!weapons.includes(token))fail('player frag-grenade weapon contract missing: '+token);
+for(const token of ["Digit0","Numpad0","function throwFragGrenade()","activePlayerFragGrenades()","ownerType:'player'","showGeneratedGrenadeThrowVfx();","if(w.isGrenade){throwFragGrenade();return;}"])if(!combat.includes(token))fail('player frag-grenade combat contract missing: '+token);
+if(!combat.includes("const ownerType=g.ownerType||'bot'")||!combat.includes("applyBlastDamage(pos,g.radius,g.dmg,ownerType"))fail('frag grenade detonation must preserve player/bot ownership');
+if(combat.includes('showGeneratedMineThrowVfx'))fail('pack 20 grenade animation must not be wired to the mine');
+const pack20GrenadeOwner=combat.indexOf('function throwFragGrenade(){'),pack20GrenadePush=combat.indexOf("ownerType:'player'",pack20GrenadeOwner),pack20GrenadeFx=combat.indexOf("showGeneratedGrenadeThrowVfx();",pack20GrenadePush);
+if(pack20GrenadeOwner<0||pack20GrenadePush<pack20GrenadeOwner||pack20GrenadeFx<pack20GrenadePush)fail('pack 20 grenade-throw VFX must decorate a successfully spawned player grenade');
 const pack20BombOwner=combat.indexOf('function placeBomb(){'),pack20BombPush=combat.indexOf("kind:'bomb'",pack20BombOwner),pack20BombFx=combat.indexOf("showGeneratedBombArmVfx();",pack20BombPush);
 if(pack20BombOwner<0||pack20BombPush<pack20BombOwner||pack20BombFx<pack20BombPush)fail('pack 20 bomb-arm VFX must decorate a successfully placed player bomb');
-for(const token of ['.generated-combat-vfx[data-kind="mineThrow"]','.generated-combat-vfx[data-kind="bombArm"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 20 CSS missing: '+token);
+for(const token of ['.generated-combat-vfx[data-kind="grenadeThrow"]','.generated-combat-vfx[data-kind="bombArm"]'])if(!gameCss.includes(token))fail('generated grenade/bomb pack 20 CSS missing: '+token);
