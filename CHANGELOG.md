@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 14 — critical-hit and player armor-break VFX
+- approved both candidates from `asset-staging/2026-09-30-vfx-pack-14/` and integrated them as one deterministic scriptless 8×2 SVG runtime atlas;
+- player critical hits now add a short world-projected gold/cyan overcharge burst on top of the existing procedural critical impact, with bounded playback and mobile throttling;
+- the centralized player armor-depletion event now adds a screen-local cyan shield-shatter while preserving the existing armor-hit overlay and armor-break HUD art;
+- critical damage, armor absorption, HP, hitmarkers, audio and gameplay timing are unchanged; generated presentation remains DOM-only and current procedural/UI feedback remains fallback;
+- structural validation covers atlas safety/frame count/byte budget, catalog/runtime/consumer/CSS wiring, and the integration participates in the existing dual-runtime build stamp and browser smoke gates.
+
 ### Generated Asset Pack 13 — bot muzzle and armor-rupture VFX
 - approved both candidates from `asset-staging/2026-09-30-vfx-pack-13/` and integrated them as one deterministic scriptless 8×2 SVG runtime atlas;
 - bot firearm/rocket shots now decorate the existing authoritative muzzle event with a world-projected, screen-oriented generated blast; plasma intentionally keeps its existing cyan presentation;
