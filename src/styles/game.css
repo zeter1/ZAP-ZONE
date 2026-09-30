@@ -802,3 +802,12 @@ body.cursor-hidden,body.cursor-hidden *{cursor:none!important;}
 .generated-combat-vfx[data-kind="grenadeThrow"]{mix-blend-mode:normal;filter:drop-shadow(0 12px 11px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(255,139,48,.20));}
 .generated-combat-vfx[data-kind="bombArm"]{mix-blend-mode:normal;filter:drop-shadow(0 12px 11px rgba(0,0,0,.56)) drop-shadow(0 0 11px rgba(73,229,255,.28)) drop-shadow(0 0 8px rgba(255,66,51,.18));}
 @media(max-width:760px){.generated-combat-vfx[data-kind="grenadeThrow"],.generated-combat-vfx[data-kind="bombArm"]{max-width:340px;max-height:340px}}
+
+/* Generated Asset Pack 21 — selected grenade sheet #2: flight, fuse, blast, debris, smoke and scorch. */
+.generated-combat-vfx[data-kind="grenadeFlight"]{filter:drop-shadow(0 0 7px rgba(255,161,62,.30));opacity:.78;}
+.generated-combat-vfx[data-kind="grenadeFuse"]{filter:drop-shadow(0 0 9px rgba(255,65,26,.68)) drop-shadow(0 0 14px rgba(255,177,56,.28));}
+.generated-combat-vfx[data-kind="grenadeExplosion21"]{filter:drop-shadow(0 0 16px rgba(255,104,20,.66)) drop-shadow(0 0 24px rgba(255,203,88,.25));}
+.generated-combat-vfx[data-kind="grenadeDebris21"]{filter:drop-shadow(0 3px 4px rgba(0,0,0,.54)) drop-shadow(0 0 8px rgba(255,127,32,.20));}
+.generated-combat-vfx[data-kind="grenadeSmoke21"]{mix-blend-mode:normal;filter:drop-shadow(0 7px 8px rgba(0,0,0,.24));}
+.generated-combat-vfx[data-kind="grenadeScorch21"]{mix-blend-mode:multiply;filter:none;}
+@media(max-width:760px){.generated-combat-vfx[data-kind="grenadeFlight"]{max-width:100px;max-height:100px}.generated-combat-vfx[data-kind="grenadeFuse"]{max-width:112px;max-height:112px}.generated-combat-vfx[data-kind="grenadeExplosion21"],.generated-combat-vfx[data-kind="grenadeSmoke21"],.generated-combat-vfx[data-kind="grenadeDebris21"]{max-width:225px;max-height:225px}.generated-combat-vfx[data-kind="grenadeScorch21"]{max-width:150px;max-height:150px}}
