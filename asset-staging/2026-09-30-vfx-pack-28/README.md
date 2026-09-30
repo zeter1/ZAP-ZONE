@@ -1,6 +1,6 @@
 # Generated VFX Pack 28 — rocket flight exhaust
 
-**Status:** APPROVED AND INTEGRATION IN PROGRESS  
+**Status:** APPROVED AND INTEGRATED  
 **Date:** 2026-09-30  
 **Review gate:** the generated 4×3 rocket-exhaust source sheet was shown in this ChatGPT dialog and the user explicitly requested integration.
 
