@@ -15,10 +15,12 @@ const WEAPONS=[
   weaponDef('mine','МИНА','💣',{clip:4,reload:3.2,rate:.90,dmg:130,spread:0,bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0,equipTime:.30,sprintRecover:.10,automatic:false,fireMode:'deploy',startingAmmo:4,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xff8800,viewPos:[.29,-.27,-.52]}),
   weaponDef('bomb','БОМБА','🧨',{clip:2,reload:.90,rate:1.2,dmg:240,spread:0,bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0,equipTime:.34,sprintRecover:.14,automatic:false,fireMode:'deploy',startingAmmo:0,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,viewPos:[.29,-.27,-.52]}),
   weaponDef('smoke','ДЫМОВУХА','🌫️',{clip:1,reload:.80,rate:.55,dmg:0,spread:0,bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025,equipTime:.28,sprintRecover:.10,automatic:false,fireMode:'throw',startingAmmo:1,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xcbd4d8,viewPos:[.30,-.27,-.56]}),
-  weaponDef('sniper','СНАЙПЕРСКАЯ ВИНТОВКА','🔭',{clip:5,reload:3.4,rate:1.30,dmg:118,spread:.040,adsSpread:.00045,moveSpread:.060,airSpread:.12,falloffStart:55,falloffEnd:110,minDamageM:.82,bCol:0x8fe8ff,gCol:0x17365b,brlCol:0xb8d5e8,pellets:1,isSniper:true,aimMode:'scope',scopeAsset:'assets/ui/scopes/sniper-scope-tech-01.webp',scopeFallback:'assets/ui/sniper-scope.svg',hitscan:true,oneShot:true,headshotMult:2.55,recoilX:.028,recoilY:.115,recoilReturn:6.8,recoilDelay:.34,recoilPattern:[-.12,.10],bloomPerShot:.016,bloomMax:.020,bloomDecay:.028,firstShotM:.34,equipTime:.66,sprintRecover:.34,tacticalReloadM:.94,emptyReloadM:1.10,cycleTime:.92,adsIn:.34,adsOut:.20,automatic:false,fireMode:'bolt',zoomFov:12,startingAmmo:5,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xcff8ff,basePenetration:1,range:110,viewPos:[.31,-.29,-.62],bot:{range:108,opt:74,hitBias:.982}})
+  weaponDef('sniper','СНАЙПЕРСКАЯ ВИНТОВКА','🔭',{clip:5,reload:3.4,rate:1.30,dmg:118,spread:.040,adsSpread:.00045,moveSpread:.060,airSpread:.12,falloffStart:55,falloffEnd:110,minDamageM:.82,bCol:0x8fe8ff,gCol:0x17365b,brlCol:0xb8d5e8,pellets:1,isSniper:true,aimMode:'scope',scopeAsset:'assets/ui/scopes/sniper-scope-tech-01.webp',scopeFallback:'assets/ui/sniper-scope.svg',hitscan:true,oneShot:true,headshotMult:2.55,recoilX:.028,recoilY:.115,recoilReturn:6.8,recoilDelay:.34,recoilPattern:[-.12,.10],bloomPerShot:.016,bloomMax:.020,bloomDecay:.028,firstShotM:.34,equipTime:.66,sprintRecover:.34,tacticalReloadM:.94,emptyReloadM:1.10,cycleTime:.92,adsIn:.34,adsOut:.20,automatic:false,fireMode:'bolt',zoomFov:12,startingAmmo:5,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xcff8ff,basePenetration:1,range:110,viewPos:[.31,-.29,-.62],bot:{range:108,opt:74,hitBias:.982}}),
+  weaponDef('grenade','ОСКОЛОЧНАЯ ГРАНАТА','💥',{clip:2,reload:1.10,rate:.72,dmg:110,spread:0,bCol:0xff8a24,gCol:0x3fe7ff,brlCol:0x3b454b,pellets:1,isGrenade:true,recoilX:.010,recoilY:.020,equipTime:.30,sprintRecover:.12,automatic:false,fireMode:'throw',startingAmmo:0,pickupAmmoMin:1,pickupAmmoMax:3,reserveCap:12,tracerColor:0xff9a32,viewPos:[.30,-.27,-.56]})
 ];
 const WEAPON_BY_KEY=Object.fromEntries(WEAPONS.map(w=>[w.key,w]));
 const SMOKE_WEAPON_INDEX=WEAPONS.findIndex(w=>w.key==='smoke');
+const GRENADE_WEAPON_INDEX=WEAPONS.findIndex(w=>w.key==='grenade');
 const W_DEFAULTS={
   clips:WEAPONS.map(w=>w.clip),
   rates:WEAPONS.map(w=>w.rate),
@@ -297,6 +299,12 @@ function createWeaponModel(key,options={}){
     sphere(.105,.49,-.33,.048,weaponMaterial(0xffd55a,.18,.10,0xffaa00,1.6),8);
     if(detail>0){rail(-.17,-.01,-.18,.055,.055,.12);rail(.17,-.01,-.18,.055,.055,.12);}
     muzzleZ=-.62;
+  }else if(w.key==='grenade'){
+    sphere(0,.00,-.30,.18,dark2,14);sphere(0,.00,-.30,.145,steel,12);
+    for(let i=0;i<6;i++){const a=i*Math.PI/3;box(Math.cos(a)*.13,.00,-.30+Math.sin(a)*.13,.06,.055,.13,dark,0,-a,0);}
+    torus(0,.00,-.30,.155,.018,accent,Math.PI/2);box(0,.20,-.30,.12,.07,.14,steel);
+    box(.08,.28,-.30,.16,.025,.055,dark,0,0,-.20);torus(.18,.30,-.30,.065,.012,steel);
+    muzzleZ=-.62;
   }else if(w.key==='smoke'){
     cyl(0,.00,-.31,.15,.15,.46,dark2,0,0,Math.PI/2,16);cyl(0,.25,-.31,.105,.12,.08,steel,0,0,0,12);
     box(.13,.31,-.31,.22,.035,.07,steel,0,0,-.12);torus(0,.02,-.31,.116,.018,accent,Math.PI/2);rail(0,.00,-.165,.18,.035,.025);
@@ -362,6 +370,10 @@ function createWeaponModel(key,options={}){
       for(let i=0;i<6;i++){const a=i*Math.PI/3;box(Math.cos(a)*.19,.0,-.33+Math.sin(a)*.19,.07,.08,.13,carbon,0,-a,0);}
       box(0,.28,-.33,.16,.07,.16,carbon);sphere(.12,.36,-.33,.032,red,8);sphere(-.12,.36,-.33,.032,glow,8);
       box(0,-.21,-.33,.20,.045,.18,edge);
+    }else if(w.key==='grenade'){
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;box(Math.cos(a)*.155,.03,-.30+Math.sin(a)*.155,.065,.045,.15,carbon,0,-a,0);}
+      torus(0,.02,-.30,.176,.016,glow,Math.PI/2);sphere(0,.04,-.30,.048,amber,9);
+      box(0,.22,-.30,.15,.045,.15,carbon);torus(.19,.31,-.30,.074,.013,edge);
     }else if(w.key==='smoke'){
       for(const z of [-.48,-.37,-.26,-.15])torus(0,.00,z,.154,.012,edge,Math.PI/2);
       box(0,.00,-.31,.19,.045,.34,carbon);box(0,.00,-.31,.17,.025,.30,glow);
@@ -382,7 +394,8 @@ const FP_HAND_POSES={
   mine:{l:[-.11,-.17,-.28,.02,-.06],r:[.12,-.16,-.10,.06,.08]},
   bomb:{l:[-.12,-.17,-.36,.02,-.06],r:[.13,-.16,-.15,.06,.08]},
   smoke:{l:[-.11,-.17,-.30,.02,-.06],r:[.12,-.16,-.12,.06,.08]},
-  sniper:{l:[-.12,-.22,-.46,.05,-.10],r:[.17,-.18,.03,.10,.13]}
+  sniper:{l:[-.12,-.22,-.46,.05,-.10],r:[.17,-.18,.03,.10,.13]},
+  grenade:{l:[-.11,-.17,-.31,.02,-.06],r:[.12,-.16,-.13,.06,.08]}
 };
 const FP_DECAL_TUNING={
   pistol:{skin:[.31,.11,[0,.075,-.22]],tech:[.25,.085,[.10,.10,-.08]]},
@@ -393,7 +406,8 @@ const FP_DECAL_TUNING={
   mine:{skin:[.30,.10,[0,.16,-.22]],tech:[.22,.075,[.10,.20,-.22]]},
   bomb:{skin:[.30,.10,[0,.16,-.33]],tech:[.22,.075,[.10,.23,-.33]]},
   smoke:{skin:[.30,.10,[0,.12,-.31]],tech:[.22,.075,[.10,.20,-.31]]},
-  sniper:{skin:[.42,.13,[0,.08,-.40]],tech:[.29,.09,[.13,.14,-.12]]}
+  sniper:{skin:[.42,.13,[0,.08,-.40]],tech:[.29,.09,[.13,.14,-.12]]},
+  grenade:{skin:[.29,.10,[0,.12,-.30]],tech:[.21,.075,[.10,.20,-.30]]}
 };
 function addFirstPersonWeaponDecal(target,w){
   const tune=FP_DECAL_TUNING[w.key]||FP_DECAL_TUNING.rifle;
@@ -454,10 +468,10 @@ function addFirstPersonHands(target,key){
 function createWorldWeaponModel(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0];
   const model=createWeaponModel(w.key,{mode:'world',detail:MOBILE_LOW?0:1});
-  const scale=w.key==='rocket' ? .72 : w.key==='sniper' ? .74 : w.key==='mine' ? .82 : w.key==='bomb' ? .86 : w.key==='smoke' ? .92 : .82;
+  const scale=w.key==='rocket' ? .72 : w.key==='sniper' ? .74 : w.key==='mine' ? .82 : w.key==='bomb' ? .86 : (w.key==='smoke'||w.key==='grenade') ? .92 : .82;
   model.scale.setScalar(scale);
-  model.rotation.x=w.key==='mine'||w.key==='bomb'?0:-.12;
-  model.rotation.z=w.key==='mine'||w.key==='bomb'?0:-.08;
+  model.rotation.x=w.key==='mine'||w.key==='bomb'||w.key==='grenade'?0:-.12;
+  model.rotation.z=w.key==='mine'||w.key==='bomb'||w.key==='grenade'?0:-.08;
   return model;
 }
 
@@ -475,7 +489,8 @@ const FP_MODEL_TUNING={
   mine:{scale:.94,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
   bomb:{scale:.94,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
   smoke:{scale:.95,pos:[.00,.00,.04],rot:[-.02,.00,.00]},
-  sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]}
+  sniper:{scale:.86,pos:[.00,-.015,.065],rot:[-.015,.00,.00]},
+  grenade:{scale:.95,pos:[.00,.00,.04],rot:[-.02,.00,.00]}
 };
 const FP_RECOIL_VISUAL=Object.freeze({
   pistol:{push:.105,pitch:.22,roll:.014},
@@ -486,7 +501,8 @@ const FP_RECOIL_VISUAL=Object.freeze({
   mine:{push:0,pitch:0,roll:0},
   bomb:{push:0,pitch:0,roll:0},
   smoke:{push:.075,pitch:.14,roll:.014},
-  sniper:{push:.17,pitch:.33,roll:.024}
+  sniper:{push:.17,pitch:.33,roll:.024},
+  grenade:{push:.070,pitch:.13,roll:.012}
 });
 const FP_GENERATED_ART_TUNING=Object.freeze({
   // V3 is the approved framing baseline: baked hands, transparent headroom and HUD-safe lower-right placement.
@@ -498,7 +514,8 @@ const FP_GENERATED_ART_TUNING=Object.freeze({
   mine:{width:'38vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
   bomb:{width:'40vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
   smoke:{width:'34vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:6,kickY:8,kickRot:1.15,kickScale:.008,flashScale:0},
-  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'33%',muzzleY:'38%',kickX:15,kickY:12,kickRot:1.80,kickScale:.024,flashScale:1.20,flashCore:'#f3fdff',flashMid:'#a4e7ff',flashEdge:'#5fa8ff'}
+  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'33%',muzzleY:'38%',kickX:15,kickY:12,kickRot:1.80,kickScale:.024,flashScale:1.20,flashCore:'#f3fdff',flashMid:'#a4e7ff',flashEdge:'#5fa8ff'},
+  grenade:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:5,kickY:7,kickRot:1.0,kickScale:.006,flashScale:0}
 });
 function setProceduralFirstPersonRigVisible(visible){
   for(const child of gunGrp.children)child.visible=visible;
@@ -643,6 +660,7 @@ function refreshBotWeaponVisual(bot){
 }
 
 // ─── WEAPON BAR UI ──────────────────────
+function weaponSlotKeyLabel(i){return i===9?'0':String(i+1);}
 function buildWeaponBar(){
   const bar=G('weapon-bar');bar.replaceChildren();
   WEAPONS.forEach((w,i)=>{
@@ -658,7 +676,7 @@ function buildWeaponBar(){
     asset.className='wb-asset';asset.src=w.asset;asset.alt='';asset.decoding='async';asset.draggable=false;
     asset.addEventListener('error',()=>asset.remove(),{once:true});
 
-    const key=document.createElement('div');key.className='wb-key';key.textContent=owned?String(i+1):'🔒';
+    const key=document.createElement('div');key.className='wb-key';key.textContent=owned?weaponSlotKeyLabel(i):'🔒';
     const name=document.createElement('div');name.className='wb-name';name.textContent=owned?w.label:'НЕ НАЙДЕНО';
     const reserve=document.createElement('div');reserve.className='wb-reserve';
     reserve.textContent=owned&&typeof weaponReserveValue==='function'?'+'+weaponReserveValue(i):'';
@@ -674,7 +692,7 @@ function updateWeaponBar(){
     el.style.display=owned&&!selectable?'none':'';
     el.className='wb-slot'+(owned?(i===curW?' active':''):' locked');
     const key=el.querySelector('.wb-key'),name=el.querySelector('.wb-name'),reserve=el.querySelector('.wb-reserve');
-    if(key)key.textContent=owned?String(i+1):'🔒';
+    if(key)key.textContent=owned?weaponSlotKeyLabel(i):'🔒';
     if(name)name.textContent=owned?WEAPONS[i].label:'НЕ НАЙДЕНО';
     if(reserve)reserve.textContent=owned?'+'+weaponReserveValue(i):'';
     el.title=owned?WEAPONS[i].name:'Найдите '+WEAPONS[i].label+' на карте';
