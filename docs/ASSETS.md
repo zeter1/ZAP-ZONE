@@ -16,6 +16,14 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 14 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-14/` are integrated into one deterministic scriptless atlas:
+- `assets/ui/fx/player-feedback-vfx-atlas-14.svg` — 8×2 / 16 static frames;
+- row 0: world-projected critical-hit overcharge burst;
+- row 1: screen-local player armor-break shatter.
+
+`src/combat/combat.js` emits the critical decoration only after the existing procedural critical impact path, while `src/progression/progression.js::showArmorBreakFx()` triggers the armor shatter from the single authoritative `armorBefore > 0 && armor <= 0` transition. `src/settings/settings.js` reuses the bounded elapsed-time DOM VFX player, including world projection/off-screen hiding for critical hits and cleanup for both effects. Critical damage, armor absorption, HP, hitmarkers, sound and current procedural/UI fallbacks remain unchanged.
+
 ## Generated Asset Pack 13 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-13/` are integrated into one deterministic scriptless atlas:
 - `assets/ui/fx/bot-combat-vfx-atlas-13.svg` — 8×2 / 16 static frames;

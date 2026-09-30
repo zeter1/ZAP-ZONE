@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 14 consumers
+Two approved player-feedback VFX are integrated as `ui/fx/player-feedback-vfx-atlas-14.svg`, an 8×2 deterministic static-frame SVG atlas. Row 0 decorates real player critical hits emitted from `src/combat/combat.js::resolvePlayerBulletHit()`; row 1 decorates the centralized player armor-depletion event through `src/progression/progression.js::showArmorBreakFx()`. `src/settings/settings.js` owns elapsed-time playback, world projection, variation, budgeting and cleanup.
+
+The pack is presentation-only. Existing procedural critical impact, armor-hit overlay and armor-break HUD art remain fallback; damage multipliers, armor absorption, HP, hitmarkers and gameplay timing are unchanged. The animated staging originals remain under `asset-staging/2026-09-30-vfx-pack-14/` as provenance.
+
 ## Pack 13 consumers
 Two approved bot-combat VFX are integrated as `ui/fx/bot-combat-vfx-atlas-13.svg`, an 8×2 static-frame SVG atlas. Row 0 decorates real bot muzzle events through `src/ai/bot-fire-control.js`; row 1 decorates `Bot.die()` through `src/entities/bots.js`. `src/settings/settings.js` owns elapsed-time playback, per-bot muzzle throttling, world projection/orientation, budgeting and cleanup.
 

@@ -108,6 +108,7 @@ const generatedCombatVfxPack11SvgAssets=[
 ];
 const generatedCombatVfxPack12SvgAtlas='assets/ui/fx/combat-vfx-atlas-12.svg';
 const generatedCombatVfxPack13SvgAtlas='assets/ui/fx/bot-combat-vfx-atlas-13.svg';
+const generatedCombatVfxPack14SvgAtlas='assets/ui/fx/player-feedback-vfx-atlas-14.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -146,7 +147,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas,generatedCombatVfxPack14SvgAtlas];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1265,3 +1266,20 @@ const pack13Die=bots.indexOf('die(dmg,dir){');
 const pack13DeathGenerated=bots.indexOf('showGeneratedBotDeathVfx(deathVfxPos);',pack13Die);
 const pack13DeathRemove=bots.indexOf('scene.remove(this.group);',pack13Die);
 if(pack13Die<0||pack13DeathGenerated<pack13Die||pack13DeathRemove<pack13DeathGenerated)fail('pack 13 bot death VFX must emit before bot group disposal');
+
+{
+  const source=readFileSync(generatedCombatVfxPack14SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>32*1024)fail('generated combat VFX pack 14 SVG atlas exceeds 32 KiB budget');
+  if(!source.includes('viewBox="0 0 448 112"'))fail('generated combat VFX pack 14 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b/i.test(source))fail('runtime VFX pack 14 atlas must be scriptless static deterministic frames');
+  if((source.match(/class="frame row-/g)||[]).length!==16)fail('generated combat VFX pack 14 atlas must contain exactly 2 x 8 static frames');
+}
+for(const token of ["pack14:'assets/ui/fx/player-feedback-vfx-atlas-14.svg'","criticalHit:Object.freeze({asset:'pack14',row:0,cols:8,rows:2,frames:8","playerArmorBreak:Object.freeze({asset:'pack14',row:1,cols:8,rows:2,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 14 catalog contract missing: '+token);
+for(const token of ['function showGeneratedCriticalHitVfx','function showGeneratedPlayerArmorBreakVfx'])if(!settings.includes(token))fail('generated combat VFX pack 14 runtime helper missing: '+token);
+const pack14CriticalFallback=combat.indexOf('if(b.markerEligible)spawnCombatImpact(hitFx,weaponImpactType(w,isCrit));');
+const pack14CriticalGenerated=combat.indexOf('if(isCrit)showGeneratedCriticalHitVfx(hitFx);');
+if(pack14CriticalFallback<0||pack14CriticalGenerated<pack14CriticalFallback)fail('pack 14 critical VFX must decorate the existing procedural critical impact');
+const pack14ArmorEvent=progression.indexOf('if(armorBefore>0&&armor<=0)showArmorBreakFx();');
+const pack14ArmorHelper=progression.indexOf("if(typeof showGeneratedPlayerArmorBreakVfx==='function')showGeneratedPlayerArmorBreakVfx();");
+if(pack14ArmorEvent<0||pack14ArmorHelper<0)fail('pack 14 armor-break VFX must attach to the centralized armor depletion event');
+for(const token of ['.generated-combat-vfx[data-kind="criticalHit"]','.generated-combat-vfx[data-kind="playerArmorBreak"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 14 CSS missing: '+token);

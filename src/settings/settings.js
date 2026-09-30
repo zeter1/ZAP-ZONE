@@ -658,6 +658,15 @@ function showGeneratedBotMuzzleVfx(pos,source=null){
 function showGeneratedBotDeathVfx(pos){
   return playGeneratedCombatVfx('botDeath',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.02});
 }
+function showGeneratedCriticalHitVfx(pos){
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?92:48;
+  if(now-(showGeneratedCriticalHitVfx._last||-999)<minGap)return false;
+  showGeneratedCriticalHitVfx._last=now;
+  return playGeneratedCombatVfx('criticalHit',{worldPos:pos,rotation:(Math.random()-.5)*20,scale:.96+Math.random()*.10});
+}
+function showGeneratedPlayerArmorBreakVfx(){
+  return playGeneratedCombatVfx('playerArmorBreak',{anchor:'center',rotation:(Math.random()-.5)*8,scale:1});
+}
 function showGeneratedNearMissFx(source,pressure=.6){
   const strength=Math.max(.45,Math.min(1.18,Number(pressure)||.6));
   return playGeneratedCombatVfx('nearMiss',{anchor:'center',rotation:combatBearingDegrees(source),scale:.74+strength*.28});
