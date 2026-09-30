@@ -587,6 +587,16 @@ function positionGeneratedCombatVfx(item){
         else{x=innerWidth*.60;y=innerHeight*.68;}
       }
       else if(item.anchor==='muzzle'&&flash){const r=flash.getBoundingClientRect();x=r.left+r.width*.50;y=r.top+r.height*.50;}
+      else if(item.anchor==='sniperFlight'){
+        const tx=innerWidth*.5,ty=innerHeight*.5;
+        if(stage){
+          const sr=stage.getBoundingClientRect(),fr=flash?.getBoundingClientRect();
+          const sx=fr&&fr.width?fr.left+fr.width*.5:sr.left+sr.width*.30;
+          const sy=fr&&fr.height?fr.top+fr.height*.5:sr.top+sr.height*.38;
+          x=(sx+tx)*.5;y=(sy+ty)*.5;
+          item.rotation=Math.atan2(ty-sy,tx-sx)*180/Math.PI;
+        }else{x=innerWidth*.55;y=innerHeight*.52;item.rotation=-165;}
+      }
       else if((item.anchor==='ejection'||item.anchor==='magazine')&&stage){
         const r=stage.getBoundingClientRect();x=r.left+r.width*(item.anchor==='magazine'?.68:.58);y=r.top+r.height*(item.anchor==='magazine'?.64:.38);
       }
@@ -608,13 +618,21 @@ function tickGeneratedCombatVfx(dt){
     if(progress>=1)removeGeneratedCombatVfx(item);
   }
 }
+function showGeneratedSniperShotVfx(){
+  const muzzle=playGeneratedCombatVfx('sniperMuzzle23',{anchor:'muzzle',scale:1.04});
+  playGeneratedCombatVfx('sniperSmoke23',{anchor:'muzzle',scale:.78,delay:.045});
+  const seq=(showGeneratedSniperShotVfx._seq=(showGeneratedSniperShotVfx._seq||0)+1);
+  playGeneratedCombatVfx(seq%2?'sniperBullet23':'sniperSupersonic23',{anchor:'sniperFlight',scale:1,delay:.012});
+  return muzzle;
+}
 function showGeneratedWeaponShotVfx(weaponKey){
   if(weaponKey==='rocket')return playGeneratedCombatVfx('rocketBackblast',{anchor:'muzzle',scale:1.06});
-  if(weaponKey==='sniper')return playGeneratedCombatVfx('sniperPressure',{anchor:'muzzle',scale:1.02});
+  if(weaponKey==='sniper')return showGeneratedSniperShotVfx();
   if(weaponKey==='shotgun')return playGeneratedCombatVfx('shotgunMuzzle',{anchor:'muzzle',scale:1.04});
   return false;
 }
 function showGeneratedCasingFx(isShotgun=false){return playGeneratedCombatVfx(isShotgun?'shotgunShell':'brassCasing',{anchor:'ejection',rotation:(Math.random()-.5)*24,scale:isShotgun?1.02:.96});}
+function showGeneratedSniperCasingFx(){return playGeneratedCombatVfx('sniperCasing23',{anchor:'ejection',rotation:-12,scale:1});}
 function showGeneratedMagazineDropFx(weaponKey){
   if(!['pistol','rifle','plasma','sniper'].includes(weaponKey))return false;
   return playGeneratedCombatVfx('magazineDrop',{anchor:'magazine',rotation:(Math.random()-.5)*18,scale:.94});

@@ -1,3 +1,8 @@
+## Pack 23 consumers
+Five approved SR-9 source sheets are compacted into three runtime WebP atlases: `ui/fx/sniper-shot-vfx-atlas-23.webp`, `ui/fx/sniper-ballistics-vfx-atlas-23.webp` and `ui/fx/sniper-casing-vfx-atlas-23.webp`. `src/settings/settings.js` owns muzzle/smoke/ballistic playback and aligns the projectile overlay from the current first-person muzzle toward the reticle; `src/game/runtime.js` uses the dedicated casing atlas only when Pack 22's full bolt animation is unavailable.
+
+The SR-9 remains hitscan-authoritative. Pack 23 never changes damage, penetration, timing or projectile simulation and consumes no gameplay RNG. Existing procedural muzzle, instant Three.js trace, Pack 8 trail, Pack 10 pressure/casing and Pack 22 bolt-cycle presentation remain compatibility/fallback layers.
+
 ## Pack 22 consumers
 Two approved first-person weapon-action sheets are integrated as `ui/fx/rifle-reload-vfx-atlas-22.webp` and `ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp`. `src/weapons/system.js` owns the temporary action layer inside the existing first-person DOM stage; `src/combat/combat.js` starts actions only from real rifle reload / SR-9 cycle events, and `src/game/runtime.js` advances them from elapsed time.
 

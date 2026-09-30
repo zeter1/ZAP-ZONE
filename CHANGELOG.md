@@ -2,6 +2,14 @@
 
 ## Unreleased — 2026-09-30
 
+### Sniper VFX Asset Pack 23 — muzzle, smoke, bullet wake and casing fallback
+- integrated five newly approved SR-9 source sheets as three compact alpha-WebP runtime atlases (~301 KiB total) instead of shipping ~6.4 MiB of source PNGs;
+- added a dedicated high-energy muzzle flash plus delayed smoke plume to every player SR-9 shot;
+- added two deterministic ballistic presentation variants — visible bullet/trail and supersonic pressure wake — aligned from the current first-person muzzle toward the reticle and alternated without gameplay RNG;
+- kept the SR-9 hitscan, damage, penetration, recoil, cadence and instant Three.js trace authoritative; Pack 23 is presentation-only;
+- added a twelve-frame rifle-casing atlas as fallback when the Pack 22 full bolt-cycle art is unavailable, deliberately avoiding a duplicate casing when Pack 22 already shows extraction;
+- structural validation now checks Pack 23 WebP alpha envelopes, exact dimensions, byte budgets, catalog/runtime/CSS wiring and the existing dual-runtime smoke gates.
+
 ### Generated Weapon Action VFX Pack 22 — rifle reload + SR-9 bolt cycle
 - integrated both newly approved first-person source sheets as two compact 720×480 alpha-WebP 4×3 runtime atlases instead of shipping the 1536×1024 source rasters;
 - rifle tactical reload uses a shortened nine-frame path while empty reload uses the complete twelve-frame sequence, both synchronized to the authoritative existing reload timer and ammo transfer;

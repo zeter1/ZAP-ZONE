@@ -210,7 +210,10 @@ function loop(ts){
       const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
       ejectCasing(casingPos,camera.quaternion,cycleKind==='pump');
       const fullBoltAction=cycleKind==='bolt'&&typeof isGeneratedFirstPersonActionActive==='function'&&isGeneratedFirstPersonActionActive('sniperBoltCycle');
-      if(!fullBoltAction)showGeneratedCasingFx(cycleKind==='pump');
+      if(!fullBoltAction){
+        if(cycleKind==='bolt'&&typeof showGeneratedSniperCasingFx==='function')showGeneratedSniperCasingFx();
+        else showGeneratedCasingFx(cycleKind==='pump');
+      }
       cycleEjected=true;
     }
     const pumpZ=cycleKind==='pump'?cycleWave*.11:0;

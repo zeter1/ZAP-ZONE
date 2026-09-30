@@ -18,6 +18,23 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Sniper VFX Asset Pack 23 (2026-09-30)
+Five generated SR-9 source sheets reviewed in the current ChatGPT dialog are integrated under the same-dialog source exception. They cover muzzle flash/smoke, post-shot smoke, visible rifle bullet flight, supersonic pressure wake and rotating brass casings.
+
+To reduce browser requests and payload, the five heavy PNG sources are normalized into three alpha-WebP runtime atlases:
+- `assets/ui/fx/sniper-shot-vfx-atlas-23.webp` — 768×768 / 4×4: rows 0–1 muzzle flash + immediate smoke, rows 2–3 delayed smoke plume;
+- `assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp` — 768×768 / 4×4: rows 0–1 visible bullet/trail, rows 2–3 supersonic pressure wake;
+- `assets/ui/fx/sniper-casing-vfx-atlas-23.webp` — 768×576 / 4×3: twelve rotating rifle-casing poses.
+
+Integration rules:
+- the existing SR-9 hitscan, damage, penetration, recoil, cadence and 70 ms Three.js trace remain authoritative; Pack 23 only decorates the shot;
+- muzzle flash and delayed smoke play on every SR-9 shot, while bullet/trail and supersonic wake alternate deterministically by presentation shot count without consuming gameplay RNG;
+- the ballistic overlay is oriented from the actual first-person muzzle DOM anchor toward the screen reticle, so the source side-view bullet is aligned with the player shot direction on screen;
+- Pack 22 remains the primary bolt-cycle presentation and already contains visual casing extraction. Pack 23 casing playback is therefore used only if the full Pack 22 bolt action is unavailable, preventing duplicate casings; the real Three.js casing object remains authoritative in both cases;
+- Pack 10 sniper pressure, Pack 8 projectile trail and procedural muzzle/trace assets remain existing compatibility/fallback layers, but no gameplay state depends on Pack 23.
+
+The five 1448–1774 px reviewed source PNGs are not duplicated in Git. Their generation identities and merge mapping are recorded in `asset-staging/2026-09-30-vfx-pack-23/README.md`.
+
 ## Generated Weapon Action VFX Pack 22 (2026-09-30)
 The two first-person source sheets generated and reviewed in the current ChatGPT dialog are approved for runtime integration under the same-dialog source exception.
 

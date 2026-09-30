@@ -218,7 +218,10 @@ const GAME_ASSETS=versionAssetTree({
     pack21GrenadeBlast:'assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg',
     pack21GrenadeDebris:'assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg',
     pack22RifleReload:'assets/ui/fx/rifle-reload-vfx-atlas-22.webp',
-    pack22SniperBolt:'assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp'
+    pack22SniperBolt:'assets/ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp',
+    pack23SniperShot:'assets/ui/fx/sniper-shot-vfx-atlas-23.webp',
+    pack23SniperBallistics:'assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',
+    pack23SniperCasing:'assets/ui/fx/sniper-casing-vfx-atlas-23.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -665,7 +668,12 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris',row:2,cols:8,rows:3,frames:5,duration:2.60,size:180}),
   rifleReloadTactical:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.45,width:450,height:400}),
   rifleReloadEmpty:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:12,duration:2.05,width:450,height:400}),
-  sniperBoltCycle:Object.freeze({asset:'pack22SniperBolt',row:0,cols:4,rows:3,frames:12,duration:.95,width:500,height:444})
+  sniperBoltCycle:Object.freeze({asset:'pack22SniperBolt',row:0,cols:4,rows:3,frames:12,duration:.95,width:500,height:444}),
+  sniperMuzzle23:Object.freeze({asset:'pack23SniperShot',row:0,cols:4,rows:4,frames:8,duration:.20,size:360}),
+  sniperSmoke23:Object.freeze({asset:'pack23SniperShot',row:2,cols:4,rows:4,frames:8,duration:.46,size:300}),
+  sniperBullet23:Object.freeze({asset:'pack23SniperBallistics',row:0,cols:4,rows:4,frames:8,duration:.11,size:520}),
+  sniperSupersonic23:Object.freeze({asset:'pack23SniperBallistics',row:2,cols:4,rows:4,frames:8,duration:.14,size:540}),
+  sniperCasing23:Object.freeze({asset:'pack23SniperCasing',row:0,cols:4,rows:3,frames:12,duration:.55,size:180})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){
