@@ -100,6 +100,13 @@ const generatedTacticalHudV2WebpAssets=[
   'assets/ui/weapons/weapon-switch-swipe-atlas-01.webp','assets/ui/bots/bot-overhead-frame-atlas-01.webp',
   'assets/ui/feedback/combo-meter-atlas-01.webp','assets/ui/pickups/pickup-beacon-atlas-01.webp'
 ];
+const generatedTacticalHudV3SvgAssets=[
+  'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
+  'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
+  'assets/ui/perks/perk-path-crest-atlas-01.svg','assets/ui/equipment/equipment-readiness-atlas-01.svg',
+  'assets/ui/objective/frontline-capture-progress-frame-01.svg','assets/ui/bots/ally-tactical-callout-atlas-01.svg',
+  'assets/ui/panels/pause-panel-tech-01.svg','assets/ui/mobile/mobile-control-icons-atlas-01.svg'
+];
 const generatedTacticalHudV2Dimensions=new Map([
   ['assets/ui/combat/reticle-identity-atlas-01.webp',[168,112]],
   ['assets/ui/minimap/minimap-marker-atlas-01.webp',[156,156]],
@@ -131,7 +138,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -219,7 +226,7 @@ for(const file of audioAssets){
 }
 
 const catalog=readFileSync('src/assets/catalog.js','utf8');
-for(const file of [...visualAssets,...perkIconAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
+for(const file of [...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...presentationRasterAssets])if(!catalog.includes(file))fail('asset missing from catalog: '+file);
 if(!catalog.includes('function perkAsset(id,path)')||!catalog.includes('function perkFallbackAsset(id,path)'))fail('per-id perk asset resolver/fallback missing');
 for(const token of ["id==='damage'","id==='reload'","id==='mobility'||id==='sprint_drive'"]){
   if(!catalog.includes(token))fail('generated perk presentation mapping missing: '+token);
@@ -1133,3 +1140,14 @@ for(const [file,tokens] of new Map([
   const source=readFileSync(file,'utf8');
   for(const token of tokens)if(!source.includes(token))fail('generated tactical HUD v2 runtime wiring missing: '+file+' -> '+token);
 }
+
+for(const token of ['presentationHudV3:Object.freeze',"matchDeploy:'assets/ui/feedback/match-deploy-splash-tech-01.svg'","frontlineRetarget:'assets/ui/objective/frontline-retarget-sweep-tech-01.svg'","secondWindRescue:'assets/ui/feedback/second-wind-rescue-tech-01.svg'","dodgePhase:'assets/ui/feedback/dodge-phase-tech-01.svg'","perkPathCrests:'assets/ui/perks/perk-path-crest-atlas-01.svg'","equipmentReadiness:'assets/ui/equipment/equipment-readiness-atlas-01.svg'","frontlineProgress:'assets/ui/objective/frontline-capture-progress-frame-01.svg'","allyCallouts:'assets/ui/bots/ally-tactical-callout-atlas-01.svg'","pausePanel:'assets/ui/panels/pause-panel-tech-01.svg'","mobileControls:'assets/ui/mobile/mobile-control-icons-atlas-01.svg'",'function perkPathPresentationFrame','function equipmentReadinessPresentationFrame','function allyCalloutPresentationFrame','function mobileControlPresentationFrame'])if(!catalog.includes(token))fail('generated tactical HUD v3 catalog contract missing: '+token);
+for(const token of ['id="match-deploy-splash"','id="frontline-retarget-sweep"','id="second-wind-fx"','id="dodge-phase-fx"'])if(!html.includes(token))fail('generated tactical HUD v3 DOM anchor missing: '+token);
+for(const token of ['#match-deploy-splash','#frontline-retarget-sweep','#second-wind-fx','#dodge-phase-fx','#perk-build.generated-path::before','.equipment-ready-art','#frontline-track::after','.ally-callout-art','#pause::before','.generated-mobile-icon'])if(!gameCss.includes(token))fail('generated tactical HUD v3 CSS missing: '+token);
+for(const [file,tokens] of new Map([
+ ['src/game/session.js',['showMatchDeployPresentation','syncPausePanelPresentation']],
+ ['src/game/frontline.js',['showFrontlineRetargetSweep','frontline-progress']],
+ ['src/progression/progression.js',['showSecondWindFx','showDodgePhaseFx','perkPathPresentationFrame']],
+ ['src/combat/combat.js',['equipmentReadinessPresentationFrame','equipment-ready-art']],
+ ['src/game/runtime.js',['allyCalloutPresentationFrame','syncGeneratedMobileControlArt']]
+])){const source=readFileSync(file,'utf8');for(const token of tokens)if(!source.includes(token))fail('generated tactical HUD v3 runtime wiring missing: '+file+' -> '+token);}

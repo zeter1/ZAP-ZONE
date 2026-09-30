@@ -223,6 +223,20 @@ const GAME_ASSETS=versionAssetTree({
     comboMeter:'assets/ui/feedback/combo-meter-atlas-01.webp',
     pickupBeacon:'assets/ui/pickups/pickup-beacon-atlas-01.webp'
   }),
+  // Pack 9 converts generated contact-sheet direction into compact vector runtime
+  // derivatives. They stay DOM/CSS-only and keep procedural/text fallbacks.
+  presentationHudV3:Object.freeze({
+    matchDeploy:'assets/ui/feedback/match-deploy-splash-tech-01.svg',
+    frontlineRetarget:'assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
+    secondWindRescue:'assets/ui/feedback/second-wind-rescue-tech-01.svg',
+    dodgePhase:'assets/ui/feedback/dodge-phase-tech-01.svg',
+    perkPathCrests:'assets/ui/perks/perk-path-crest-atlas-01.svg',
+    equipmentReadiness:'assets/ui/equipment/equipment-readiness-atlas-01.svg',
+    frontlineProgress:'assets/ui/objective/frontline-capture-progress-frame-01.svg',
+    allyCallouts:'assets/ui/bots/ally-tactical-callout-atlas-01.svg',
+    pausePanel:'assets/ui/panels/pause-panel-tech-01.svg',
+    mobileControls:'assets/ui/mobile/mobile-control-icons-atlas-01.svg'
+  }),
   firstPersonWeapons:Object.freeze({
     pistol:'assets/weapons/fp/pistol-tech.svg',
     shotgun:'assets/weapons/fp/shotgun-tech.svg',
@@ -338,6 +352,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.presentationHud),
   ...Object.values(GAME_ASSETS.presentationHudV2),
+  ...Object.values(GAME_ASSETS.presentationHudV3),
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedWorldWeaponPickups),
@@ -548,4 +563,21 @@ function comboMeterPresentationFrame(value){
 function pickupBeaconPresentationFrame(kind){
   const pos={weapon:[0,0],heavy:[1,0],utility:[0,1],medkit:[1,1]}[kind]||[0,0];
   return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.pickupBeacon,pos[0],pos[1],2,2);
+}
+
+function perkPathPresentationFrame(path){
+  const col={assault:0,survival:1,demolition:2,precision:3,mobility:4}[path];
+  return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.perkPathCrests,col,0,5,1):null;
+}
+function equipmentReadinessPresentationFrame(kind,ready=true){
+  const col={mine:0,bomb:1,smoke:2}[kind];
+  return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.equipmentReadiness,col,ready?0:1,3,2):null;
+}
+function allyCalloutPresentationFrame(kind){
+  const col={cover:0,suppress:1,flank:2,reload:3,recover:4}[kind];
+  return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.allyCallouts,col,0,5,1):null;
+}
+function mobileControlPresentationFrame(kind){
+  const col={fire:0,jump:1,sprint:2,reload:3,mine:4,next:5}[kind];
+  return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.mobileControls,col,0,6,1):null;
 }

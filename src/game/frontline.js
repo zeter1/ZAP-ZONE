@@ -141,6 +141,10 @@ function updateFrontlineHUD(force=false){
     const wired=applyPresentationAtlasVariables(root,'frontline-contested',frontlineContestedPresentationFrame());
     if(wired&&root.dataset)root.dataset.generatedContested='1';
   }
+  if(typeof applyPresentationAtlasVariables==='function'&&!root.dataset?.generatedProgress){
+    const wired=applyPresentationAtlasVariables(root,'frontline-progress',presentationAtlasFrame(GAME_ASSETS.presentationHudV3.frontlineProgress));
+    if(wired&&root.dataset)root.dataset.generatedProgress='1';
+  }
   root.classList.toggle('ally',frontlineObjective.owner==='ally');
   root.classList.toggle('enemy',frontlineObjective.owner==='enemy');
   root.classList.toggle('contested',contested);
@@ -170,6 +174,13 @@ function captureFrontline(team,zone){
   showAnn((team==='ally'?'🔵 СИНИЕ':'🔴 КРАСНЫЕ')+' ЗАХВАТИЛИ · '+zone.label);
   saveProgress(true);
 }
+let frontlineRetargetFxT=0;
+function showFrontlineRetargetSweep(){
+  const el=G('frontline-retarget-sweep');if(!el)return;
+  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.frontlineRetarget));
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(frontlineRetargetFxT);frontlineRetargetFxT=setTimeout(()=>el.classList.remove('on'),900);
+}
 function rotateFrontlineObjective(){
   const zone=chooseNextFrontlineZone();
   frontlineObjective.zoneId=zone.id;
@@ -182,6 +193,7 @@ function rotateFrontlineObjective(){
   BOT_TEAM_TACTICS.ally.orderUntil=-999;BOT_TEAM_TACTICS.enemy.orderUntil=-999;
   updateFrontlineMarker(0);
   updateFrontlineHUD(true);
+  showFrontlineRetargetSweep();
   showAnn('⌖ НОВАЯ ЦЕЛЬ · '+zone.label);
 }
 function tickFrontlineObjective(dt,ts){

@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 9 consumers
+The 2026-09-30 pack adds ten SVG runtime derivatives for match deployment, Frontline retarget/capture presentation, Second Wind, dodge feedback, perk-path identity, equipment readiness, ally tactical callouts, pause presentation and mobile controls. Geometric generated art now uses the contact sheet as visual source and commits lightweight SVG derivatives instead of unnecessary raster crops.
+
+Ownership: `src/game/session.js` → deploy/pause; `src/game/frontline.js` → retarget/progress; `src/progression/progression.js` → Second Wind/dodge/perk path; `src/combat/combat.js` → equipment state; `src/game/runtime.js` → ally callouts/mobile controls. Existing text/procedural state remains authoritative.
+
 ## Pack 8 consumers
 The 2026-09-29 tactical presentation pack adds ten compact alpha WebP atlases for reticles, minimap markers, spawn protection, respawn countdown, explosive fuse state, projectile trails, weapon switching, bot overhead frames, combo feedback and pickup beacons. Ownership stays close to the existing gameplay source: `src/game/runtime.js` owns reticle/shield/combo timing, `src/ui/minimap.js` owns tactical markers, `src/combat/combat.js` owns projectile/fuse presentation, `src/entities/bots.js` owns overhead bars, `src/entities/pickups.js` owns pickup beacons, and `src/player/state.js` emits the equip transition.
 

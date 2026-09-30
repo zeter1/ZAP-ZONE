@@ -1,6 +1,12 @@
 # Changelog — ZAP ZONE
 
-## Unreleased — 2026-09-29
+## Unreleased — 2026-09-30
+
+### Generated Asset Pack 9 — vector tactical feedback
+- added ten new generated-direction SVG runtime assets for match deployment, Frontline retarget/capture, Second Wind, dodge feedback, perk paths, equipment readiness, ally tactical callouts, pause presentation and mobile controls;
+- wired every asset into a real UI/gameplay consumer while keeping text/procedural state authoritative;
+- introduced an SVG derivative workflow for geometric generated HUD art to improve DPI clarity, payload size and HTTP(S)/file:// reliability;
+- extended structural validation and asset documentation for Pack 9.
 
 ### Generated Asset Pack 8 — tactical readability and motion
 - added ten compact alpha WebP atlases for weapon reticles, tactical minimap markers, spawn shielding, the 15-second respawn countdown, explosive fuse states, projectile trails, weapon-switch swipes, bot overhead combat frames, combo feedback and world-pickup beacons;

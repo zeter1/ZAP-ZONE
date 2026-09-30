@@ -1,5 +1,20 @@
 # Asset pipeline — ZAP ZONE
 
+## Generated Asset Pack 9 (2026-09-30)
+Runtime paths:
+- `assets/ui/feedback/match-deploy-splash-tech-01.svg` — first match deployment splash.
+- `assets/ui/objective/frontline-retarget-sweep-tech-01.svg` — Frontline retarget sweep.
+- `assets/ui/feedback/second-wind-rescue-tech-01.svg` — «Второе дыхание» rescue pulse.
+- `assets/ui/feedback/dodge-phase-tech-01.svg` — successful bullet-dodge phase flash.
+- `assets/ui/perks/perk-path-crest-atlas-01.svg` — assault/survival/demolition/precision/mobility crests.
+- `assets/ui/equipment/equipment-readiness-atlas-01.svg` — mine/bomb/smoke ready/cooldown states.
+- `assets/ui/objective/frontline-capture-progress-frame-01.svg` — decorative capture-progress frame.
+- `assets/ui/bots/ally-tactical-callout-atlas-01.svg` — ally-only tactical callouts.
+- `assets/ui/panels/pause-panel-tech-01.svg` — pause tactical shell.
+- `assets/ui/mobile/mobile-control-icons-atlas-01.svg` — six touch-control icons.
+
+Pack 9 uses a better workflow for geometric HUD art: the image-generator contact sheet is the visual source, but the committed runtime derivative is rebuilt as compact SVG when the asset is mostly lines, crests, panels or icons. That removes binary-upload corruption risk, stays crisp across DPI and preserves HTTP(S) + direct `file://` parity. Painterly effects, backgrounds and first-person renders remain raster/WebP candidates.
+
 ## Generated Asset Pack 8 (2026-09-29)
 Runtime paths:
 - `assets/ui/combat/reticle-identity-atlas-01.webp` — weapon-class reticle identities layered over the existing dynamic crosshair.
@@ -326,3 +341,7 @@ Green run другого SHA не является доказательство�
 5. workflow Validate, если будет write.
 
 Текущее состояние кода/GitHub/CI всегда важнее этого документа, если они разошлись.
+
+
+### Vector derivative rule (Pack 9+)
+For generated geometric HUD art, prefer a small SVG runtime derivative when it preserves the visual intent. Keep the generated raster/contact sheet as source/reference rather than forcing it into runtime. The SVG still requires a concrete consumer, catalog entry, text/procedural fallback and structural validation. Use WebP/PNG for painterly, smoky, photographic or first-person art where raster detail is materially useful.

@@ -5,6 +5,17 @@
 // The frame loop reads lastT, but only this session owner resets it around
 // browser/user lifecycle transitions so background time never leaks into dt.
 let lastT=0;
+let matchDeployFxT=0;
+function showMatchDeployPresentation(){
+  const el=G('match-deploy-splash');if(!el)return;
+  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.matchDeploy));
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(matchDeployFxT);matchDeployFxT=setTimeout(()=>el.classList.remove('on'),1650);
+}
+function syncPausePanelPresentation(){
+  const el=G('pause');if(!el||el.dataset.generatedPanel==='1')return;
+  if(applyPresentationAtlasVariables(el,'pause-panel',presentationAtlasFrame(GAME_ASSETS.presentationHudV3.pausePanel)))el.dataset.generatedPanel='1';
+}
 
 function tryFullscreen(){
   const el=document.documentElement;
@@ -26,6 +37,7 @@ function showPauseUI(){
   clearPointerLockRequest();
   paused=true;running=false;mouseDown=false;zooming=false;setMobileFire(false);
   setGameCursorHidden(false);
+  syncPausePanelPresentation();
   G('pause').classList.add('on');refreshMobileHUD();
 }
 function requestGamePointerLock(){
@@ -76,8 +88,10 @@ function startOrResumeGame(){
     tryFullscreen();tryLockLandscape();
     G('menu').style.display='none';G('pause').classList.remove('on');
     if(!running&&!dying&&!lvlAnnOpen&&!perkPickOpen){
+      const firstStart=!gameSessionActivated;
       running=true;paused=false;lastT=performance.now();
       activatePreparedGame();
+      if(firstStart)showMatchDeployPresentation();
       wHUD();markHUD();flushHUD();xpHUD();updateStats();respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
     }else if(paused){resumeGameFromPause();}
     mobileStarted=true;refreshMobileHUD();updateOrientationState();
@@ -109,6 +123,7 @@ document.addEventListener('pointerlockchange',()=>{
     paused=false;running=true;lastT=performance.now();
     if(firstStart){
       activatePreparedGame();
+      showMatchDeployPresentation();
       wHUD();markHUD();flushHUD();xpHUD();updateStats();
       respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
     }

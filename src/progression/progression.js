@@ -44,7 +44,13 @@ function renderPerkChoices(lvl){
     d.addEventListener('click',()=>pickPerk(p));
     cards.appendChild(d);
   });
-  G('perk-build').textContent=currentBuildText();
+  const perkBuild=G('perk-build');
+  perkBuild.textContent=currentBuildText();
+  const dominantPath=Object.keys(PATH_NAMES).map(path=>({path,n:pathRank(path)})).sort((a,b)=>b.n-a.n)[0];
+  if(dominantPath?.n>0&&typeof applyPresentationAtlasVariables==='function'){
+    applyPresentationAtlasVariables(perkBuild,'perk-path',perkPathPresentationFrame(dominantPath.path));
+    perkBuild.classList.add('generated-path');
+  }else perkBuild.classList.remove('generated-path');
   const reroll=G('perk-reroll');
   reroll.textContent='🎲 ОБНОВИТЬ ВЫБОР · '+perkRerollsLeft;
   reroll.disabled=perkRerollsLeft<=0;
@@ -130,7 +136,9 @@ function damageLabel(kind){
 function applyDamageToPlayer(amount,kind='bullet',attacker=null){
   if(dying||amount<=0)return 0;
   if(respawnShieldT>0)return 0;
-  if(kind==='bullet'&&plr.dodgeChance>0&&Math.random()<plr.dodgeChance){showMsg('🫥 Уклонение от пули!');return 0;}
+  if(kind==='bullet'&&plr.dodgeChance>0&&Math.random()<plr.dodgeChance){
+    showDodgePhaseFx();showMsg('🫥 Уклонение от пули!');return 0;
+  }
   let dmg=amount;
   if(kind==='bullet'&&plr.smokeResist>0&&smokeStrengthAt(camera.position)>.12)dmg*=Math.max(.45,1-plr.smokeResist);
   if(kind==='rocket')dmg*=PLAYER_ROCKET_DAMAGE_SCALE;
@@ -168,7 +176,7 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
   if(kind==='mine')showMsg('💣 Подрыв рядом!');
   if(hp<=0&&plr.secondWind&&plr.secondWindReady){
     plr.secondWindReady=false;hp=Math.max(1,Math.ceil(plr.maxHp*.35));respawnShieldT=2;deathReason='';
-    showAnn('💓 ВТОРОЕ ДЫХАНИЕ');showMsg('Смертельный урон отменён · щит 2 секунды');markHUD();updateStats();
+    showSecondWindFx();showAnn('💓 ВТОРОЕ ДЫХАНИЕ');showMsg('Смертельный урон отменён · щит 2 секунды');markHUD();updateStats();
   }
   checkDeath();
   return dmg;
@@ -311,6 +319,19 @@ function showArmorBreakFx(){
   clearTimeout(_armorBreakT);_armorBreakT=setTimeout(()=>root.classList.remove('on'),650);
 }
 
+let _secondWindFxT=0,_dodgePhaseFxT=0;
+function showSecondWindFx(){
+  const el=G('second-wind-fx');if(!el)return;
+  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.secondWindRescue));
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(_secondWindFxT);_secondWindFxT=setTimeout(()=>el.classList.remove('on'),900);
+}
+function showDodgePhaseFx(){
+  const el=G('dodge-phase-fx');if(!el)return;
+  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.dodgePhase));
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  clearTimeout(_dodgePhaseFxT);_dodgePhaseFxT=setTimeout(()=>el.classList.remove('on'),420);
+}
 let _spT=0,_spEl=null;
 function scorePop(t){if(!_spEl)_spEl=G('score-pop');_spEl.textContent=t;_spEl.style.opacity='1';_spEl.style.top='40%';clearTimeout(_spT);_spT=setTimeout(()=>{_spEl.style.opacity='0';_spEl.style.top='36%';},800);}
 let _msgT=0;function showMsg(t){G('pmsg').textContent=t;G('pmsg').style.opacity='1';clearTimeout(_msgT);_msgT=setTimeout(()=>G('pmsg').style.opacity='0',2200);}

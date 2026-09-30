@@ -275,6 +275,13 @@ function loop(ts){
 }
 
 let allyPanelCd=0;
+function allyCalloutKind(e){
+  if(e.pickupTarget)return 'recover';
+  if(e.reloadT>0)return 'reload';
+  if(e.tacticalMode==='suppress')return 'suppress';
+  if(e.role==='flankL'||e.role==='flankR')return 'flank';
+  return 'cover';
+}
 function updateAllyPanel(dt){
   allyPanelCd-=dt;if(allyPanelCd>0)return;allyPanelCd=.20;
   const panel=G('ally-panel');
@@ -285,17 +292,24 @@ function updateAllyPanel(dt){
   const order=`<div class="ally-icon ally-order" style="border-color:rgba(255,215,80,.58);background:rgba(38,30,4,.78);color:#ffe880;box-shadow:0 0 9px rgba(255,190,45,.18);"><span class="ally-doctrine-art" aria-hidden="true"></span><span>ПРИКАЗ: ${botDoctrineLabel(plan.doctrine)} · ${zoneName} · Δ ${advantage}</span></div>`;
   panel.innerHTML=order+squad.map((e,i)=>{
     const pct=Math.round(e.hp/e.maxHp*100);
-    return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><span class="ally-role-art" data-role="${e.role}" aria-hidden="true"></span><span>СВОЙ ${i+1} · ${botRoleLabel(e.role)}: ${e.kills||0} ☠ · ${pct}%</span></div>`;
+    return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><span class="ally-role-art" data-role="${e.role}" aria-hidden="true"></span><span class="ally-callout-art" data-callout="${allyCalloutKind(e)}" aria-hidden="true"></span><span>СВОЙ ${i+1} · ${botRoleLabel(e.role)}: ${e.kills||0} ☠ · ${pct}%</span></div>`;
   }).join('');
   if(typeof applyPresentationAtlasFrame==='function'){
     applyPresentationAtlasFrame(panel.querySelector('.ally-doctrine-art'),botDoctrinePresentationFrame(plan.doctrine));
     panel.querySelectorAll('.ally-role-art').forEach(el=>applyPresentationAtlasFrame(el,botRolePresentationFrame(el.dataset.role)));
+    panel.querySelectorAll('.ally-callout-art').forEach(el=>applyPresentationAtlasFrame(el,allyCalloutPresentationFrame(el.dataset.callout)));
+  }
+}
+function syncGeneratedMobileControlArt(){
+  const map=[['m-fire','fire'],['m-jump','jump'],['m-run','sprint'],['m-reload','reload'],['m-mine','mine'],['m-next','next']];
+  for(const [id,kind] of map){
+    const el=G(id);if(el&&applyPresentationAtlasFrame(el,mobileControlPresentationFrame(kind)))el.classList.add('generated-mobile-icon');
   }
 }
 
 // ─── BOOT ───────────────────────────────
 setGameCursorHidden(false);
-buildGun(getW());buildWeaponBar();bindMobileControls();updateMineHUD();updateStats();updateTeamScore();ensureFrontlineMarker();updateFrontlineHUD(true);updateOrientationState();refreshMobileHUD();xpHUD();refreshStartButton();
+buildGun(getW());buildWeaponBar();bindMobileControls();syncGeneratedMobileControlArt();updateMineHUD();updateStats();updateTeamScore();ensureFrontlineMarker();updateFrontlineHUD(true);updateOrientationState();refreshMobileHUD();xpHUD();refreshStartButton();
 requestAnimationFrame(loop);
 preloadGameContent().then(()=>{
   document.documentElement.dataset.zapBoot='ready';

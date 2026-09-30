@@ -377,10 +377,18 @@ function bombNearPoint(pos,minDist=22){
 function updateMineHUD(){
   const mineCd=Math.max(0,Math.ceil(playerMineCD));
   const bombCd=Math.max(0,Math.ceil(playerBombCD));
+  const smokeCd=Math.max(0,Math.ceil(playerSmokeCD));
   const mineReady=mineCd>0?mineCd+'с':'ГОТОВА';
   const bombReady=bombCd>0?bombCd+'с':'ГОТОВА';
+  const smokeReady=smokeCd>0?smokeCd+'с':'ГОТОВА';
   const bombAmmo=testingInfiniteAmmoEnabled()?'∞':weaponAmmoValue(6);
-  G('mine-cnt').textContent='💣 '+playerMineCount()+' · '+mineReady+' | 🧨 '+bombAmmo+'/'+WEAPONS[6].clip+' · '+bombReady;
+  const root=G('mine-cnt');if(!root)return;
+  root.innerHTML='<span class="equipment-ready-art" data-kind="mine"></span><span>💣 '+playerMineCount()+' · '+mineReady+'</span><span class="equipment-sep">|</span><span class="equipment-ready-art" data-kind="bomb"></span><span>🧨 '+bombAmmo+'/'+WEAPONS[6].clip+' · '+bombReady+'</span><span class="equipment-sep">|</span><span class="equipment-ready-art" data-kind="smoke"></span><span>🌫 '+smokeReady+'</span>';
+  root.querySelectorAll('.equipment-ready-art').forEach(el=>{
+    const kind=el.dataset.kind;
+    const ready=kind==='mine'?mineCd===0:kind==='bomb'?bombCd===0:smokeCd===0;
+    applyPresentationAtlasFrame(el,equipmentReadinessPresentationFrame(kind,ready));
+  });
 }
 
 // ─── SHOOT (player) ─────────────────────
