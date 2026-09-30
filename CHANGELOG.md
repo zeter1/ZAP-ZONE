@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 20 — first-person mine throw and bomb arming
+- integrated both approved previews as deterministic scriptless 4×2 SVG atlases;
+- adapted the grenade-throw choreography to the existing throwable mine because the player has no separate frag-grenade slot;
+- successful mine throws now receive a grip/release/follow-through animation; successful bomb placement receives a planting, arming-ring and confirmation sequence;
+- both effects trigger only after the authoritative gameplay object is created; mine physics/arming and bomb fuse/damage/radius/ammo/cooldown remain unchanged;
+- structural validation and normal build/browser gates cover the integration.
+
 ### Generated Asset Pack 19 — landing impact and first-person smoke throw
 - integrated the two newly approved source previews as compact deterministic scriptless SVG atlases: a two-material landing impact sequence and an eight-frame first-person smoke-grenade throw;
 - landing VFX fires only on the real airborne-to-ground transition, scales from impact speed, uses dust for concrete/gravel, energy/sparks for metal and intentionally skips water;
