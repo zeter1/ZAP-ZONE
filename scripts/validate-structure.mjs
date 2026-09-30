@@ -107,6 +107,7 @@ const generatedCombatVfxPack11SvgAssets=[
   'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'
 ];
 const generatedCombatVfxPack12SvgAtlas='assets/ui/fx/combat-vfx-atlas-12.svg';
+const generatedCombatVfxPack13SvgAtlas='assets/ui/fx/bot-combat-vfx-atlas-13.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -145,7 +146,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets,generatedCombatVfxPack12SvgAtlas,generatedCombatVfxPack13SvgAtlas];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1247,3 +1248,20 @@ for(const token of [
 ])if(!combat.includes(token))fail('generated combat VFX pack 12 consumer missing: '+token);
 if((combat.match(/showGeneratedPenetrationExitVfx\(pen\.exitPoint,surface\);/g)||[]).length!==2)fail('pack 12 penetration exit VFX must cover player and bot projectile paths');
 if((combat.match(/showGeneratedRicochetVfx\(_hitPos,surface\);/g)||[]).length!==2)fail('pack 12 ricochet VFX must cover player and bot projectile paths');
+
+{
+  const source=readFileSync(generatedCombatVfxPack13SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>32*1024)fail('generated combat VFX pack 13 SVG atlas exceeds 32 KiB budget');
+  if(!source.includes('viewBox="0 0 448 112"'))fail('generated combat VFX pack 13 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b/i.test(source))fail('runtime VFX pack 13 atlas must be scriptless static deterministic frames');
+  if((source.match(/class="frame row-/g)||[]).length!==16)fail('generated combat VFX pack 13 atlas must contain exactly 2 x 8 static frames');
+}
+for(const token of ["pack13:'assets/ui/fx/bot-combat-vfx-atlas-13.svg'","botMuzzle:Object.freeze({asset:'pack13',row:0,cols:8,rows:2,frames:8","botDeath:Object.freeze({asset:'pack13',row:1,cols:8,rows:2,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 13 catalog contract missing: '+token);
+for(const token of ['function generatedWorldDirectionDegrees','function showGeneratedBotMuzzleVfx','function showGeneratedBotDeathVfx'])if(!settings.includes(token))fail('generated combat VFX pack 13 runtime helper missing: '+token);
+const pack13MuzzleFallback=fireControl.indexOf("trigMuzzle(from,shotCol");
+const pack13MuzzleGenerated=fireControl.indexOf('showGeneratedBotMuzzleVfx(from,bot);');
+if(pack13MuzzleFallback<0||pack13MuzzleGenerated<pack13MuzzleFallback)fail('pack 13 bot muzzle VFX must decorate the existing procedural muzzle event');
+const pack13Die=bots.indexOf('die(dmg,dir){');
+const pack13DeathGenerated=bots.indexOf('showGeneratedBotDeathVfx(deathVfxPos);',pack13Die);
+const pack13DeathRemove=bots.indexOf('scene.remove(this.group);',pack13Die);
+if(pack13Die<0||pack13DeathGenerated<pack13Die||pack13DeathRemove<pack13DeathGenerated)fail('pack 13 bot death VFX must emit before bot group disposal');

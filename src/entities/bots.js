@@ -666,6 +666,8 @@ class Enemy{
 
   die(dmg,dir){
     this.alive=false;
+    const deathVfxPos=this.group.position.clone();deathVfxPos.y+=1.05;
+    showGeneratedBotDeathVfx(deathVfxPos);
     for(const mn of mines)if(mn.src===this)mn.src=null;
     const force=Math.min(3+dmg*.05,10);
     const gc=Math.min(Math.floor(3+dmg*.07),this.pts.length);
