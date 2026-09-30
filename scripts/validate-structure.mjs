@@ -1393,7 +1393,7 @@ for(const token of ['.generated-combat-vfx[data-kind="shotgunShellInsert"]','.ge
   const landing=readFileSync(generatedCombatVfxPack19SvgAssets[0],'utf8'),smokeThrow=readFileSync(generatedCombatVfxPack19SvgAssets[1],'utf8');
   if(Buffer.byteLength(landing)>32*1024||Buffer.byteLength(smokeThrow)>24*1024)fail('generated combat VFX pack 19 SVG atlas exceeds byte budget');
   if(!landing.includes('viewBox="0 0 384 256"')||!smokeThrow.includes('viewBox="0 0 512 256"'))fail('generated combat VFX pack 19 viewBox invalid');
-  for(const source of [landing,smokeThrow])if(/<animate\\b|<animateTransform\\b|<script\\b|<image\\b|<foreignObject\\b/i.test(source))fail('runtime VFX pack 19 atlases must be static, scriptless and self-contained');
+  for(const source of [landing,smokeThrow])if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime VFX pack 19 atlases must be static, scriptless and self-contained');
   if((landing.match(/class="frame row-/g)||[]).length!==16)fail('pack 19 landing atlas must contain exactly 4 x 4 static frames');
   if((smokeThrow.match(/class="frame row-/g)||[]).length!==8)fail('pack 19 smoke throw atlas must contain exactly 4 x 2 static frames');
 }
