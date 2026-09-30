@@ -1,5 +1,10 @@
 # Assets — quick map
 
+## Pack 11 consumers
+Three approved staging VFX are integrated as deterministic static-frame SVG atlases: rocket explosion (4×3), plasma impact (4×3) and plasma reload energy-lock (4×2). `src/assets/catalog.js` owns atlas metadata, the existing bounded VFX player in `src/settings/settings.js` owns elapsed-time playback/projection/cleanup, and `src/combat/combat.js` emits the rocket detonation, plasma hit and completed plasma reload events.
+
+The original animated SVGs remain under `asset-staging/2026-09-30-vfx-pack-11/` only as review/provenance sources. Runtime does not load staging. Procedural explosion/impact/reload presentation remains fallback, and generated art stays DOM-only rather than persistent Three.js texture geometry.
+
 ## Pack 10 consumers
 Ten generated one-shot combat animations are packed into `ui/fx/combat-vfx-atlas-10.webp` as a uniform 8×10 alpha-WebP atlas. Rows represent rocket backblast, SR-9 pressure blast, shotgun muzzle smoke, brass casing, shotgun shell, magazine drop, concrete/metal/wood impacts and near-miss air streak.
 

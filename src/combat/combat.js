@@ -451,6 +451,7 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
   if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
   if(b.markerEligible||w.key==='plasma'){spawnSpark(hitFx,b.color);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
   if(b.markerEligible)spawnCombatImpact(hitFx,weaponImpactType(w,isCrit));
+  if(w.key==='plasma')showGeneratedPlasmaImpactVfx(hitFx);
   if(hd){
     spawnHeadshotFx(hitFx,lethalHeadshot);
     const hs=G('hs-pop'),hsIcon=G('hs-pop-icon'),hsText=G('hs-pop-text');
@@ -647,9 +648,13 @@ function weaponActionBlocked(){
   return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0;
 }
 function finishPlayerReload(playDone=true,settle=true){
+  const completedWeapon=getW();
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   if(settle)weaponReadyT=Math.max(weaponReadyT,.08);
-  if(playDone)playWeaponMechanicSound('reloadDone',.82,getW().key);
+  if(playDone){
+    playWeaponMechanicSound('reloadDone',.82,completedWeapon.key);
+    if(completedWeapon.key==='plasma')showGeneratedPlasmaReloadVfx();
+  }
   wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
 }
 function cancelPlayerReload(){
@@ -963,6 +968,7 @@ function detonateRocket(arr,index,r,pos){
   const blastDistance=camera.position.distanceTo(pos);
   if(blastDistance<105){const proximity=Math.max(.12,1-blastDistance/110);playExplosionSound(pos,proximity);if(blastDistance<55)triggerScreenShake(proximity*.95,.20);}
   spawnCombatImpact(pos,'rocket');
+  showGeneratedRocketExplosionVfx(pos);
   explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius);
   applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28,r.ownerType==='player'?'ally':(r._src?.team||r.team||null));
   destroySceneObject(r.m);
@@ -1073,6 +1079,7 @@ function tickProjectiles(dt){
       const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
       const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,true):null;
       wallImpact(_hitPos,b.color,surface,n);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      if(w.key==='plasma')showGeneratedPlasmaImpactVfx(_hitPos);
       if(pen){
         playSurfaceImpactSound(surface,_hitPos,.62,false);
         wallImpact(pen.exitPoint,b.color,surface,n?n.clone().negate():null);
@@ -1172,6 +1179,7 @@ function tickProjectiles(dt){
       const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
       const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,false):null;
       wallImpact(_hitPos,b.color,surface,n);spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
+      if(w.key==='plasma')showGeneratedPlasmaImpactVfx(_hitPos);
       if(pen){
         playSurfaceImpactSound(surface,_hitPos,.54,false);
         wallImpact(pen.exitPoint,b.color,surface,n?n.clone().negate():null);

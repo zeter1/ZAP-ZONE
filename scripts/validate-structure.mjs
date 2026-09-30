@@ -101,6 +101,11 @@ const generatedTacticalHudV2WebpAssets=[
   'assets/ui/feedback/combo-meter-atlas-01.webp','assets/ui/pickups/pickup-beacon-atlas-01.webp'
 ];
 const generatedCombatVfxAtlas='assets/ui/fx/combat-vfx-atlas-10.webp';
+const generatedCombatVfxPack11SvgAssets=[
+  'assets/ui/fx/rocket-explosion-fireball-atlas-11.svg',
+  'assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg',
+  'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'
+];
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -139,7 +144,7 @@ const presentationCssRasterAssets=[
   'assets/ui/objective/frontline-capture-tech-01.webp','assets/ui/objective/frontline-capture-burst-tech-01.webp',
   'assets/ui/feedback/battle-result-frame-tech-01.webp','assets/ui/pickups/weapon-crate-tech-01.png'
 ];
-const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets];
+const requiredAssets=[...weaponAssets,...visualAssets,...perkIconAssets,...generatedTacticalHudV3SvgAssets,...generatedCombatVfxPack11SvgAssets];
 const html=readFileSync('index.html','utf8');
 const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
@@ -1183,6 +1188,31 @@ for(const token of ['showGeneratedWeaponShotVfx(w.key)','showGeneratedCasingFx(f
 }
 if(!runtime.includes("showGeneratedCasingFx(cycleKind==='pump')"))fail('generated shell/bolt casing cycle consumer missing');
 if(!engine.includes("showGeneratedSurfaceImpactVfx(material,pos)"))fail('generated material impact presentation hook missing');
-for(const token of ['.generated-combat-vfx-layer','.generated-combat-vfx','data-kind="brassCasing"','data-kind="sniperPressure"']){
+
+for(const [file,viewBox,maxBytes] of [
+  ['assets/ui/fx/rocket-explosion-fireball-atlas-11.svg','0 0 512 384',32*1024],
+  ['assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg','0 0 512 384',32*1024],
+  ['assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg','0 0 640 180',24*1024]
+]){
+  const source=readFileSync(file,'utf8');
+  if(Buffer.byteLength(source)>maxBytes)fail('generated combat VFX pack 11 SVG atlas exceeds budget: '+file);
+  if(!source.includes('viewBox="'+viewBox+'"'))fail('generated combat VFX pack 11 viewBox invalid: '+file);
+  if(/<animate\b|<animateTransform\b/i.test(source))fail('runtime VFX atlas must contain static deterministic frames, not internal animation: '+file);
+}
+for(const token of [
+  "rocketExplosion:'assets/ui/fx/rocket-explosion-fireball-atlas-11.svg'",
+  "plasmaImpact:'assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg'",
+  "plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'",
+  "rocketExplosion:Object.freeze({asset:'rocketExplosion',cols:4,rows:3,frames:12",
+  "plasmaImpact:Object.freeze({asset:'plasmaImpact',cols:4,rows:3,frames:12",
+  "plasmaReload:Object.freeze({asset:'plasmaReload',cols:4,rows:2,frames:8"
+])if(!catalog.includes(token))fail('generated combat VFX pack 11 catalog contract missing: '+token);
+for(const token of ['function showGeneratedRocketExplosionVfx','function showGeneratedPlasmaImpactVfx','function showGeneratedPlasmaReloadVfx']){
+  if(!settings.includes(token))fail('generated combat VFX pack 11 runtime helper missing: '+token);
+}
+for(const token of ["showGeneratedRocketExplosionVfx(pos)","if(w.key==='plasma')showGeneratedPlasmaImpactVfx(hitFx)","if(completedWeapon.key==='plasma')showGeneratedPlasmaReloadVfx()"]){
+  if(!combat.includes(token))fail('generated combat VFX pack 11 consumer missing: '+token);
+}
+for(const token of ['.generated-combat-vfx-layer','.generated-combat-vfx','data-kind="brassCasing"','data-kind="sniperPressure"','data-kind="rocketExplosion"','data-kind="plasmaImpact"','data-kind="plasmaReload"']){
   if(!gameCss.includes(token))fail('generated combat VFX CSS contract missing: '+token);
 }

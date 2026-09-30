@@ -198,7 +198,10 @@ const GAME_ASSETS=versionAssetTree({
   // Generated Asset Pack 10 — ten logical one-shot combat animations packed into
   // one uniform alpha-WebP atlas. Playback remains DOM-only and frame-time driven.
   presentationVfx:Object.freeze({
-    combatAtlas:'assets/ui/fx/combat-vfx-atlas-10.webp'
+    combatAtlas:'assets/ui/fx/combat-vfx-atlas-10.webp',
+    rocketExplosion:'assets/ui/fx/rocket-explosion-fireball-atlas-11.svg',
+    plasmaImpact:'assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg',
+    plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -599,11 +602,18 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   concreteImpact:Object.freeze({row:6,frames:8,duration:.50,size:112}),
   metalImpact:Object.freeze({row:7,frames:8,duration:.38,size:116}),
   woodImpact:Object.freeze({row:8,frames:5,duration:.46,size:118}),
-  nearMiss:Object.freeze({row:9,frames:5,duration:.25,size:170})
+  nearMiss:Object.freeze({row:9,frames:5,duration:.25,size:170}),
+  rocketExplosion:Object.freeze({asset:'rocketExplosion',cols:4,rows:3,frames:12,duration:1.00,size:260}),
+  plasmaImpact:Object.freeze({asset:'plasmaImpact',cols:4,rows:3,frames:12,duration:.82,size:190}),
+  plasmaReload:Object.freeze({asset:'plasmaReload',cols:4,rows:2,frames:8,duration:1.05,width:286,height:161})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){
   const spec=generatedCombatVfxSpec(kind);if(!spec)return null;
   const frame=Math.max(0,Math.min(spec.frames-1,Math.floor(Number(index)||0)));
+  if(spec.asset){
+    const cols=Math.max(1,spec.cols||1),rows=Math.max(1,spec.rows||1);
+    return presentationAtlasFrame(GAME_ASSETS.presentationVfx[spec.asset],frame%cols,Math.floor(frame/cols),cols,rows);
+  }
   return presentationAtlasFrame(GAME_ASSETS.presentationVfx.combatAtlas,frame,spec.row,8,10);
 }

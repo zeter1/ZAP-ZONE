@@ -16,6 +16,18 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 11 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-11/` are now integrated.
+
+Runtime paths:
+- `assets/ui/fx/rocket-explosion-fireball-atlas-11.svg` — 4×3 / 12-frame world rocket detonation fireball;
+- `assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg` — 4×3 / 12-frame plasma impact bloom for actor and wall hits;
+- `assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg` — 4×2 / 8-frame local first-person plasma reload completion lock.
+
+These runtime files are **static-frame SVG sprite atlases**, not self-animating SVGs. The staging art is geometric vector VFX, so preserving it as compact SVG avoids unnecessary raster resampling/binary-upload risk while keeping deterministic elapsed-time playback through the existing Pack 10 VFX player. The game remains authoritative: rocket/plasma/reload events trigger the presentation layer, procedural impact/explosion/reload feedback remains fallback, simultaneous DOM effects stay bounded and off-screen world effects are hidden by projection.
+
+The staging source candidates remain in `asset-staging/` as provenance/reference. They are not imported by runtime code.
+
 ## Generated Asset Pack 10 (2026-09-30)
 Runtime file:
 - `assets/ui/fx/combat-vfx-atlas-10.webp` — единый 8×10 alpha-WebP mega-atlas 448×560, cell 56×56, <=128 KiB.

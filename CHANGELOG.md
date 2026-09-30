@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 11 — explosion, plasma impact and reload VFX
+- approved the three candidates from `asset-staging/2026-09-30-vfx-pack-11/` and integrated them into real gameplay events instead of leaving staging art unused;
+- added deterministic static-frame SVG sprite atlases for rocket detonation, plasma impact and plasma reload energy-lock, played through the existing bounded elapsed-time VFX player;
+- rocket VFX is projected at detonation world position, plasma impact is throttled and shown on actor/wall hits, and the reload lock appears only after a successful player plasma reload completion;
+- existing procedural explosion/impact/reload feedback remains fallback; runtime does not load `asset-staging/**`, generated effects remain DOM-only, and gameplay/balance are unchanged;
+- structural validation now checks Pack 11 presence, viewBoxes, byte budgets, absence of self-running SVG animation, catalog/runtime/consumer/CSS wiring and dual-runtime build stamping.
+
 ### Generated Asset Pack 10 — animated combat VFX atlas
 - добавлены 10 новых логических one-shot анимаций: backblast ракетницы, pressure blast SR-9, дымовой blast дробовика, латунная гильза, shotgun shell, падающий магазин, concrete/metal/wood impacts и directional near-miss streak;
 - все десять последовательностей упакованы в один 8×10 alpha-WebP mega-atlas 448×560 (56×56 на кадр), чтобы браузер делал один запрос/декод вместо десяти отдельных runtime-файлов;

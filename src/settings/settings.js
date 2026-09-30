@@ -550,7 +550,7 @@ function playGeneratedCombatVfx(kind,options={}){
   if(!spec||!first||!layer)return false;
   while(generatedCombatVfx.length>=GENERATED_COMBAT_VFX_LIMIT)removeGeneratedCombatVfx(generatedCombatVfx[0]);
   const el=document.createElement('span');el.className='generated-combat-vfx';el.dataset.kind=kind;
-  el.style.width=spec.size+'px';el.style.height=spec.size+'px';applyPresentationAtlasFrame(el,first);layer.appendChild(el);
+  el.style.width=(spec.width||spec.size)+'px';el.style.height=(spec.height||spec.size)+'px';applyPresentationAtlasFrame(el,first);layer.appendChild(el);
   const worldPos=options.worldPos?.clone?options.worldPos.clone():null;
   const item={el,kind,spec,age:0,frame:-1,worldPos,screen:worldPos&&typeof THREE!=='undefined'?new THREE.Vector3():null,
     anchor:options.anchor||'center',rotation:Number(options.rotation)||0,scale:Math.max(.35,Number(options.scale)||1)};
@@ -602,6 +602,18 @@ function showGeneratedSurfaceImpactVfx(material,pos){
   showGeneratedSurfaceImpactVfx._last=now;
   const kind=material==='metal'?'metalImpact':material==='wood'?'woodImpact':'concreteImpact';
   return playGeneratedCombatVfx(kind,{worldPos:pos,rotation:(Math.random()-.5)*16,scale:material==='metal'?1.04:1});
+}
+function showGeneratedRocketExplosionVfx(pos){
+  return playGeneratedCombatVfx('rocketExplosion',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.08});
+}
+function showGeneratedPlasmaImpactVfx(pos){
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?86:52;
+  if(now-(showGeneratedPlasmaImpactVfx._last||-999)<minGap)return false;
+  showGeneratedPlasmaImpactVfx._last=now;
+  return playGeneratedCombatVfx('plasmaImpact',{worldPos:pos,rotation:(Math.random()-.5)*22,scale:1.02});
+}
+function showGeneratedPlasmaReloadVfx(){
+  return playGeneratedCombatVfx('plasmaReload',{anchor:'magazine',rotation:0,scale:1});
 }
 function showGeneratedNearMissFx(source,pressure=.6){
   const strength=Math.max(.45,Math.min(1.18,Number(pressure)||.6));
