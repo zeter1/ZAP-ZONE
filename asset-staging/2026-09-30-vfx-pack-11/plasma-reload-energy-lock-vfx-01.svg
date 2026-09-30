@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+<defs>
+  <linearGradient id="arc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a8ffff"/><stop offset=".45" stop-color="#55eaff"/><stop offset="1" stop-color="#a64cff"/></linearGradient>
+  <radialGradient id="pulse" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffffff"/><stop offset=".22" stop-color="#b9ffff" stop-opacity=".92"/><stop offset=".62" stop-color="#53dfff" stop-opacity=".38"/><stop offset="1" stop-color="#7138ff" stop-opacity="0"/></radialGradient>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g transform="translate(420 214)" filter="url(#glow)">
+  <circle r="58" fill="none" stroke="url(#arc)" stroke-width="7" stroke-dasharray="64 21" opacity=".82"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.05s" repeatCount="indefinite"/><animate attributeName="r" values="52;61;55;58" dur="1.05s" repeatCount="indefinite"/></circle>
+  <circle r="40" fill="none" stroke="#c7ffff" stroke-width="4" stroke-dasharray="9 12" opacity=".7"><animateTransform attributeName="transform" type="rotate" from="0" to="-540" dur="1.05s" repeatCount="indefinite"/></circle>
+  <circle r="28" fill="url(#pulse)" opacity=".58"><animate attributeName="r" values="18;27;42;24" dur="1.05s" repeatCount="indefinite"/><animate attributeName="opacity" values=".15;.75;.12;.55" dur="1.05s" repeatCount="indefinite"/></circle>
+  <path d="M-84 0 H-42 M42 0 H84 M0 -84 V-42 M0 42 V84" stroke="#73f6ff" stroke-width="4" stroke-linecap="round" opacity=".62"><animate attributeName="opacity" values=".18;.72;.38;.64" dur="1.05s" repeatCount="indefinite"/></path>
+  <path d="M-94 -38 L-64 -26 M88 -44 L60 -27 M-83 53 L-56 34 M91 46 L62 31" stroke="#bb72ff" stroke-width="5" stroke-linecap="round" opacity=".55"><animate attributeName="opacity" values="0;.72;.15;0" dur=".52s" repeatCount="indefinite"/></path>
+  <g fill="#e7ffff">
+    <circle cx="-57" cy="-52" r="4"><animate attributeName="cx" values="-32;-62;-93" dur=".7s" repeatCount="indefinite"/><animate attributeName="cy" values="-24;-56;-79" dur=".7s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.5;0" dur=".7s" repeatCount="indefinite"/></circle>
+    <circle cx="62" cy="39" r="3.5"><animate attributeName="cx" values="30;67;100" dur=".78s" repeatCount="indefinite"/><animate attributeName="cy" values="18;43;70" dur=".78s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.45;0" dur=".78s" repeatCount="indefinite"/></circle>
+  </g>
+</g>
+<g transform="translate(70 266)" opacity=".8" filter="url(#glow)">
+  <path d="M0 0 C90 -16 170 -17 244 -7" fill="none" stroke="#52ecff" stroke-width="5" stroke-linecap="round" stroke-dasharray="18 13"><animate attributeName="stroke-dashoffset" values="0;-62" dur=".55s" repeatCount="indefinite"/><animate attributeName="opacity" values=".15;.75;.35" dur="1.05s" repeatCount="indefinite"/></path>
+  <path d="M14 15 C102 1 176 0 238 6" fill="none" stroke="#9e5cff" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 16"><animate attributeName="stroke-dashoffset" values="0;48" dur=".72s" repeatCount="indefinite"/></path>
+</g>
+</svg>

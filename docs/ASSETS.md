@@ -1,5 +1,21 @@
 # Asset pipeline — ZAP ZONE
 
+## 0.0. Asset staging before runtime integration
+
+Новые generated assets сначала должны попадать в корневой каталог `asset-staging/`, а не напрямую в runtime-`assets/`. Это обязательный review gate для ChatGPT/Codex и других AI-агентов.
+
+Порядок:
+1. пройти duplicate gate из раздела ниже и назначить конкретный consumer/event/fallback;
+2. создать датированный batch в `asset-staging/YYYY-MM-DD-<pack>/`;
+3. положить туда source-candidates + короткий manifest/README; **не** добавлять их в `GAME_ASSETS`, `index.html`, runtime CSS/JS или `assets/**`;
+4. пользователь визуально проверяет кандидаты и явно разрешает интеграцию;
+5. только после одобрения сделать runtime derivative (для коротких VFX обычно alpha-WebP sprite sheet/atlas), подключить consumer и fallback, затем выполнить validation/smoke/screenshot gate;
+6. после успешной интеграции staging-source можно оставить как provenance/reference или удалить отдельным осознанным cleanup-коммитом.
+
+Почему staging находится вне `assets/**`: каталог `assets/` является runtime surface и проверяется CI как часть игры. `asset-staging/` — не runtime и не должен случайно подхватываться catalog/loader-ами до одобрения.
+
+Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
+
 ## Generated Asset Pack 10 (2026-09-30)
 Runtime file:
 - `assets/ui/fx/combat-vfx-atlas-10.webp` — единый 8×10 alpha-WebP mega-atlas 448×560, cell 56×56, <=128 KiB.
