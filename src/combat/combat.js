@@ -590,7 +590,7 @@ function fireInstantSniper(from,dir,w,meta={}){
     }
   }else if(_rcWallHits.length){
     const wallHit=_rcWallHits[0],hitFx=wallHit.point.clone(),surface=mapImpactMaterial(wallHit.object);
-    wallImpact(hitFx,color,surface);spawnCombatImpact(hitFx,'sniper');playSurfaceImpactSound(surface,hitFx,.92,surface==='metal');
+    wallImpact(hitFx,color,surface,null,'heavy');spawnCombatImpact(hitFx,'sniper');playSurfaceImpactSound(surface,hitFx,.92,surface==='metal');
   }
   spawnInstantSniperTrace(from,dir,Math.max(.6,traceDist),color);
 }
@@ -1204,7 +1204,8 @@ function tickProjectiles(dt){
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
       const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
       const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,true):null;
-      wallImpact(_hitPos,b.color,surface,n);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
+      const impactVariant=(pen||(w.key==='shotgun'&&b.markerEligible))?'heavy':'normal';
+      wallImpact(_hitPos,b.color,surface,n,impactVariant);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
       if(w.key==='plasma')showGeneratedPlasmaImpactVfx(_hitPos);
       if(pen){
         playSurfaceImpactSound(surface,_hitPos,.62,false);
@@ -1306,7 +1307,7 @@ function tickProjectiles(dt){
       _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
       const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
       const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,false):null;
-      wallImpact(_hitPos,b.color,surface,n);spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
+      wallImpact(_hitPos,b.color,surface,n,pen?'heavy':'normal');spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
       if(w.key==='plasma')showGeneratedPlasmaImpactVfx(_hitPos);
       if(pen){
         playSurfaceImpactSound(surface,_hitPos,.54,false);

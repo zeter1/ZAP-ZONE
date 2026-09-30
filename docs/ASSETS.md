@@ -18,6 +18,22 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Surface Impact VFX Pack 29 (2026-09-30)
+The generated 4×4 surface-impact source sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivative:
+- `assets/ui/fx/surface-impact-vfx-atlas-29.webp` — 320×320 VP8X alpha-WebP, 4×4 / 16 source frames, 80×80 per cell; the reviewed 1254×1254 generator raster was cleaned of fringe/noise and normalized before runtime encoding.
+
+Integration rules:
+- row 0 provides concrete/dust impact stages, row 1 metal/ricochet stages, row 2 cyan electrical/tech-panel stages and row 3 heavier debris stages;
+- the existing bounded elapsed-time DOM VFX player owns playback; Pack 29 does not create a second animation loop or persistent Three.js texture sprite;
+- `wallImpact()` stays authoritative for surface presentation, sparks/smoke and decals; nearby existing terminals select only the cyan presentation variant while retaining their existing ballistic material/penetration semantics;
+- SR-9 wall hits, real wall penetration and only the marker-eligible first player shotgun pellet may request the heavy presentation; metal keeps the metal row even for heavy requests;
+- wood, distant impacts and Pack 29 load/playback failure use the existing Pack 10 material-impact rows as fallback; Pack 12 ricochet/penetration and Pack 27 terminal arcs remain separate layers;
+- no new gameplay RNG draw is introduced; damage, projectile flight/drop, penetration, ricochet probability, collision, AI and sound authority stay unchanged.
+
+The heavy reviewed source PNG is not duplicated in Git. Generation identity `69e5b2b7-e8da-48d3-8a3e-d5e790438d7d` and source/runtime mapping are recorded in `asset-staging/2026-09-30-vfx-pack-29/README.md`.
+
 ## Generated Rocket Flight VFX Pack 28 (2026-09-30)
 The generated 4×3 rocket-exhaust source sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 

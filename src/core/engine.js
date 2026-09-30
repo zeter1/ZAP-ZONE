@@ -762,10 +762,11 @@ function reactivePowerNodeAt(pos){
   }
   return null;
 }
-function wallImpact(pos,col,material='concrete',normal=null){
+function wallImpact(pos,col,material='concrete',normal=null,impactVariant='normal'){
   const metal=material==='metal',wood=material==='wood';
-  if(typeof showGeneratedSurfaceImpactVfx==='function')showGeneratedSurfaceImpactVfx(material,pos);
   const powerNode=reactivePowerNodeAt(pos);
+  const vfxVariant=powerNode?'tech':impactVariant;
+  if(typeof showGeneratedSurfaceImpactVfx==='function')showGeneratedSurfaceImpactVfx(material,pos,vfxVariant);
   if(powerNode&&typeof showGeneratedTerminalArcVfx==='function'){
     const now=performance.now();
     if(now>=(powerNode.userData.nextArcVfxAt||0)){

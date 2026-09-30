@@ -230,7 +230,8 @@ const GAME_ASSETS=versionAssetTree({
     pack26HeavyExplosion:'assets/ui/fx/heavy-explosion-vfx-atlas-26.webp',
     pack27RespawnGate:'assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg',
     pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg',
-    pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg'
+    pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg',
+    pack29SurfaceImpact:'assets/ui/fx/surface-impact-vfx-atlas-29.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -696,7 +697,11 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   energyDischarge26:Object.freeze({asset:'pack26Discharge',row:1,cols:4,rows:2,frames:4,duration:.24,width:236,height:177}),
   heavyExplosion26:Object.freeze({asset:'pack26HeavyExplosion',row:0,cols:4,rows:2,frames:8,duration:1.12,width:280,height:210}),
   playerRespawnGate27:Object.freeze({asset:'pack27RespawnGate',row:0,cols:3,rows:2,frames:6,duration:1.18,width:460,height:460}),
-  terminalArc27:Object.freeze({asset:'pack27TerminalArc',row:0,cols:5,rows:2,frames:10,duration:1.05,width:180,height:240})
+  terminalArc27:Object.freeze({asset:'pack27TerminalArc',row:0,cols:5,rows:2,frames:10,duration:1.05,width:180,height:240}),
+  concreteImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:0,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,2,2,3,3]),duration:.42,size:136}),
+  metalImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:1,cols:4,rows:4,frames:4,sequence:Object.freeze([0,1,2,3]),duration:.28,size:138}),
+  techImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:2,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,1,2,3,3]),duration:.42,size:146}),
+  heavyImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:3,cols:4,rows:4,frames:8,sequence:Object.freeze([0,1,1,2,2,3,3,3]),duration:.58,size:158})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){

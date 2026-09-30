@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated VFX Pack 29 — high-fidelity surface impacts
+- integrated the approved 4×4 impact sheet as a cleaned 320×320 alpha-WebP atlas with concrete, metal, cyan tech-panel and heavy ballistic rows;
+- close/medium wall hits now prefer the new material-aware animation while wood/distant hits and load/playback failure retain Pack 10 as the graceful fallback;
+- Zone Net terminal proximity selects the cyan row without changing ballistic material semantics, while SR-9, real wall penetration and the first player-shotgun pellet can request the heavy row;
+- retained procedural sparks/smoke, pooled impact decals, Pack 12 ricochet/penetration effects and Pack 27 terminal arcs; damage, bullet physics, ricochet/penetration policy, AI and gameplay RNG remain unchanged;
+- added exact VP8X alpha/dimension/byte-budget plus catalog/runtime/CSS/fallback structural validation.
+
 ### Generated VFX Pack 28 — tracked rocket flight exhaust
 - integrated the newly approved 4×3 rocket-exhaust concept as a compact static 12-frame SVG runtime atlas instead of shipping the heavy source PNG;
 - player and bot rockets now receive a world-projected exhaust plume aligned opposite their actual screen-space velocity, distance-scaled and hidden when off-screen or occluded;

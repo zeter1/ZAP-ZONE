@@ -641,12 +641,19 @@ function showGeneratedMagazineDropFx(weaponKey){
   if(!['pistol','rifle','plasma','sniper'].includes(weaponKey))return false;
   return playGeneratedCombatVfx('magazineDrop',{anchor:'magazine',rotation:(Math.random()-.5)*18,scale:.94});
 }
-function showGeneratedSurfaceImpactVfx(material,pos){
+function showGeneratedSurfaceImpactVfx(material,pos,variant='normal'){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?72:28;
   if(now-(showGeneratedSurfaceImpactVfx._last||-999)<minGap)return false;
   showGeneratedSurfaceImpactVfx._last=now;
-  const kind=material==='metal'?'metalImpact':material==='wood'?'woodImpact':'concreteImpact';
-  return playGeneratedCombatVfx(kind,{worldPos:pos,rotation:(Math.random()-.5)*16,scale:material==='metal'?1.04:1});
+  const fallbackKind=material==='metal'?'metalImpact':material==='wood'?'woodImpact':'concreteImpact';
+  const dist=pos&&typeof camera!=='undefined'&&camera.position?.distanceTo?camera.position.distanceTo(pos):0;
+  const farCutoff=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?26:48;
+  const primaryKind=variant==='tech'?'techImpact29':material==='metal'?'metalImpact29':variant==='heavy'?'heavyImpact29':'concreteImpact29';
+  const rotation=(Math.random()-.5)*(primaryKind==='metalImpact29'?12:primaryKind==='heavyImpact29'?10:16);
+  const scale=primaryKind==='heavyImpact29'?1.14:primaryKind==='techImpact29'?1.06:primaryKind==='metalImpact29'?1.04:1.02;
+  const options={worldPos:pos,rotation,scale};
+  if(material!=='wood'&&dist<=farCutoff&&playGeneratedCombatVfx(primaryKind,options))return true;
+  return playGeneratedCombatVfx(fallbackKind,options);
 }
 function showGeneratedTerminalArcVfx(pos){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?260:140;

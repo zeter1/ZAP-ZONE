@@ -137,6 +137,7 @@ const generatedCombatVfxPack26Dimensions=new Map([
 ]);
 const generatedCombatVfxPack27SvgAssets=['assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg','assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg'];
 const generatedRocketFlightPack28SvgAsset='assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg';
+const generatedSurfaceImpactPack29WebpAsset='assets/ui/fx/surface-impact-vfx-atlas-29.webp';
 const generatedSniperVfxPack23Dimensions=new Map([
   ['assets/ui/fx/sniper-shot-vfx-atlas-23.webp',[768,768]],
   ['assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',[768,768]],
@@ -169,7 +170,7 @@ const presentationRasterAssets=[
   'assets/ui/icons/ammo-tech-01.png',
   'assets/ui/perks/damage-tech-01.png','assets/ui/perks/speed-tech-01.png','assets/ui/perks/reload-tech-01.png',
   'assets/ui/objective/frontline-beacon-01.png','assets/ui/pickups/weapon-crate-tech-01.png',
-  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets,...generatedSniperVfxPack23WebpAssets,...generatedWeaponActionPack24WebpAssets,...generatedWeaponActionPack25WebpAssets,...generatedCombatVfxPack26WebpAssets
+  ...combatMedalRasterAssets,...generatedFeedbackWebpAssets,...generatedStatusPerkWebpAssets,...generatedPerkPack6WebpAssets,...generatedFirstPersonWebpAssets,...generatedWorldPickupWebpAssets,...generatedSupplementalWebpAssets,...generatedCombatTextureWebpAssets,...generatedTacticalHudWebpAssets,...generatedTacticalHudV2WebpAssets,generatedCombatVfxAtlas,...generatedWeaponActionPack22WebpAssets,...generatedSniperVfxPack23WebpAssets,...generatedWeaponActionPack24WebpAssets,...generatedWeaponActionPack25WebpAssets,...generatedCombatVfxPack26WebpAssets,generatedSurfaceImpactPack29WebpAsset
 ];
 const presentationCssRasterAssets=[
   'assets/ui/backgrounds/menu-bg-arena-01.jpg','assets/ui/backgrounds/loading-bg-arena-01.jpg',
@@ -355,7 +356,7 @@ for(const token of ['reactivePowerNodes','body.userData.electricalReactive=true;
 for(const token of ['playerRespawnGate27','terminalArc27'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 27 CSS missing: '+token);
 const pack27RespawnOwner=pack27Settings.indexOf('function showRespawnMaterializeFx()'),pack27RespawnFallback=pack27Settings.indexOf("ensureCombatOverlay('respawn-materialize-overlay','respawn')",pack27RespawnOwner),pack27RespawnGenerated=pack27Settings.indexOf("playGeneratedCombatVfx('playerRespawnGate27'",pack27RespawnOwner);
 if(pack27RespawnOwner<0||pack27RespawnFallback<pack27RespawnOwner||pack27RespawnGenerated<pack27RespawnFallback)fail('Pack 27 respawn gate must decorate the existing respawn overlay fallback');
-const pack27WallOwner=pack27Engine.indexOf('function wallImpact('),pack27SurfaceFallback=pack27Engine.indexOf("showGeneratedSurfaceImpactVfx(material,pos)",pack27WallOwner),pack27Arc=pack27Engine.indexOf("showGeneratedTerminalArcVfx(vfxPos)",pack27WallOwner);
+const pack27WallOwner=pack27Engine.indexOf('function wallImpact('),pack27SurfaceFallback=pack27Engine.indexOf("showGeneratedSurfaceImpactVfx(material,pos,vfxVariant)",pack27WallOwner),pack27Arc=pack27Engine.indexOf("showGeneratedTerminalArcVfx(vfxPos)",pack27WallOwner);
 if(pack27WallOwner<0||pack27SurfaceFallback<pack27WallOwner||pack27Arc<pack27SurfaceFallback)fail('Pack 27 terminal arc must decorate the existing wall impact path');
 
 const pack28RocketFlightSource=readFileSync(generatedRocketFlightPack28SvgAsset,'utf8');
@@ -369,6 +370,22 @@ for(const token of ['g.userData.flames=[flameOuter,flameCore,glow];','spawnSmoke
 for(const token of ['.rocket-flight-vfx{','.rocket-flight-vfx.ally{','.rocket-flight-vfx.enemy{'])if(!gameCss.includes(token))fail('Pack 28 rocket-flight CSS missing: '+token);
 const pack28EnemyTick=combatSource.indexOf('processRockets(eRkts);'),pack28PlayerTick=combatSource.indexOf('processRockets(pRkts);',pack28EnemyTick),pack28Sync=combatSource.indexOf('syncRocketFlightArt();',pack28PlayerTick);
 if(pack28EnemyTick<0||pack28PlayerTick<pack28EnemyTick||pack28Sync<pack28PlayerTick)fail('Pack 28 rocket-flight presentation must sync after authoritative rocket simulation');
+
+const pack29SurfaceImpactBytes=readFileSync(generatedSurfaceImpactPack29WebpAsset);
+if(pack29SurfaceImpactBytes.length>64*1024)fail('Pack 29 surface-impact WebP exceeds 64 KiB budget');
+if(pack29SurfaceImpactBytes.length<30||pack29SurfaceImpactBytes.toString('ascii',0,4)!=='RIFF'||pack29SurfaceImpactBytes.toString('ascii',8,12)!=='WEBP'||pack29SurfaceImpactBytes.toString('ascii',12,16)!=='VP8X')fail('Pack 29 surface-impact asset is not an extended WebP');
+const pack29Flags=pack29SurfaceImpactBytes[20]||0,pack29Width=1+pack29SurfaceImpactBytes.readUIntLE(24,3),pack29Height=1+pack29SurfaceImpactBytes.readUIntLE(27,3);
+if(!(pack29Flags&0x10))fail('Pack 29 surface-impact WebP must retain alpha');
+if(pack29Width!==320||pack29Height!==320)fail('Pack 29 surface-impact WebP must be exactly 320x320');
+for(const token of ["pack29SurfaceImpact:'assets/ui/fx/surface-impact-vfx-atlas-29.webp'","concreteImpact29:Object.freeze","metalImpact29:Object.freeze","techImpact29:Object.freeze","heavyImpact29:Object.freeze"])if(!catalog.includes(token))fail('Pack 29 surface-impact catalog wiring missing: '+token);
+const pack29Settings=readFileSync('src/settings/settings.js','utf8');
+for(const token of ["function showGeneratedSurfaceImpactVfx(material,pos,variant='normal')","const farCutoff=","variant==='tech'?'techImpact29'","material==='metal'?'metalImpact29'","variant==='heavy'?'heavyImpact29'","playGeneratedCombatVfx(primaryKind,options)","playGeneratedCombatVfx(fallbackKind,options)"])if(!pack29Settings.includes(token))fail('Pack 29 surface-impact owner contract missing: '+token);
+for(const token of ["function wallImpact(pos,col,material='concrete',normal=null,impactVariant='normal')","const vfxVariant=powerNode?'tech':impactVariant;","showGeneratedSurfaceImpactVfx(material,pos,vfxVariant)"])if(!pack27Engine.includes(token))fail('Pack 29 engine presentation selector missing: '+token);
+for(const token of ["wallImpact(hitFx,color,surface,null,'heavy');","const impactVariant=(pen||(w.key==='shotgun'&&b.markerEligible))?'heavy':'normal';","wallImpact(_hitPos,b.color,surface,n,impactVariant);","wallImpact(_hitPos,b.color,surface,n,pen?'heavy':'normal');"])if(!combatSource.includes(token))fail('Pack 29 combat impact hint missing: '+token);
+for(const token of ['concreteImpact29','metalImpact29','techImpact29','heavyImpact29'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 29 surface-impact CSS missing: '+token);
+const pack29Owner=pack29Settings.indexOf("function showGeneratedSurfaceImpactVfx(material,pos,variant='normal')"),pack29Primary=pack29Settings.indexOf('playGeneratedCombatVfx(primaryKind,options)',pack29Owner),pack29Fallback=pack29Settings.indexOf('playGeneratedCombatVfx(fallbackKind,options)',pack29Owner);
+if(pack29Owner<0||pack29Primary<pack29Owner||pack29Fallback<pack29Primary)fail('Pack 29 must prefer the new atlas and retain Pack 10 as graceful fallback');
+for(const token of ['spawnSpark(pos,sparkCol);','spawnSmoke(pos,wood?0x6e513b:metal?0x555c62:0x6b6259);'])if(!pack27Engine.includes(token))fail('Pack 29 must retain procedural wall-impact fallback: '+token);
 
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);

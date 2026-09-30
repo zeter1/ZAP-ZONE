@@ -1,3 +1,10 @@
+## Pack 29 consumers
+The approved surface-impact source is integrated as `ui/fx/surface-impact-vfx-atlas-29.webp`, a 320×320 alpha-WebP 4×4 atlas. Rows are concrete/dust, metal/ricochet, cyan tech-panel impact and heavy ballistic debris; the runtime player stretches selected source frames into short elapsed-time sequences without self-running image animation.
+
+`src/core/engine.js::wallImpact()` remains the single surface-feedback seam. Close/medium concrete and metal impacts prefer Pack 29, existing Zone Net terminal proximity selects the cyan presentation without inventing a new ballistic material, and SR-9 / real wall penetration / the first player-shotgun pellet may request the heavy row. Wood and distant hits keep Pack 10, and any Pack 29 load/playback failure falls back to the existing Pack 10 surface animation.
+
+Pack 29 is presentation-only. Existing procedural sparks/smoke and pooled impact marks stay active; Pack 12 still owns true ricochet/penetration-exit decoration, Pack 27 still owns terminal electrical arcs, and bullet physics, material resistance, ricochet chance, penetration, damage, AI and gameplay RNG are unchanged.
+
 ## Pack 28 consumers
 The approved rocket-flight source is integrated as `ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg`, a compact static 4×3 / 12-frame transparent atlas. `src/combat/combat.js` projects it from each live player/bot rocket into the existing projectile presentation layer, aligns the plume opposite the projected velocity and scales it by camera distance.
 
