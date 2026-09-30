@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<!-- ZAP-ZONE staging source candidate. Preview-only; runtime derivative after user approval. -->
+<defs>
+  <radialGradient id="p-core" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".17" stop-color="#eaffff"/>
+    <stop offset=".38" stop-color="#6cf2e8"/>
+    <stop offset=".67" stop-color="#32bfff"/>
+    <stop offset="1" stop-color="#167bd7" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="p-spectrum" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5fffd6"/>
+    <stop offset=".34" stop-color="#72dfff"/>
+    <stop offset=".67" stop-color="#ffd666"/>
+    <stop offset="1" stop-color="#8dff91"/>
+  </linearGradient>
+  <filter id="p-glow" x="-90%" y="-90%" width="280%" height="280%">
+    <feGaussianBlur stdDeviation="3.2" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="p-soft" x="-100%" y="-100%" width="300%" height="300%">
+    <feGaussianBlur stdDeviation="11"/>
+  </filter>
+</defs>
+
+<g stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="128" cy="136" rx="58" ry="18" fill="#50ddff" opacity="0" filter="url(#p-soft)">
+    <animate attributeName="rx" values="68;54;22;4" dur=".96s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="22;16;9;2" dur=".96s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;.30;.22;0" keyTimes="0;.18;.7;1" dur=".96s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <g fill="none" stroke="url(#p-spectrum)" filter="url(#p-glow)">
+    <polygon points="128,50 190,85 190,157 128,192 66,157 66,85" stroke-width="4" opacity=".8">
+      <animateTransform attributeName="transform" type="rotate" values="0 128 121;30 128 121;70 128 121" dur=".96s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" additive="sum" type="scale" values="1.12 1.12;.92 .92;.34 .34;.05 .05" keyTimes="0;.38;.77;1" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values=".04;.86;.58;0" keyTimes="0;.18;.62;1" dur=".96s" repeatCount="indefinite"/>
+    </polygon>
+    <circle cx="128" cy="121" r="52" stroke-width="2.6" stroke-dasharray="18 10" opacity=".66">
+      <animate attributeName="r" values="70;53;26;4" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dashoffset" values="0;-78;-150" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.72;.48;0" keyTimes="0;.15;.62;1" dur=".96s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="128" cy="121" r="34" stroke-width="4" stroke-dasharray="41 15" opacity=".5">
+      <animate attributeName="r" values="49;36;16;3" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dashoffset" values="70;0;-84" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.82;.55;0" keyTimes="0;.22;.64;1" dur=".96s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <path d="M128 45 C119 78 117 103 128 126 C139 103 137 78 128 45 Z" fill="#dffcff" opacity="0" filter="url(#p-glow)">
+    <animate attributeName="d" values="M128 36 C113 78 114 107 128 133 C142 107 143 78 128 36 Z;M128 52 C122 83 122 108 128 126 C134 108 134 83 128 52 Z;M128 91 C126 105 126 115 128 121 C130 115 130 105 128 91 Z" dur=".96s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;.72;.42;0" keyTimes="0;.22;.68;1" dur=".96s" repeatCount="indefinite"/>
+  </path>
+
+  <circle cx="128" cy="121" r="18" fill="url(#p-core)" filter="url(#p-glow)" opacity="0">
+    <animate attributeName="r" values="3;11;24;9;2" keyTimes="0;.25;.52;.76;1" dur=".96s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;.58;1;.55;0" keyTimes="0;.22;.5;.78;1" dur=".96s" repeatCount="indefinite"/>
+  </circle>
+
+  <g fill="#dffeff" filter="url(#p-glow)">
+    <circle cx="59" cy="93" r="3">
+      <animate attributeName="cx" values="59;88;113;128" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="93;101;112;121" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.85;.8;0" dur=".96s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="198" cy="105" r="2.6">
+      <animate attributeName="cx" values="198;169;143;128" dur=".86s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="105;110;117;121" dur=".86s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.72;.76;0" dur=".86s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="74" cy="165" r="2.4">
+      <animate attributeName="cx" values="74;96;116;128" dur=".91s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="165;148;132;121" dur=".91s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.7;.72;0" dur=".91s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="183" cy="173" r="2.8">
+      <animate attributeName="cx" values="183;159;139;128" dur="1.02s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="173;151;133;121" dur="1.02s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.78;.8;0" dur="1.02s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <g fill="#ffd86e" filter="url(#p-glow)">
+    <rect x="122" y="116" width="6" height="6" rx="1">
+      <animate attributeName="y" values="120;89;62" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="124;118;113" dur=".96s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.82;0" dur=".96s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="130" y="118" width="5" height="5" rx="1">
+      <animate attributeName="y" values="122;95;74" dur=".82s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="132;140;146" dur=".82s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.72;0" dur=".82s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <circle cx="128" cy="121" r="3" fill="#ffffff" opacity="0" filter="url(#p-glow)">
+    <animate attributeName="r" values="2;5;12;2" keyTimes="0;.5;.7;1" dur=".96s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;1;0" keyTimes="0;.45;.66;1" dur=".96s" repeatCount="indefinite"/>
+  </circle>
+</g>
+</svg>

@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<!-- ZAP-ZONE staging source candidate. Preview-only; runtime derivative after user approval. -->
+<defs>
+  <radialGradient id="h-core" cx="48%" cy="50%" r="52%">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".14" stop-color="#fffbd9"/>
+    <stop offset=".34" stop-color="#ffd46a"/>
+    <stop offset=".62" stop-color="#ff7a22"/>
+    <stop offset="1" stop-color="#e43b13" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="h-spark" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".3" stop-color="#ffe88f"/>
+    <stop offset=".72" stop-color="#ff8f2d"/>
+    <stop offset="1" stop-color="#ff4d1b" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="h-glow" x="-90%" y="-90%" width="280%" height="280%">
+    <feGaussianBlur stdDeviation="3.6" result="g"/>
+    <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="h-soft" x="-100%" y="-100%" width="300%" height="300%">
+    <feGaussianBlur stdDeviation="10"/>
+  </filter>
+</defs>
+
+<g stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="95" cy="128" rx="36" ry="27" fill="#ff7832" opacity="0" filter="url(#h-soft)">
+    <animate attributeName="rx" values="7;46;64" dur=".68s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="6;31;42" dur=".68s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;.34;0" keyTimes="0;.18;1" dur=".68s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <circle cx="95" cy="128" r="9" fill="url(#h-core)" filter="url(#h-glow)">
+    <animate attributeName="r" values="3;17;8;2" keyTimes="0;.14;.46;1" dur=".68s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".1;1;.86;0" keyTimes="0;.13;.45;1" dur=".68s" repeatCount="indefinite"/>
+  </circle>
+
+  <circle cx="95" cy="128" r="19" fill="none" stroke="#ffd873" stroke-width="3" opacity="0">
+    <animate attributeName="r" values="9;32;64" dur=".68s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="4;2.2;.5" dur=".68s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;.72;0" keyTimes="0;.2;1" dur=".68s" repeatCount="indefinite"/>
+  </circle>
+
+  <g fill="none" stroke="url(#h-spark)" filter="url(#h-glow)">
+    <path d="M94 127 L186 72" stroke-width="5">
+      <animate attributeName="stroke-dasharray" values="0 112;72 40;0 112" keyTimes="0;.2;1" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+    <path d="M97 130 L211 115" stroke-width="3.5">
+      <animate attributeName="stroke-dasharray" values="0 120;82 38;0 120" keyTimes="0;.25;1" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.92;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+    <path d="M96 130 L199 155" stroke-width="4">
+      <animate attributeName="stroke-dasharray" values="0 114;69 45;0 114" keyTimes="0;.19;1" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.88;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+    <path d="M93 131 L170 190" stroke-width="3">
+      <animate attributeName="stroke-dasharray" values="0 100;59 41;0 100" keyTimes="0;.28;1" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.78;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+    <path d="M92 126 L149 48" stroke-width="2.5">
+      <animate attributeName="stroke-dasharray" values="0 94;50 44;0 94" keyTimes="0;.18;1" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.72;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <g fill="#fff5bd" stroke="#ff9f32" stroke-width="1.4" filter="url(#h-glow)">
+    <path d="M112 115 l11 -5 4 8 -12 4 z">
+      <animateTransform attributeName="transform" type="translate" values="0 0;38 -26;74 -44" dur=".68s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" additive="sum" type="rotate" values="0 120 117;180 120 117;360 120 117" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;.5;0" keyTimes="0;.12;.58;1" dur=".68s" repeatCount="indefinite"/>
+    </path>
+    <path d="M108 134 l9 2 -2 9 -11 -3 z">
+      <animateTransform attributeName="transform" type="translate" values="0 0;31 24;66 49" dur=".68s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" additive="sum" type="rotate" values="0 111 138;-140 111 138;-310 111 138" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.88;.42;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+    <path d="M104 105 l7 -7 7 5 -8 8 z">
+      <animateTransform attributeName="transform" type="translate" values="0 0;18 -31;43 -55" dur=".68s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" additive="sum" type="rotate" values="0 110 105;160 110 105;330 110 105" dur=".68s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.9;.35;0" dur=".68s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <g fill="#7feeff" filter="url(#h-glow)">
+    <circle cx="103" cy="123" r="2.7">
+      <animate attributeName="cx" values="103;146;185" dur=".56s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="123;103;95" dur=".56s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.8;0" dur=".56s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="101" cy="133" r="2.3">
+      <animate attributeName="cx" values="101;142;174" dur=".62s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="133;148;169" dur=".62s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;.68;0" dur=".62s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</g>
+</svg>
