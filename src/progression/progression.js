@@ -131,7 +131,7 @@ function updateStats(){
 
 // ─── PLAYER DAMAGE / SHIELD ─────────────
 function damageLabel(kind){
-  return kind==='rocket'?'ракета':kind==='mine'?'мина':kind==='bomb'?'бомба':kind==='melee'?'контактный удар':'попадание';
+  return kind==='rocket'?'ракета':kind==='mine'?'мина':kind==='bomb'?'бомба':kind==='grenade'?'осколочная граната':kind==='melee'?'контактный удар':'попадание';
 }
 function applyDamageToPlayer(amount,kind='bullet',attacker=null){
   if(dying||amount<=0)return 0;
@@ -192,7 +192,7 @@ function pushKillFeed(killerTeam,killerLabel,victimTeam,victimLabel,kind='bullet
   const icon=document.createElement('span');icon.className='kf-icon';
   const iconFrame=typeof killFeedPresentationFrame==='function'?killFeedPresentationFrame(kind):null;
   if(iconFrame&&applyPresentationAtlasFrame(icon,iconFrame))icon.classList.add('generated');
-  else icon.textContent=kind==='headshot'?'🎯':kind==='rocket'?'🚀':kind==='mine'?'💣':kind==='bomb'?'🧨':kind==='melee'?'⚡':'✦';
+  else icon.textContent=kind==='headshot'?'🎯':kind==='rocket'?'🚀':kind==='mine'?'💣':kind==='bomb'?'🧨':kind==='grenade'?'💥':kind==='melee'?'⚡':'✦';
   const victim=document.createElement('span');
   victim.className='kf-name '+(victimLabel==='ВЫ'?'player':victimTeam);
   victim.textContent=victimLabel;

@@ -18,14 +18,20 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
-## Generated Asset Pack 20 (2026-09-30)
-Two transparent first-person source previews were generated and visually approved in the current ChatGPT dialog. The first preview used frag-grenade throw choreography, but ZAP ZONE has no separate player frag-grenade slot; its motion is adapted to the existing throwable mine instead of inventing a new mechanic. The second preview maps directly to the existing player bomb placement/arming event.
+## Grenade + Bomb Asset Pack 20 (2026-09-30)
+Pack 20 adds a real player fragmentation grenade instead of repurposing the mine, and keeps the separately approved bomb placement/arming asset as a real runtime effect.
 
 Runtime paths:
-- `assets/ui/fx/player-mine-throw-vfx-atlas-20.svg` — 4×2 / 8 static frames for grip, safety interaction, wind-up, release and follow-through;
-- `assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg` — 4×2 / 8 static frames for presenting, planting, switch press, red arming LEDs, cyan arming ring, confirmation and hand withdrawal.
+- `assets/weapons/grenade.svg` — compact weapon-bar/procedural fallback identity;
+- `assets/ui/weapons/fp/player-grenade-fps-20.svg` — generated-direction first-person grenade + armored hand presentation;
+- `assets/ui/pickups/weapons/world-grenade-pickup-20.svg` — generated-direction map pickup presentation;
+- `assets/ui/equipment/frag-grenade-ui-atlas-20.svg` — 2×2 inventory/pickup/readiness/attack identity atlas;
+- `assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg` — 4×2 / 8 deterministic first-person throw frames;
+- `assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg` — 4×2 / 8 deterministic bomb placement/arming frames.
 
-Both derivatives are deterministic, scriptless SVG atlases played by the existing bounded elapsed-time DOM VFX player. `throwMine()` emits presentation only after the authoritative mine is inserted into `mines`; `placeBomb()` emits presentation only after the authoritative bomb is inserted. Mine trajectory/arming, bomb fuse/damage/radius/cooldown/ammo, Pack 12 detonations and procedural/3D fallbacks remain unchanged. Provenance is recorded in `asset-staging/2026-09-30-vfx-pack-20/README.md`.
+The grenade is appended as weapon index 9 / keyboard slot `0`, preserving historical indices 0–8 and the existing bomb perk's index-6 contract. First pickup gives the 2-grenade ready load plus a small 1–3 reserve grant; reserve is capped at 12. The projectile reuses the battle-tested frag bounce/fuse loop with `ownerType:'player'`, so blast ownership, enemy filtering, XP/kills and self-damage use the existing authoritative explosion path. Pack 15 remains the detonation shrapnel bloom.
+
+Bomb arming presentation is emitted only after the authoritative bomb has already been inserted into the live explosive collection. All Pack 20 SVG derivatives are static/scriptless and presentation-only; Three.js gameplay geometry remains the fallback. Provenance is recorded in `asset-staging/2026-09-30-vfx-pack-20/README.md`.
 
 ## Generated Asset Pack 19 (2026-09-30)
 Two transparent source previews were generated and visually approved in the current ChatGPT dialog, then converted into deterministic scriptless SVG runtime atlases under the same-dialog approval exception:
