@@ -8,6 +8,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyQ')quickSwitchWeapon();
   if(e.code==='KeyF')throwMine();
   if(e.code==='KeyG')placeBomb();
+  if(e.code==='Digit0'||e.code==='Numpad0')switchW(GRENADE_WEAPON_INDEX);
   const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
 });
 window.addEventListener('keyup',e=>{K[e.code]=false;});
@@ -367,6 +368,9 @@ const ENEMY_TRACER_POOL_LIMIT=18;
 const enemyTracerPool=new Map();
 let activeEnemyTracers=0,enemyTracerSequence=0;
 const MAX_BOT_GRENADES=8;
+const MAX_PLAYER_FRAG_GRENADES=3;
+function activeBotFragGrenades(){let c=0;for(const g of botGrenades)if((g.ownerType||'bot')==='bot')c++;return c;}
+function activePlayerFragGrenades(){let c=0;for(const g of botGrenades)if(g.ownerType==='player')c++;return c;}
 const MAX_PLAYER_MINES=100;
 const MAX_MINES=140;
 function playerMineCount(){let c=0;for(const mn of mines)if(mn.owner==='player'&&mn.kind!=='bomb')c++;return c;}
@@ -690,7 +694,7 @@ function shoot(){
     else return;
   }
   if(sCD>0||weaponActionBlocked())return;
-  if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}
+  if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}if(w.isGrenade){throwFragGrenade();return;}
   if(!infiniteAmmo&&ammo<=0){
     doReload();
     if(!reloading){playSfx('dry');sCD=Math.max(sCD,.18);}
@@ -816,7 +820,6 @@ function throwMine(){
   const m=mkMine();m.position.copy(camera.position.clone().addScaledVector(dir,.6));scene.add(m);
   const vv=dir.clone().multiplyScalar(9);vv.y+=5;
   mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z,fall:true,life:Infinity,armed:false,aT:1.5,checkT:.08,ph:0,team:'player',owner:'player',dmg:mineW.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.mineDamageM*plr.explosiveDamageM,radius:9*plr.explosiveRadiusM*plr.mineRadiusM});
-  if(typeof showGeneratedMineThrowVfx==='function')showGeneratedMineThrowVfx();
   playerMineCD=MINE_COOLDOWN_SECONDS*plr.mineCooldownM;
   mineHudSecond=-1;updateMineHUD();
 }
@@ -867,7 +870,7 @@ function spawnBotSmokeGrenade(from,target,team,src){
   return true;
 }
 function spawnBotFragGrenade(from,target,team,src){
-  if(botGrenades.length>=MAX_BOT_GRENADES||!from||!target)return false;
+  if(activeBotFragGrenades()>=MAX_BOT_GRENADES||!from||!target)return false;
   const flat=new THREE.Vector3(target.x-from.x,0,target.z-from.z),dist=Math.max(1,flat.length());
   flat.multiplyScalar(1/dist);
   const m=mkFragGrenade(team);m.position.copy(from).addScaledVector(flat,.48);m.position.y=Math.max(.78,from.y);scene.add(m);
@@ -875,10 +878,37 @@ function spawnBotFragGrenade(from,target,team,src){
   botGrenades.push({
     m,vx:flat.x*speed,vy:5.4+Math.min(2.4,dist*.065),vz:flat.z*speed,
     rx:8+Math.random()*5,rz:7+Math.random()*4,fuse:1.72+Math.random()*.22,
-    team,src,dmg:78*(src?.baseDmgMul||1),radius:5.4,bounces:0
+    team,src,ownerType:'bot',dmg:78*(src?.baseDmgMul||1),radius:5.4,bounces:0
   });
   return true;
 }
+function throwFragGrenade(){
+  const grenadeIdx=GRENADE_WEAPON_INDEX,grenadeW=WEAPONS[grenadeIdx];
+  if(grenadeIdx<0||reloading||sCD>0)return;
+  if(!ownsWeapon(grenadeIdx)){showMsg('💥 Сначала найдите ОСКОЛОЧНУЮ ГРАНАТУ на карте');return;}
+  if(activePlayerFragGrenades()>=MAX_PLAYER_FRAG_GRENADES){showMsg('💥 Слишком много активных гранат — дождитесь взрыва');return;}
+  const grenadeAmmo=weaponAmmoValue(grenadeIdx);
+  if(grenadeAmmo<=0){
+    if(weaponReserveValue(grenadeIdx)>0){
+      if(curW===grenadeIdx)doReload();else showMsg('💥 В запасе есть гранаты — выберите слот 0 и перезарядите');
+    }else showMsg('💥 Гранаты закончились — найдите новый pickup на карте');
+    return;
+  }
+  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
+  const m=mkFragGrenade('ally');m.position.copy(camera.position).addScaledVector(dir,.62);m.position.y-=.12;scene.add(m);
+  const v=dir.clone().multiplyScalar(11.6);v.y+=5.8;
+  botGrenades.push({
+    m,vx:v.x,vy:v.y,vz:v.z,rx:9.5,rz:8.2,fuse:1.82,team:'ally',src:null,ownerType:'player',
+    dmg:grenadeW.dmg*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*plr.explosiveDamageM,
+    radius:5.8*plr.explosiveRadiusM,bounces:0
+  });
+  if(typeof showGeneratedGrenadeThrowVfx==='function')showGeneratedGrenadeThrowVfx();
+  if(!testingInfiniteAmmoEnabled())setWeaponAmmo(grenadeIdx,grenadeAmmo-1);
+  if(!testingInfiniteAmmoEnabled()&&grenadeAmmo-1<=0&&weaponReserveValue(grenadeIdx)<=0)updateWeaponBar();
+  sCD=grenadeW.rate;recoil=.35;recoilPitch+=(grenadeW.recoilY||.02)*plr.recoilM;
+  wHUD();showMsg('💥 Осколочная граната брошена · запал 1.8 сек.');
+}
+
 function throwSmokeGrenade(){
   const smokeIdx=SMOKE_WEAPON_INDEX,smokeW=WEAPONS[smokeIdx];
   if(reloading||sCD>0)return;
@@ -912,15 +942,15 @@ function throwSmokeGrenade(){
 
 function awardExplosionKill(victim,ownerType,ownerBot,kind,ownerTeam=null){
   if(ownerType==='player'){
-    const pts=kind==='bomb'?160:kind==='mine'?120:110;
-    addXP((victim.type+1)*(kind==='bomb'?42:kind==='mine'?35:28));
+    const pts=kind==='bomb'?160:kind==='mine'?120:kind==='grenade'?130:110;
+    addXP((victim.type+1)*(kind==='bomb'?42:kind==='mine'?35:kind==='grenade'?32:28));
     score+=(victim.type+1)*pts;
     kills++;grantPlayerKillRewards();allyKills++;
     markHUD();updateTeamScore();
     pushKillFeed('ally','ВЫ','enemy','ВРАЖЕСКИЙ БОТ',kind);
     showHitMarker('kill');playSfx('kill');
     showKillMedal({explosive:true});
-    scorePop((kind==='bomb'?'🧨':kind==='mine'?'💣':'🚀')+'+'+(victim.type+1)*pts);
+    scorePop((kind==='bomb'?'🧨':kind==='mine'?'💣':kind==='grenade'?'💥':'🚀')+'+'+(victim.type+1)*pts);
   }else{
     const team=ownerBot?.team||ownerTeam;
     if(team==='ally')allyKills++;else enemyKills++;
@@ -997,9 +1027,12 @@ function tickBotGrenades(dt){
     }
     if(g.fuse>0)continue;
     const pos=g.m.position.clone();pos.y=Math.max(.14,pos.y);
-    playExplosionSound(pos,.80);explode(pos,g.team==='ally'?0x4caeff:0xff5a2a,7);spawnCombatImpact(pos,'rocket');
+    const ownerType=g.ownerType||'bot',ownerTeam=ownerType==='player'?'ally':g.team;
+    const blastDistance=camera.position.distanceTo(pos),proximity=Math.max(.18,1-blastDistance/70);
+    playExplosionSound(pos,.80*proximity);if(blastDistance<42)triggerScreenShake(proximity*.70,.15);
+    explode(pos,ownerTeam==='ally'?0x4caeff:0xff5a2a,7);spawnCombatImpact(pos,'rocket');
     showGeneratedFragGrenadeVfx(pos);
-    applyBlastDamage(pos,g.radius,g.dmg,'bot',g.src,'grenade',.28,g.team);
+    applyBlastDamage(pos,g.radius,g.dmg,ownerType,g.src,'grenade',.28,ownerTeam);
     destroySceneObject(g.m);botGrenades.splice(i,1);
   }
 }
