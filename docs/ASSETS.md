@@ -16,6 +16,14 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+## Generated Asset Pack 17 (2026-09-30)
+Approved staging sources from `asset-staging/2026-09-30-vfx-pack-17/` are integrated as one deterministic scriptless 8×3 SVG runtime atlas:
+- `assets/ui/fx/interaction-vfx-atlas-17.svg` — row 0 bot reload mag-lock, row 1 nonlethal bot kinetic-hit sparks, row 2 successful pickup collection collapse.
+
+`src/settings/settings.js` reuses the bounded elapsed-time DOM VFX player. Reload emits after the authoritative reload timer and existing sound. Nonlethal hit presentation emits after the existing damage-reaction/dodge RNG path, so death keeps Pack 13 ownership and gameplay RNG order is unchanged. Pickup collection emits only after a successful weapon grant or real HP/armor gain.
+
+Reload/ammo/fire cadence, damage/AI/dodge probability, pickup grants/respawn economy and existing procedural/HUD/audio fallbacks remain authoritative and unchanged. Staging SVGs remain provenance only.
+
 ## Generated Asset Pack 16 (2026-09-30)
 Approved staging sources from `asset-staging/2026-09-30-vfx-pack-16/` are integrated as one deterministic scriptless 8×3 SVG runtime atlas:
 - `assets/ui/fx/bot-action-vfx-atlas-16.svg` — row 0 bot plasma muzzle ion burst, row 1 bot kinetic dodge skid, row 2 replacement-bot spawn materialization.

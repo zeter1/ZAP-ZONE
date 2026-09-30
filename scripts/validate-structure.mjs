@@ -112,6 +112,7 @@ const generatedCombatVfxPack14SvgAtlas='assets/ui/fx/player-feedback-vfx-atlas-1
 const generatedCombatVfxPack15FragSvgAtlas='assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg';
 const generatedPlayerDeathVfxPack15SvgAtlas='assets/ui/fx/player-death-signal-collapse-atlas-15.svg';
 const generatedCombatVfxPack16SvgAtlas='assets/ui/fx/bot-action-vfx-atlas-16.svg';
+const generatedCombatVfxPack17SvgAtlas='assets/ui/fx/interaction-vfx-atlas-17.svg';
 const generatedTacticalHudV3SvgAssets=[
   'assets/ui/feedback/match-deploy-splash-tech-01.svg','assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
   'assets/ui/feedback/second-wind-rescue-tech-01.svg','assets/ui/feedback/dodge-phase-tech-01.svg',
@@ -1340,3 +1341,21 @@ const pack16SpawnGenerated=bots.indexOf('showGeneratedBotSpawnVfx(en);',pack16Sp
 if(pack16SpawnOwner<0||pack16SpawnPush<pack16SpawnOwner||pack16SpawnGenerated<pack16SpawnPush)fail('pack 16 spawn VFX must decorate a successfully created replacement bot');
 for(const token of ["spawnBot('ally',false)","spawnBot('enemy',false)"])if(!bots.includes(token))fail('pack 16 initial population must suppress mass spawn VFX: '+token);
 for(const token of ['.generated-combat-vfx[data-kind="botPlasmaMuzzle"]','.generated-combat-vfx[data-kind="botDodge"]','.generated-combat-vfx[data-kind="botSpawn"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 16 CSS missing: '+token);
+
+
+// Generated Asset Pack 17 — bot reload/hit and pickup collection collapse.
+{
+  const source=readFileSync(generatedCombatVfxPack17SvgAtlas,'utf8');
+  if(Buffer.byteLength(source)>40*1024)fail('generated combat VFX pack 17 SVG atlas exceeds 40 KiB budget');
+  if(!source.includes('viewBox="0 0 448 168"'))fail('generated combat VFX pack 17 viewBox invalid');
+  if(/<animate\b|<animateTransform\b|<script\b|<image\b|<foreignObject\b/i.test(source))fail('runtime VFX pack 17 atlas must be static, scriptless and self-contained');
+  if((source.match(/class="frame row-/g)||[]).length!==24)fail('generated combat VFX pack 17 atlas must contain exactly 3 x 8 static frames');
+}
+for(const token of ["pack17:'assets/ui/fx/interaction-vfx-atlas-17.svg'","botReload:Object.freeze({asset:'pack17',row:0,cols:8,rows:3,frames:8","botHit:Object.freeze({asset:'pack17',row:1,cols:8,rows:3,frames:8","pickupCollect:Object.freeze({asset:'pack17',row:2,cols:8,rows:3,frames:8"])if(!catalog.includes(token))fail('generated combat VFX pack 17 catalog contract missing: '+token);
+for(const token of ['function showGeneratedBotReloadVfx','function showGeneratedBotHitVfx','function showGeneratedPickupCollectionVfx','function generatedWorldVectorDegrees'])if(!settings.includes(token))fail('generated combat VFX pack 17 runtime helper missing: '+token);
+const pack17ReloadOwner=fireControl.indexOf('function startBotReload(bot){'),pack17ReloadState=fireControl.indexOf('bot.reloadT=bot.weapon.reload*(0.86+Math.random()*.18);',pack17ReloadOwner),pack17ReloadSound=fireControl.indexOf("playWeaponMechanicSound('reload'",pack17ReloadOwner),pack17ReloadGenerated=fireControl.indexOf('showGeneratedBotReloadVfx(bot);',pack17ReloadOwner);
+if(pack17ReloadOwner<0||pack17ReloadState<pack17ReloadOwner||pack17ReloadSound<pack17ReloadState||pack17ReloadGenerated<pack17ReloadSound)fail('pack 17 reload VFX must decorate the authoritative reload transition after existing sound fallback');
+const pack17HitOwner=bots.indexOf('hurt(dmg,dir,fromTeam,source=null){'),pack17HitReaction=bots.indexOf('applyBotDamageReaction(this,dmg,fromTeam,source);',pack17HitOwner),pack17HitGenerated=bots.indexOf("if(this.hp>0&&typeof showGeneratedBotHitVfx==='function')showGeneratedBotHitVfx(this,dir);",pack17HitOwner),pack17HitDeath=bots.indexOf('if(this.hp<=0)this.die(dmg,dir);',pack17HitOwner);
+if(pack17HitOwner<0||pack17HitReaction<pack17HitOwner||pack17HitGenerated<pack17HitReaction||pack17HitDeath<pack17HitGenerated)fail('pack 17 bot-hit VFX must be nonlethal and must not replace death handling');
+if((pickups.match(/showGeneratedPickupCollectionVfx\(pk\);/g)||[]).length!==2)fail('pack 17 pickup collection VFX must decorate exactly weapon and medkit success paths');
+for(const token of ['.generated-combat-vfx[data-kind="botReload"]','.generated-combat-vfx[data-kind="botHit"]','.generated-combat-vfx[data-kind="pickupCollect"]'])if(!gameCss.includes(token))fail('generated combat VFX pack 17 CSS missing: '+token);

@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Asset Pack 17 — bot reload/hit and pickup collection VFX
+- integrated all three approved Pack 17 candidates as one deterministic scriptless 8×3 SVG runtime atlas;
+- bot reload gets mag-lock presentation after the authoritative timer/sound, nonlethal bot hits get directional sparks after the existing reaction/RNG path, and successful pickups get a collection-collapse effect;
+- gameplay timing, damage/AI, RNG order, pickup grants/respawn economy and existing fallbacks remain unchanged;
+- structural validation, build stamping and browser smoke cover the new runtime wiring.
+
 ### Generated Asset Pack 16 — bot plasma muzzle, dodge and respawn VFX
 - approved all three candidates from `asset-staging/2026-09-30-vfx-pack-16/` and integrated them as one deterministic scriptless 8×3 SVG runtime atlas;
 - bot plasma shots now use a dedicated cyan ion-burst row through the existing authoritative muzzle hook, while Pack 13 remains the ballistic/rocket muzzle presentation;

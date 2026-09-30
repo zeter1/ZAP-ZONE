@@ -663,6 +663,7 @@ class Enemy{
     this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(1,0,0);});
     if(this.hp>0&&Math.random()<Math.min(.90,.48+level*.018+kills*.0025))this.triggerDodge();
     applyBotDamageReaction(this,dmg,fromTeam,source);
+    if(this.hp>0&&typeof showGeneratedBotHitVfx==='function')showGeneratedBotHitVfx(this,dir);
     if(this.hp<=0)this.die(dmg,dir);
   }
 

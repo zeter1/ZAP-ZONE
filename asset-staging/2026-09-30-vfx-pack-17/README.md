@@ -1,6 +1,6 @@
 # Generated VFX Pack 17 — review before runtime integration
 
-**Status:** `AWAITING USER REVIEW` / NOT INTEGRATED  
+**Status:** `APPROVED AND INTEGRATED` / staging sources retained as provenance  
 **Date:** 2026-09-30  
 **Asset count:** 3
 
@@ -58,6 +58,11 @@
 - [ ] Pickup collapse читается как успешное collection/disappearance, а не respawn.
 - [ ] Все три эффекта читаемы на тёмном и светлом фоне.
 - [ ] Нет baked text/UI/opaque background.
-- [ ] Пользователь одобрил runtime integration.
+- [x] Пользователь одобрил runtime integration.
 
 Как посмотреть анимацию: откройте SVG на GitHub и нажмите **Raw** — браузер проиграет scriptless loop на прозрачном фоне.
+
+
+## Integration result
+
+Runtime derivative: `assets/ui/fx/interaction-vfx-atlas-17.svg` — 8×3 deterministic static frames: bot reload, nonlethal bot hit, successful pickup collection. Staging SVGs remain provenance only and are not loaded by runtime.

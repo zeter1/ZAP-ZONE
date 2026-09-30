@@ -291,6 +291,7 @@ function tickPickups(dt){
       const result=grantWeapon(idx,reserveGrant);
       if(!result)continue;
       pk.cd=.8;pk.m.visible=false;
+      if(typeof showGeneratedPickupCollectionVfx==='function')showGeneratedPickupCollectionVfx(pk);
       pk.respawn=(w.isRocket||w.isBomb||w.isSniper?20:14)+Math.random()*14;
       updateMineHUD();updateWeaponBar();wHUD();
       const pickupIcon=GAME_ASSETS.generatedWorldWeaponPickups[w.key]||w.asset;
@@ -308,6 +309,8 @@ function tickPickups(dt){
     }else{
       const before=hp;hp=Math.min(hp+heal,plr.maxHp);markHUD();showPickupNotification(GAME_ASSETS.presentation.medkitPickup,GAME_ASSETS.pickups.medkit,'АПТЕЧКА','+'+Math.round(hp-before)+' HP','green');
     }
-    pk.cd=.8;pk.m.visible=false;pk.respawn=14;
+    pk.cd=.8;pk.m.visible=false;
+    if(typeof showGeneratedPickupCollectionVfx==='function')showGeneratedPickupCollectionVfx(pk);
+    pk.respawn=14;
   }
 }

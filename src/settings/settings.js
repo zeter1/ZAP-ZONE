@@ -674,6 +674,34 @@ function showGeneratedBotSpawnVfx(source=null){
   const pos=base.clone();pos.y+=.72;
   return playGeneratedCombatVfx('botSpawn',{worldPos:pos,rotation:0,scale:source?.team==='enemy'?1.02:.98});
 }
+function generatedWorldVectorDegrees(pos,dir){
+  if(!pos?.clone||!dir?.clone||typeof camera==='undefined')return 0;
+  const vector=dir.clone();
+  if(!Number.isFinite(vector.x)||!Number.isFinite(vector.y)||!Number.isFinite(vector.z)||vector.lengthSq()<1e-6)return 0;
+  vector.normalize();
+  const start=pos.clone().project(camera);
+  const end=pos.clone().addScaledVector(vector,1.25).project(camera);
+  return Math.atan2(-(end.y-start.y),end.x-start.x)*180/Math.PI;
+}
+function showGeneratedBotReloadVfx(source=null){
+  const base=source?.group?.position;if(!base?.clone)return false;
+  const pos=base.clone();pos.y+=1.08;
+  const yaw=Number(source?.group?.rotation?.y);
+  return playGeneratedCombatVfx('botReload',{worldPos:pos,rotation:Number.isFinite(yaw)?generatedWorldDirectionDegrees(pos,yaw):0,scale:.96});
+}
+function showGeneratedBotHitVfx(source=null,dir=null){
+  const base=source?.group?.position;if(!base?.clone)return false;
+  const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?92:52;
+  if(now-(source._generatedHitVfxAt||-999)<minGap)return false;
+  source._generatedHitVfxAt=now;
+  const pos=base.clone();pos.y+=1.04;
+  return playGeneratedCombatVfx('botHit',{worldPos:pos,rotation:generatedWorldVectorDegrees(pos,dir),scale:.94});
+}
+function showGeneratedPickupCollectionVfx(pickup=null){
+  const base=pickup?.m?.position;if(!base?.clone)return false;
+  const pos=base.clone();pos.y+=.24;
+  return playGeneratedCombatVfx('pickupCollect',{worldPos:pos,rotation:0,scale:pickup?.type==='weapon'?1:.92});
+}
 function showGeneratedCriticalHitVfx(pos){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?92:48;
   if(now-(showGeneratedCriticalHitVfx._last||-999)<minGap)return false;

@@ -43,6 +43,7 @@ function startBotReload(bot){
   if(bot.reloadT<=0){
     bot.reloadT=bot.weapon.reload*(0.86+Math.random()*.18);
     playWeaponMechanicSound('reload',.32,bot.weapon.key,bot.group.position);
+    if(typeof showGeneratedBotReloadVfx==='function')showGeneratedBotReloadVfx(bot);
   }
 }
 
