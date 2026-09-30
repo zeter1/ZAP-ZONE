@@ -18,6 +18,29 @@
 
 Для анимированных SVG в staging считать их **preview/source**, а не gameplay-time authority. При интеграции снимать детерминированные кадры и проигрывать их по elapsed time существующего game loop / `requestAnimationFrame`.
 
+
+### First-person weapon identity invariant
+
+Если generated reload/action-ассет заметно показывает или меняет корпус first-person оружия, **тот же integration pass обязан обновить обычный player-visible idle/ready asset этого оружия до того же дизайна**. Нельзя выпускать состояние, где в обычной игре игрок держит одну модель, а во время перезарядки на экране появляется другая. Reload/action и idle/ready должны происходить из одного visual source или из явно согласованного набора с одинаковыми silhouette, materials, hands, perspective и attachment layout.
+
+Это правило относится именно к player first-person presentation. World pickup и bot geometry меняются отдельно только когда для них есть подходящий ракурс/consumer; нельзя подменять их неподходящим first-person кадром ради формального совпадения.
+
+## Generated Plasma Core Reload + Player Weapon Identity Pack 31 (2026-09-30)
+The generated 4×3 plasma-core reload sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
+
+Runtime derivatives:
+- `assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp` — 720×405 VP8X alpha-WebP, 4×3 / 12 source frames with 180×135 4:3 padded cells;
+- `assets/ui/weapons/fp/player-plasma-fps-31.webp` — 960×720 VP8X alpha-WebP ready-state render derived from frame 12 of the same approved weapon source.
+
+Integration rules:
+- `src/assets/catalog.js` points the normal generated first-person plasma weapon at the Pack 31 ready-state image, so idle/fire/reload/ready presentation uses one weapon identity;
+- `src/weapons/system.js` reuses the existing Pack 22 action owner; tactical plasma reload uses source frames `0,1,2,3,4,6,7,8,9,11`, while empty reload uses all twelve frames;
+- `src/combat/combat.js` starts Pack 31 from the authoritative reload timer. A successfully started full action suppresses the generic magazine-drop overlay and the legacy Pack 11 completion-only energy-lock overlay;
+- if the full Pack 31 action cannot start, the existing generic magazine-drop + Pack 11 `plasmaReload` completion effect remain fallback; if the ready image fails, the procedural first-person plasma rig remains fallback;
+- the Pack 31 ready-state muzzle anchor is retuned to the approved image composition; recoil, muzzle/discharge VFX, projectile flight Pack 30, impact VFX, ammo transfer and reload timing remain authoritative and unchanged.
+
+The heavy 1448×1086 reviewed source PNG is not duplicated in Git. ChatGPT generation identity `fe049d05-5989-4242-901d-bd963dcd611d` and source/runtime mapping are recorded in `asset-staging/2026-09-30-vfx-pack-31/README.md`.
+
 ## Generated Plasma Flight VFX Pack 30 (2026-09-30)
 The generated 4×4 plasma bolt / ion-sheath source sheet was reviewed in the current ChatGPT dialog and explicitly approved for integration under the same-dialog source exception.
 

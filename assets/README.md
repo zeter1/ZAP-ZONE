@@ -1,3 +1,10 @@
+## Pack 31 consumers
+The approved plasma-core reload source is integrated as `ui/fx/plasma-core-reload-vfx-atlas-31.webp` (4×3 / 12 frames), and frame 12 of the same source defines the ordinary ready-state player weapon as `ui/weapons/fp/player-plasma-fps-31.webp`. This intentionally makes the weapon seen during normal play the same design seen during reload rather than swapping to a different model only for the action.
+
+`src/weapons/system.js` reuses the bounded first-person action stage and `src/combat/combat.js` stretches tactical/empty sequences to the authoritative existing reload timers. If Pack 31 cannot start, the previous generic magazine drop plus Pack 11 plasma energy-lock completion VFX remain fallback; the procedural first-person plasma rig remains fallback for ready presentation.
+
+**Identity rule:** whenever a generated first-person reload/action asset visibly redesigns the weapon, update the normal player-visible idle/ready asset in the same integration pass. Do not ship reload-only weapon redesigns.
+
 ## Pack 30 consumers
 The approved plasma-flight source is integrated as `ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp`, a compact 4×4 / 16-frame alpha-WebP atlas. `src/combat/combat.js` projects it from each live player/bot plasma bullet using the real projectile position and velocity, with distance scaling, LOS/off-screen culling and a bounded DOM-node budget.
 

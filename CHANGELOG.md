@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Generated Weapon Action Pack 31 — plasma core reload + consistent weapon identity
+- integrated the approved 12-frame plasma-core reload as a compact 720×405 alpha-WebP atlas with separate tactical and empty-reload sequences driven by the existing authoritative reload timer;
+- replaced the ordinary player first-person plasma render with a 960×720 ready-state derived from the same approved source, eliminating the visual model swap between normal play and reload;
+- retuned the plasma muzzle anchor for the new ready composition while preserving recoil, fire cadence, ammo transfer, damage, Pack 26 discharge, Pack 30 projectile flight and Pack 11 impact/reload fallbacks;
+- full Pack 31 reload suppresses the generic magazine-drop and legacy completion-only energy-lock overlay only while it is actually available; procedural/legacy presentation remains fallback;
+- documented and validated the new first-person weapon identity invariant: reload/action art that visibly redesigns a weapon must update that weapon's normal idle/ready player asset in the same integration pass.
+
 ### Generated VFX Pack 30 — tracked plasma flight ion sheath
 - integrated the approved 4×4 plasma-flight source as a compact 256×256 alpha-WebP atlas with launch, sustained-flight and breakup/fade stages;
 - player and bot plasma bullets now receive a world-projected ion-sheath layer that follows the real projectile position/velocity, scales with distance and hides when off-screen or occluded;

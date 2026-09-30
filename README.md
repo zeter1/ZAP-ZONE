@@ -34,6 +34,7 @@
 - Единый factory 3D-моделей оружия для игрока, AI и world pickups.
 - Все 9 first-person моделей получили отдельный premium-pass: более сложные силуэты, rails/optic/muzzle/vent детали, улучшенные руки и индивидуальные SVG tech + skin панели в `assets/weapons/fp/`.
 - Для 8 first-person слотов игрока используется approved V3 generated pack: pistol/shotgun/rifle/rocket/plasma/sniper плюс mine и smoke. Все assets используют baked-hands, прозрачный headroom и HUD-safe placement; DOM presentation работает на HTTP/HTTPS и `file://`, лениво загружается после старта матча, имеет ограниченный frame-rate-independent visual recoil и отдельный layered muzzle flash для огнестрела. Bomb пока остаётся procedural; боты и world pickups не затронуты.
+- Плазменное оружие дополнительно использует Pack 31: обычный first-person ready/idle render и полноценная tactical/empty reload-анимация происходят из одного visual source, поэтому модель оружия больше не меняется только на время перезарядки. Это же правило закреплено в `docs/ASSETS.md` для будущих generated reload/action packs.
 - Реальные SVG assets оружия в `assets/weapons/`.
 - Новый asset catalog: `src/assets/catalog.js`.
 - World weapon pickups получили отдельный generated WebP pack: 8 типов (pistol/shotgun/rifle/rocket/plasma/mine/smoke/sniper) проецируются из реальной 3D-позиции в DOM, масштабируются по дистанции и скрываются стенами через Raycaster; pedestal/beacon и procedural 3D-модель остаются gameplay/fallback, bomb пока procedural. Аптечки остаются отдельными pickups.

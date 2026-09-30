@@ -814,16 +814,18 @@ function applyEnemyBulletToBot(b,target,damage,dir){
   if(wasAlive&&!target.alive)awardBotBulletKill(b,target);
 }
 
+let playerReloadUsesFullPresentation=false;
 function weaponActionBlocked(){
   return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0;
 }
 function finishPlayerReload(playDone=true,settle=true){
-  const completedWeapon=getW();
+  const completedWeapon=getW(),usedFullPresentation=playerReloadUsesFullPresentation;
+  playerReloadUsesFullPresentation=false;
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   if(settle)weaponReadyT=Math.max(weaponReadyT,.08);
   if(playDone){
     playWeaponMechanicSound('reloadDone',.82,completedWeapon.key);
-    if(completedWeapon.key==='plasma')showGeneratedPlasmaReloadVfx();
+    if(completedWeapon.key==='plasma'&&!usedFullPresentation)showGeneratedPlasmaReloadVfx();
   }
   wHUD();G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
 }
@@ -947,7 +949,7 @@ function doReload(){
   const w=getW();
   if(reloading||ammo===w.clip||uAmmo===0||weaponActionBlocked())return;
   if(w.aimMode==='scope'&&zooming)zooming=false;
-  reloading=true;reloadShellLoaded=0;
+  reloading=true;reloadShellLoaded=0;playerReloadUsesFullPresentation=false;
   if(w.reloadStyle==='shell'){
     reloadMode='shell';
     reloadT=Math.max(.18,w.reload*(w.shellStartM||.22));
@@ -967,7 +969,11 @@ function doReload(){
   const fullRocketReload=w.key==='rocket'&&typeof showGeneratedRocketReloadVfx==='function'
     ?showGeneratedRocketReloadVfx(reloadTot)
     :false;
-  if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload)showGeneratedMagazineDropFx(w.key);
+  const fullPlasmaReload=w.key==='plasma'&&typeof showGeneratedPlasmaCoreReloadVfx==='function'
+    ?showGeneratedPlasmaCoreReloadVfx(reloadMode,reloadTot)
+    :false;
+  playerReloadUsesFullPresentation=!!(fullPistolReload||fullRifleReload||fullRocketReload||fullPlasmaReload);
+  if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload&&!fullPlasmaReload)showGeneratedMagazineDropFx(w.key);
   const reloadArt=G('reload-state-art');
   if(reloadArt&&typeof applyPresentationAtlasFrame==='function')applyPresentationAtlasFrame(reloadArt,reloadPresentationFrame(reloadMode));
   playWeaponMechanicSound('reload',1,w.key);

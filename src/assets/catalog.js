@@ -232,7 +232,8 @@ const GAME_ASSETS=versionAssetTree({
     pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg',
     pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg',
     pack29SurfaceImpact:'assets/ui/fx/surface-impact-vfx-atlas-29.webp',
-    pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp'
+    pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp',
+    pack31PlasmaReload:'assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
@@ -297,7 +298,7 @@ const GAME_ASSETS=versionAssetTree({
     shotgun:'assets/ui/weapons/fp/player-shotgun-fps-01.webp',
     rifle:'assets/ui/weapons/fp/player-rifle-fps-01.webp',
     rocket:'assets/ui/weapons/fp/player-rocket-fps-01.webp',
-    plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp',
+    plasma:'assets/ui/weapons/fp/player-plasma-fps-31.webp',
     mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
     bomb:'assets/ui/weapons/fp/player-bomb-fps-01.webp',
     smoke:'assets/ui/weapons/fp/player-smoke-fps-01.webp',
@@ -706,7 +707,9 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   concreteImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:0,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,2,2,3,3]),duration:.42,size:136}),
   metalImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:1,cols:4,rows:4,frames:4,sequence:Object.freeze([0,1,2,3]),duration:.28,size:138}),
   techImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:2,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,1,2,3,3]),duration:.42,size:146}),
-  heavyImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:3,cols:4,rows:4,frames:8,sequence:Object.freeze([0,1,1,2,2,3,3,3]),duration:.58,size:158})
+  heavyImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:3,cols:4,rows:4,frames:8,sequence:Object.freeze([0,1,1,2,2,3,3,3]),duration:.58,size:158}),
+  plasmaReloadTactical31:Object.freeze({asset:'pack31PlasmaReload',row:0,cols:4,rows:3,frames:10,sequence:Object.freeze([0,1,2,3,4,6,7,8,9,11]),duration:1.49,width:180,height:135}),
+  plasmaReloadEmpty31:Object.freeze({asset:'pack31PlasmaReload',row:0,cols:4,rows:3,frames:12,duration:1.75,width:180,height:135})
 });
 function generatedCombatVfxSpec(kind){return GENERATED_COMBAT_VFX_SPECS[kind]||null;}
 function generatedCombatVfxFrame(kind,index=0){

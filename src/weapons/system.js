@@ -510,7 +510,7 @@ const FP_GENERATED_ART_TUNING=Object.freeze({
   shotgun:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'28%',muzzleY:'39%',kickX:16,kickY:14,kickRot:2.00,kickScale:.028,flashScale:1.18,flashCore:'#fff8d8',flashMid:'#ffc857',flashEdge:'#ff6320'},
   rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:.94,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
   rocket:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'31%',kickX:18,kickY:16,kickRot:2.30,kickScale:.032,flashScale:1.42,flashCore:'#fff3d0',flashMid:'#ffb43e',flashEdge:'#ff4f18'},
-  plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%',kickX:5,kickY:4,kickRot:.70,kickScale:.010,flashScale:1.05,flashCore:'#efffff',flashMid:'#69eaff',flashEdge:'#8c62ff'},
+  plasma:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'24%',kickX:5,kickY:4,kickRot:.70,kickScale:.010,flashScale:1.05,flashCore:'#efffff',flashMid:'#69eaff',flashEdge:'#8c62ff'},
   mine:{width:'38vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
   bomb:{width:'40vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
   smoke:{width:'34vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:6,kickY:8,kickRot:1.15,kickScale:.008,flashScale:0},
@@ -559,6 +559,9 @@ function showGeneratedPistolReloadVfx(mode='tactical',duration=0){
 }
 function showGeneratedRifleReloadVfx(mode='tactical',duration=0){
   return playGeneratedFirstPersonAction(mode==='empty'?'rifleReloadEmpty':'rifleReloadTactical',duration);
+}
+function showGeneratedPlasmaCoreReloadVfx(mode='tactical',duration=0){
+  return playGeneratedFirstPersonAction(mode==='empty'?'plasmaReloadEmpty31':'plasmaReloadTactical31',duration);
 }
 function showGeneratedRocketReloadVfx(duration=0){
   return playGeneratedFirstPersonAction('rocketReload24',duration);

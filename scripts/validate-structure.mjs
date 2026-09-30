@@ -139,6 +139,8 @@ const generatedCombatVfxPack27SvgAssets=['assets/ui/fx/player-respawn-gate-vfx-a
 const generatedRocketFlightPack28SvgAsset='assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg';
 const generatedSurfaceImpactPack29WebpAsset='assets/ui/fx/surface-impact-vfx-atlas-29.webp';
 const generatedPlasmaFlightPack30WebpAsset='assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp';
+const generatedPlasmaReloadPack31WebpAsset='assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp';
+const generatedPlayerPlasmaPack31WebpAsset='assets/ui/weapons/fp/player-plasma-fps-31.webp';
 const generatedSniperVfxPack23Dimensions=new Map([
   ['assets/ui/fx/sniper-shot-vfx-atlas-23.webp',[768,768]],
   ['assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',[768,768]],
@@ -405,6 +407,26 @@ const pack30TrackerStart=combatSource.indexOf('const PLASMA_FLIGHT_VFX_LOOP='),p
 if(pack30TrackerStart<0||pack30TrackerEnd<pack30TrackerStart||combatSource.slice(pack30TrackerStart,pack30TrackerEnd).includes('Math.random()'))fail('Pack 30 tracked presentation must not consume gameplay RNG');
 const pack30EnemyLoop=combatSource.indexOf('// Bot firearm projectiles use the same swept-segment principle as player bullets.'),pack30Sync=combatSource.indexOf('syncPlasmaFlightArt();',pack30EnemyLoop),pack30LegacyLoop=combatSource.indexOf('for(let i=pTrs.length-1;i>=0;i--){',pack30EnemyLoop);
 if(pack30EnemyLoop<0||pack30Sync<pack30EnemyLoop||pack30LegacyLoop<pack30Sync)fail('Pack 30 presentation must sync after authoritative player/enemy bullet simulation and before legacy transient trails');
+
+
+const pack31ReloadBytes=readFileSync(generatedPlasmaReloadPack31WebpAsset);
+if(pack31ReloadBytes.length>96*1024)fail('Pack 31 plasma reload WebP exceeds 96 KiB budget');
+if(pack31ReloadBytes.length<30||pack31ReloadBytes.toString('ascii',0,4)!=='RIFF'||pack31ReloadBytes.toString('ascii',8,12)!=='WEBP'||pack31ReloadBytes.toString('ascii',12,16)!=='VP8X')fail('Pack 31 plasma reload asset is not an extended WebP');
+const pack31ReloadFlags=pack31ReloadBytes[20]||0,pack31ReloadWidth=1+pack31ReloadBytes.readUIntLE(24,3),pack31ReloadHeight=1+pack31ReloadBytes.readUIntLE(27,3);
+if(!(pack31ReloadFlags&0x10))fail('Pack 31 plasma reload WebP must retain alpha');
+if(pack31ReloadWidth!==720||pack31ReloadHeight!==405)fail('Pack 31 plasma reload WebP must be exactly 720x405');
+
+const pack31PlayerPlasmaBytes=readFileSync(generatedPlayerPlasmaPack31WebpAsset);
+if(pack31PlayerPlasmaBytes.length>120*1024)fail('Pack 31 player plasma WebP exceeds 120 KiB budget');
+if(pack31PlayerPlasmaBytes.length<30||pack31PlayerPlasmaBytes.toString('ascii',0,4)!=='RIFF'||pack31PlayerPlasmaBytes.toString('ascii',8,12)!=='WEBP'||pack31PlayerPlasmaBytes.toString('ascii',12,16)!=='VP8X')fail('Pack 31 player plasma asset is not an extended WebP');
+const pack31PlayerFlags=pack31PlayerPlasmaBytes[20]||0,pack31PlayerWidth=1+pack31PlayerPlasmaBytes.readUIntLE(24,3),pack31PlayerHeight=1+pack31PlayerPlasmaBytes.readUIntLE(27,3);
+if(!(pack31PlayerFlags&0x10))fail('Pack 31 player plasma WebP must retain alpha');
+if(pack31PlayerWidth!==960||pack31PlayerHeight!==720)fail('Pack 31 player plasma WebP must be exactly 960x720');
+
+for(const token of ["pack31PlasmaReload:'assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp'","plasma:'assets/ui/weapons/fp/player-plasma-fps-31.webp'","plasmaReloadTactical31:Object.freeze","plasmaReloadEmpty31:Object.freeze"])if(!catalog.includes(token))fail('Pack 31 catalog wiring missing: '+token);
+for(const token of ['function showGeneratedPlasmaCoreReloadVfx',"muzzleX:'49%'","muzzleY:'24%'"])if(!weaponSystem.includes(token))fail('Pack 31 first-person plasma owner missing: '+token);
+for(const token of ['showGeneratedPlasmaCoreReloadVfx(reloadMode,reloadTot)','playerReloadUsesFullPresentation',"completedWeapon.key==='plasma'&&!usedFullPresentation",'!fullPlasmaReload'])if(!combatSource.includes(token))fail('Pack 31 plasma reload consumer/fallback wiring missing: '+token);
+if(!catalog.includes("plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'")||!pack29Settings.includes('function showGeneratedPlasmaReloadVfx'))fail('Pack 31 must retain Pack 11 plasma reload fallback');
 
 const pack23Settings=readFileSync('src/settings/settings.js','utf8');
 for(const token of ['function showGeneratedSniperShotVfx','function showGeneratedSniperCasingFx',"anchor==='sniperFlight'","weaponKey==='sniper')return showGeneratedSniperShotVfx()"])if(!pack23Settings.includes(token))fail('Pack 23 sniper runtime owner missing: '+token);
