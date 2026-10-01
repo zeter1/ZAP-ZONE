@@ -2,14 +2,17 @@
 
 **Canonical owner:** `src/ai/bot-fire-control.js`
 
-Читайте этот spec перед изменениями bot aim, muzzle origin, reload lifecycle, конкретного shot execution, hit/near-miss resolution или bot kill accounting. Owner отвечает на вопрос **«как уже принятое решение выстрелить исполняется?»** и не получает власть над FSM, выбором оружия, squad doctrine или burst policy.
+Читайте этот spec перед изменениями bot aim, muzzle origin, reload lifecycle, movement/burst firing stability, конкретного shot execution, hit/near-miss resolution или bot kill accounting. Owner отвечает на вопрос **«как уже принятое решение выстрелить исполняется?»** и не получает власть над FSM, выбором оружия, squad doctrine или burst policy.
 
 ## Owner scope
 
 - `getBotAimPoint(bot,target)` — lead + smoothing aim point для уже выбранной цели.
 - `getBotMuzzlePos(bot)` — canonical muzzle origin для выстрелов и coordinated utility.
 - `startBotReload(bot)` / `finishBotReload(bot)` — execution lifecycle текущего магазина.
-- `executeBotShot(bot,target,dist,suppressMemory)` — LOS/smoke fail-close, spread, friendly-fire/rocket safety, noise/audio/muzzle/casing, hitscan/projectile spawn, ammo consumption и near-miss suppression.
+- `updateBotFireMovementStability(bot,dt)` — continuous measured-movement instability/recovery.
+- `updateBotFireRecoilRecovery(bot,dt)` / `registerBotEmittedShotRecoil(bot,weapon)` — bounded per-bot burst recoil and emitted-shot event ownership.
+- `getBotShotStabilityModifiers(...)` — deterministic composition movement + burst recoil + suppression without owning RNG.
+- `executeBotShot(bot,target,dist,suppressMemory)` — LOS/smoke fail-close, spread, friendly-fire/rocket safety, emitted-shot recoil event, noise/audio/muzzle/casing, hitscan/projectile spawn, ammo consumption и near-miss suppression.
 - `dealBotDamageToCurrentTarget(bot,amount,dir)` — передача damage текущей цели, bot kill counters, team score и kill feed.
 - `botShotClosestApproachToPlayer(...)` — геометрия физического near-miss для suppression feedback.
 
@@ -52,6 +55,26 @@ Contract:
 - friendly-fire, rocket-safety, damage, ammo, burst/cadence and target-motion semantics remain unchanged.
 
 Reusable cross-system pattern: `docs/patterns/MEASURED_RUNTIME_STATE.md`.
+
+## Burst recoil / settle pattern
+
+Burst recoil — отдельный **event-driven** канал, а не расширение movement state. Canonical per-bot state: `bot.fireBurstRecoil` + `bot.fireRecoilWeaponKey`; profile выбирается по текущему weapon key внутри fire-control owner.
+
+Pipeline:
+
+`frame dt → updateBotFireRecoilRecovery → pre-shot stability modifiers → LOS/smoke + friendly-fire + rocket-safety gates → registerBotEmittedShotRecoil → emitted-shot effects`.
+
+Contract:
+- первый выстрел после полного settle использует recoil = 0; recoil регистрируется только **после** расчёта этого выстрела, поэтому последующий round не может оказаться устойчивее при прочих равных;
+- rifle/plasma накапливают заметно больше sustained-burst instability, pistol — меньше; shotgun/sniper/rocket имеют низкие bounded profiles, соответствующие редким/single-shot cycles;
+- recovery — exponential по `dt`, поэтому разбиение одного и того же времени на 60/120/144 Hz frames не меняет итоговое состояние;
+- смена weapon key сбрасывает recoil state: старое оружие не «переносит» kick на новое;
+- wall/smoke fail-close, friendly-fire block и unsafe rocket attempt не расходуют магазин и **не увеличивают** `fireBurstRecoil`;
+- recoil composition не вызывает `Math.random()`: существующие spread/hit/cadence draws сохраняют прежний count/order;
+- movement и recoil имеют разные имена, lifecycle и tests; не сводить их в один generic `accuracyPenalty`, иначе следующий AI не сможет понять источник нестабильности;
+- post-attempt burst/cadence остаётся отдельным owner-ом. В текущем legacy contract caller вызывает cadence после firearm attempt даже когда fire-control safety gate не emitted a shot; менять attempt-vs-emitted cadence разрешено только отдельной задачей с controlled-RNG regression.
+
+Reusable cross-channel pattern: `docs/patterns/COMPOSED_FIRE_STABILITY.md`.
 
 ## Pure-refactor invariants
 
