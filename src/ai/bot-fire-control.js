@@ -6,6 +6,16 @@ const _BOT_NEAR_MISS_TO_PLAYER=new THREE.Vector3(),_BOT_NEAR_MISS_POINT=new THRE
 const BOT_FIRE_MOVE_ENTER_TAU=.10;
 const BOT_FIRE_MOVE_RECOVER_TAU=.34;
 
+const BOT_FIRE_RECOIL_PROFILES=Object.freeze({
+  rifle:{kick:.18,max:.78,recoverTau:.30,spreadScale:.72,hitscanPenaltyScale:.055},
+  plasma:{kick:.15,max:.68,recoverTau:.28,spreadScale:.64,hitscanPenaltyScale:.05},
+  pistol:{kick:.08,max:.28,recoverTau:.22,spreadScale:.38,hitscanPenaltyScale:.035},
+  shotgun:{kick:.10,max:.20,recoverTau:.32,spreadScale:.28,hitscanPenaltyScale:.03},
+  sniper:{kick:.10,max:.16,recoverTau:.42,spreadScale:.22,hitscanPenaltyScale:.10},
+  rocket:{kick:.08,max:.14,recoverTau:.44,spreadScale:.16,hitscanPenaltyScale:.025}
+});
+const BOT_FIRE_RECOIL_FALLBACK=Object.freeze({kick:.08,max:.30,recoverTau:.28,spreadScale:.40,hitscanPenaltyScale:.04});
+
 function getBotMovementFireInstabilityTarget(bot){
   const vx=Number.isFinite(bot.velX)?bot.velX:0;
   const vz=Number.isFinite(bot.velZ)?bot.velZ:0;
@@ -31,16 +41,52 @@ function updateBotFireMovementStability(bot,dt){
   return bot.fireMoveInstability;
 }
 
+function getBotFireRecoilProfile(wp){
+  return BOT_FIRE_RECOIL_PROFILES[wp?.key]||BOT_FIRE_RECOIL_FALLBACK;
+}
+
+function syncBotFireRecoilWeapon(bot,wp=bot.weapon){
+  const weaponKey=wp?.key||'';
+  if(bot.fireRecoilWeaponKey!==weaponKey){
+    bot.fireRecoilWeaponKey=weaponKey;
+    bot.fireBurstRecoil=0;
+  }
+  return getBotFireRecoilProfile(wp);
+}
+
+function updateBotFireRecoilRecovery(bot,dt){
+  const profile=syncBotFireRecoilWeapon(bot);
+  const current=Math.max(0,Math.min(profile.max,Number.isFinite(bot.fireBurstRecoil)?bot.fireBurstRecoil:0));
+  if(current<=0){
+    bot.fireBurstRecoil=0;
+    return 0;
+  }
+  const next=current*Math.exp(-Math.max(0,dt)/profile.recoverTau);
+  bot.fireBurstRecoil=next<.001?0:next;
+  return bot.fireBurstRecoil;
+}
+
+function registerBotEmittedShotRecoil(bot,wp=bot.weapon){
+  const profile=syncBotFireRecoilWeapon(bot,wp);
+  const current=Math.max(0,Math.min(profile.max,Number.isFinite(bot.fireBurstRecoil)?bot.fireBurstRecoil:0));
+  bot.fireBurstRecoil=Math.min(profile.max,current+profile.kick);
+  return bot.fireBurstRecoil;
+}
+
 function getBotShotStabilityModifiers(bot,wp,suppressing=false){
   const movement=Math.max(0,Math.min(1,Number.isFinite(bot.fireMoveInstability)?bot.fireMoveInstability:0));
+  const recoilProfile=syncBotFireRecoilWeapon(bot,wp);
+  const recoil=Math.max(0,Math.min(recoilProfile.max,Number.isFinite(bot.fireBurstRecoil)?bot.fireBurstRecoil:0));
   const incomingPressure=bot.suppressedT>0?1+Math.min(.48,bot.suppressedT*.20):1;
   const volumePenalty=suppressing?1.14:1;
   const movementSpreadScale=wp.isSniper?.92:wp.isRocket?.42:wp.key==='shotgun'?.34:wp.key==='plasma'?.56:.64;
-  const hitscanPenalty=wp.hitscan?movement*(wp.isSniper?.16:wp.key==='pistol'?.075:.10):0;
+  const movementHitscanPenalty=wp.hitscan?movement*(wp.isSniper?.16:wp.key==='pistol'?.075:.10):0;
+  const recoilHitscanPenalty=wp.hitscan?recoil*recoilProfile.hitscanPenaltyScale:0;
   return{
     movement,
-    spreadMultiplier:incomingPressure*volumePenalty*(1+movement*movementSpreadScale),
-    hitscanPenalty
+    recoil,
+    spreadMultiplier:incomingPressure*volumePenalty*(1+movement*movementSpreadScale+recoil*recoilProfile.spreadScale),
+    hitscanPenalty:movementHitscanPenalty+recoilHitscanPenalty
   };
 }
 
@@ -150,6 +196,10 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
     bot.sT=.18;
     return;
   }
+
+  // Recoil is an emitted-shot fact, not an attempted-shot fact. Keep it after
+  // LOS/friendly-fire/rocket-safety gates so blocked attempts cannot fake bloom.
+  registerBotEmittedShotRecoil(bot,wp);
   emitBotCombatNoise(from,bot,wp,wp.isRocket?'rocket':'shot');
   playWeaponShotSound(wp.key,bot.team==='enemy'?1:.72,from);
   trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.isSniper?1.38:wp.key==='shotgun'?1.2:1);
