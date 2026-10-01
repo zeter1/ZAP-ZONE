@@ -17,7 +17,7 @@
 13. `src/ai/bot-navigation.js` — patrol points, wall/smoke steering, movement caps и collision substeps.
 14. `src/ai/bot-positioning.js` — per-bot cover/flank destination filtering и scoring.
 15. `src/ai/bot-weapon-policy.js` — post-spawn weapon reselection, hold hysteresis и switch timing.
-16. `src/ai/bot-fire-control.js` — aim/muzzle/reload и concrete shot/hit execution для уже принятого fire intent.
+16. `src/ai/bot-fire-control.js` — aim/muzzle/reload, measured shooter-movement stability/recovery и concrete shot/hit execution для уже принятого fire intent.
 17. `src/ai/bot-fire-cadence.js` — post-shot burst reset, pause, next-shot schedule и точный RNG order.
 18. `src/ai/bot-deployables.js` — individual mine/bomb eligibility, role/doctrine probability и deployment side effects.
 19. `src/ai/bot-state-policy.js` — periodic high-level state selection priority и post-selection `stateCD` schedule.
@@ -381,3 +381,8 @@ Regression contract состоит из двух независимых слоё
 Evaluation-time dependency presentation owner-а — глобальный `THREE`, потому что scratch vectors создаются при загрузке script. Поэтому `bot-presentation.js` обязан быть раньше `bots.js`. `MOBILE_LOW` и bot/weapon runtime objects используются только при вызове функций после bootstrap. Текущий canonical load sequence содержит `frontline → bot-presentation → bots`, но presentation не зависит от Frontline; оба являются независимыми prerequisites consumer-а.
 
 Pure extraction сохраняет geometry/material constants, gameplay hit-mesh order, default weapon pivot, shoulder constants, arm lengths, scale clamp и coordinate transform `weapon local → world → bot local`. Вынесенные helpers запрещены в `bots.js` structural guard-ом, а consumer markers обязаны остаться там. `scripts/bot-presentation-owner.test.mjs` отдельно проверяет pin рук к grip points, coordinate-space conversion и fail-closed no-op при неполной pose metadata.
+
+
+## Reusable cross-system patterns
+
+- measured runtime fact → deterministic derived policy → one semantic owner: `docs/patterns/MEASURED_RUNTIME_STATE.md`. Use this instead of duplicating post-collision velocity/state from an intent or FSM label.

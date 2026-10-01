@@ -3,6 +3,47 @@
 
 const _BOT_NEAR_MISS_TO_PLAYER=new THREE.Vector3(),_BOT_NEAR_MISS_POINT=new THREE.Vector3();
 
+const BOT_FIRE_MOVE_ENTER_TAU=.10;
+const BOT_FIRE_MOVE_RECOVER_TAU=.34;
+
+function getBotMovementFireInstabilityTarget(bot){
+  const vx=Number.isFinite(bot.velX)?bot.velX:0;
+  const vz=Number.isFinite(bot.velZ)?bot.velZ:0;
+  const speed=Math.hypot(vx,vz);
+  const referenceSpeed=Math.max(1,Number.isFinite(bot.speed)?bot.speed:(Number.isFinite(bot.baseSpeed)?bot.baseSpeed:4));
+  const speedNorm=Math.min(1.25,speed/referenceSpeed);
+  const moving=Math.max(0,Math.min(1,(speedNorm-.08)/.92));
+  if(moving<=0)return 0;
+
+  const yaw=Number.isFinite(bot.group?.rotation?.y)?bot.group.rotation.y:0;
+  const lateralSpeed=Math.abs(vx*Math.cos(yaw)-vz*Math.sin(yaw));
+  const lateralRatio=Math.max(0,Math.min(1,lateralSpeed/Math.max(speed,.001)));
+  return Math.min(1,moving*(.58+.42*lateralRatio));
+}
+
+function updateBotFireMovementStability(bot,dt){
+  const target=getBotMovementFireInstabilityTarget(bot);
+  const current=Math.max(0,Math.min(1,Number.isFinite(bot.fireMoveInstability)?bot.fireMoveInstability:0));
+  const tau=target>current?BOT_FIRE_MOVE_ENTER_TAU:BOT_FIRE_MOVE_RECOVER_TAU;
+  const alpha=1-Math.exp(-Math.max(0,dt)/tau);
+  const next=current+(target-current)*alpha;
+  bot.fireMoveInstability=next<.001?0:Math.max(0,Math.min(1,next));
+  return bot.fireMoveInstability;
+}
+
+function getBotShotStabilityModifiers(bot,wp,suppressing=false){
+  const movement=Math.max(0,Math.min(1,Number.isFinite(bot.fireMoveInstability)?bot.fireMoveInstability:0));
+  const incomingPressure=bot.suppressedT>0?1+Math.min(.48,bot.suppressedT*.20):1;
+  const volumePenalty=suppressing?1.14:1;
+  const movementSpreadScale=wp.isSniper?.92:wp.isRocket?.42:wp.key==='shotgun'?.34:wp.key==='plasma'?.56:.64;
+  const hitscanPenalty=wp.hitscan?movement*(wp.isSniper?.16:wp.key==='pistol'?.075:.10):0;
+  return{
+    movement,
+    spreadMultiplier:incomingPressure*volumePenalty*(1+movement*movementSpreadScale),
+    hitscanPenalty
+  };
+}
+
 function botShotClosestApproachToPlayer(from,dir,maxRange=120){
   const torso=_BOT_NEAR_MISS_TO_PLAYER.set(camera.position.x,camera.position.y-.28,camera.position.z);
   const rel=torso.clone().sub(from);
@@ -92,9 +133,8 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
 
   let dir=aim.clone().sub(from).normalize();
   const suppressing=bot.tacticalMode==='suppress'||suppressMemory;
-  const incomingPressure=bot.suppressedT>0?1+Math.min(.48,bot.suppressedT*.20):1;
-  const volumePenalty=suppressing?1.14:1;
-  const acc=(wp.isRocket?(bot.curAcc*.50+wp.spread*.45):(bot.curAcc*.40+wp.spread*.78))*incomingPressure*volumePenalty;
+  const stability=getBotShotStabilityModifiers(bot,wp,suppressing);
+  const acc=(wp.isRocket?(bot.curAcc*.50+wp.spread*.45):(bot.curAcc*.40+wp.spread*.78))*stability.spreadMultiplier;
   dir.x+=(Math.random()-.5)*acc;
   dir.y+=(Math.random()-.5)*acc*.28;
   dir.z+=(Math.random()-.5)*acc;
@@ -133,7 +173,7 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
     const targetVx=bot.targetEn&&bot.targetEn.alive?(bot.targetEn.velX||0):plrVx;
     const targetVz=bot.targetEn&&bot.targetEn.alive?(bot.targetEn.velZ||0):plrVz;
     const movingPenalty=(Math.abs(targetVx)+Math.abs(targetVz))*0.01;
-    let hitChance=Math.max(.10,Math.min(.982,wp.hitBias-rangePenalty-Math.random()*bot.curAcc-movingPenalty));
+    let hitChance=Math.max(.10,Math.min(.982,wp.hitBias-rangePenalty-Math.random()*bot.curAcc-movingPenalty-stability.hitscanPenalty));
     if(suppressing)hitChance*=.80;
     if(bot.suppressedT>0)hitChance*=Math.max(.72,1-Math.min(.24,bot.suppressedT*.10));
     let totalDmg=0;

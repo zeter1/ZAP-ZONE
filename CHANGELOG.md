@@ -2,6 +2,14 @@
 
 ## Unreleased — 2026-09-30
 
+### Bot firing stability — movement-aware weapon handling
+- bot fire-control now consumes the bot's measured post-collision `velX/velZ` instead of treating a hard strafe like a settled firing platform;
+- added bounded frame-rate-independent stability attack/recovery: lateral movement penalizes weapon stability more than forward movement, while stopping restores accuracy progressively rather than instantly;
+- precision weapons receive the strongest movement sensitivity, automatic/energy weapons a moderate penalty and rocket/shotgun execution a softer spread-only response where appropriate;
+- movement composes with existing suppression and target-motion penalties without adding gameplay RNG draws or changing their order; damage, cadence, ammo, friendly-fire and rocket-safety contracts are unchanged;
+- added deterministic movement/recovery/weapon-class/RNG-order regressions, structural owner/consumer guards and a reusable measured-runtime-state documentation pattern.
+
+
 ### Save lifecycle — new game on version update
 - bumped the game version to **v24.0** and made autosaves carry the exact application version that created them;
 - when the stored game version differs from the currently loaded version, gameplay progress is discarded before preload and the start screen offers a fresh game instead of continuing an older run;

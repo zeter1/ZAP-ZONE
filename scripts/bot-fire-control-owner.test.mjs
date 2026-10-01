@@ -50,7 +50,7 @@ function createHarness(overrides={}){
   vm.createContext(context);
   vm.runInContext('Math.random=()=>0.5;',context);
   vm.runInContext(
-    source+'\n;globalThis.__BOT_FIRE_TEST__={botShotClosestApproachToPlayer,getBotAimPoint,getBotMuzzlePos,startBotReload,finishBotReload,dealBotDamageToCurrentTarget,executeBotShot};',
+    source+'\n;globalThis.__BOT_FIRE_TEST__={botShotClosestApproachToPlayer,getBotAimPoint,getBotMuzzlePos,startBotReload,finishBotReload,dealBotDamageToCurrentTarget,getBotMovementFireInstabilityTarget,updateBotFireMovementStability,getBotShotStabilityModifiers,executeBotShot};',
     context,
     {filename:'src/ai/bot-fire-control.js'}
   );
@@ -68,6 +68,7 @@ function makeBot(overrides={}){
   return {
     team:'ally',group:{position:new Vec3(),rotation:{y:0}},weapon:makeWeapon(),
     aimSkill:.8,aimPoint:new Vec3(),curAcc:0,baseDmgMul:1,mag:5,reloadT:0,
+    velX:0,velZ:0,speed:4,baseSpeed:4,fireMoveInstability:0,
     targetEn:null,targetIsPlayer:false,tacticalMode:'normal',suppressedT:0,
     weaponSwitchT:2,sT:.1,nearMissCd:0,kills:0,aiState:'engage',burstLeft:3,burstPauseT:.2,
     ...overrides
@@ -132,4 +133,58 @@ test('fire-control execution does not take FSM or burst-policy authority',()=>{
     {aiState:bot.aiState,burstLeft:bot.burstLeft,burstPauseT:bot.burstPauseT,tacticalMode:bot.tacticalMode},
     before
   );
+});
+
+
+test('measured shooter motion produces bounded strafe-sensitive instability',()=>{
+  const context=createHarness();
+  const standing=makeBot();
+  assert.equal(context.__BOT_FIRE_TEST__.getBotMovementFireInstabilityTarget(standing),0);
+  const forward=makeBot({velX:0,velZ:3.2});
+  const strafe=makeBot({velX:3.2,velZ:0});
+  const forwardTarget=context.__BOT_FIRE_TEST__.getBotMovementFireInstabilityTarget(forward);
+  const strafeTarget=context.__BOT_FIRE_TEST__.getBotMovementFireInstabilityTarget(strafe);
+  assert.ok(forwardTarget>0&&forwardTarget<1);
+  assert.ok(strafeTarget>forwardTarget&&strafeTarget<=1);
+});
+
+test('movement stability attack and recovery are frame-partition independent',()=>{
+  const context=createHarness();
+  const oneStep=makeBot({velX:3.2});
+  const splitStep=makeBot({velX:3.2});
+  context.__BOT_FIRE_TEST__.updateBotFireMovementStability(oneStep,.2);
+  context.__BOT_FIRE_TEST__.updateBotFireMovementStability(splitStep,.1);
+  context.__BOT_FIRE_TEST__.updateBotFireMovementStability(splitStep,.1);
+  near(oneStep.fireMoveInstability,splitStep.fireMoveInstability,'partition-independent attack',1e-12);
+  const before=oneStep.fireMoveInstability;
+  oneStep.velX=0;
+  context.__BOT_FIRE_TEST__.updateBotFireMovementStability(oneStep,.1);
+  assert.ok(oneStep.fireMoveInstability>0&&oneStep.fireMoveInstability<before);
+  context.__BOT_FIRE_TEST__.updateBotFireMovementStability(oneStep,2);
+  assert.ok(oneStep.fireMoveInstability<.01);
+});
+
+test('movement, suppression and weapon class modifiers compose without hidden RNG',()=>{
+  const context=createHarness();
+  const bot=makeBot({fireMoveInstability:.8});
+  const rifle=makeWeapon({key:'rifle',isSniper:false,hitscan:true});
+  const sniper=makeWeapon({key:'sniper',isSniper:true,hitscan:true});
+  const rocket=makeWeapon({key:'rocket',isSniper:false,isRocket:true,hitscan:false});
+  const rifleMove=context.__BOT_FIRE_TEST__.getBotShotStabilityModifiers(bot,rifle,false);
+  const sniperMove=context.__BOT_FIRE_TEST__.getBotShotStabilityModifiers(bot,sniper,false);
+  const rocketMove=context.__BOT_FIRE_TEST__.getBotShotStabilityModifiers(bot,rocket,false);
+  assert.ok(sniperMove.spreadMultiplier>rifleMove.spreadMultiplier);
+  assert.ok(sniperMove.hitscanPenalty>rifleMove.hitscanPenalty&&rifleMove.hitscanPenalty>0);
+  assert.equal(rocketMove.hitscanPenalty,0);
+  bot.suppressedT=1.5;
+  const suppressed=context.__BOT_FIRE_TEST__.getBotShotStabilityModifiers(bot,rifle,true);
+  assert.ok(suppressed.spreadMultiplier>rifleMove.spreadMultiplier);
+  vm.runInContext('globalThis.__draws=0;Math.random=()=>{globalThis.__draws++;return .5;};',context);
+  const standing=makeBot({weapon:rifle,fireMoveInstability:0});
+  context.__BOT_FIRE_TEST__.executeBotShot(standing,new Vec3(0,0,18),18,false);
+  const standingDraws=context.__draws;
+  vm.runInContext('globalThis.__draws=0;',context);
+  const moving=makeBot({weapon:rifle,fireMoveInstability:.8});
+  context.__BOT_FIRE_TEST__.executeBotShot(moving,new Vec3(0,0,18),18,false);
+  assert.equal(context.__draws,standingDraws);
 });

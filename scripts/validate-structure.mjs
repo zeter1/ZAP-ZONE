@@ -829,6 +829,12 @@ if(/const\s+BOT_(?:MINE|BOMB)_CFG\s*=/.test(deployables))fail('bot deployables o
 for(const token of ['tryPlantBotMine','tryPlantBotBomb'])if(tactics.includes(token))fail('individual deployable policy leaked into team tactics: '+token);
 if(!fireControl.includes("if(wp.hitscan)spawnInstantSniperTrace"))fail('bot SR-9 must use instant hitscan trace');
 if(!fireControl.includes('function botShotClosestApproachToPlayer')||!fireControl.includes('registerPlayerSuppression(bot,wp,approach.point'))fail('physical enemy near-miss suppression integration missing');
+for(const token of ['function getBotMovementFireInstabilityTarget(bot){','function updateBotFireMovementStability(bot,dt){','function getBotShotStabilityModifiers(bot,wp,suppressing=false){','stability.spreadMultiplier','movingPenalty-stability.hitscanPenalty']){
+  if(!fireControl.includes(token))fail('bot movement-aware firing stability contract missing: '+token);
+}
+for(const token of ['this.fireMoveInstability=0;','updateBotFireMovementStability(this,dt);'])if(!bots.includes(token))fail('bot movement-aware firing consumer contract missing: '+token);
+const botMeasuredVelocity=bots.indexOf('this.velX=actualCap.x;this.velZ=actualCap.z;'),botMovementStability=bots.indexOf('updateBotFireMovementStability(this,dt);');
+if(!(botMeasuredVelocity>=0&&botMeasuredVelocity<botMovementStability&&botMovementStability<botShotCall))fail('bot firing stability must consume measured post-collision velocity before shot execution');
 if(!presentation.includes('const addInsignia=')||!presentation.includes('Extra readability'))fail('bot presentation owner must preserve procedural armor markings/visor');
 for(const token of ['function mkHuman(et,team){','const armRig={','function setBotLimbBetween(','function solveBotTwoBoneArm(','function updateBotWeaponHands(','mesh.localToWorld(_BOT_GRIP_R)']){
   if(!presentation.includes(token))fail('bot presentation owner contract missing: '+token);

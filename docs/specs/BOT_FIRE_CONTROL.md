@@ -33,6 +33,26 @@ Canonical classic-script segment:
 
 Fire-control загружается до `tactics.js`, потому что coordinated smoke/frag использует `getBotMuzzlePos(bot)`. Большинство combat/runtime dependencies являются invocation-time: функции вызываются после завершения bootstrap, когда `bots.js` уже создал per-bot state и kill counters.
 
+## Movement-aware firing stability pattern
+
+Fire-control consumes the **measured post-collision motion** already produced by `src/entities/bots.js`: `bot.velX/bot.velZ`. It must not infer shooter motion from `aiState`, strafe intent or a second velocity estimate.
+
+Pipeline:
+
+`collision-resolved velX/velZ → getBotMovementFireInstabilityTarget → updateBotFireMovementStability(dt) → getBotShotStabilityModifiers → executeBotShot`.
+
+Contract:
+- a near-stationary bot has zero movement penalty;
+- forward movement increases instability, and equally fast lateral movement/strafe increases it more because the weapon platform is less settled;
+- entry and recovery use exponential `dt` smoothing, so behavior is independent of 60/120/144 Hz frame partitioning;
+- stopping does not instantly restore perfect stability: recovery has an explicit bounded owner state `bot.fireMoveInstability`;
+- movement modifies projectile spread and hitscan probability without adding random draws or changing their order;
+- weapon classes react differently: precision weapons are most movement-sensitive, while rocket/shotgun execution keeps a softer spread penalty;
+- suppression remains a separate multiplicative pressure source and composes with movement instead of replacing it;
+- friendly-fire, rocket-safety, damage, ammo, burst/cadence and target-motion semantics remain unchanged.
+
+Reusable cross-system pattern: `docs/patterns/MEASURED_RUNTIME_STATE.md`.
+
 ## Pure-refactor invariants
 
 Без отдельной gameplay-задачи не менять:

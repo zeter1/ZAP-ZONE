@@ -130,3 +130,10 @@
 ## Task discipline
 
 `task/README.md` — инструкция очереди. Каждый pending task — отдельный `.md`; выполненный task удаляется в той же проходке. В конце создаётся только evidence-based следующий bounded task, а не длинный wishlist.
+
+
+## Pattern routing — measured runtime facts
+
+Если новое поведение зависит от движения, collision result, velocity, resolved target state или другого runtime-факта, не создавайте второй source of truth по AI-state/intent. Сначала найдите canonical producer измеренного состояния, затем передайте его одному semantic owner-у policy. Для frame-rate-independent attack/recovery и RNG-safe composition используйте `docs/patterns/MEASURED_RUNTIME_STATE.md`.
+
+Короткий read-set для таких задач: `task/*.md → AGENTS.md route → owner spec → measured-state producer → owner code → direct consumer/test oracle`. Repo-wide чтение «на всякий случай» не требуется.

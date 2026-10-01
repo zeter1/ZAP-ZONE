@@ -4,6 +4,7 @@
 
 Правила:
 - 1 задача = 1 `.md`;
+- следующая проходка начинает с task с наименьшим номером; по умолчанию держать ровно одну pending gameplay/engineering задачу, чтобы не размывать качество;
 - выполненную задачу удалить в той же проходке;
 - новая задача появляется только из фактов свежего `main`, review, CI или runtime evidence;
 - задача должна иметь: WHY, SCOPE, NON-GOALS, INVARIANTS, FILES TO INSPECT, VERIFICATION, DONE;
