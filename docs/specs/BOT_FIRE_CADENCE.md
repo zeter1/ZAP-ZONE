@@ -11,6 +11,7 @@
 - Сохраняет legacy RNG consumption буквально, включая вычисление `normalPause` перед альтернативной enemy-vs-player pause.
 - Всегда после firearm attempt планирует следующий `sT` через текущий weapon rate и `fireRateMul`.
 - После cadence mutation передаёт пустой магазин в существующий `startBotReload(bot)`.
+- Emitted-shot recoil **не** принадлежит cadence: `src/ai/bot-fire-control.js` увеличивает `fireBurstRecoil` только после успешных safety gates. Текущий cadence по-прежнему обслуживает firearm **attempt** и не меняет RNG semantics из-за recoil state.
 
 ## Ownership boundaries
 
@@ -39,6 +40,8 @@ Constructor `burstLeft` и `sT` намеренно остаются в `Enemy`: 
 7. Только после этих mutations `mag<=0` вызывает reload handoff.
 
 Не «оптимизировать» вычисление discarded `normalPause`, не объединять random draws и не переносить constructor RNG без отдельной gameplay/change task.
+
+Отдельно: превращение cadence из **attempt-based** в **emitted-shot-based** поведение — это не «маленькая правка fire-control». Оно меняет burst consumption, fire pressure и RNG timing при LOS/friendly/rocket safety blocks, поэтому требует отдельной задачи и controlled-RNG evidence.
 
 ## Dependency / load-order contract
 
