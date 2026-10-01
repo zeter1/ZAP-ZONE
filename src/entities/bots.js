@@ -50,6 +50,7 @@ class Enemy{
     this.velX=0;this.velZ=0;
     this.motionX=0;this.motionZ=0;
     this.fireMoveInstability=0;
+    this.fireBurstRecoil=0;this.fireRecoilWeaponKey='';
     this.gaitPhase=Math.random()*Math.PI*2;this.gaitSpeed=0;this.footstepDistance=Math.random()*1.1;
     this.targetScanT=0;this.targetIsPlayer=false;
     this.reactionT=.22+Math.random()*.22;
@@ -480,6 +481,7 @@ class Enemy{
     const actualCap=clampBotVelocity(this.velX,this.velZ,spd*maxMoveM*1.04);
     this.velX=actualCap.x;this.velZ=actualCap.z;
     updateBotFireMovementStability(this,dt);
+    updateBotFireRecoilRecovery(this,dt);
     this.motionX=this.velX;this.motionZ=this.velZ;
     this.group.rotation.y=lerpAngle(this.group.rotation.y,this.desiredYaw,Math.min(1,dt*(5.2+this.aimSkill*3.2)));
     const peekEnvelope=this.peekPoint?botCoverPeekEnvelope(this.peekT,this.peekDuration):0;
