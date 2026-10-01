@@ -529,8 +529,8 @@ Runtime-файлы используют ASCII kebab-case и смысловое �
 Generated presentation art не должно быть единственной формой критической информации.
 
 - DOM image: `src` = стабильный fallback, `data-generated-src` = generated art, `data-fallback-src` = явный fallback.
-- `catalog.js` активирует generated DOM/CSS art и на HTTP/HTTPS, и на `file://`; build query `?v=<build>` добавляется только на HTTP(S), а local file использует обычный относительный путь.
-- CSS generated backgrounds/icons обязаны использовать относительные пути, которые разрешаются и на uCoz, и из локального `src/styles/game.css`.
+- `catalog.js` активирует generated DOM/CSS art и на HTTP/HTTPS, и на `file://`. Канонический `gameAssetUrl()` сначала разрешает runtime `assets/...` относительно `document.baseURI`; build query `?v=<build>` добавляется только на HTTP(S). Это делает один URL безопасным и для DOM-свойств, и для CSS custom properties.
+- Нельзя передавать сырой относительный `url("assets/...")` через CSS custom property, которую потребляет внешний `src/styles/game.css`: такой URL браузер может разрешить относительно stylesheet и ошибочно запросить `src/styles/assets/...`. Для динамических CSS URL использовать уже разрешённый URL из `GAME_ASSETS`/`gameAssetUrl()`; статические литералы внутри `game.css` остаются stylesheet-relative `../../assets/...`.
 - Perk/medal/headshot generated art выбирается protocol-neutral и всегда имеет SVG fallback на реальную ошибку загрузки/декодирования.
 - Если браузерное ограничение не позволяет какой-то категории файлов использовать один и тот же loader в `file://`, должен существовать отдельный local consumer или функциональный fallback; молча выключать asset/feature нельзя.
 - Perk generated art всегда имеет per-id SVG fallback.

@@ -8,9 +8,11 @@ const GAME_BUILD_ID=typeof window.ZAP_BUILD_ID==='string'?window.ZAP_BUILD_ID:''
 const GAME_BUILD_ID_PATTERN=/^[0-9a-f]{16}$/;
 
 function gameAssetUrl(path){
-  if(!GAME_HOSTED_HTTP_MODE||!GAME_BUILD_ID_PATTERN.test(GAME_BUILD_ID)||typeof path!=='string')return path;
+  if(typeof path!=='string'||(!GAME_HOSTED_HTTP_MODE&&!GAME_LOCAL_FILE_MODE))return path;
   const clean=path.replace(/([?&])v=[0-9a-f]{16}(?=(&|$))/g,'$1').replace(/[?&]$/,'');
-  return clean+(clean.includes('?')?'&':'?')+'v='+encodeURIComponent(GAME_BUILD_ID);
+  const resolved=new URL(clean,document.baseURI);
+  if(GAME_HOSTED_HTTP_MODE&&GAME_BUILD_ID_PATTERN.test(GAME_BUILD_ID))resolved.searchParams.set('v',GAME_BUILD_ID);
+  return resolved.href;
 }
 function versionAssetTree(value){
   if(typeof value==='string')return gameAssetUrl(value);

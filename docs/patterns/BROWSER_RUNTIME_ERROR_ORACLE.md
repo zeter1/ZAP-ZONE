@@ -29,6 +29,7 @@ Do not duplicate this table as ad-hoc string matching inside individual smokes. 
 ## Fail-closed, not warning-hostile
 
 - Unhandled runtime exceptions and true error-level browser diagnostics invalidate a green smoke even when boot already says `ready`.
+- Error-level network diagnostics such as a missing runtime asset (HTTP 404) are real failures by default. Fix the URL/resource producer; do not broadly allowlist network errors just to restore green CI.
 - Warnings stay visible in the bounded diagnostic tail so CI preserves evidence, but they are not promoted to failures by default.
 - Do not solve a noisy error by deleting the listener, swallowing an exception, adding `continue-on-error`, or broadly allowlisting text.
 - If a future browser/Three.js warning or error needs special treatment, first prove the producer and user impact. Prefer the narrowest stable classification rule and add a deterministic regression for it.
