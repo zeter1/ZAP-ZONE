@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Bot burst recoil — emitted-shot accumulation and settle recovery
+- added a bounded per-bot `fireBurstRecoil` channel owned by fire-control and kept it separate from measured movement instability and suppression pressure;
+- the current shot reads pre-shot recoil, then successful emitted firearm shots add weapon-class-aware kick for the next round: rifle/plasma accumulate substantially more sustained-burst instability than pistol, while shotgun/sniper/rocket remain tightly bounded;
+- recoil settles exponentially from `dt`, resets when the bot changes weapon identity, and composes with movement without adding or reordering gameplay RNG draws;
+- LOS/smoke fail-close, friendly-fire blocks and unsafe rocket attempts do not accumulate recoil or consume ammo; existing attempt-based cadence/RNG behavior remains deliberately unchanged;
+- expanded deterministic fire-control regressions and structural safety-order guards, and added `docs/patterns/COMPOSED_FIRE_STABILITY.md` so future AI edits can preserve separate continuous/event-driven owners.
+
 ### Bot firing stability — movement-aware weapon handling
 - bot fire-control now consumes the bot's measured post-collision `velX/velZ` instead of treating a hard strafe like a settled firing platform;
 - added bounded frame-rate-independent stability attack/recovery: lateral movement penalizes weapon stability more than forward movement, while stopping restores accuracy progressively rather than instantly;
