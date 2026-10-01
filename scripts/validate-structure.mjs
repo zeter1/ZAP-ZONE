@@ -1004,6 +1004,23 @@ for(const token of [
 ]){
   if(!fireControl.includes(token))fail('bot fire-control owner contract missing: '+token);
 }
+for(const token of [
+  'function firstWallHitDistance(from,to,list){',
+  'const hitDist=_rcHits.length?_rcHits[0].distance:Infinity;',
+  'return Number.isFinite(firstWallHitDistance(from,to,list));'
+]){
+  if(!engine.includes(token))fail('core nearest-wall collision contract missing: '+token);
+}
+for(const token of [
+  'const wallHitDist=firstWallHitDistance(from,aim,losMeshes);',
+  'const wallBlocked=Number.isFinite(wallHitDist),smokeBlocked=smokeBlocksSight(from,aim);',
+  'const missTraceDist=wallBlocked?Math.min(dist,18,wallHitDist):Math.min(dist,18);',
+  'spawnInstantSniperTrace(from,missDir,missTraceDist,missCol)',
+  'spawnTracer(from,missDir,missTraceDist,missCol,wp.key)'
+]){
+  if(!fireControl.includes(token))fail('occlusion-consistent bot feedback contract missing: '+token);
+}
+if(fireControl.includes('wallBetween(from,aim,losMeshes)'))fail('fire-control must consume the nearest-wall fact instead of duplicating boolean LOS work');
 for(const token of ['getAimPoint(tp){','getMuzzlePos(){','startReload(){','finishReload(){','dealDamageToCurrentTarget(amount,dir){','doShoot(tp,dist,suppressMemory=false){','function botShotClosestApproachToPlayer(']){
   if(bots.includes(token))fail('bot fire-control implementation leaked back into bots.js: '+token);
 }

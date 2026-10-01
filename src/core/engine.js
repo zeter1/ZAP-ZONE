@@ -462,16 +462,19 @@ const _rc=new THREE.Raycaster();
 const _rcDir=new THREE.Vector3();
 const _rcHits=[];
 const _rcWallHits=[];
-function wallBetween(from,to,list){
+function firstWallHitDistance(from,to,list){
   _rcDir.subVectors(to,from);
-  const dist=_rcDir.length();if(dist<0.15)return false;
+  const dist=_rcDir.length();if(dist<0.15)return Infinity;
   _rcDir.multiplyScalar(1/dist);
   _rc.ray.origin.copy(from);_rc.ray.direction.copy(_rcDir);_rc.near=0;_rc.far=dist-0.15;
   _rcHits.length=0;
   _rc.intersectObjects(list,false,_rcHits);
-  const blocked=_rcHits.length>0;
+  const hitDist=_rcHits.length?_rcHits[0].distance:Infinity;
   _rcHits.length=0;
-  return blocked;
+  return hitDist;
+}
+function wallBetween(from,to,list){
+  return Number.isFinite(firstWallHitDistance(from,to,list));
 }
 
 // ─── PARTICLE POOL ──────────────────────

@@ -26,7 +26,7 @@ function createHarness(overrides={}){
     THREE:{Vector3:Vec3,Quaternion},
     camera:{position:new Vec3(0,1.7,20)},
     BOT_ROCKET_SPEED:24,TRACER_SPEED:{plasma:68},plrVx:0,plrVz:0,
-    wallBetween:()=>false,wallMeshes:[],smokeBlocksSight:()=>false,losMeshes:[],
+    wallBetween:()=>false,firstWallHitDistance:()=>Infinity,wallMeshes:[],smokeBlocksSight:()=>false,losMeshes:[],
     playWeaponMechanicSound:(...args)=>events.push(['mechanic',...args]),
     spawnInstantSniperTrace:(...args)=>events.push(['trace',...args]),
     spawnTracer:(...args)=>events.push(['tracer',...args]),
@@ -99,14 +99,21 @@ test('reload lifecycle preserves randomized duration and magazine refill',()=>{
   assert.equal(context.events.at(-1)[1],'reloadDone');
 });
 
-test('blocked shot fails closed without consuming ammo, noise or recoil',()=>{
-  const context=createHarness({wallBetween:()=>true});
+test('wall-occluded feedback trace stops at first cover hit without gameplay side effects',()=>{
+  const context=createHarness({firstWallHitDistance:()=>4.75});
+  vm.runInContext('globalThis.__rngCalls=0;Math.random=()=>{__rngCalls++;return .1;};',context);
   const bot=makeBot({mag:4});
   const outcome=context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,16),16,false);
   assert.equal(outcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.OCCLUDED);
+  const trace=context.events.find(e=>e[0]==='trace');
+  assert.ok(trace,'controlled 20% wall-occlusion feedback trace should render');
+  near(trace[3],4.75,'wall-blocked trace length');
+  assert.equal(context.__rngCalls,1);
   assert.equal(bot.mag,4);
   assert.equal(bot.fireBurstRecoil,0);
-  assert.equal(context.events.some(e=>e[0]==='noise'),false);
+  for(const forbidden of ['noise','shot-sound','muzzle','generated-muzzle','casing','rocket','bullet','player-damage']){
+    assert.equal(context.events.some(e=>e[0]===forbidden),false,forbidden+' must stay absent');
+  }
 });
 
 test('smoke block reports occlusion unless suppress-memory fire is explicitly allowed',()=>{
@@ -121,6 +128,22 @@ test('smoke block reports occlusion unless suppress-memory fire is explicitly al
   const emittedOutcome=context.__BOT_FIRE_TEST__.executeBotShot(suppressing,new Vec3(0,0,18),18,true);
   assert.equal(emittedOutcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.EMITTED);
   assert.equal(suppressing.mag,3);
+});
+
+test('smoke-only occlusion keeps the legacy visual trace cap without an opaque-wall clamp',()=>{
+  const context=createHarness({smokeBlocksSight:()=>true});
+  vm.runInContext('globalThis.__rngCalls=0;Math.random=()=>{__rngCalls++;return .1;};',context);
+  const rifle=makeWeapon({key:'rifle',isSniper:false,hitscan:false,spread:.012,range:70});
+  const bot=makeBot({weapon:rifle,mag:4});
+  const outcome=context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,24),24,false);
+  assert.equal(outcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.OCCLUDED);
+  const tracer=context.events.find(e=>e[0]==='tracer');
+  assert.ok(tracer,'controlled 20% smoke feedback tracer should render');
+  near(tracer[3],18,'smoke-only legacy trace cap');
+  assert.equal(context.__rngCalls,1);
+  assert.equal(bot.mag,4);
+  assert.equal(bot.fireBurstRecoil,0);
+  assert.equal(context.events.some(e=>e[0]==='noise'),false);
 });
 
 test('friendly-fire and rocket-safety gates do not fake emitted-shot recoil',()=>{
@@ -180,7 +203,7 @@ test('hitscan execution preserves damage, kill accounting and ammo consumption',
 });
 
 test('fire-control execution does not take FSM or burst-policy authority',()=>{
-  const context=createHarness({wallBetween:()=>true});
+  const context=createHarness({firstWallHitDistance:()=>4});
   const bot=makeBot();
   const before={aiState:bot.aiState,burstLeft:bot.burstLeft,burstPauseT:bot.burstPauseT,tacticalMode:bot.tacticalMode};
   context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,12),12,false);

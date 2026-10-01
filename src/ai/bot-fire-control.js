@@ -173,13 +173,15 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
   const wp=bot.weapon;
   const from=getBotMuzzlePos(bot);
   const aim=getBotAimPoint(bot,tp);
-  const wallBlocked=wallBetween(from,aim,losMeshes),smokeBlocked=smokeBlocksSight(from,aim);
+  const wallHitDist=firstWallHitDistance(from,aim,losMeshes);
+  const wallBlocked=Number.isFinite(wallHitDist),smokeBlocked=smokeBlocksSight(from,aim);
   if(wallBlocked||(smokeBlocked&&!suppressMemory)){
     if(Math.random()<.20){
       const missDir=aim.clone().sub(from).normalize();
       const missCol=bot.team==='ally'?0x8cbcff:wp.bCol;
-      if(wp.hitscan)spawnInstantSniperTrace(from,missDir,Math.min(dist,18),missCol);
-      else spawnTracer(from,missDir,Math.min(dist,18),missCol,wp.key);
+      const missTraceDist=wallBlocked?Math.min(dist,18,wallHitDist):Math.min(dist,18);
+      if(wp.hitscan)spawnInstantSniperTrace(from,missDir,missTraceDist,missCol);
+      else spawnTracer(from,missDir,missTraceDist,missCol,wp.key);
     }
     return BOT_SHOT_OUTCOME.OCCLUDED;
   }

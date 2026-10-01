@@ -46,6 +46,18 @@
 
 Reusable attempt-vs-event pattern: `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`.
 
+## Occlusion-consistent blocked-shot feedback
+
+Wall and smoke occlusion intentionally share the same gameplay outcome but not the same presentation endpoint:
+
+- opaque geometry distance is owned by `src/core/engine.js` through `firstWallHitDistance(from,to,list)`; fire-control consumes that fact instead of performing a second raycast implementation;
+- a wall-blocked 20% visual-only miss trace is clamped to `min(dist, 18, firstWallHitDistance)`, so feedback terminates at the first opaque surface and cannot imply a projectile continued through cover;
+- smoke-only occlusion keeps the legacy `min(dist, 18)` visual trace because smoke is a visibility volume, not an opaque collision surface; suppress-memory fire through smoke remains unchanged;
+- the feedback decision still consumes exactly one `Math.random()` draw. The geometry query and clamp are deterministic and add no hidden RNG;
+- both cases still return `OCCLUDED`, consume no ammo/recoil/noise/damage/projectile authority and retain the Task 023 cadence contract.
+
+Reusable geometry/presentation seam: `docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md`.
+
 ## Dependency / load-order contract
 
 Canonical classic-script segment:

@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-10-01
 
+### Bot occlusion feedback — blocked traces stop at cover
+- fixed a presentation bug where the 20% visual-only trace for an `OCCLUDED` bot attempt could extend through opaque cover even though gameplay correctly failed closed;
+- added `firstWallHitDistance(...)` to the existing core raycast owner and made `wallBetween(...)` delegate to it, avoiding a second collision implementation;
+- wall-blocked feedback now clamps to the nearest opaque surface, while smoke-only feedback intentionally keeps the legacy 18m visual cap and suppress-memory behavior;
+- preserved the single visual-feedback RNG draw and all blocked-shot ammo/recoil/noise/damage/projectile/cadence invariants;
+- added deterministic wall/smoke regressions, structural ownership guards, AI navigation docs and the reusable `OCCLUSION_CONSISTENT_PRESENTATION` pattern.
+
 ### Bot shot outcomes — safety retry no longer gets overwritten
 - added a closed `BOT_SHOT_OUTCOME` contract between fire-control and cadence: emitted, wall/smoke occluded, friendly-fire blocked and rocket-safety blocked;
 - removed next-attempt `sT` ownership from fire-control: `src/entities/bots.js` now forwards the concrete outcome and `bot-fire-cadence.js` is the single scheduler;

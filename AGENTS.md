@@ -34,7 +34,7 @@
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
 - individual bot state orchestration / broad fire gate / flank+objective+support+search execution / HP+death lifecycle + stateCD/cadence timer lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, cover-execution, engagement-movement, weapon-policy, fire-control, fire-cadence, deployables and state-policy owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
-- rendering/arena/collision → `src/core/engine.js`;
+- rendering/arena/collision / nearest opaque-wall hit distance → `src/core/engine.js`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
 - validation/cache build → `scripts/validate-structure.mjs` + `scripts/stamp-web-build.mjs`.
 
@@ -44,4 +44,4 @@ Invariant: один semantic owner на поведение. При extraction п
 
 Не ослабляйте tests/smoke, не добавляйте catch/suppression ради зелёного CI и не меняйте gameplay balance в чистом refactor без отдельной задачи.
 
-Cross-owner behavior derived from post-physics/collision facts → `docs/patterns/MEASURED_RUNTIME_STATE.md`. Independent continuous + event-driven weapon-instability channels → `docs/patterns/COMPOSED_FIRE_STABILITY.md`. Attempt-vs-emitted/safety-block scheduling → `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`.
+Cross-owner behavior derived from post-physics/collision facts → `docs/patterns/MEASURED_RUNTIME_STATE.md`. Independent continuous + event-driven weapon-instability channels → `docs/patterns/COMPOSED_FIRE_STABILITY.md`. Attempt-vs-emitted/safety-block scheduling → `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`. Opaque-collision fact + presentation endpoint consistency → `docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md`.
