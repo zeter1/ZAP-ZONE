@@ -17,8 +17,8 @@
 13. `src/ai/bot-navigation.js` — patrol points, wall/smoke steering, movement caps и collision substeps.
 14. `src/ai/bot-positioning.js` — per-bot cover/flank destination filtering и scoring.
 15. `src/ai/bot-weapon-policy.js` — post-spawn weapon reselection, hold hysteresis и switch timing.
-16. `src/ai/bot-fire-control.js` — aim/muzzle/reload, measured movement stability, emitted-shot burst recoil/settle и concrete shot/hit execution для уже принятого fire intent.
-17. `src/ai/bot-fire-cadence.js` — post-shot burst reset, pause, next-shot schedule и точный RNG order.
+16. `src/ai/bot-fire-control.js` — aim/muzzle/reload, measured movement stability, emitted-shot burst recoil/settle, concrete shot/hit execution и closed outcome fact для уже принятого fire intent.
+17. `src/ai/bot-fire-cadence.js` — outcome-aware burst consumption, safety retry, pause, next-attempt schedule и точный RNG order.
 18. `src/ai/bot-deployables.js` — individual mine/bomb eligibility, role/doctrine probability и deployment side effects.
 19. `src/ai/bot-state-policy.js` — periodic high-level state selection priority и post-selection `stateCD` schedule.
 20. `src/ai/tactics.js` — squad coordination, Map Tactics и Adaptive Commander policy.
@@ -83,21 +83,23 @@ Behavior закреплён `scripts/bot-weapon-policy-owner.test.mjs`; structur
 
 ## Bot fire-control execution owner
 
-**Canonical owner:** `src/ai/bot-fire-control.js`. Узкий контракт — **[specs/BOT_FIRE_CONTROL.md](specs/BOT_FIRE_CONTROL.md)**. Он исполняет уже принятое решение о выстреле: считает lead/smoothed aim и muzzle origin, ведёт reload lifecycle, владеет двумя независимыми stability channels (`fireMoveInstability` и `fireBurstRecoil`), выполняет LOS/smoke/friendly-fire/rocket-safety gates конкретного shot, создаёт hitscan/projectile effects, применяет hit/near-miss semantics и расходует магазин.
+**Canonical owner:** `src/ai/bot-fire-control.js`. Узкий контракт — **[specs/BOT_FIRE_CONTROL.md](specs/BOT_FIRE_CONTROL.md)**. Он исполняет уже принятое решение о выстреле: считает lead/smoothed aim и muzzle origin, ведёт reload lifecycle, владеет двумя независимыми stability channels (`fireMoveInstability` и `fireBurstRecoil`), выполняет LOS/smoke/friendly-fire/rocket-safety gates, создаёт hitscan/projectile effects, применяет hit/near-miss semantics, расходует магазин и возвращает closed `BOT_SHOT_OUTCOME`. Next-attempt `sT` здесь не планируется.
 
 Граница проходит между **policy** и **execution**. `src/entities/bots.js` по-прежнему решает когда разрешить fire/utility attempt и хранит cadence initialization/timer decay; post-shot burst/pause/next-shot policy делегирована `src/ai/bot-fire-cadence.js`, individual mine/bomb choice+deployment — `src/ai/bot-deployables.js`, а смена уже выбранного primary weapon — `src/ai/bot-weapon-policy.js`. `src/ai/tactics.js` владеет doctrine/coordinated utility, но использует canonical `getBotMuzzlePos(bot)`. `src/combat/combat.js` остаётся owner-ом projectile/collision primitives и player-pressure/friendly-fire plumbing, а `src/weapons/system.js` — weapon data.
 
-Owner намеренно принимает явный `bot` argument вместо создания второго object model. Per-bot state (`aimPoint`, `reloadT`, `mag`, target refs, `fireMoveInstability`, `fireBurstRecoil`) остаётся на `Enemy`, но алгоритм fire-control state transitions живёт в одном месте. Movement state обновляется из measured post-collision velocity; burst recoil восстанавливается по `dt` и увеличивается только после LOS/friendly/rocket safety gates, когда firearm shot действительно emitted. Stability helpers не добавляют RNG и не получают post-shot cadence authority. Reusable composition contract — **[patterns/COMPOSED_FIRE_STABILITY.md](patterns/COMPOSED_FIRE_STABILITY.md)**.
+Owner намеренно принимает явный `bot` argument вместо создания второго object model. Per-bot state (`aimPoint`, `reloadT`, `mag`, target refs, `fireMoveInstability`, `fireBurstRecoil`) остаётся на `Enemy`, но алгоритм fire-control state transitions живёт в одном месте. Movement state обновляется из measured post-collision velocity; burst recoil восстанавливается по `dt` и увеличивается только после LOS/friendly/rocket safety gates, когда firearm shot действительно emitted. Stability helpers не добавляют RNG. Caller обязан передать shot outcome в cadence owner; shared attempt-vs-event contract — **[patterns/OUTCOME_DRIVEN_CADENCE.md](patterns/OUTCOME_DRIVEN_CADENCE.md)**, stability composition — **[patterns/COMPOSED_FIRE_STABILITY.md](patterns/COMPOSED_FIRE_STABILITY.md)**.
 
 Behavior закреплён `scripts/bot-fire-control-owner.test.mjs`; structural validation требует owner functions, consumers в `bots.js`/tactics, переносит ballistic source-oracles в новый owner и запрещает возврат старых methods в `Enemy`.
 
-## Bot post-shot fire-cadence owner
+## Bot outcome-aware fire-cadence owner
 
-**Canonical owner:** `src/ai/bot-fire-cadence.js`. Узкий контракт — **[specs/BOT_FIRE_CADENCE.md](specs/BOT_FIRE_CADENCE.md)**. Owner получает уже завершившуюся firearm attempt и владеет только post-shot burst decrement/reset, pause, next-shot `sT` и empty-mag reload handoff.
+**Canonical owner:** `src/ai/bot-fire-cadence.js`. Узкий контракт — **[specs/BOT_FIRE_CADENCE.md](specs/BOT_FIRE_CADENCE.md)**. Owner получает explicit `BOT_SHOT_OUTCOME` из fire-control и единолично владеет next-attempt `sT`, burst consumption/reset/pause, safety retry и empty-mag reload handoff.
 
-Граница: **broad fire gate → concrete shot execution → post-shot cadence**. `bots.js` сохраняет constructor RNG, cadence timer decay, player-pressure/reaction checks и порядок utility/fire; `bot-fire-control.js` сохраняет shot/ammo/hit/projectile side effects; cadence owner читает weapon classification, `aimSkill`, `fireRateMul` и tactical mode, но не выбирает цель/оружие и не исполняет shot.
+Граница: **broad fire gate → concrete execution/outcome → outcome-aware cadence**. `bots.js` сохраняет constructor RNG, timer decay, player-pressure/reaction checks и порядок utility/fire; `bot-fire-control.js` сохраняет safety/shot/ammo/recoil/hit side effects и не пишет `sT`; cadence читает weapon classification, `aimSkill`, `fireRateMul` и tactical mode, но не выбирает цель/оружие и не исполняет shot.
 
-Особенно важен stochastic contract: ветка enemy→player всё ещё потребляет RNG для `normalPause` до отдельного player-pause RNG, хотя первый результат затем не используется. Controlled-RNG regression фиксирует не только формулы, но и количество/порядок draws; constructor `burstLeft/sT` не перенесены, чтобы не менять spawn RNG order.
+Outcome policy намеренно не симметрична. `EMITTED` и wall/smoke `OCCLUDED` сохраняют legacy full cadence/RNG — это защищает от скрытого усиления pressure. `FRIENDLY_FIRE` и `ROCKET_SAFETY` не расходуют реальный burst и используют bounded retry (`.10+random*.12` и fixed `.18`). Так исправлен прежний double-owner bug, где fire-control выставлял safety backoff, а generic cadence сразу его перезаписывал. Closed-contract unknown outcome fail-fast.
+
+Controlled-RNG regression фиксирует legacy emitted/occluded formulas и отдельные safety draw counts. Reusable seam — **[patterns/OUTCOME_DRIVEN_CADENCE.md](patterns/OUTCOME_DRIVEN_CADENCE.md)**.
 
 ## Bot high-level state-selection policy owner
 

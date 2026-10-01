@@ -822,8 +822,10 @@ for(const token of [
 for(const token of ['function tryPlantBotMine(bot,dist,targetPos){','function tryPlantBotBomb(bot,dist,targetPos){','countTeamMines(bot.team)','activeBombCount()','bombNearPoint(pos,24)',"bot.commandDoctrine==='breach'",'mkMine()','mkBomb()']){if(!deployables.includes(token))fail('bot deployables owner contract missing: '+token);}
 if(/maybePlant(?:Mine|Bomb)\s*\(/.test(bots))fail('bot deployable implementation leaked back into bots.js');
 for(const token of ['tryPlantBotBomb(this,dist,targetPos)','tryPlantBotMine(this,dist,targetPos)','this.mineCD=8+Math.random()*12','this.bombCD=24+Math.random()*52','if(this.mineCD>0)this.mineCD-=dt;','if(this.bombCD>0)this.bombCD-=dt;']){if(!bots.includes(token))fail('bot deployables consumer/fire-gate contract missing: '+token);}
-const botBombDeployCall=bots.indexOf('tryPlantBotBomb(this,dist,targetPos)'),botMineDeployCall=bots.indexOf('tryPlantBotMine(this,dist,targetPos)'),botShotCall=bots.indexOf('executeBotShot(this,fireTarget,fireDist,suppressMemory)'),botCadenceCall=bots.indexOf('applyBotPostShotCadence(this);');
-if(!(botBombDeployCall>=0&&botBombDeployCall<botMineDeployCall&&botMineDeployCall<botShotCall&&botShotCall<botCadenceCall))fail('bot utility/fire/cadence order must remain bomb -> mine -> firearm shot -> post-shot cadence');
+const botShotOutcomeCall='const shotOutcome=executeBotShot(this,fireTarget,fireDist,suppressMemory);';
+const botBombDeployCall=bots.indexOf('tryPlantBotBomb(this,dist,targetPos)'),botMineDeployCall=bots.indexOf('tryPlantBotMine(this,dist,targetPos)'),botShotCall=bots.indexOf(botShotOutcomeCall),botCadenceCall=bots.indexOf('applyBotFireCadence(this,shotOutcome);');
+if(!(botBombDeployCall>=0&&botBombDeployCall<botMineDeployCall&&botMineDeployCall<botShotCall&&botShotCall<botCadenceCall))fail('bot utility/fire/cadence order must remain bomb -> mine -> firearm outcome -> outcome-aware cadence');
+if(bots.includes('executeBotShot(this,fireTarget,fireDist,suppressMemory);\n            applyBotPostShotCadence(this);'))fail('bot caller must not ignore fire-control outcome');
 for(const token of ['bot.aiState=','bot.burstLeft=','bot.burstPauseT=','bot.sT=','BOT_TEAM_TACTICS','spawnBotSmokeGrenade','spawnBotFragGrenade','executeBotShot','class Enemy']){if(deployables.includes(token))fail('FSM/squad/fire-control authority leaked into bot deployables owner: '+token);}
 if(/const\s+BOT_(?:MINE|BOMB)_CFG\s*=/.test(deployables))fail('bot deployables owner must consume, not redefine, deployable config');
 for(const token of ['tryPlantBotMine','tryPlantBotBomb'])if(tactics.includes(token))fail('individual deployable policy leaked into team tactics: '+token);
@@ -996,23 +998,25 @@ if(!fireControl.includes('bot.weaponSwitchT=0'))fail('rocket safety must retain 
 for(const token of [
   'function botShotClosestApproachToPlayer(','function getBotAimPoint(bot,tp){','function getBotMuzzlePos(bot){',
   'function startBotReload(bot){','function finishBotReload(bot){','function dealBotDamageToCurrentTarget(bot,amount,dir){',
-  'function executeBotShot(bot,tp,dist,suppressMemory=false){','spawnEnemyBullet(from,pd,wp,bot','spawnERkt(from,dir',
-  'playWeaponShotSound(wp.key','registerPlayerSuppression(bot,wp,approach.point'
+  'function executeBotShot(bot,tp,dist,suppressMemory=false){','const BOT_SHOT_OUTCOME=Object.freeze({',"EMITTED:'emitted'","OCCLUDED:'blocked-occluded'","FRIENDLY_FIRE:'blocked-friendly-fire'","ROCKET_SAFETY:'blocked-rocket-safety'",
+  'return BOT_SHOT_OUTCOME.OCCLUDED;','return BOT_SHOT_OUTCOME.FRIENDLY_FIRE;','return BOT_SHOT_OUTCOME.ROCKET_SAFETY;','return BOT_SHOT_OUTCOME.EMITTED;',
+  'spawnEnemyBullet(from,pd,wp,bot','spawnERkt(from,dir','playWeaponShotSound(wp.key','registerPlayerSuppression(bot,wp,approach.point'
 ]){
   if(!fireControl.includes(token))fail('bot fire-control owner contract missing: '+token);
 }
 for(const token of ['getAimPoint(tp){','getMuzzlePos(){','startReload(){','finishReload(){','dealDamageToCurrentTarget(amount,dir){','doShoot(tp,dist,suppressMemory=false){','function botShotClosestApproachToPlayer(']){
   if(bots.includes(token))fail('bot fire-control implementation leaked back into bots.js: '+token);
 }
-for(const token of ['finishBotReload(this)','startBotReload(this)','executeBotShot(this,fireTarget,fireDist,suppressMemory)']){
+for(const token of ['finishBotReload(this)','startBotReload(this)',botShotOutcomeCall]){
   if(!bots.includes(token))fail('bot fire-control consumer contract missing: '+token);
 }
 if(!tactics.includes('getBotMuzzlePos(bot)'))fail('coordinated utility must consume canonical bot muzzle helper');
 for(const token of ['bot.aiState=','bot.burstLeft=','bot.burstPauseT=','function maybePlantMine(','function maybePlantBomb(','function refreshBotTeamTactics(','chooseBotWeaponByDistance(']){
   if(fireControl.includes(token))fail('FSM/burst/utility/weapon-selection policy leaked into bot fire-control owner: '+token);
 }
+if(/\bbot\.sT\s*=/.test(fireControl))fail('bot next-attempt scheduling must live in fire-cadence owner, not fire-control');
 for(const token of [
-  'function applyBotPostShotCadence(bot){','bot.burstLeft--;',"const attackingPlayer=bot.team==='enemy'&&bot.targetIsPlayer;",
+  'function applyBotFireCadence(bot,shotOutcome){','if(shotOutcome===BOT_SHOT_OUTCOME.FRIENDLY_FIRE){','bot.sT=.10+Math.random()*.12;','if(shotOutcome===BOT_SHOT_OUTCOME.ROCKET_SAFETY){','bot.sT=.18;',"if(shotOutcome!==BOT_SHOT_OUTCOME.EMITTED&&shotOutcome!==BOT_SHOT_OUTCOME.OCCLUDED){","throw new Error('Unknown bot shot outcome: '+shotOutcome);",'bot.burstLeft--;',"const attackingPlayer=bot.team==='enemy'&&bot.targetIsPlayer;",
   "const suppressing=bot.tacticalMode==='suppress'&&!bot.weapon.isRocket&&!bot.weapon.isSniper;",
   'bot.burstLeft=base+Math.floor(Math.random()*extra);',
   "const normalPause=((bot.weapon.isSniper?.72:bot.weapon.isRocket?.58:bot.weapon.key==='shotgun'?.34:.16)+Math.random()*(.18+(1-bot.aimSkill)*.22))*(suppressing?.48:1);",
@@ -1020,7 +1024,7 @@ for(const token of [
   "bot.sT=Math.max((bot.team==='enemy'&&bot.targetIsPlayer)?0.095:0.055,bot.weapon.rate*bot.fireRateMul*(.96+Math.random()*.24));",
   'if(bot.mag<=0)startBotReload(bot);'
 ]){if(!fireCadence.includes(token))fail('bot fire-cadence owner contract missing: '+token);}
-if(!bots.includes('applyBotPostShotCadence(this);'))fail('bot post-shot fire-cadence consumer contract missing');
+if(!bots.includes('applyBotFireCadence(this,shotOutcome);'))fail('bot outcome-aware fire-cadence consumer contract missing');
 for(const token of ['this.burstLeft--;','let base=attackingPlayer','const normalPause=',"this.sT=Math.max((this.team==='enemy'&&this.targetIsPlayer)?0.095:0.055"]){
   if(bots.includes(token))fail('bot post-shot fire-cadence implementation leaked back into bots.js: '+token);
 }
@@ -1062,7 +1066,7 @@ for(const token of [
 for(const token of [
   "case 'objective'", "case 'cover'", "case 'flank'", 'moveBotWithSubsteps(',
   'findBotTacticalCover(', 'findBotFlankPoint(', 'refreshBotTeamTactics(',
-  'updateBotTargetPerception(', 'executeBotShot(', 'applyBotPostShotCadence('
+  'updateBotTargetPerception(', 'executeBotShot(', 'applyBotFireCadence('
 ]){
   if(statePolicy.includes(token))fail('state execution/perception/tactics/combat authority leaked into bot state-policy owner: '+token);
 }

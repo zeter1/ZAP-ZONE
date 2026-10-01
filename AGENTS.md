@@ -25,8 +25,8 @@
 - bot cover reevaluation / peek probing+timing / hold+chain+exit execution → `src/ai/bot-cover-execution.js` + `docs/specs/BOT_COVER_EXECUTION.md`;
 - bot engage-state strafe/range-matchup/objective-pull movement intent → `src/ai/bot-engagement-movement.js` + `docs/specs/BOT_ENGAGEMENT_MOVEMENT.md`;
 - bot weapon reselection / hold hysteresis / switch timing → `src/ai/bot-weapon-policy.js` + `docs/specs/BOT_WEAPON_POLICY.md`;
-- bot aim / muzzle / reload / measured movement stability / emitted-shot burst recoil+settle / concrete shot + hit resolution → `src/ai/bot-fire-control.js` + `docs/specs/BOT_FIRE_CONTROL.md`;
-- bot post-shot burst/cadence / RNG order / pause + next-shot schedule → `src/ai/bot-fire-cadence.js` + `docs/specs/BOT_FIRE_CADENCE.md`;
+- bot aim / muzzle / reload / measured movement stability / emitted-shot burst recoil+settle / concrete shot + hit resolution + closed shot outcome → `src/ai/bot-fire-control.js` + `docs/specs/BOT_FIRE_CONTROL.md`;
+- bot outcome-aware burst/cadence / safety retry / RNG order / next-attempt schedule → `src/ai/bot-fire-cadence.js` + `docs/specs/BOT_FIRE_CADENCE.md`;
 - individual bot mine/bomb eligibility + deployment execution → `src/ai/bot-deployables.js` + `docs/specs/BOT_DEPLOYABLES.md`;
 - bot high-level state selection / priority ladder / stateCD reschedule → `src/ai/bot-state-policy.js` + `docs/specs/BOT_STATE_POLICY.md`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
@@ -44,4 +44,4 @@ Invariant: один semantic owner на поведение. При extraction п
 
 Не ослабляйте tests/smoke, не добавляйте catch/suppression ради зелёного CI и не меняйте gameplay balance в чистом refactor без отдельной задачи.
 
-Cross-owner behavior derived from post-physics/collision facts → `docs/patterns/MEASURED_RUNTIME_STATE.md`. Independent continuous + event-driven weapon-instability channels → `docs/patterns/COMPOSED_FIRE_STABILITY.md`.
+Cross-owner behavior derived from post-physics/collision facts → `docs/patterns/MEASURED_RUNTIME_STATE.md`. Independent continuous + event-driven weapon-instability channels → `docs/patterns/COMPOSED_FIRE_STABILITY.md`. Attempt-vs-emitted/safety-block scheduling → `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`.

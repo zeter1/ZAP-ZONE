@@ -1,9 +1,24 @@
 'use strict';
 
-// Canonical owner for post-shot bot burst/cadence policy.
-// The caller has already attempted the firearm shot; this owner preserves the
-// legacy burst reset, pause, next-shot schedule, RNG order and reload handoff.
-function applyBotPostShotCadence(bot){
+// Canonical owner for outcome-aware bot burst/cadence and blocked-attempt retry policy.
+// Fire-control reports what happened; this owner decides when the next firearm
+// attempt is allowed and which outcomes consume a real burst slot.
+function applyBotFireCadence(bot,shotOutcome){
+  if(shotOutcome===BOT_SHOT_OUTCOME.FRIENDLY_FIRE){
+    bot.sT=.10+Math.random()*.12;
+    return;
+  }
+  if(shotOutcome===BOT_SHOT_OUTCOME.ROCKET_SAFETY){
+    bot.sT=.18;
+    return;
+  }
+  if(shotOutcome!==BOT_SHOT_OUTCOME.EMITTED&&shotOutcome!==BOT_SHOT_OUTCOME.OCCLUDED){
+    throw new Error('Unknown bot shot outcome: '+shotOutcome);
+  }
+
+  // Occluded attempts intentionally keep the legacy cadence/burst semantics.
+  // This avoids silently increasing wall/smoke pressure while safety blocks
+  // preserve the burst that was never actually fired.
   bot.burstLeft--;
   if(bot.burstLeft<=0){
     const attackingPlayer=bot.team==='enemy'&&bot.targetIsPlayer;

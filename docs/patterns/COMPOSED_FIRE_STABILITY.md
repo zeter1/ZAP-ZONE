@@ -61,6 +61,8 @@ Deterministic stability functions не должны добавлять `Math.ran
 - blocked-event branches;
 - owner границу между deterministic state и stochastic policy.
 
+Если execution может завершиться несколькими blocked/emitted исходами, возвращайте явный outcome и передавайте его scheduler-у вместо скрытой записи timer-а в двух owner-ах. Для этого seam см. `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`.
+
 Если изменение требует нового RNG — это отдельный gameplay contract, а не hidden implementation detail.
 
 ## 6. Test matrix
@@ -82,7 +84,8 @@ Architecture oracle должен проверять ownership/order, но не �
 ## 7. Где читать в ZAP ZONE
 
 - behavior/spec: `docs/specs/BOT_FIRE_CONTROL.md`;
-- cadence/RNG boundary: `docs/specs/BOT_FIRE_CADENCE.md`;
+- cadence/outcome/RNG boundary: `docs/specs/BOT_FIRE_CADENCE.md`;
+- attempt-vs-event scheduling pattern: `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`;
 - owner: `src/ai/bot-fire-control.js`;
 - consumer timing: `src/entities/bots.js`;
 - direct oracle: `scripts/bot-fire-control-owner.test.mjs`;

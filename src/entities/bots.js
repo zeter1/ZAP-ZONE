@@ -609,8 +609,8 @@ class Enemy{
           }else if(!this.weapon.isRocket&&!suppressMemory&&tryPlantBotMine(this,dist,targetPos)){
             this.sT=.48;
           }else{
-            executeBotShot(this,fireTarget,fireDist,suppressMemory);
-            applyBotPostShotCadence(this);
+            const shotOutcome=executeBotShot(this,fireTarget,fireDist,suppressMemory);
+            applyBotFireCadence(this,shotOutcome);
           }
         }
       }

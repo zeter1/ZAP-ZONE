@@ -50,7 +50,7 @@ function createHarness(overrides={}){
   vm.createContext(context);
   vm.runInContext('Math.random=()=>0.5;',context);
   vm.runInContext(
-    source+'\n;globalThis.__BOT_FIRE_TEST__={botShotClosestApproachToPlayer,getBotAimPoint,getBotMuzzlePos,startBotReload,finishBotReload,dealBotDamageToCurrentTarget,getBotMovementFireInstabilityTarget,updateBotFireMovementStability,getBotFireRecoilProfile,syncBotFireRecoilWeapon,updateBotFireRecoilRecovery,registerBotEmittedShotRecoil,getBotShotStabilityModifiers,executeBotShot};',
+    source+'\n;globalThis.__BOT_FIRE_TEST__={BOT_SHOT_OUTCOME,botShotClosestApproachToPlayer,getBotAimPoint,getBotMuzzlePos,startBotReload,finishBotReload,dealBotDamageToCurrentTarget,getBotMovementFireInstabilityTarget,updateBotFireMovementStability,getBotFireRecoilProfile,syncBotFireRecoilWeapon,updateBotFireRecoilRecovery,registerBotEmittedShotRecoil,getBotShotStabilityModifiers,executeBotShot};',
     context,
     {filename:'src/ai/bot-fire-control.js'}
   );
@@ -102,25 +102,44 @@ test('reload lifecycle preserves randomized duration and magazine refill',()=>{
 test('blocked shot fails closed without consuming ammo, noise or recoil',()=>{
   const context=createHarness({wallBetween:()=>true});
   const bot=makeBot({mag:4});
-  context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,16),16,false);
+  const outcome=context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,16),16,false);
+  assert.equal(outcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.OCCLUDED);
   assert.equal(bot.mag,4);
   assert.equal(bot.fireBurstRecoil,0);
   assert.equal(context.events.some(e=>e[0]==='noise'),false);
 });
 
+test('smoke block reports occlusion unless suppress-memory fire is explicitly allowed',()=>{
+  const context=createHarness({smokeBlocksSight:()=>true});
+  const rifle=makeWeapon({key:'rifle',isSniper:false,hitscan:false,spread:.012,range:70});
+  const blocked=makeBot({weapon:rifle,mag:4});
+  const blockedOutcome=context.__BOT_FIRE_TEST__.executeBotShot(blocked,new Vec3(0,0,18),18,false);
+  assert.equal(blockedOutcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.OCCLUDED);
+  assert.equal(blocked.mag,4);
+
+  const suppressing=makeBot({weapon:rifle,mag:4});
+  const emittedOutcome=context.__BOT_FIRE_TEST__.executeBotShot(suppressing,new Vec3(0,0,18),18,true);
+  assert.equal(emittedOutcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.EMITTED);
+  assert.equal(suppressing.mag,3);
+});
+
 test('friendly-fire and rocket-safety gates do not fake emitted-shot recoil',()=>{
   const rifle=makeWeapon({key:'rifle',isSniper:false,hitscan:false,spread:.012,range:70});
   const friendlyContext=createHarness({friendlyInLine:()=>true});
-  const friendlyBot=makeBot({weapon:rifle,mag:4});
-  friendlyContext.__BOT_FIRE_TEST__.executeBotShot(friendlyBot,new Vec3(0,0,18),18,false);
+  const friendlyBot=makeBot({weapon:rifle,mag:4,sT:.031});
+  const friendlyOutcome=friendlyContext.__BOT_FIRE_TEST__.executeBotShot(friendlyBot,new Vec3(0,0,18),18,false);
+  assert.equal(friendlyOutcome,friendlyContext.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.FRIENDLY_FIRE);
   assert.equal(friendlyBot.mag,4);
+  near(friendlyBot.sT,.031,'fire-control must not schedule friendly-fire retry');
   assert.equal(friendlyBot.fireBurstRecoil,0);
 
   const rocket=makeWeapon({key:'rocket',isSniper:false,isRocket:true,hitscan:false,spread:.006,range:55});
   const rocketContext=createHarness();
-  const rocketBot=makeBot({weapon:rocket,mag:1});
-  rocketContext.__BOT_FIRE_TEST__.executeBotShot(rocketBot,new Vec3(0,0,8),8,false);
+  const rocketBot=makeBot({weapon:rocket,mag:1,sT:.047});
+  const rocketOutcome=rocketContext.__BOT_FIRE_TEST__.executeBotShot(rocketBot,new Vec3(0,0,8),8,false);
+  assert.equal(rocketOutcome,rocketContext.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.ROCKET_SAFETY);
   assert.equal(rocketBot.mag,1);
+  near(rocketBot.sT,.047,'fire-control must not schedule rocket-safety retry');
   assert.equal(rocketBot.fireBurstRecoil,0);
   assert.equal(rocketContext.events.some(e=>e[0]==='rocket'),false);
 });
@@ -130,7 +149,8 @@ test('an emitted firearm shot accumulates recoil after using first-shot stabilit
   const rifle=makeWeapon({key:'rifle',isSniper:false,hitscan:false,spread:.012,range:70});
   const bot=makeBot({weapon:rifle,mag:4});
   const first=context.__BOT_FIRE_TEST__.getBotShotStabilityModifiers(bot,rifle,false);
-  context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,18),18,false);
+  const outcome=context.__BOT_FIRE_TEST__.executeBotShot(bot,new Vec3(0,0,18),18,false);
+  assert.equal(outcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.EMITTED);
   const later=context.__BOT_FIRE_TEST__.getBotShotStabilityModifiers(bot,rifle,false);
   assert.equal(first.recoil,0);
   assert.ok(bot.fireBurstRecoil>0);
@@ -148,7 +168,8 @@ test('hitscan execution preserves damage, kill accounting and ammo consumption',
     hurt(amount){this.lastDamage=amount;this.alive=false;}
   };
   const bot=makeBot({targetEn:target,mag:2});
-  context.__BOT_FIRE_TEST__.executeBotShot(bot,target.group.position,18,false);
+  const outcome=context.__BOT_FIRE_TEST__.executeBotShot(bot,target.group.position,18,false);
+  assert.equal(outcome,context.__BOT_FIRE_TEST__.BOT_SHOT_OUTCOME.EMITTED);
   assert.equal(target.lastDamage,40);
   assert.equal(bot.mag,1);
   assert.equal(bot.kills,1);

@@ -1,6 +1,14 @@
 # Changelog — ZAP ZONE
 
-## Unreleased — 2026-09-30
+## Unreleased — 2026-10-01
+
+### Bot shot outcomes — safety retry no longer gets overwritten
+- added a closed `BOT_SHOT_OUTCOME` contract between fire-control and cadence: emitted, wall/smoke occluded, friendly-fire blocked and rocket-safety blocked;
+- removed next-attempt `sT` ownership from fire-control: `src/entities/bots.js` now forwards the concrete outcome and `bot-fire-cadence.js` is the single scheduler;
+- fixed a real safety-cadence bug where friendly-fire `.10..22s` and unsafe-rocket `.18s` backoffs were immediately overwritten by generic post-attempt cadence; these safety vetoes now preserve the unfired burst and keep bounded retry delays;
+- intentionally kept wall/smoke occlusion on the legacy full attempt cadence/burst path so the fix does not silently increase wall spam or reacquisition pressure;
+- emitted and occluded cadence keep their legacy RNG formulas/order; friendly-fire keeps exactly one bounded retry draw while generic cadence draws are skipped, and rocket-safety uses no cadence RNG;
+- added deterministic outcome/RNG regressions, no-scheduler-leak structural guards, updated AI owner maps/specs and the reusable `OUTCOME_DRIVEN_CADENCE` pattern.
 
 ### Bot burst recoil — emitted-shot accumulation and settle recovery
 - added a bounded per-bot `fireBurstRecoil` channel owned by fire-control and kept it separate from measured movement instability and suppression pressure;

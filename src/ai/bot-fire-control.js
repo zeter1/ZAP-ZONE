@@ -6,6 +6,13 @@ const _BOT_NEAR_MISS_TO_PLAYER=new THREE.Vector3(),_BOT_NEAR_MISS_POINT=new THRE
 const BOT_FIRE_MOVE_ENTER_TAU=.10;
 const BOT_FIRE_MOVE_RECOVER_TAU=.34;
 
+const BOT_SHOT_OUTCOME=Object.freeze({
+  EMITTED:'emitted',
+  OCCLUDED:'blocked-occluded',
+  FRIENDLY_FIRE:'blocked-friendly-fire',
+  ROCKET_SAFETY:'blocked-rocket-safety'
+});
+
 const BOT_FIRE_RECOIL_PROFILES=Object.freeze({
   rifle:{kick:.18,max:.78,recoverTau:.30,spreadScale:.72,hitscanPenaltyScale:.055},
   plasma:{kick:.15,max:.68,recoverTau:.28,spreadScale:.64,hitscanPenaltyScale:.05},
@@ -174,7 +181,7 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
       if(wp.hitscan)spawnInstantSniperTrace(from,missDir,Math.min(dist,18),missCol);
       else spawnTracer(from,missDir,Math.min(dist,18),missCol,wp.key);
     }
-    return;
+    return BOT_SHOT_OUTCOME.OCCLUDED;
   }
 
   let dir=aim.clone().sub(from).normalize();
@@ -188,13 +195,11 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
 
   const shotCol=bot.team==='ally'?0x8cbcff:wp.bCol;
   if(friendlyInLine(from,dir,bot.team,Math.max(2,dist*.88))){
-    bot.sT=.10+Math.random()*.12;
-    return;
+    return BOT_SHOT_OUTCOME.FRIENDLY_FIRE;
   }
   if(wp.isRocket&&(dist<10||friendlyNearPoint(aim,bot.team,5.2))){
     bot.weaponSwitchT=0;
-    bot.sT=.18;
-    return;
+    return BOT_SHOT_OUTCOME.ROCKET_SAFETY;
   }
 
   // Recoil is an emitted-shot fact, not an attempted-shot fact. Keep it after
@@ -212,7 +217,7 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
   if(wp.isRocket){
     spawnERkt(from,dir,wp.dmg*BOT_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*bot.baseDmgMul,bot.team,bot);
     bot.mag--;
-    return;
+    return BOT_SHOT_OUTCOME.EMITTED;
   }
 
   const pellets=wp.pellets||1;
@@ -265,4 +270,5 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
     }
   }
   bot.mag--;
+  return BOT_SHOT_OUTCOME.EMITTED;
 }

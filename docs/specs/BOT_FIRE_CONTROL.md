@@ -12,14 +12,14 @@
 - `updateBotFireMovementStability(bot,dt)` — continuous measured-movement instability/recovery.
 - `updateBotFireRecoilRecovery(bot,dt)` / `registerBotEmittedShotRecoil(bot,weapon)` — bounded per-bot burst recoil and emitted-shot event ownership.
 - `getBotShotStabilityModifiers(...)` — deterministic composition movement + burst recoil + suppression without owning RNG.
-- `executeBotShot(bot,target,dist,suppressMemory)` — LOS/smoke fail-close, spread, friendly-fire/rocket safety, emitted-shot recoil event, noise/audio/muzzle/casing, hitscan/projectile spawn, ammo consumption и near-miss suppression.
+- `executeBotShot(bot,target,dist,suppressMemory)` — LOS/smoke fail-close, spread, friendly-fire/rocket safety, emitted-shot recoil event, noise/audio/muzzle/casing, hitscan/projectile spawn, ammo consumption и near-miss suppression; всегда возвращает один `BOT_SHOT_OUTCOME`.
 - `dealBotDamageToCurrentTarget(bot,amount,dir)` — передача damage текущей цели, bot kill counters, team score и kill feed.
 - `botShotClosestApproachToPlayer(...)` — геометрия физического near-miss для suppression feedback.
 
 ## Ownership boundaries
 
 - `src/entities/bots.js` — **when/why to enter the fire branch**: FSM, reaction timers, broad fire gate, cadence initialization/timer decay, weapon-switch policy, utility planting и suppression-state reaction.
-- `src/ai/bot-fire-cadence.js` — post-shot `burstLeft`, burst reset/pause, next-shot `sT`, exact cadence RNG order и empty-mag reload handoff. См. `docs/specs/BOT_FIRE_CADENCE.md`.
+- `src/ai/bot-fire-cadence.js` — единственный owner next-attempt `sT`: outcome-aware burst consumption, safety retry, burst reset/pause, exact cadence RNG order и empty-mag reload handoff. См. `docs/specs/BOT_FIRE_CADENCE.md`.
 - `src/ai/tactics.js` — squad doctrine, suppressor/flanker assignment и coordinated utility policy; muzzle origin берёт у fire-control owner.
 - `src/weapons/system.js` — weapon definitions, damage/range/spread/rate/clip/reload data и shared weapon factories.
 - `src/combat/combat.js` — projectile/collision primitives, player-pressure limiter, friendly-fire queries и suppression plumbing.
@@ -27,6 +27,24 @@
 - `src/entities/bot-presentation.js` — weapon/body visual rig; fire-control не владеет pose.
 
 Итого: **sense → squad/FSM policy → fire gate → fire-control execution → post-shot cadence → combat primitives**.
+
+## Shot outcome contract
+
+`executeBotShot(...)` сообщает **факт исполнения**, а не планирует следующую попытку. Закрытый набор `BOT_SHOT_OUTCOME`:
+
+- `EMITTED` — projectile/hitscan реально исполнен и магазин уменьшен;
+- `OCCLUDED` — wall или smoke fail-close остановили попытку до spread/safety/emission; suppress-memory fire через smoke остаётся разрешённым существующим контрактом;
+- `FRIENDLY_FIRE` — направление после spread пересекает союзника;
+- `ROCKET_SAFETY` — ракета слишком близко или её impact-zone небезопасна для союзника.
+
+Инварианты seam:
+- fire-control **не пишет `bot.sT`** и не декрементирует `burstLeft`; caller обязан передать outcome в `applyBotFireCadence(bot,shotOutcome)`;
+- blocked outcome не расходует ammo и не регистрирует emitted-shot recoil/noise/muzzle/projectile;
+- `weaponSwitchT=0` для unsafe rocket остаётся execution-side safety signal, но retry delay принадлежит cadence owner;
+- unknown outcome не должен silently превращаться в обычный shot: cadence fail-fast защищает closed contract;
+- emitted и occluded ветки сохраняют legacy cadence/RNG order; friendly-fire сохраняет один bounded retry draw `.10 + random*.12`, но больше не запускает generic cadence tail; rocket-safety использует fixed `.18` без cadence RNG. Это намеренное изменение RNG **только** для safety-blocked попыток.
+
+Reusable attempt-vs-event pattern: `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`.
 
 ## Dependency / load-order contract
 
@@ -72,7 +90,7 @@ Contract:
 - wall/smoke fail-close, friendly-fire block и unsafe rocket attempt не расходуют магазин и **не увеличивают** `fireBurstRecoil`;
 - recoil composition не вызывает `Math.random()`: существующие spread/hit/cadence draws сохраняют прежний count/order;
 - movement и recoil имеют разные имена, lifecycle и tests; не сводить их в один generic `accuracyPenalty`, иначе следующий AI не сможет понять источник нестабильности;
-- post-attempt burst/cadence остаётся отдельным owner-ом. В текущем legacy contract caller вызывает cadence после firearm attempt даже когда fire-control safety gate не emitted a shot; менять attempt-vs-emitted cadence разрешено только отдельной задачей с controlled-RNG regression.
+- outcome-aware burst/cadence остаётся отдельным owner-ом: safety-blocked friendly/rocket attempts не расходуют реальный burst, а wall/smoke `OCCLUDED` намеренно сохраняет legacy attempt-cadence, чтобы не усилить pressure незаметно.
 
 Reusable cross-channel pattern: `docs/patterns/COMPOSED_FIRE_STABILITY.md`.
 
@@ -83,7 +101,7 @@ Reusable cross-channel pattern: `docs/patterns/COMPOSED_FIRE_STABILITY.md`.
 - rocket lead clamp `1.05`, plasma lead clamp `.42`, aim smoothing `.16 + aimSkill*.18`;
 - muzzle height `+1.22` и forward offset `.96`;
 - reload randomization `.86 .. 1.04`;
-- blocked-shot behavior и 20% short visual miss trace;
+- 20% short visual miss trace для occluded attempts; outcome/safety-retry semantics меняются только отдельной gameplay-задачей с controlled-RNG evidence;
 - suppression accuracy multipliers, friendly-fire gate и rocket safety distances;
 - hitscan range penalty / hit chance / player alignment threshold;
 - near-miss threshold `1.78` и cooldown semantics;
@@ -95,9 +113,10 @@ Reusable cross-channel pattern: `docs/patterns/COMPOSED_FIRE_STABILITY.md`.
 ## Verification oracles
 
 1. `node --test scripts/bot-fire-control-owner.test.mjs`.
-2. `node scripts/validate-structure.mjs` — owner/consumer/reverse guards и load graph.
-3. `node scripts/stamp-web-build.mjs --check`.
-4. HTTP Chrome boot + реальный `file://` menu smoke.
-5. Exact PR head Validate green; после merge — текущий main Validate либо явный `NOT VERIFIED`.
+2. `node --test scripts/bot-fire-cadence-owner.test.mjs`.
+3. `node scripts/validate-structure.mjs` — owner/consumer/reverse guards и load graph.
+4. `node scripts/stamp-web-build.mjs --check`.
+5. HTTP Chrome boot + реальный `file://` menu smoke.
+6. Exact PR/head or main Validate green на exact source commit.
 
 Behavior test важнее source grep: structural oracle фиксирует ownership, а `node:test` — observable semantics.

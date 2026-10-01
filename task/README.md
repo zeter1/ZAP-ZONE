@@ -12,4 +12,5 @@
 - чистый refactor не должен незаметно менять gameplay balance;
 - после source/runtime change обязательны build stamp, structure validation и browser smoke;
 - GitHub writes собирать в минимальное число логических commits и проверять Actions после записи;
-- randomized policy extraction обязана фиксировать short-circuit и точный RNG call count/order, если они наблюдаемы в gameplay.
+- randomized policy extraction обязана фиксировать short-circuit и точный RNG call count/order, если они наблюдаемы в gameplay;
+- attempt-vs-emitted, safety veto или blocked retry → сначала `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`, затем соответствующие fire-control/cadence specs и owner tests.
