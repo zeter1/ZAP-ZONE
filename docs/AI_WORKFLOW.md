@@ -35,7 +35,7 @@
 | Bot cover reevaluation / peek / chain / exit execution | `src/ai/bot-cover-execution.js` | cover/flank destination scoring; timer lifecycle; collision-limited locomotion; squad doctrine |
 | Bot engage-state movement intent / strafe + range matchups + objective pull | `src/ai/bot-engagement-movement.js` | FSM selection; weapon selection/fire; squad/frontline fact production; cover execution; final navigation/collision |
 | Bot weapon selection / hold hysteresis / reselection | `src/ai/bot-weapon-policy.js` | weapon data/scoring; FSM/fire gate; shot execution; visual implementation |
-| Bot fire-control execution | `src/ai/bot-fire-control.js` | broad fire gate/post-shot cadence; weapon selection; squad doctrine; projectile primitive ownership |
+| Bot fire-control execution | `src/ai/bot-fire-control.js` | broad fire gate/post-shot cadence; weapon selection; squad doctrine; projectile primitive ownership; movement/recoil state must stay separate |
 | Bot post-shot burst/cadence + RNG ordering | `src/ai/bot-fire-cadence.js` | broad fire gate; constructor/timer lifecycle; shot execution; weapon data |
 | Bot individual mine/bomb deployables | `src/ai/bot-deployables.js` | FSM/fire gate; squad smoke/frag doctrine; shared mine/bomb data, limits and player deployables |
 | Bot high-level state selection / priority ladder | `src/ai/bot-state-policy.js` | state fact production; stateCD decrement/gate; state movement/combat execution; squad doctrine |
@@ -74,7 +74,7 @@
 - bot cover reevaluation / peek-side probing / LOS+smoke acceptance / peek envelope / cover chain+exit → `docs/specs/BOT_COVER_EXECUTION.md` → `src/ai/bot-cover-execution.js` → `src/entities/bots.js` consumer;
 - bot engage strafe / role+opponent range matchup / Frontline pull / close-far pressure → `docs/specs/BOT_ENGAGEMENT_MOVEMENT.md` → `src/ai/bot-engagement-movement.js` → `src/entities/bots.js` consumer;
 - bot weapon selection / switch timer / hold hysteresis / unsafe-range reselection → `docs/specs/BOT_WEAPON_POLICY.md` → `src/ai/bot-weapon-policy.js` → `src/entities/bots.js` consumer;
-- bot fire-control / aim / muzzle / reload / shot execution / hit resolution → `docs/specs/BOT_FIRE_CONTROL.md` → `src/ai/bot-fire-control.js` → `src/entities/bots.js` + `src/ai/tactics.js` consumers;
+- bot fire-control / aim / muzzle / reload / measured movement stability / emitted-shot burst recoil+settle / shot execution / hit resolution → `docs/specs/BOT_FIRE_CONTROL.md` → `docs/patterns/COMPOSED_FIRE_STABILITY.md` when changing stability channels → `src/ai/bot-fire-control.js` → `src/entities/bots.js` + `src/ai/tactics.js` consumers;
 - bot post-shot burst/cadence / exact RNG order / pause / next-shot timer → `docs/specs/BOT_FIRE_CADENCE.md` → `src/ai/bot-fire-cadence.js` → `src/entities/bots.js` consumer;
 - bot mine/bomb eligibility / role+doctrine probability / deployment side effects → `docs/specs/BOT_DEPLOYABLES.md` → `src/ai/bot-deployables.js` → `src/entities/bots.js` consumer;
 - bot high-level state selection / transition priority / threshold edges / stateCD RNG → `docs/specs/BOT_STATE_POLICY.md` → `src/ai/bot-state-policy.js` → gated caller seam in `src/entities/bots.js`;
