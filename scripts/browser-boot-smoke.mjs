@@ -1,4 +1,5 @@
 import { setTimeout as sleep } from 'node:timers/promises';
+import { classifyBrowserDiagnostic, formatBrowserDiagnostic } from './browser-diagnostic-policy.mjs';
 
 const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
 const cdpWaitMs=Math.max(1000,Number(process.env.ZAP_CDP_WAIT_MS)||15000);
@@ -28,16 +29,14 @@ await new Promise((resolve,reject)=>{
   ws.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('HTTP smoke: CDP websocket failed'));},{once:true});
 });
 let nextId=1;
-const pending=new Map(),events=[];
+const pending=new Map(),events=[],fatalEvents=[];
 ws.addEventListener('message',event=>{
   const msg=JSON.parse(event.data);
-  if(msg.method==='Runtime.exceptionThrown'){
-    const d=msg.params?.exceptionDetails;
-    events.push('exception '+JSON.stringify({text:d?.text,line:d?.lineNumber,column:d?.columnNumber,url:d?.url,exception:d?.exception?.description}));
-  }else if(msg.method==='Runtime.consoleAPICalled'&&['error','warning'].includes(msg.params?.type)){
-    events.push('console.'+msg.params.type+' '+(msg.params.args||[]).map(x=>x.value??x.description??x.type).join(' '));
-  }else if(msg.method==='Log.entryAdded'&&['error','warning'].includes(msg.params?.entry?.level)){
-    events.push('log.'+msg.params.entry.level+' '+msg.params.entry.text);
+  const diagnostic=classifyBrowserDiagnostic(msg);
+  if(diagnostic){
+    const rendered=formatBrowserDiagnostic(diagnostic);
+    events.push(rendered);
+    if(diagnostic.fatal)fatalEvents.push(rendered);
   }
   if(!msg.id)return;
   const p=pending.get(msg.id);if(!p)return;
@@ -95,7 +94,12 @@ while(Date.now()<deadline){
       const tail=events.slice(-30);ws.close();
       throw new Error('HTTP smoke wall geometry contract failed; geometry='+JSON.stringify(geometry)+'; events='+JSON.stringify(tail));
     }
-    ws.close();console.log('HTTP browser boot smoke passed:',JSON.stringify({...state,wallGeometry:geometry}));process.exit(0);
+    if(fatalEvents.length){
+      const tail=events.slice(-30),fatalTail=fatalEvents.slice(-10);ws.close();
+      throw new Error('HTTP smoke observed fatal browser diagnostics after ready; state='+JSON.stringify(state)+'; fatal='+JSON.stringify(fatalTail)+'; events='+JSON.stringify(tail));
+    }
+    const tail=events.slice(-30);
+    ws.close();console.log('HTTP browser boot smoke passed:',JSON.stringify({...state,wallGeometry:geometry,diagnostics:tail}));process.exit(0);
   }
   if(state?.boot==='failed')break;
   await sleep(150);

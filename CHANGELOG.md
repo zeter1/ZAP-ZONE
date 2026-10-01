@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-10-01
 
+### Browser boot smoke — fatal runtime diagnostics now invalidate green readiness
+- fixed a CI blind spot where the HTTP Chrome/CDP smoke could report success after collecting an uncaught `Runtime.exceptionThrown`, `console.error` or error-level `Log.entryAdded` event as long as `data-zap-boot` still reached `ready`;
+- extracted one deterministic CDP diagnostic policy: runtime exceptions plus console/log errors are fatal, while warning-level events remain bounded, visible diagnostics instead of becoming blanket flaky failures;
+- added Node 22 policy regressions, wired them into `Validate`, kept the existing wall-geometry/runtime smoke assertions intact and documented the browser-error oracle/read route for future AI passes;
+- gameplay, balance, rendering and asset behavior are unchanged.
+
 ### Core wall-ray geometry — regression contract
 - added a focused regression around the canonical `firstWallHitDistance(...)` / `wallBetween(...)` owner: clear path, nearest-hit ordering, short segments and the existing 0.15 m target-end tolerance are now explicit behavior;
 - strengthened HTTP browser smoke with real Three.js BoxGeometry/Raycaster checks so the project verifies the engine primitive integration in addition to the deterministic Node harness;
