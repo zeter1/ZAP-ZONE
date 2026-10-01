@@ -1005,13 +1005,6 @@ for(const token of [
   if(!fireControl.includes(token))fail('bot fire-control owner contract missing: '+token);
 }
 for(const token of [
-  'function firstWallHitDistance(from,to,list){',
-  'const hitDist=_rcHits.length?_rcHits[0].distance:Infinity;',
-  'return Number.isFinite(firstWallHitDistance(from,to,list));'
-]){
-  if(!engine.includes(token))fail('core nearest-wall collision contract missing: '+token);
-}
-for(const token of [
   'const wallHitDist=firstWallHitDistance(from,aim,losMeshes);',
   'const wallBlocked=Number.isFinite(wallHitDist),smokeBlocked=smokeBlocksSight(from,aim);',
   'const missTraceDist=wallBlocked?Math.min(dist,18,wallHitDist):Math.min(dist,18);',
@@ -1177,6 +1170,13 @@ for(const token of ['const activeFrontline=frontlineZone();','frontlineContested
 }
 if(!tactics.includes('const frontlineBias=s=>'))fail('Frontline map bias must stay owned by tactics');
 const engine=readFileSync('src/core/engine.js','utf8');
+for(const token of [
+  'function firstWallHitDistance(from,to,list){',
+  'const hitDist=_rcHits.length?_rcHits[0].distance:Infinity;',
+  'return Number.isFinite(firstWallHitDistance(from,to,list));'
+]){
+  if(!engine.includes(token))fail('core nearest-wall collision contract missing: '+token);
+}
 if(!engine.includes("typeof triggerExplosionShockwave==='function'"))fail('explosion shockwave presentation hook missing');
 for(const file of presentationRasterAssets)if(engine.includes(file))fail('generated raster presentation asset must stay out of WebGL engine scene: '+file);
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null,impactVariant=\'normal\')',"typeof syncWorldWeaponPickupArt==='function'"]){

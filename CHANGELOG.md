@@ -7,7 +7,8 @@
 - added `firstWallHitDistance(...)` to the existing core raycast owner and made `wallBetween(...)` delegate to it, avoiding a second collision implementation;
 - wall-blocked feedback now clamps to the nearest opaque surface, while smoke-only feedback intentionally keeps the legacy 18m visual cap and suppress-memory behavior;
 - preserved the single visual-feedback RNG draw and all blocked-shot ammo/recoil/noise/damage/projectile/cadence invariants;
-- added deterministic wall/smoke regressions, structural ownership guards, AI navigation docs and the reusable `OCCLUSION_CONSISTENT_PRESENTATION` pattern.
+- added deterministic wall/smoke regressions, structural ownership guards, AI navigation docs and the reusable `OCCLUSION_CONSISTENT_PRESENTATION` pattern;
+- corrected the structure-oracle declaration order after CI exposed a TDZ in the new engine guard; the guard remains strict and runtime code is unchanged by that CI-only correction.
 
 ### Bot shot outcomes — safety retry no longer gets overwritten
 - added a closed `BOT_SHOT_OUTCOME` contract between fire-control and cadence: emitted, wall/smoke occluded, friendly-fire blocked and rocket-safety blocked;
