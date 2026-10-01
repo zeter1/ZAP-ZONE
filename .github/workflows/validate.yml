@@ -43,6 +43,7 @@ jobs:
           node --check scripts/validate-structure.mjs
           node --check scripts/stamp-web-build.mjs
           node --check scripts/projectile-ricochet.test.mjs
+          node --check scripts/engine-wall-geometry-owner.test.mjs
           node --check scripts/frontline-owner.test.mjs
           node --check scripts/bot-presentation-owner.test.mjs
           node --check scripts/bot-navigation-owner.test.mjs
@@ -64,6 +65,8 @@ jobs:
         run: node scripts/stamp-web-build.mjs --check
       - name: Project structure
         run: node scripts/validate-structure.mjs
+      - name: Wall geometry owner regressions
+        run: node --test scripts/engine-wall-geometry-owner.test.mjs
       - name: Projectile ricochet regressions
         run: node --test scripts/projectile-ricochet.test.mjs
       - name: Frontline owner regressions

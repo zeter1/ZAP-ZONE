@@ -34,7 +34,7 @@
 - bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
 - individual bot state orchestration / broad fire gate / flank+objective+support+search execution / HP+death lifecycle + stateCD/cadence timer lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, cover-execution, engagement-movement, weapon-policy, fire-control, fire-cadence, deployables and state-policy owners rather than reimplementing them;
 - pickups → `src/entities/pickups.js`;
-- rendering/arena/collision / nearest opaque-wall hit distance → `src/core/engine.js`;
+- rendering/arena/collision / nearest opaque-wall hit distance → `docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md` → `src/core/engine.js`; focused geometry oracle → `scripts/engine-wall-geometry-owner.test.mjs`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
 - validation/cache build → `scripts/validate-structure.mjs` + `scripts/stamp-web-build.mjs`.
 

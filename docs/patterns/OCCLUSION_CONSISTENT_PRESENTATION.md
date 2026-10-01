@@ -43,10 +43,13 @@ Presentation-only feedback после blocked outcome не имеет права
 4. blocked path не получает gameplay side effects;
 5. boolean visibility helper и nearest-hit helper не расходятся по geometry owner;
 6. runtime smoke подтверждает classic-script load order и отсутствие ReferenceError.
+7. geometry-owner regression отдельно фиксирует `Infinity`, nearest-hit ordering и `dist - 0.15`; HTTP smoke повторяет ключевые случаи на реальном Three.js Mesh/Raycaster, а не только на test double.
 
 ## 6. Маршрут чтения в ZAP ZONE
 
 `src/core/engine.js:firstWallHitDistance`
+→ `scripts/engine-wall-geometry-owner.test.mjs` (точный owner contract)
+→ `scripts/browser-boot-smoke.mjs` (real Three.js geometry sanity)
 → `docs/specs/BOT_FIRE_CONTROL.md`
 → `src/ai/bot-fire-control.js:executeBotShot`
 → `scripts/bot-fire-control-owner.test.mjs`

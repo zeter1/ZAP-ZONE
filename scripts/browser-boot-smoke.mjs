@@ -57,12 +57,46 @@ async function evaluate(expression){
   return result.result?.value;
 }
 const stateExpr="(()=>({boot:document.documentElement.dataset.zapBoot||'',loadingHidden:!!document.getElementById('loading')?.classList.contains('hidden'),readyState:document.readyState,scripts:[...document.scripts].map(s=>s.src||s.id||'inline').slice(-20),globals:{perception:typeof updateBotTargetPerception,bots:typeof Enemy,runtime:typeof loop,noise:typeof BOT_NOISE_EVENTS,preload:typeof preloadGameContent}}))()";
+const geometryExpr=`(()=>{
+  const from=new THREE.Vector3(0,0,0),to=new THREE.Vector3(10,0,0);
+  const material=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
+  const makeWall=(x,width)=>{
+    const mesh=new THREE.Mesh(new THREE.BoxGeometry(width,2,2),material);
+    mesh.position.set(x,0,0);mesh.updateMatrixWorld(true);return mesh;
+  };
+  const nearWall=makeWall(3,.2),farWall=makeWall(6,.2),endpointWall=makeWall(9.95,.1);
+  try{
+    const noHit=firstWallHitDistance(from,to,[]);
+    const nearest=firstWallHitDistance(from,to,[farWall,nearWall]);
+    const endpointDistance=firstWallHitDistance(from,to,[endpointWall]);
+    const result={
+      noHitClear:!Number.isFinite(noHit),
+      nearest,
+      nearestOk:Number.isFinite(nearest)&&Math.abs(nearest-2.9)<1e-4,
+      endpointClear:!Number.isFinite(endpointDistance),
+      wallBetweenHit:wallBetween(from,to,[farWall,nearWall]),
+      wallBetweenClear:!wallBetween(from,to,[]),
+      wallBetweenEndpointClear:!wallBetween(from,to,[endpointWall])
+    };
+    result.ok=result.noHitClear&&result.nearestOk&&result.endpointClear&&result.wallBetweenHit&&result.wallBetweenClear&&result.wallBetweenEndpointClear;
+    return result;
+  }finally{
+    nearWall.geometry.dispose();farWall.geometry.dispose();endpointWall.geometry.dispose();material.dispose();
+  }
+})()`;
 
 const deadline=Date.now()+18000;
 let state=null;
 while(Date.now()<deadline){
   state=await evaluate(stateExpr);
-  if(state?.boot==='ready'){ws.close();console.log('HTTP browser boot smoke passed:',JSON.stringify(state));process.exit(0);}
+  if(state?.boot==='ready'){
+    const geometry=await evaluate(geometryExpr);
+    if(!geometry?.ok){
+      const tail=events.slice(-30);ws.close();
+      throw new Error('HTTP smoke wall geometry contract failed; geometry='+JSON.stringify(geometry)+'; events='+JSON.stringify(tail));
+    }
+    ws.close();console.log('HTTP browser boot smoke passed:',JSON.stringify({...state,wallGeometry:geometry}));process.exit(0);
+  }
   if(state?.boot==='failed')break;
   await sleep(150);
 }

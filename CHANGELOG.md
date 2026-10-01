@@ -2,6 +2,11 @@
 
 ## Unreleased — 2026-10-01
 
+### Core wall-ray geometry — regression contract
+- added a focused regression around the canonical `firstWallHitDistance(...)` / `wallBetween(...)` owner: clear path, nearest-hit ordering, short segments and the existing 0.15 m target-end tolerance are now explicit behavior;
+- strengthened HTTP browser smoke with real Three.js BoxGeometry/Raycaster checks so the project verifies the engine primitive integration in addition to the deterministic Node harness;
+- wired the geometry regression into Node 22 CI and documented the shortest AI reading route; gameplay geometry, collision tuning and balance are unchanged.
+
 ### Bot occlusion feedback — blocked traces stop at cover
 - fixed a presentation bug where the 20% visual-only trace for an `OCCLUDED` bot attempt could extend through opaque cover even though gameplay correctly failed closed;
 - added `firstWallHitDistance(...)` to the existing core raycast owner and made `wallBetween(...)` delegate to it, avoiding a second collision implementation;
