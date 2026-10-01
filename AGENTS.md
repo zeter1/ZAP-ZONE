@@ -37,7 +37,8 @@
 - rendering/arena/collision / nearest opaque-wall hit distance → `docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md` → `src/core/engine.js`; focused geometry oracle → `scripts/engine-wall-geometry-owner.test.mjs`;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
 - validation/cache build → `scripts/validate-structure.mjs` + `scripts/stamp-web-build.mjs`;
-- browser/CDP runtime-error oracle → `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md` → `scripts/browser-diagnostic-policy.mjs`; consumers → `scripts/browser-boot-smoke.mjs` (HTTP) + `scripts/browser-menu-smoke.mjs` (`file://`).
+- browser/CDP smoke transport/session → `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` → `scripts/browser-cdp-session.mjs`; consumers → `scripts/browser-boot-smoke.mjs` (HTTP) + `scripts/browser-menu-smoke.mjs` (`file://`);
+- browser/CDP runtime-error classification → `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md` → `scripts/browser-diagnostic-policy.mjs`; transport owner consumes this policy instead of reimplementing it.
 
 Invariant: один semantic owner на поведение. При extraction переносите behavior + invariants + test/source oracle; не оставляйте дублирующую реализацию.
 

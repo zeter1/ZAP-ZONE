@@ -1,54 +1,18 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import { classifyBrowserDiagnostic, formatBrowserDiagnostic } from './browser-diagnostic-policy.mjs';
+import { openBrowserCdpSession } from './browser-cdp-session.mjs';
 
 const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
 const cdpWaitMs=Math.max(1000,Number(process.env.ZAP_CDP_WAIT_MS)||15000);
-const cdpDeadline=Date.now()+cdpWaitMs;
-let page=null,lastCdpError='CDP endpoint not queried yet';
-while(Date.now()<cdpDeadline){
-  try{
-    const response=await fetch(endpoint);
-    if(!response.ok)throw new Error('HTTP '+response.status);
-    const pages=await response.json();
-    page=pages.find(p=>p.type==='page'&&p.url.startsWith('http://127.0.0.1:8000'))||pages.find(p=>p.type==='page');
-    if(page?.webSocketDebuggerUrl)break;
-    lastCdpError='CDP responded without a debuggable page';
-  }catch(error){
-    lastCdpError=error instanceof Error?error.message:String(error);
-  }
-  await sleep(100);
-}
-if(!page?.webSocketDebuggerUrl){
-  throw new Error('HTTP smoke: CDP page was not available within '+cdpWaitMs+'ms; endpoint='+endpoint+'; last='+lastCdpError);
-}
-
-const ws=new WebSocket(page.webSocketDebuggerUrl);
-await new Promise((resolve,reject)=>{
-  const timer=setTimeout(()=>reject(new Error('HTTP smoke: CDP websocket timeout')),4000);
-  ws.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
-  ws.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('HTTP smoke: CDP websocket failed'));},{once:true});
+const session=await openBrowserCdpSession({
+  endpoint,
+  waitMs:cdpWaitMs,
+  pageMatches:page=>page.url.startsWith('http://127.0.0.1:8000'),
+  pageUnavailableMessage:({waitMs,endpoint,lastError})=>
+    'HTTP smoke: CDP page was not available within '+waitMs+'ms; endpoint='+endpoint+'; last='+lastError,
+  websocketTimeoutMessage:'HTTP smoke: CDP websocket timeout',
+  websocketErrorMessage:'HTTP smoke: CDP websocket failed'
 });
-let nextId=1;
-const pending=new Map(),events=[],fatalEvents=[];
-ws.addEventListener('message',event=>{
-  const msg=JSON.parse(event.data);
-  const diagnostic=classifyBrowserDiagnostic(msg);
-  if(diagnostic){
-    const rendered=formatBrowserDiagnostic(diagnostic);
-    events.push(rendered);
-    if(diagnostic.fatal)fatalEvents.push(rendered);
-  }
-  if(!msg.id)return;
-  const p=pending.get(msg.id);if(!p)return;
-  pending.delete(msg.id);
-  if(msg.error)p.reject(new Error(JSON.stringify(msg.error)));else p.resolve(msg.result);
-});
-function send(method,params={}){
-  const id=nextId++;
-  return new Promise((resolve,reject)=>{pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});
-}
-await send('Runtime.enable');
-await send('Log.enable');
+const {send}=session;
 
 async function evaluate(expression){
   const result=await send('Runtime.evaluate',{expression,returnByValue:true});
@@ -91,19 +55,19 @@ while(Date.now()<deadline){
   if(state?.boot==='ready'){
     const geometry=await evaluate(geometryExpr);
     if(!geometry?.ok){
-      const tail=events.slice(-30);ws.close();
+      const tail=session.diagnosticsTail();session.close();
       throw new Error('HTTP smoke wall geometry contract failed; geometry='+JSON.stringify(geometry)+'; events='+JSON.stringify(tail));
     }
-    if(fatalEvents.length){
-      const tail=events.slice(-30),fatalTail=fatalEvents.slice(-10);ws.close();
+    if(session.hasFatalDiagnostics()){
+      const tail=session.diagnosticsTail(),fatalTail=session.fatalDiagnosticsTail();session.close();
       throw new Error('HTTP smoke observed fatal browser diagnostics after ready; state='+JSON.stringify(state)+'; fatal='+JSON.stringify(fatalTail)+'; events='+JSON.stringify(tail));
     }
-    const tail=events.slice(-30);
-    ws.close();console.log('HTTP browser boot smoke passed:',JSON.stringify({...state,wallGeometry:geometry,diagnostics:tail}));process.exit(0);
+    const tail=session.diagnosticsTail();
+    session.close();console.log('HTTP browser boot smoke passed:',JSON.stringify({...state,wallGeometry:geometry,diagnostics:tail}));process.exit(0);
   }
   if(state?.boot==='failed')break;
   await sleep(150);
 }
-const tail=events.slice(-30);
-ws.close();
+const tail=session.diagnosticsTail();
+session.close();
 throw new Error('HTTP boot did not become ready; state='+JSON.stringify(state)+'; events='+JSON.stringify(tail));

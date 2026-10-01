@@ -48,6 +48,8 @@
 | Browser game session | `src/game/session.js` | per-frame simulation |
 | Tactical minimap | `src/ui/minimap.js` | collision authority |
 | Frame simulation / boot | `src/game/runtime.js` | browser lifecycle listeners |
+| Browser/CDP smoke transport/session | `scripts/browser-cdp-session.mjs` | diagnostic severity; HTTP/`file://` product assertions |
+| Browser diagnostic severity/format | `scripts/browser-diagnostic-policy.mjs` | target discovery; WebSocket lifecycle; product assertions |
 
 ## Ключевые invariants
 
@@ -80,6 +82,8 @@
 - bot mine/bomb eligibility / role+doctrine probability / deployment side effects → `docs/specs/BOT_DEPLOYABLES.md` → `src/ai/bot-deployables.js` → `src/entities/bots.js` consumer;
 - bot high-level state selection / transition priority / threshold edges / stateCD RNG → `docs/specs/BOT_STATE_POLICY.md` → `src/ai/bot-state-policy.js` → gated caller seam in `src/entities/bots.js`;
 - bot geometry / hit meshes / weapon grips / two-hand arm rig → `docs/specs/BOT_PRESENTATION.md` → `src/entities/bot-presentation.js` → `src/entities/bots.js` consumer;
+- browser/CDP target discovery / WebSocket / request multiplexing / shared diagnostic plumbing → `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` → `scripts/browser-cdp-session.mjs` → concrete smoke;
+- browser diagnostic severity / fatal-vs-warning policy → `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md` → `scripts/browser-diagnostic-policy.mjs`; session owner only transports and records this policy;
 - cache-busting / ручная публикация → README + `scripts/stamp-web-build.mjs`;
 - CI failure → `.github/workflows/validate.yml`, затем failed job/step/log;
 - следующий небольшой кусок работы → `task/`.
@@ -112,7 +116,8 @@
 | `src/**` | Node syntax + build stamp + structure validation + browser smoke |
 | Projectile ricochet / ballistic bounce | `node --test scripts/projectile-ricochet.test.mjs` + penetration-before-ricochet guard + build stamp + dual-runtime smoke |
 | session/menu | structure owner guard + HTTP boot + реальный `file://` Chrome/CDP smoke |
-| browser/CDP diagnostic policy | `node --test scripts/browser-diagnostic-policy.test.mjs` + affected real HTTP/`file://` smoke; both consumers must share the policy, fatal diagnostics must be empty before success, warnings stay observable |
+| browser/CDP session transport | `node --test scripts/browser-cdp-session.test.mjs` + diagnostic-policy regression + both real HTTP/`file://` smokes; consumers must not recreate WebSocket/request/diagnostic plumbing |
+| browser/CDP diagnostic policy | `node --test scripts/browser-diagnostic-policy.test.mjs` + affected real HTTP/`file://` smoke; severity remains single-owner, fatal diagnostics must be empty before success, warnings stay observable |
 | assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
 | Frontline objective | `node --test scripts/frontline-owner.test.mjs` + structure owner guards + build stamp + dual-runtime smoke |
@@ -136,9 +141,9 @@
 
 ## Pattern routing — browser runtime diagnostics
 
-Если Chrome/CDP smoke может стать зелёным по readiness-state, но параллельно собирает browser errors, сначала читать `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md`. Классификацию `Runtime.exceptionThrown`, console error/warning и Log error/warning не дублировать в consumer-скриптах: policy owner — `scripts/browser-diagnostic-policy.mjs`, а HTTP и `file://` consumers только собирают события и применяют fatal gate перед success.
+Если задача касается target discovery, WebSocket lifecycle, CDP request/response plumbing или общей diagnostic collection, сначала читать `docs/patterns/CDP_SMOKE_SESSION_OWNER.md`: transport owner — `scripts/browser-cdp-session.mjs`, а HTTP и `file://` consumers держат только свои product assertions. Если меняется severity/fatal-vs-warning semantics, затем читать `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md`; policy owner — `scripts/browser-diagnostic-policy.mjs`, и transport helper не должен дублировать классификатор.
 
-Короткий read-set: `task/*.md → BROWSER_RUNTIME_ERROR_ORACLE.md → browser-diagnostic-policy.mjs → конкретный smoke → Validate block`.
+Короткий read-set: `task/*.md → CDP_SMOKE_SESSION_OWNER.md → browser-cdp-session.mjs → BROWSER_RUNTIME_ERROR_ORACLE.md (только для severity/diagnostics) → конкретный smoke → Validate block`.
 
 ## Pattern routing — measured runtime facts
 

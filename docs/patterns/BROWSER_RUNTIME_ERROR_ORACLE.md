@@ -26,6 +26,10 @@ Readiness alone is not proof that the page was healthy. An uncaught JavaScript e
 
 Do not duplicate this table as ad-hoc string matching inside individual smokes. A consumer records the formatted diagnostic, separately tracks `fatal === true`, and checks the fatal set immediately before reporting success. Enable both `Runtime` and `Log` before the consumer starts declaring readiness/interactivity so exception, console and browser/network diagnostics share one observation window.
 
+## Session transport owner
+
+`scripts/browser-cdp-session.mjs` owns target discovery, WebSocket lifecycle, request/response multiplexing, Runtime/Log enablement and bounded diagnostic collection for both browser smokes. Read `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` before changing those mechanics. This document and `browser-diagnostic-policy.mjs` still own **severity semantics**; the session helper consumes the classifier but must not grow a second error/warning policy. Product-specific HTTP geometry and direct-`file://` menu/asset assertions remain in their concrete consumers.
+
 ## Fail-closed, not warning-hostile
 
 - Unhandled runtime exceptions and true error-level browser diagnostics invalidate a green smoke even when boot already says `ready`.
@@ -50,7 +54,7 @@ Mutation question: if `console.error` or `Runtime.exceptionThrown` were accident
 
 ## Reading route
 
-`task/*.md` → this pattern → `scripts/browser-diagnostic-policy.mjs` → the concrete smoke consumer → `.github/workflows/validate.yml`.
+`task/*.md` → `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` for transport/lifecycle → this pattern for severity → `scripts/browser-diagnostic-policy.mjs` → the concrete smoke consumer → `.github/workflows/validate.yml`.
 
 Do not read gameplay owners unless the browser evidence points to a gameplay/runtime defect.
 

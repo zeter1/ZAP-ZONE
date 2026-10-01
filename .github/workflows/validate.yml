@@ -60,6 +60,8 @@ jobs:
           node --check scripts/bot-fire-cadence-owner.test.mjs
           node --check scripts/bot-state-policy-owner.test.mjs
           node --check scripts/bot-deployables-owner.test.mjs
+          node --check scripts/browser-cdp-session.mjs
+          node --check scripts/browser-cdp-session.test.mjs
           node --check scripts/browser-diagnostic-policy.mjs
           node --check scripts/browser-diagnostic-policy.test.mjs
           node --check scripts/browser-boot-smoke.mjs
@@ -104,6 +106,8 @@ jobs:
         run: node --test scripts/bot-state-policy-owner.test.mjs
       - name: Bot deployables regressions
         run: node --test scripts/bot-deployables-owner.test.mjs
+      - name: Browser CDP session regressions
+        run: node --test scripts/browser-cdp-session.test.mjs
       - name: Browser diagnostic policy regressions
         run: node --test scripts/browser-diagnostic-policy.test.mjs
 

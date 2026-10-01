@@ -1,57 +1,18 @@
 import { setTimeout as sleep } from 'node:timers/promises';
-import { classifyBrowserDiagnostic, formatBrowserDiagnostic } from './browser-diagnostic-policy.mjs';
+import { openBrowserCdpSession } from './browser-cdp-session.mjs';
 
 const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
 const cdpWaitMs=Math.max(1000,Number(process.env.ZAP_CDP_WAIT_MS)||15000);
-const cdpDeadline=Date.now()+cdpWaitMs;
-let page=null,lastCdpError='CDP endpoint not queried yet';
-while(Date.now()<cdpDeadline){
-  try{
-    const response=await fetch(endpoint);
-    if(!response.ok)throw new Error('HTTP '+response.status);
-    const pages=await response.json();
-    page=pages.find(p=>p.type==='page'&&p.url.startsWith('file://'))||pages.find(p=>p.type==='page');
-    if(page?.webSocketDebuggerUrl)break;
-    lastCdpError='CDP responded without a debuggable page';
-  }catch(error){
-    lastCdpError=error instanceof Error?error.message:String(error);
-  }
-  await sleep(100);
-}
-if(!page?.webSocketDebuggerUrl){
-  throw new Error('file:// smoke: CDP page was not available within '+cdpWaitMs+'ms; endpoint='+endpoint+'; last='+lastCdpError);
-}
-
-const ws=new WebSocket(page.webSocketDebuggerUrl);
-await new Promise((resolve,reject)=>{
-  const timer=setTimeout(()=>reject(new Error('CDP websocket timeout')),4000);
-  ws.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
-  ws.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('CDP websocket failed'));},{once:true});
+const session=await openBrowserCdpSession({
+  endpoint,
+  waitMs:cdpWaitMs,
+  pageMatches:page=>page.url.startsWith('file://'),
+  pageUnavailableMessage:({waitMs,endpoint,lastError})=>
+    'file:// smoke: CDP page was not available within '+waitMs+'ms; endpoint='+endpoint+'; last='+lastError,
+  websocketTimeoutMessage:'CDP websocket timeout',
+  websocketErrorMessage:'CDP websocket failed'
 });
-let nextId=1;
-const pending=new Map(),events=[],fatalEvents=[];
-ws.addEventListener('message',event=>{
-  const msg=JSON.parse(event.data);
-  const diagnostic=classifyBrowserDiagnostic(msg);
-  if(diagnostic){
-    const rendered=formatBrowserDiagnostic(diagnostic);
-    events.push(rendered);
-    if(diagnostic.fatal)fatalEvents.push(rendered);
-  }
-  if(!msg.id)return;
-  const p=pending.get(msg.id);if(!p)return;
-  pending.delete(msg.id);
-  if(msg.error)p.reject(new Error(JSON.stringify(msg.error)));else p.resolve(msg.result);
-});
-function send(method,params={}){
-  const id=nextId++;
-  return new Promise((resolve,reject)=>{
-    pending.set(id,{resolve,reject});
-    ws.send(JSON.stringify({id,method,params}));
-  });
-}
-await send('Runtime.enable');
-await send('Log.enable');
+const {send}=session;
 
 const deadline=Date.now()+12000;
 let ready=false;
@@ -172,14 +133,14 @@ await mouseClick(opened.closeX,opened.closeY);
 await sleep(80);
 const settingsClosed=await evaluate("!document.getElementById('settings-modal')?.classList.contains('on')");
 if(!settingsClosed){
-  ws.close();
+  session.close();
   throw new Error('real CDP click did not close settings');
 }
-if(fatalEvents.length){
-  const tail=events.slice(-30),fatalTail=fatalEvents.slice(-10);
-  ws.close();
+if(session.hasFatalDiagnostics()){
+  const tail=session.diagnosticsTail(),fatalTail=session.fatalDiagnosticsTail();
+  session.close();
   throw new Error('file:// smoke observed fatal browser diagnostics; fatal='+JSON.stringify(fatalTail)+'; events='+JSON.stringify(tail));
 }
-const diagnostics=events.slice(-30);
-ws.close();
+const diagnostics=session.diagnosticsTail();
+session.close();
 console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,diagnostics}));
