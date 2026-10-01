@@ -63,6 +63,7 @@ jobs:
           node --check scripts/browser-diagnostic-policy.mjs
           node --check scripts/browser-diagnostic-policy.test.mjs
           node --check scripts/browser-boot-smoke.mjs
+          node --check scripts/browser-menu-smoke.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
       - name: Project structure

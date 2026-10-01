@@ -112,7 +112,7 @@
 | `src/**` | Node syntax + build stamp + structure validation + browser smoke |
 | Projectile ricochet / ballistic bounce | `node --test scripts/projectile-ricochet.test.mjs` + penetration-before-ricochet guard + build stamp + dual-runtime smoke |
 | session/menu | structure owner guard + HTTP boot + реальный `file://` Chrome/CDP smoke |
-| browser/CDP diagnostic policy | `node --test scripts/browser-diagnostic-policy.test.mjs` + concrete browser smoke; fatal diagnostics must be empty before success, warnings stay observable |
+| browser/CDP diagnostic policy | `node --test scripts/browser-diagnostic-policy.test.mjs` + affected real HTTP/`file://` smoke; both consumers must share the policy, fatal diagnostics must be empty before success, warnings stay observable |
 | assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
 | Frontline objective | `node --test scripts/frontline-owner.test.mjs` + structure owner guards + build stamp + dual-runtime smoke |
@@ -136,7 +136,7 @@
 
 ## Pattern routing — browser runtime diagnostics
 
-Если Chrome/CDP smoke может стать зелёным по readiness-state, но параллельно собирает browser errors, сначала читать `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md`. Классификацию `Runtime.exceptionThrown`, console error/warning и Log error/warning не дублировать в consumer-скриптах: policy owner — `scripts/browser-diagnostic-policy.mjs`, а конкретный smoke только собирает события и применяет fatal gate перед success.
+Если Chrome/CDP smoke может стать зелёным по readiness-state, но параллельно собирает browser errors, сначала читать `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md`. Классификацию `Runtime.exceptionThrown`, console error/warning и Log error/warning не дублировать в consumer-скриптах: policy owner — `scripts/browser-diagnostic-policy.mjs`, а HTTP и `file://` consumers только собирают события и применяют fatal gate перед success.
 
 Короткий read-set: `task/*.md → BROWSER_RUNTIME_ERROR_ORACLE.md → browser-diagnostic-policy.mjs → конкретный smoke → Validate block`.
 

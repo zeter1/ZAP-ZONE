@@ -1,4 +1,5 @@
 import { setTimeout as sleep } from 'node:timers/promises';
+import { classifyBrowserDiagnostic, formatBrowserDiagnostic } from './browser-diagnostic-policy.mjs';
 
 const endpoint=process.env.ZAP_CDP_ENDPOINT||'http://127.0.0.1:9222/json/list';
 const cdpWaitMs=Math.max(1000,Number(process.env.ZAP_CDP_WAIT_MS)||15000);
@@ -28,9 +29,15 @@ await new Promise((resolve,reject)=>{
   ws.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('CDP websocket failed'));},{once:true});
 });
 let nextId=1;
-const pending=new Map();
+const pending=new Map(),events=[],fatalEvents=[];
 ws.addEventListener('message',event=>{
   const msg=JSON.parse(event.data);
+  const diagnostic=classifyBrowserDiagnostic(msg);
+  if(diagnostic){
+    const rendered=formatBrowserDiagnostic(diagnostic);
+    events.push(rendered);
+    if(diagnostic.fatal)fatalEvents.push(rendered);
+  }
   if(!msg.id)return;
   const p=pending.get(msg.id);if(!p)return;
   pending.delete(msg.id);
@@ -44,6 +51,7 @@ function send(method,params={}){
   });
 }
 await send('Runtime.enable');
+await send('Log.enable');
 
 const deadline=Date.now()+12000;
 let ready=false;
@@ -163,7 +171,15 @@ if(opened.pendingLoads!==0)throw new Error('file:// audio loads were started: '+
 await mouseClick(opened.closeX,opened.closeY);
 await sleep(80);
 const settingsClosed=await evaluate("!document.getElementById('settings-modal')?.classList.contains('on')");
+if(!settingsClosed){
+  ws.close();
+  throw new Error('real CDP click did not close settings');
+}
+if(fatalEvents.length){
+  const tail=events.slice(-30),fatalTail=fatalEvents.slice(-10);
+  ws.close();
+  throw new Error('file:// smoke observed fatal browser diagnostics; fatal='+JSON.stringify(fatalTail)+'; events='+JSON.stringify(tail));
+}
+const diagnostics=events.slice(-30);
 ws.close();
-
-if(!settingsClosed)throw new Error('real CDP click did not close settings');
-console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady}));
+console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,diagnostics}));

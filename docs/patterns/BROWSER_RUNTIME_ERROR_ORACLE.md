@@ -24,7 +24,7 @@ Readiness alone is not proof that the page was healthy. An uncaught JavaScript e
 | `Log.entryAdded` with `entry.level: "warning"` | warning | collect + show, non-fatal |
 | unrelated/info/debug traffic | — | ignore |
 
-Do not duplicate this table as ad-hoc string matching inside individual smokes. A consumer records the formatted diagnostic, separately tracks `fatal === true`, and checks the fatal set immediately before reporting success.
+Do not duplicate this table as ad-hoc string matching inside individual smokes. A consumer records the formatted diagnostic, separately tracks `fatal === true`, and checks the fatal set immediately before reporting success. Enable both `Runtime` and `Log` before the consumer starts declaring readiness/interactivity so exception, console and browser/network diagnostics share one observation window.
 
 ## Fail-closed, not warning-hostile
 
@@ -44,7 +44,7 @@ The cheap deterministic layer is `node --test scripts/browser-diagnostic-policy.
 - console/log warnings are observable but non-fatal;
 - unrelated CDP traffic cannot turn the smoke flaky.
 
-The browser layer remains authoritative for wiring: the real HTTP Chrome/CDP smoke must still pass on the application. A future consumer change to the `file://` smoke also requires the real local-file smoke.
+The browser layer remains authoritative for wiring: both current consumers — `scripts/browser-boot-smoke.mjs` over HTTP and `scripts/browser-menu-smoke.mjs` over direct `file://` — use the same policy and must pass their real Chrome/CDP smoke. A change to either consumer requires the corresponding real browser run; a shared-policy change requires both.
 
 Mutation question: if `console.error` or `Runtime.exceptionThrown` were accidentally reclassified as non-fatal, the focused policy regression must fail.
 

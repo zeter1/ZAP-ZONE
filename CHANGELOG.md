@@ -7,7 +7,8 @@
 - extracted one deterministic CDP diagnostic policy: runtime exceptions plus console/log errors are fatal, while warning-level events remain bounded, visible diagnostics instead of becoming blanket flaky failures;
 - added Node 22 policy regressions, wired them into `Validate`, kept the existing wall-geometry/runtime smoke assertions intact and documented the browser-error oracle/read route for future AI passes;
 - the stronger smoke exposed and fixed a real hosted presentation bug: dynamic `GAME_ASSETS` URLs used inside CSS custom properties were resolving under `src/styles/` and returning 404; the canonical asset URL owner now resolves against `document.baseURI` for HTTP(S) and direct `file://` use;
-- added an explicit SVG favicon so headless/browser runs no longer generate an unrelated `/favicon.ico` 404; gameplay and balance are unchanged.
+- added an explicit SVG favicon so headless/browser runs no longer generate an unrelated `/favicon.ico` 404; gameplay and balance are unchanged;
+- extended the same fatal-diagnostic oracle to the real direct-`file://` menu smoke without weakening its generated-art parity, settings-click or no-local-WAV assertions; the script is now also syntax-checked explicitly in CI.
 
 ### Core wall-ray geometry — regression contract
 - added a focused regression around the canonical `firstWallHitDistance(...)` / `wallBetween(...)` owner: clear path, nearest-hit ordering, short segments and the existing 0.15 m target-end tolerance are now explicit behavior;
