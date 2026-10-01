@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-10-01
 
+### Browser/CDP session — individual command waits are now bounded
+- fixed a CI reliability gap where one CDP command could remain pending indefinitely while the WebSocket stayed open, leaving the outer 35/40-second shell timeout to kill the smoke without the failing command context;
+- the shared session owner now gives every CDP request a 5-second response deadline, reports only the method and request id on timeout, and deliberately omits request params/evaluated page data from the error;
+- response, synchronous send failure, explicit close and socket failure all remove pending state and clear the associated timer through one cleanup path, so HTTP and direct-`file://` smokes inherit identical behavior automatically;
+- added deterministic fake-WebSocket/timer regressions for normal-response cleanup, hung-command timeout privacy and socket-failure exactly-once cleanup; diagnostic severity and all product-specific browser assertions are unchanged.
+
 ### Browser boot smoke — fatal runtime diagnostics now invalidate green readiness
 - fixed a CI blind spot where the HTTP Chrome/CDP smoke could report success after collecting an uncaught `Runtime.exceptionThrown`, `console.error` or error-level `Log.entryAdded` event as long as `data-zap-boot` still reached `ready`;
 - extracted one deterministic CDP diagnostic policy: runtime exceptions plus console/log errors are fatal, while warning-level events remain bounded, visible diagnostics instead of becoming blanket flaky failures;

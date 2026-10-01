@@ -14,6 +14,6 @@
 - GitHub writes собирать в минимальное число логических commits и проверять Actions после записи;
 - randomized policy extraction обязана фиксировать short-circuit и точный RNG call count/order, если они наблюдаемы в gameplay;
 - collision-derived presentation fix должен получать distance/point из существующего collision owner; не дублировать raycast/geometry policy внутри AI/UI;
-- browser/CDP target discovery / WebSocket / request plumbing / lifecycle drift → сначала `docs/patterns/CDP_SMOKE_SESSION_OWNER.md`, затем `scripts/browser-cdp-session.mjs` и concrete smoke consumer;
+- browser/CDP target discovery / WebSocket / request plumbing / hung command / pending cleanup → сначала `docs/patterns/CDP_SMOKE_SESSION_OWNER.md`, затем `scripts/browser-cdp-session.mjs` и concrete smoke consumer; timeout evidence хранит method/request id, но не payload;
 - hidden runtime error, diagnostic severity или green-ready при ошибке → `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md` → `scripts/browser-diagnostic-policy.mjs`; transport/session owner не дублирует severity policy;
 - attempt-vs-emitted, safety veto или blocked retry → сначала `docs/patterns/OUTCOME_DRIVEN_CADENCE.md`, затем соответствующие fire-control/cadence specs и owner tests.

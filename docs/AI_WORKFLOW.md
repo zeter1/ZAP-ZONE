@@ -48,7 +48,7 @@
 | Browser game session | `src/game/session.js` | per-frame simulation |
 | Tactical minimap | `src/ui/minimap.js` | collision authority |
 | Frame simulation / boot | `src/game/runtime.js` | browser lifecycle listeners |
-| Browser/CDP smoke transport/session | `scripts/browser-cdp-session.mjs` | diagnostic severity; HTTP/`file://` product assertions |
+| Browser/CDP smoke transport/session + per-command timeout/cleanup | `scripts/browser-cdp-session.mjs` | diagnostic severity; HTTP/`file://` product assertions |
 | Browser diagnostic severity/format | `scripts/browser-diagnostic-policy.mjs` | target discovery; WebSocket lifecycle; product assertions |
 
 ## Ключевые invariants
@@ -82,7 +82,7 @@
 - bot mine/bomb eligibility / role+doctrine probability / deployment side effects → `docs/specs/BOT_DEPLOYABLES.md` → `src/ai/bot-deployables.js` → `src/entities/bots.js` consumer;
 - bot high-level state selection / transition priority / threshold edges / stateCD RNG → `docs/specs/BOT_STATE_POLICY.md` → `src/ai/bot-state-policy.js` → gated caller seam in `src/entities/bots.js`;
 - bot geometry / hit meshes / weapon grips / two-hand arm rig → `docs/specs/BOT_PRESENTATION.md` → `src/entities/bot-presentation.js` → `src/entities/bots.js` consumer;
-- browser/CDP target discovery / WebSocket / request multiplexing / shared diagnostic plumbing → `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` → `scripts/browser-cdp-session.mjs` → concrete smoke;
+- browser/CDP target discovery / WebSocket / request multiplexing / bounded command waits + pending cleanup / shared diagnostic plumbing → `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` → `scripts/browser-cdp-session.mjs` → concrete smoke;
 - browser diagnostic severity / fatal-vs-warning policy → `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md` → `scripts/browser-diagnostic-policy.mjs`; session owner only transports and records this policy;
 - cache-busting / ручная публикация → README + `scripts/stamp-web-build.mjs`;
 - CI failure → `.github/workflows/validate.yml`, затем failed job/step/log;
