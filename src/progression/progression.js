@@ -536,12 +536,6 @@ function doRespawn(){
   }
 }
 
-function clearStoredProgress(){
-  const keys=[SAVE_KEY,LEGACY_SAVE_KEY,OLDER_SAVE_KEY,OLDEST_SAVE_KEY,ANCIENT_SAVE_KEY,PREHISTORIC_SAVE_KEY,PRIMITIVE_SAVE_KEY,'zap_zone_autosave_v19'];
-  for(const key of keys){
-    try{localStorage.removeItem(key);sessionStorage.removeItem(key);}catch(e){}
-  }
-}
 function clearWorldForFreshGame(){
   enemies.forEach(e=>e.destroy());enemies.length=0;
   pickups.forEach(p=>destroySceneObject(p.m));pickups.length=0;

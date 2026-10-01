@@ -190,9 +190,9 @@ const gameCss=readFileSync('src/styles/game.css','utf8');
 for(const token of ['.generated-combat-overlay','var(--smoke-overlay-image,none)','var(--fp-flash-image,none)','generatedDamageEdge','generatedArmorHit','generatedExplosionShockwave','generatedRespawnMaterialize'])if(!gameCss.includes(token))fail('generated combat texture CSS missing: '+token);
 const versionManifest=JSON.parse(readFileSync('version.json','utf8'));
 const htmlBuild=html.match(/<meta name="application-build" content="([0-9a-f]{16})">/)?.[1]||'';
-if(!html.includes('<meta name="application-version" content="23.9">'))fail('application-version marker missing');
+if(!html.includes('<meta name="application-version" content="24.0">'))fail('application-version marker missing');
 if(!htmlBuild)fail('application-build marker missing or invalid');
-if(versionManifest.version!=='23.9'||versionManifest.build!==htmlBuild)fail('version.json does not match index build metadata');
+if(versionManifest.version!=='24.0'||versionManifest.build!==htmlBuild)fail('version.json does not match index build metadata');
 for(const token of ['id="cache-bootstrap"',"location.protocol==='file:'","cache:'no-store'","manifestUrl.searchParams.set('_',String(Date.now()))","pageUrl.searchParams.set('zap_build',remoteBuild)",'location.replace(pageUrl.href)','window.ZAP_BUILD_ID']){
   if(!html.includes(token))fail('cache/update bootstrap missing: '+token);
 }
@@ -1245,6 +1245,10 @@ for(const token of ['let curW=0,lastW=0','function quickSwitchWeapon()',"playWea
 for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function weaponTotalAmmo','function weaponSelectable','function cycleOwnedWeapon(direction)','function ensureCurrentWeaponUsable','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:27','serializeFrontlineObjective','restoreFrontlineObjective']){
   if(!state.includes(token))fail('per-weapon ownership/reserve save model missing: '+token);
 }
+for(const token of ['CURRENT_GAME_VERSION','GAMEPLAY_SAVE_KEYS','gameVersion:CURRENT_GAME_VERSION','data.gameVersion!==CURRENT_GAME_VERSION','clearStoredProgress();']){
+  if(!state.includes(token))fail('version-gated fresh-game save contract missing: '+token);
+}
+if(progression.includes('function clearStoredProgress()'))fail('save-storage clearing must remain owned by player state');
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
@@ -1267,8 +1271,8 @@ const minimap=readFileSync('src/ui/minimap.js','utf8');
 for(const token of ['MINIMAP_WORLD_HALF=92','minimapStaticGeometry','BOT_MAP_ZONES','frontlineZoneOwners','camera.position',"team!=='ally'","pk.type!=='weapon'",'MINIMAP_HZ=10',"ctx.strokeStyle='rgba(3,10,16,.92)'","performance.now()*.006","minimapDrawTriangle(pos.x,pos.z,bot.group.rotation.y,'#5fc9ff'"]){
   if(!minimap.includes(token))fail('polished tactical minimap integration missing: '+token);
 }
-if(!html.includes('ZAP ZONE v23.9'))fail('index version is not v23.9');
-if(!process.exitCode)console.log('ZAP ZONE v23.9 texture-quad-free 3D FX validation passed.');
+if(!html.includes('ZAP ZONE v24.0'))fail('index version is not v24.0');
+if(!process.exitCode)console.log('ZAP ZONE v24.0 texture-quad-free 3D FX validation passed.');
 
 for(const token of ["generatedSniperScope:'assets/ui/scopes/sniper-scope-tech-01.webp'","generatedRifleScope:'assets/ui/scopes/rifle-scope-tech-01.webp'","ammoCrate:'assets/ui/pickups/ammo-crate-tech-02.webp'","medkitPickup:'assets/ui/pickups/world-medkit-pickup-01.webp'","frontlineCaptureBurst:'assets/ui/objective/frontline-capture-burst-tech-01.webp'","battleResultFrame:'assets/ui/feedback/battle-result-frame-tech-01.webp'"]){if(!catalog.includes(token))fail('generated asset pack 4 catalog mapping missing: '+token);}
 for(const token of [

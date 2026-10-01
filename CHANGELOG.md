@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-09-30
 
+### Save lifecycle — new game on version update
+- bumped the game version to **v24.0** and made autosaves carry the exact application version that created them;
+- when the stored game version differs from the currently loaded version, gameplay progress is discarded before preload and the start screen offers a fresh game instead of continuing an older run;
+- reset scope is limited to gameplay autosave keys, so user settings remain intact across game updates;
+- moved save-storage clearing into the player/save owner and added structural regression guards for the version-gated new-game contract.
+
+
 ### Generated Weapon Action Pack 31 — plasma core reload + consistent weapon identity
 - integrated the approved 12-frame plasma-core reload as a compact 720×405 alpha-WebP atlas with separate tactical and empty-reload sequences driven by the existing authoritative reload timer;
 - replaced the ordinary player first-person plasma render with a 960×720 ready-state derived from the same approved source, eliminating the visual model swap between normal play and reload;

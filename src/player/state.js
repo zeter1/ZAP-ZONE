@@ -286,6 +286,16 @@ const OLDEST_SAVE_KEY='zap_zone_autosave_v23';
 const ANCIENT_SAVE_KEY='zap_zone_autosave_v22';
 const PREHISTORIC_SAVE_KEY='zap_zone_autosave_v21';
 const PRIMITIVE_SAVE_KEY='zap_zone_autosave_v20';
+const GAMEPLAY_SAVE_KEYS=Object.freeze([
+  SAVE_KEY,LEGACY_SAVE_KEY,OLDER_SAVE_KEY,OLDEST_SAVE_KEY,ANCIENT_SAVE_KEY,PREHISTORIC_SAVE_KEY,PRIMITIVE_SAVE_KEY,'zap_zone_autosave_v19'
+]);
+const CURRENT_GAME_VERSION=document.querySelector('meta[name="application-version"]')?.content?.trim()||'';
+
+function clearStoredProgress(){
+  for(const key of GAMEPLAY_SAVE_KEYS){
+    try{localStorage.removeItem(key);sessionStorage.removeItem(key);}catch(e){}
+  }
+}
 let pendingResumeSave=null;
 let saveTick=8;
 let preloadStarted=false,preloadDone=false,gameSessionActivated=false,preparedSaveLoaded=false;
@@ -331,7 +341,7 @@ function captureSave(){
   const savedAmmo=Math.max(0,Math.min(WEAPONS[savedCurW].clip,weaponAmmo[savedCurW]??0));
   const savedReserve=Math.max(0,Math.min(WEAPONS[savedCurW].reserveCap??9999,weaponReserve[savedCurW]??0));
   return {
-    v:27,t:Date.now(),
+    v:27,gameVersion:CURRENT_GAME_VERSION,t:Date.now(),
     level,xp,score,kills,allyKills,enemyKills,
     frontline:typeof serializeFrontlineObjective==='function'?serializeFrontlineObjective():null,
     hp,armor,uAmmo:savedReserve,curW:savedCurW,ammo:savedAmmo,weaponAmmo:mags,weaponReserve:reserves,weaponOwned:weaponOwned.slice(),
@@ -360,6 +370,11 @@ function loadProgress(){
     if(!raw)return null;
     const data=JSON.parse(raw);
     if(!data||(data.v<20||data.v>27))return null;
+    if(!CURRENT_GAME_VERSION||data.gameVersion!==CURRENT_GAME_VERSION){
+      console.info('ZAP ZONE: автосейв сброшен после обновления версии',{savedVersion:data.gameVersion||null,currentVersion:CURRENT_GAME_VERSION});
+      clearStoredProgress();
+      return null;
+    }
     return data;
   }catch(e){return null;}
 }
