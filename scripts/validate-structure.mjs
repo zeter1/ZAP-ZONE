@@ -64,7 +64,7 @@ const generatedPerkPack6WebpAssets=[
 const generatedFirstPersonWebpAssets=[
   'assets/ui/weapons/fp/player-pistol-fps-01.webp','assets/ui/weapons/fp/player-shotgun-fps-01.webp',
   'assets/ui/weapons/fp/player-rifle-fps-01.webp','assets/ui/weapons/fp/player-rocket-fps-01.webp',
-  'assets/ui/weapons/fp/player-plasma-fps-31.webp','assets/ui/weapons/fp/player-mine-fps-01.webp',
+  'assets/ui/weapons/fp/player-plasma-fps-01.webp','assets/ui/weapons/fp/player-mine-fps-01.webp',
   'assets/ui/weapons/fp/player-bomb-fps-01.webp','assets/ui/weapons/fp/player-smoke-fps-01.webp','assets/ui/weapons/fp/player-sniper-fps-01.webp'
 ];
 const generatedWorldPickupWebpAssets=[
@@ -1203,7 +1203,9 @@ if(engine.includes('waterTex')||engine.includes('map:waterTex')||engine.includes
 
 const session=readFileSync('src/game/session.js','utf8');
 const runtime=readFileSync('src/game/runtime.js','utf8');
-for(const token of ['setLowHealthCombatOverlay(lowHpStrength)','setSprintSpeedOverlay(sprintBlend)'])if(!runtime.includes(token))fail('runtime combat overlay consumer missing: '+token);
+if(!runtime.includes('setLowHealthCombatOverlay(lowHpStrength)'))fail('runtime combat overlay consumer missing: setLowHealthCombatOverlay(lowHpStrength)');
+if(runtime.includes('setSprintSpeedOverlay(sprintBlend)'))fail('sprint speed-line overlay must stay disabled in the frame loop');
+if(!gameCss.includes('#sprint-speed-overlay{display:none!important;}'))fail('sprint speed-line overlay CSS suppression missing');
 for(const token of [
   'let lastT=0;',
   'function tryFullscreen()','function setGameCursorHidden(','function clearPointerLockRequest()',
@@ -1308,9 +1310,16 @@ const pickupsSrc=readFileSync('src/entities/pickups.js','utf8');
 for(const token of ['WORLD_WEAPON_COPIES','rifle:3','sniper:2','WEAPONS.flatMap']){
   if(!pickupsSrc.includes(token))fail('expanded world weapon distribution missing: '+token);
 }
-for(const token of ['function addPickupBeacon','new THREE.OctahedronGeometry(.075*scale','new THREE.TorusGeometry(.115*scale','group.userData.pickupBeacon','beacon.material.opacity=.52+pulse*.22','beacon.halo.scale.setScalar','addPickupBeacon(g,0x48ffd0,.82','addPickupBeacon(g,0xff4058,.86','addPickupBeacon(g,haloColor,.90']){
-  if(!pickupsSrc.includes(token))fail('polished procedural pickup beacon missing: '+token);
+for(const token of ['function addPickupBeacon','new THREE.OctahedronGeometry(.075*scale','new THREE.TorusGeometry(.115*scale','group.userData.pickupBeacon','beacon.material.opacity=.52+pulse*.22','beacon.halo.scale.setScalar','addPickupBeacon(g,0x48ffd0,.82']){
+  if(!pickupsSrc.includes(token))fail('ammo pickup beacon contract missing: '+token);
 }
+for(const token of ['addPickupBeacon(g,0xff4058,.86','addPickupBeacon(g,haloColor,.90']){
+  if(pickupsSrc.includes(token))fail('removed world pickup beacon unexpectedly restored: '+token);
+}
+for(const token of ["const entry={img,beacon:null,model,key,ready:false,failed:false};","const entry={img,beacon:null,model,key:'medkit',ready:false,failed:false};",'model.position.y=.08;model.rotation.z=-.08;','pk.m.position.set(pt[0],.20,pt[1]);']){
+  if(!pickupsSrc.includes(token))fail('simplified world pickup presentation missing: '+token);
+}
+if(!gameCss.includes('.world-pickup-beacon-art{display:none!important;visibility:hidden!important;}'))fail('world pickup DOM beacon suppression missing');
 if(pickupsSrc.includes('makeAssetSprite('))fail('persistent pickup scene must not depend on SVG sprites');
 const minimap=readFileSync('src/ui/minimap.js','utf8');
 for(const token of ['MINIMAP_WORLD_HALF=92','minimapStaticGeometry','BOT_MAP_ZONES','frontlineZoneOwners','camera.position',"team!=='ally'","pk.type!=='weapon'",'MINIMAP_HZ=10',"ctx.strokeStyle='rgba(3,10,16,.92)'","performance.now()*.006","minimapDrawTriangle(pos.x,pos.z,bot.group.rotation.y,'#5fc9ff'"]){
@@ -1357,7 +1366,7 @@ for(const token of [
   "if(id==='bombtech')return GAME_ASSETS.presentation.bombtechPerk"
 ]){if(!catalog.includes(token))fail('generated asset pack 6 catalog/fallback mapping missing: '+token);}
 if(!weapons.includes("scopeFallback:'assets/ui/sniper-scope.svg'"))fail('sniper generated scope must retain SVG fallback');
-if(!pickups.includes("bomb:{maxPx:112"))fail('generated bomb world pickup tuning missing');
+if(!pickups.includes("bomb:{maxPx:88"))fail('generated bomb world pickup tuning missing');
 
 
 for(const token of [

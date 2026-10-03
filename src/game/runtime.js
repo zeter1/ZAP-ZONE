@@ -133,7 +133,6 @@ function loop(ts){
   const sprintTarget=sprintingNow?1:0;
   const sprintStep=dt*(sprintingNow?8.5:11.5);
   sprintBlend+=Math.max(-sprintStep,Math.min(sprintStep,sprintTarget-sprintBlend));
-  if(typeof setSprintSpeedOverlay==='function')setSprintSpeedOverlay(sprintBlend);
   if(wasWeaponSprinting&&!sprintingNow)sprintExitT=Math.max(sprintExitT,activeW.sprintRecover||.15);
   wasWeaponSprinting=sprintingNow;
   if(crosshair)crosshair.classList.toggle('weapon-lowered',sprintingNow||weaponEquipT>0||sprintExitT>0);

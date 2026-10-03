@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-10-01
 
+### Sprint presentation — speed-line overlay removed
+- removed the full-screen sprint speed-line overlay from the live frame loop and hard-disabled its CSS surface, so sprinting no longer paints the bright radial streaks across the scene;
+- sprint speed, weapon-lowering pose, crosshair behavior, footsteps and gameplay balance are unchanged;
+- added a structural regression guard so the sprint overlay consumer cannot silently return;
+- realigned stale structure checks with the current first-person plasma fallback and simplified world-pickup presentation, fixing the pre-existing red validation state without weakening the intended contracts.
+
 ### Browser/CDP session — individual command waits are now bounded
 - fixed a CI reliability gap where one CDP command could remain pending indefinitely while the WebSocket stayed open, leaving the outer 35/40-second shell timeout to kill the smoke without the failing command context;
 - the shared session owner now gives every CDP request a 5-second response deadline, reports only the method and request id on timeout, and deliberately omits request params/evaluated page data from the error;
