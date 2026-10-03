@@ -413,7 +413,7 @@ function syncRocketFlightArt(){
     const ay=(-rocketFlightAheadPos.y*.5+.5)*innerHeight;
     const tailAngle=Math.atan2(ay-y,ax-x)*180/Math.PI+180;
     const distance=Math.max(.1,camera.position.distanceTo(pos));
-    const size=Math.max(72,Math.min(210,260/(.82+distance*.042)));
+    const size=Math.max(46,Math.min(116,156/(.82+distance*.042)));
     const frameIndex=rocketFlightFrameIndex(r);
     if(r._flightVfxFrame!==frameIndex){
       applyPresentationAtlasFrame(el,rocketFlightPresentationFrame(frameIndex));
@@ -508,7 +508,7 @@ function syncPlasmaFlightArt(){
     const ax=(plasmaFlightAheadPos.x*.5+.5)*innerWidth;
     const ay=(-plasmaFlightAheadPos.y*.5+.5)*innerHeight;
     const angle=Math.atan2(ay-y,ax-x)*180/Math.PI;
-    const size=Math.max(54,Math.min(152,190/(.82+distance*.045)));
+    const size=Math.max(50,Math.min(124,164/(.82+distance*.045)));
     const el=existing||ensurePlasmaFlightArt(b,team);
     if(!el)continue;
     const frameIndex=plasmaFlightFrameIndex(b);
@@ -693,16 +693,32 @@ function fireInstantSniper(from,dir,w,meta={}){
   }
   spawnInstantSniperTrace(from,dir,Math.max(.6,traceDist),color);
 }
+const _playerMuzzleScreenRay=new THREE.Vector3(),_playerMuzzleAimPoint=new THREE.Vector3();
+function playerVisualMuzzleShot(from,dir,w,distance=.72){
+  const fallbackPos=from.clone().addScaledVector(dir,w?.key==='rocket'?.90:.48);
+  fallbackPos.y-=w?.key==='rocket'?.05:.04;
+  const fallback={pos:fallbackPos,dir:dir.clone()};
+  if(!['plasma','rocket'].includes(w?.key)||typeof fpGeneratedWeaponActive==='undefined'||!fpGeneratedWeaponActive)return fallback;
+  const flash=G('fp-weapon-flash');if(!flash||innerWidth<=0||innerHeight<=0)return fallback;
+  const r=flash.getBoundingClientRect();if(!(r.width>0&&r.height>0))return fallback;
+  const sx=r.left+r.width*.5,sy=r.top+r.height*.5;
+  _playerMuzzleScreenRay.set(sx/innerWidth*2-1,1-sy/innerHeight*2,.12).unproject(camera).sub(camera.position).normalize();
+  const pos=from.clone().addScaledVector(_playerMuzzleScreenRay,distance);
+  _playerMuzzleAimPoint.copy(from).addScaledVector(dir,Math.max(24,w.range||90));
+  return{pos,dir:_playerMuzzleAimPoint.sub(pos).normalize().clone()};
+}
 function spawnPlayerBullet(from,dir,w,meta={}){
   while(pBullets.length>=MAX_PLAYER_BULLETS)destroyPlayerBullet(0);
   const speed=Math.max(1,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
   const color=PLR_TCOL[w.key]||0xffffaa;
   const m=mkTracer(color,w.key);
-  const pos=from.clone().addScaledVector(dir,.48);pos.y-=.04;
-  m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir);scene.add(m);
+  const launch=w.key==='plasma'?playerVisualMuzzleShot(from,dir,w,.74):null;
+  const shotDir=launch?.dir||dir;
+  const pos=launch?.pos||from.clone().addScaledVector(dir,.48);if(!launch)pos.y-=.04;
+  m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),shotDir);scene.add(m);
   const life=(w.range||100)/speed+.40;
   pBullets.push({
-    m,pos,vel:dir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
+    m,pos,vel:shotDir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
     life,maxLife:life,range:w.range||100,travel:0,wKey:w.key,color,
     markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),
     penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null,
@@ -902,7 +918,8 @@ function shoot(){
   if(typeof showProjectileTrailFx==='function'){
     const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
     const trackedPlasmaReady=trailKind==='plasma'&&typeof plasmaFlightPresentationAvailable==='function'&&plasmaFlightPresentationAvailable();
-    if(trailKind)showProjectileTrailFx(trailKind,!trackedPlasmaReady);
+    const allowLegacyTrail=trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady;
+    if(trailKind)showProjectileTrailFx(trailKind,allowLegacyTrail);
   }
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
@@ -913,9 +930,10 @@ function shoot(){
   if(w.isRocket){
     for(let s=0;s<shots;s++){
       const d=bDir.clone();if(s>0){d.x+=(Math.random()-.5)*.12;d.z+=(Math.random()-.5)*.12;d.normalize();}
-      const rk=mkRkt(0xff6600);const sp=camera.position.clone().addScaledVector(d,.9);sp.y-=.05;
-      rk.position.copy(sp);rk.quaternion.setFromUnitVectors(_UP,d);scene.add(rk);
-      pRkts.push({m:rk,vx:d.x*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,vy:d.y*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,vz:d.z*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,life:13,maxSpeed:PLAYER_ROCKET_SPEED*plr.rocketSpeedM,dmg:w.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.rocketDamageM*plr.explosiveDamageM,sT:0,fT:0,team:'player',ownerType:'player',_src:null,blastRadius:6.5*plr.explosiveRadiusM*plr.rocketRadiusM});
+      const launch=playerVisualMuzzleShot(camera.position,d,w,.86),fireDir=launch.dir;
+      const rk=mkRkt(0xff6600),sp=launch.pos;
+      rk.position.copy(sp);rk.quaternion.setFromUnitVectors(_UP,fireDir);scene.add(rk);
+      pRkts.push({m:rk,vx:fireDir.x*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,vy:fireDir.y*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,vz:fireDir.z*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,life:13,maxSpeed:PLAYER_ROCKET_SPEED*plr.rocketSpeedM,dmg:w.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.rocketDamageM*plr.explosiveDamageM,sT:0,fT:0,team:'player',ownerType:'player',_src:null,blastRadius:6.5*plr.explosiveRadiusM*plr.rocketRadiusM});
     }
     return;
   }

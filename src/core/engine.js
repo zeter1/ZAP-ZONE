@@ -481,7 +481,7 @@ function wallBetween(from,to,list){
 const P_MAX=64;
 const _pm=[],_pp=[];
 let _pHead=0,_pCount=0;
-const _pGeo=new THREE.SphereGeometry(.09,4,3);
+const _pGeo=new THREE.SphereGeometry(.045,4,3);
 const _basePMat=new THREE.MeshBasicMaterial({color:0xff4400,transparent:true,opacity:1});
 for(let i=0;i<P_MAX;i++){
   const m=new THREE.Mesh(_pGeo,_basePMat.clone());m.visible=false;scene.add(m);_pm.push(m);
@@ -677,7 +677,7 @@ function tickHeadshotFx(dt){
 
 const combatImpactFx=[];
 function spawnCombatImpact(pos,type='bullet'){
-  const size=type==='rocket'?1.18:type==='sniper'?1.02:type==='plasma'?.84:type==='critical'?.90:type==='wall'?.56:.62;
+  const size=type==='rocket'?.96:type==='sniper'?.80:type==='plasma'?.62:type==='critical'?.76:type==='wall'?.36:.42;
   const col=type==='sniper'?0xa7efff:type==='plasma'?0xc76cff:type==='critical'?0xffe34f:type==='rocket'?0xff6930:type==='wall'?0xdce6eb:0xffb650;
   const burst=makeProceduralBurst(col,size,type==='rocket'?10:type==='sniper'?8:6,type==='wall'?0xf5fbff:0xffffff);
   burst.position.copy(pos);burst.lookAt(camera.position);burst.renderOrder=24;scene.add(burst);
@@ -686,7 +686,7 @@ function spawnCombatImpact(pos,type='bullet'){
     new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.74,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending})
   );
   ring.position.copy(pos);ring.lookAt(camera.position);scene.add(ring);
-  combatImpactFx.push({burst,ring,t:0,dur:type==='rocket'?.52:type==='sniper'?.34:.28,max:type==='rocket'?2.8:type==='sniper'?2.15:type==='plasma'?1.8:1.35});
+  combatImpactFx.push({burst,ring,t:0,dur:type==='rocket'?.52:type==='sniper'?.34:.28,max:type==='rocket'?2.25:type==='sniper'?1.62:type==='plasma'?1.24:.92});
 }
 function tickCombatImpactFx(dt){
   for(let i=combatImpactFx.length-1;i>=0;i--){
@@ -787,7 +787,7 @@ function wallImpact(pos,col,material='concrete',normal=null,impactVariant='norma
     const old=impactMarks.shift();releaseImpactMark(old.m);
   }
   const mark=acquireImpactMark();
-  mark.scale.setScalar(metal?.72:wood?1.15:1);
+  mark.scale.setScalar(metal?.44:wood?.72:.58);
   mark.material.color.setHex(wood?0x3f2819:metal?0x293039:0x151719);
   if(normal&&normal.lengthSq()>.001)_impactNormal.copy(normal).normalize();
   else _impactNormal.copy(camera.position).sub(pos).normalize();

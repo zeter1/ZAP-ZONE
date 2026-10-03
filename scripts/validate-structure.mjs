@@ -346,8 +346,8 @@ if(pack26Shot.includes('energyDischarge26')||pack26Shot.includes('ballisticDisch
 if(!pack26Settings.includes("playGeneratedCombatVfx('heavyExplosion26'"))fail('Pack 26 heavy explosion runtime wiring missing');
 for(const token of ['ballisticDischarge26','energyDischarge26','heavyExplosion26'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 26 VFX CSS missing: '+token);
 for(const token of ['showGeneratedWeaponShotVfx(w.key);','showGeneratedRocketExplosionVfx(pos);','showGeneratedBombDetonationVfx(pos);'])if(!combatSource.includes(token))fail('Pack 26 authoritative combat event hook missing: '+token);
-const pack26Rocket=pack26Settings.indexOf('function showGeneratedRocketExplosionVfx'),pack26RocketFallback=pack26Settings.indexOf("playGeneratedCombatVfx('rocketExplosion'",pack26Rocket),pack26RocketHeavy=pack26Settings.indexOf("playGeneratedCombatVfx('heavyExplosion26'",pack26Rocket);
-if(pack26Rocket<0||pack26RocketFallback<pack26Rocket||pack26RocketHeavy<pack26RocketFallback)fail('Pack 26 rocket heavy variation must decorate the existing rocket VFX fallback');
+const pack26Rocket=pack26Settings.indexOf('function showGeneratedRocketExplosionVfx'),pack26RocketFallback=pack26Settings.indexOf("playGeneratedCombatVfx('rocketExplosion'",pack26Rocket);
+if(pack26Rocket<0||pack26RocketFallback<pack26Rocket)fail('rocket explosion must retain the existing compact rocket VFX fallback');
 const pack26Bomb=pack26Settings.indexOf('function showGeneratedBombDetonationVfx'),pack26BombFallback=pack26Settings.indexOf("playGeneratedCombatVfx('bombDetonation'",pack26Bomb),pack26BombHeavy=pack26Settings.indexOf("playGeneratedCombatVfx('heavyExplosion26'",pack26Bomb);
 if(pack26Bomb<0||pack26BombFallback<pack26Bomb||pack26BombHeavy<pack26BombFallback)fail('Pack 26 bomb heavy variation must decorate the existing bomb VFX fallback');
 const pack27RespawnSource=readFileSync(generatedCombatVfxPack27SvgAssets[0],'utf8');
@@ -359,11 +359,12 @@ if((pack27RespawnSource.match(/class="frame respawn-frame"/g)||[]).length!==6)fa
 if((pack27TerminalSource.match(/class="frame arc-frame"/g)||[]).length!==10)fail('Pack 27 terminal atlas must contain exactly 10 static frames');
 for(const token of ["pack27RespawnGate:'assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg'","pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg'","playerRespawnGate27:Object.freeze","terminalArc27:Object.freeze"])if(!catalog.includes(token))fail('Pack 27 VFX catalog wiring missing: '+token);
 const pack27Settings=readFileSync('src/settings/settings.js','utf8'),pack27Engine=readFileSync('src/core/engine.js','utf8');
-for(const token of ["playGeneratedCombatVfx('playerRespawnGate27'","item.anchor==='respawnGate'","function showGeneratedTerminalArcVfx","playGeneratedCombatVfx('terminalArc27'"])if(!pack27Settings.includes(token))fail('Pack 27 settings wiring missing: '+token);
+for(const token of ["item.anchor==='respawnGate'","function showGeneratedTerminalArcVfx","playGeneratedCombatVfx('terminalArc27'"])if(!pack27Settings.includes(token))fail('Pack 27 settings wiring missing: '+token);
 for(const token of ['reactivePowerNodes','body.userData.electricalReactive=true;reactivePowerNodes.push(body);','function reactivePowerNodeAt(pos)',"showGeneratedTerminalArcVfx(vfxPos)"])if(!pack27Engine.includes(token))fail('Pack 27 engine wiring missing: '+token);
 for(const token of ['playerRespawnGate27','terminalArc27'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 27 CSS missing: '+token);
-const pack27RespawnOwner=pack27Settings.indexOf('function showRespawnMaterializeFx()'),pack27RespawnFallback=pack27Settings.indexOf("ensureCombatOverlay('respawn-materialize-overlay','respawn')",pack27RespawnOwner),pack27RespawnGenerated=pack27Settings.indexOf("playGeneratedCombatVfx('playerRespawnGate27'",pack27RespawnOwner);
-if(pack27RespawnOwner<0||pack27RespawnFallback<pack27RespawnOwner||pack27RespawnGenerated<pack27RespawnFallback)fail('Pack 27 respawn gate must decorate the existing respawn overlay fallback');
+const pack27RespawnOwner=pack27Settings.indexOf('function showRespawnMaterializeFx()'),pack27RespawnEnd=pack27Settings.indexOf('let shakeTime=',pack27RespawnOwner),pack27RespawnBody=pack27RespawnOwner>=0&&pack27RespawnEnd>pack27RespawnOwner?pack27Settings.slice(pack27RespawnOwner,pack27RespawnEnd):'';
+if(pack27RespawnOwner<0||!pack27RespawnBody.includes("byId('respawn-materialize-overlay')"))fail('respawn presentation owner must explicitly clear the center-screen overlay');
+if(pack27RespawnBody.includes("playGeneratedCombatVfx('playerRespawnGate27'"))fail('respawn gate must stay disabled over the aiming point');
 const pack27WallOwner=pack27Engine.indexOf('function wallImpact('),pack27SurfaceFallback=pack27Engine.indexOf("showGeneratedSurfaceImpactVfx(material,pos,vfxVariant)",pack27WallOwner),pack27Arc=pack27Engine.indexOf("showGeneratedTerminalArcVfx(vfxPos)",pack27WallOwner);
 if(pack27WallOwner<0||pack27SurfaceFallback<pack27WallOwner||pack27Arc<pack27SurfaceFallback)fail('Pack 27 terminal arc must decorate the existing wall impact path');
 
@@ -405,7 +406,7 @@ if(pack30Width!==256||pack30Height!==256)fail('Pack 30 plasma-flight WebP must b
 for(const token of ["pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp'",'function plasmaFlightPresentationFrame'])if(!catalog.includes(token))fail('Pack 30 plasma-flight catalog wiring missing: '+token);
 for(const token of ['PLASMA_FLIGHT_VFX_LOOP','function initPlasmaFlightAssetProbe','function plasmaFlightPresentationAvailable','function ensurePlasmaFlightArt','function syncPlasmaFlightArt','plasmaFlightPresentationFrame(frameIndex)','wallBetween(camera.position,pos,losMeshes)','syncPlasmaFlightArt();'])if(!combatSource.includes(token))fail('Pack 30 plasma-flight runtime wiring missing: '+token);
 for(const token of ["function showProjectileTrailFx(kind='ballistic',visible=true)","const rotation=((Math.random()-.5)*5).toFixed(2)+'deg';","if(!visible)return;"])if(!pack29Settings.includes(token))fail('Pack 30 Pack-8 fallback/RNG compatibility missing: '+token);
-for(const token of ["const trackedPlasmaReady=trailKind==='plasma'","showProjectileTrailFx(trailKind,!trackedPlasmaReady)"])if(!combatSource.includes(token))fail('Pack 30 legacy plasma-trail fallback gate missing: '+token);
+for(const token of ["const trackedPlasmaReady=trailKind==='plasma'","const allowLegacyTrail=trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady","showProjectileTrailFx(trailKind,allowLegacyTrail)"])if(!combatSource.includes(token))fail('tracked rocket/plasma presentation must suppress the legacy center-screen trail: '+token);
 for(const token of ['.plasma-flight-vfx{','.plasma-flight-vfx.ally{','.plasma-flight-vfx.enemy{'])if(!gameCss.includes(token))fail('Pack 30 plasma-flight CSS missing: '+token);
 for(const token of ["const m=mkTracer(color,w.key);","const m=visual?acquireEnemyTracer(w.key,color):null;"])if(!combatSource.includes(token))fail('Pack 30 must retain procedural Three.js plasma tracer fallback: '+token);
 const pack30TrackerStart=combatSource.indexOf('const PLASMA_FLIGHT_VFX_LOOP='),pack30TrackerEnd=combatSource.indexOf('const MAX_PLAYER_BULLETS=',pack30TrackerStart);
@@ -428,8 +429,8 @@ const pack31PlayerFlags=pack31PlayerPlasmaBytes[20]||0,pack31PlayerWidth=1+pack3
 if(!(pack31PlayerFlags&0x10))fail('Pack 31 player plasma WebP must retain alpha');
 if(pack31PlayerWidth!==960||pack31PlayerHeight!==720)fail('Pack 31 player plasma WebP must be exactly 960x720');
 
-for(const token of ["pack31PlasmaReload:'assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp'","plasma:'assets/ui/weapons/fp/player-plasma-fps-31.webp'","plasmaReloadTactical31:Object.freeze","plasmaReloadEmpty31:Object.freeze"])if(!catalog.includes(token))fail('Pack 31 catalog wiring missing: '+token);
-for(const token of ['function showGeneratedPlasmaCoreReloadVfx',"muzzleX:'49%'","muzzleY:'24%'"])if(!weaponSystem.includes(token))fail('Pack 31 first-person plasma owner missing: '+token);
+for(const token of ["pack31PlasmaReload:'assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp'","plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp'","plasmaReloadTactical31:Object.freeze","plasmaReloadEmpty31:Object.freeze"])if(!catalog.includes(token))fail('Pack 31 catalog/reload wiring missing: '+token);
+for(const token of ['function showGeneratedPlasmaCoreReloadVfx',"muzzleX:'22%'","muzzleY:'34%'"])if(!weaponSystem.includes(token))fail('first-person plasma owner/fallback framing missing: '+token);
 for(const token of ['showGeneratedPlasmaCoreReloadVfx(reloadMode,reloadTot)','playerReloadUsesFullPresentation',"completedWeapon.key==='plasma'&&!usedFullPresentation",'!fullPlasmaReload'])if(!combatSource.includes(token))fail('Pack 31 plasma reload consumer/fallback wiring missing: '+token);
 if(!catalog.includes("plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg'")||!pack29Settings.includes('function showGeneratedPlasmaReloadVfx'))fail('Pack 31 must retain Pack 11 plasma reload fallback');
 

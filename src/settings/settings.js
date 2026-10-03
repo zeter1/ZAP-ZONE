@@ -455,10 +455,8 @@ function triggerExplosionShockwave(source,radius=3){
   clearTimeout(explosionShockwaveTimer);explosionShockwaveTimer=setTimeout(()=>el.classList.remove('on'),720);
 }
 function showRespawnMaterializeFx(){
-  const el=ensureCombatOverlay('respawn-materialize-overlay','respawn');if(!el)return;
-  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
-  playGeneratedCombatVfx('playerRespawnGate27',{anchor:'respawnGate',rotation:0,scale:1});
-  clearTimeout(respawnMaterializeTimer);respawnMaterializeTimer=setTimeout(()=>el.classList.remove('on'),1150);
+  // Spawn protection remains gameplay-authoritative, but respawn art no longer flashes over the crosshair.
+  const el=byId('respawn-materialize-overlay');if(el)el.classList.remove('on');
 }
 
 let shakeTime=0,shakeDuration=.1,shakePower=0,fpsAccum=0,fpsFrames=0;
@@ -628,12 +626,10 @@ function showGeneratedSniperShotVfx(){
   return muzzle;
 }
 function showGeneratedWeaponShotVfx(weaponKey){
-  if(weaponKey==='rocket')return playGeneratedCombatVfx('rocketBackblast',{anchor:'muzzle',scale:1.06});
+  if(weaponKey==='rocket'||weaponKey==='shotgun')return false;
   if(weaponKey==='sniper')return showGeneratedSniperShotVfx();
-  if(weaponKey==='shotgun')return playGeneratedCombatVfx('shotgunMuzzle',{anchor:'muzzle',scale:1.04});
-  // Pack 26 ballistic/energy discharge cells bake a second weapon + hands silhouette.
-  // The normal first-person muzzle flash already owns pistol/rifle/plasma shot feedback,
-  // so layering those atlas cells at the muzzle creates the duplicate tile seen in-game.
+  // The normal first-person muzzle flash already owns pistol/rifle/shotgun/rocket/plasma feedback.
+  // Do not stack generated weapon/hands/backblast tiles over the actual gun.
   return false;
 }
 function showGeneratedCasingFx(isShotgun=false){return playGeneratedCombatVfx(isShotgun?'shotgunShell':'brassCasing',{anchor:'ejection',rotation:(Math.random()-.5)*24,scale:isShotgun?1.02:.96});}
@@ -651,7 +647,7 @@ function showGeneratedSurfaceImpactVfx(material,pos,variant='normal'){
   const farCutoff=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?26:48;
   const primaryKind=variant==='tech'?'techImpact29':material==='metal'?'metalImpact29':variant==='heavy'?'heavyImpact29':'concreteImpact29';
   const rotation=(Math.random()-.5)*(primaryKind==='metalImpact29'?12:primaryKind==='heavyImpact29'?10:16);
-  const scale=primaryKind==='heavyImpact29'?1.14:primaryKind==='techImpact29'?1.06:primaryKind==='metalImpact29'?1.04:1.02;
+  const scale=primaryKind==='heavyImpact29'?.62:primaryKind==='techImpact29'?.56:primaryKind==='metalImpact29'?.52:.50;
   const options={worldPos:pos,rotation,scale};
   if(material!=='wood'&&dist<=farCutoff&&playGeneratedCombatVfx(primaryKind,options))return true;
   return playGeneratedCombatVfx(fallbackKind,options);
@@ -663,16 +659,13 @@ function showGeneratedTerminalArcVfx(pos){
   return playGeneratedCombatVfx('terminalArc27',{worldPos:pos,rotation:0,scale:1});
 }
 function showGeneratedRocketExplosionVfx(pos){
-  const base=playGeneratedCombatVfx('rocketExplosion',{worldPos:pos,rotation:(Math.random()-.5)*10,scale:1.08});
-  const seq=(showGeneratedRocketExplosionVfx._seq=(showGeneratedRocketExplosionVfx._seq||0)+1);
-  if(seq%3===0)playGeneratedCombatVfx('heavyExplosion26',{worldPos:pos,rotation:((seq%5)-2)*2,scale:1.02,delay:.025});
-  return base;
+  return playGeneratedCombatVfx('rocketExplosion',{worldPos:pos,rotation:(Math.random()-.5)*8,scale:.78});
 }
 function showGeneratedPlasmaImpactVfx(pos){
   const now=performance.now(),minGap=(typeof MOBILE_LOW!=='undefined'&&MOBILE_LOW)?86:52;
   if(now-(showGeneratedPlasmaImpactVfx._last||-999)<minGap)return false;
   showGeneratedPlasmaImpactVfx._last=now;
-  return playGeneratedCombatVfx('plasmaImpact',{worldPos:pos,rotation:(Math.random()-.5)*22,scale:1.02});
+  return playGeneratedCombatVfx('plasmaImpact',{worldPos:pos,rotation:(Math.random()-.5)*18,scale:.76});
 }
 function showGeneratedPlasmaReloadVfx(){
   return playGeneratedCombatVfx('plasmaReload',{anchor:'magazine',rotation:0,scale:1});
@@ -874,19 +867,10 @@ function showProjectileTrailFx(kind='ballistic',visible=true){
 }
 let spawnProtectionFrame=-1;
 function syncSpawnProtectionPresentation(){
-  const root=byId('spawn-protection-fx'),glyph=byId('spawn-protection-glyph');
-  if(!root||!glyph)return;
-  if(!running||dying||respawnShieldT<=0){
-    root.classList.remove('on');spawnProtectionFrame=-1;return;
-  }
-  const elapsed=Math.max(0,PLAYER_SPAWN_SHIELD_TIME-respawnShieldT);
-  const frame=Math.max(0,Math.min(5,Math.floor(elapsed/Math.max(.001,PLAYER_SPAWN_SHIELD_TIME)*6)));
-  if(frame!==spawnProtectionFrame){
-    applyPresentationAtlasFrame(root,spawnProtectionPresentationFrame(frame));
-    applyPresentationAtlasFrame(glyph,spawnProtectionPresentationFrame(6));
-    spawnProtectionFrame=frame;
-  }
-  root.classList.add('on');
+  // Keep the temporary spawn shield in gameplay, but never cover the aiming point with animated HUD art.
+  const root=byId('spawn-protection-fx');
+  if(root)root.classList.remove('on');
+  spawnProtectionFrame=-1;
 }
 function syncComboMeterPresentation(){
   const el=byId('combo');if(!el)return;
