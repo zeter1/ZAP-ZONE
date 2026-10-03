@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-10-01
 
+### Assault rifle presentation — stray shot overlays removed
+- removed the assault rifle's legacy center-screen ballistic-strip overlay, matching the cleaned-up pistol presentation;
+- hid the player's procedural rifle/pistol projectile mesh that produced oversized polygon/end-cap shapes and bright streaks near the camera; projectile travel, collision, penetration, ricochet and damage simulation are unchanged;
+- preserved the historical tracer-phase RNG draw when those visuals are suppressed, so gameplay random ordering does not shift;
+- added structural regression guards so the pistol/rifle cleanup cannot silently regress.
+
 ### HUD / firing presentation — pickup frame, pistol trail, rocket overlay and pause border
 - aligned the weapon-pickup notification with its native 1000×320 frame ratio, widened the safe text area and allowed long reserve text such as the sniper pickup message to wrap inside the panel instead of crowding the decorative edge;
 - pistol shots keep the real muzzle flash, projectile/tracer and casing behavior, but the legacy center-screen ballistic-strip overlay is no longer rendered; its historical presentation RNG draw is still consumed so gameplay RNG ordering does not shift;

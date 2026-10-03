@@ -711,11 +711,13 @@ function spawnPlayerBullet(from,dir,w,meta={}){
   while(pBullets.length>=MAX_PLAYER_BULLETS)destroyPlayerBullet(0);
   const speed=Math.max(1,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
   const color=PLR_TCOL[w.key]||0xffffaa;
-  const m=mkTracer(color,w.key);
+  const suppressPlayerBallisticVisual=w.key==='pistol'||w.key==='rifle';
+  const m=suppressPlayerBallisticVisual?null:mkTracer(color,w.key);
+  if(suppressPlayerBallisticVisual)Math.random(); // Preserve the historical mkTracer phase RNG draw.
   const launch=w.key==='plasma'?playerVisualMuzzleShot(from,dir,w,.74):null;
   const shotDir=launch?.dir||dir;
   const pos=launch?.pos||from.clone().addScaledVector(dir,.48);if(!launch)pos.y-=.04;
-  m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),shotDir);scene.add(m);
+  if(m){m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),shotDir);scene.add(m);}
   const life=(w.range||100)/speed+.40;
   pBullets.push({
     m,pos,vel:shotDir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
@@ -918,7 +920,7 @@ function shoot(){
   if(typeof showProjectileTrailFx==='function'){
     const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
     const trackedPlasmaReady=trailKind==='plasma'&&typeof plasmaFlightPresentationAvailable==='function'&&plasmaFlightPresentationAvailable();
-    const allowLegacyTrail=w.key!=='pistol'&&trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady;
+    const allowLegacyTrail=!['pistol','rifle'].includes(w.key)&&trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady;
     if(trailKind)showProjectileTrailFx(trailKind,allowLegacyTrail);
   }
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
