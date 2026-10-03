@@ -857,14 +857,8 @@ function showGeneratedNearMissFx(source,pressure=.6){
 
 // Generated Asset Pack 10 — time-based one-shot VFX atlas; procedural effects remain fallback.
 // Generated Asset Pack 8 — transient DOM-only presentation helpers.
-let weaponSwitchSwipeTimer=0;
 function showWeaponSwitchSwipe(){
-  const el=byId('weapon-switch-swipe'),asset=GAME_ASSETS.presentationHudV2?.weaponSwitch;
-  if(!el||!asset)return;
-  el.style.backgroundImage='url("'+asset+'")';
-  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
-  clearTimeout(weaponSwitchSwipeTimer);
-  weaponSwitchSwipeTimer=setTimeout(()=>el.classList.remove('on'),360);
+  // Intentionally disabled: the center-screen swipe obscures the view during weapon changes.
 }
 function showProjectileTrailFx(kind='ballistic',visible=true){
   const layer=byId('projectile-trail-layer'),frame=projectileTrailPresentationFrame(kind);
