@@ -822,7 +822,14 @@ const _casingGeo=new THREE.CylinderGeometry(.022,.022,.10,7);
 const _casingBrassMat=new THREE.MeshStandardMaterial({color:0xc99a42,roughness:.34,metalness:.72});
 const _casingShellMat=new THREE.MeshStandardMaterial({color:0xb12a21,roughness:.38,metalness:.42});
 function getMzLight(){let l=_mzLights.find(x=>!x._act);if(!l){l=new THREE.PointLight(0xffb347,0,7);l._act=false;scene.add(l);_mzLights.push(l);}return l;}
-function trigMuzzle(pos,col,power=1){
+function trigMuzzle(pos,col,power=1,visual=true){
+  if(!visual){
+    const count=Math.max(2,Math.round(3*power));
+    for(let i=0;i<count;i++){Math.random();Math.random();Math.random();Math.random();Math.random();Math.random();Math.random();Math.random();}
+    const smokeRoll=Math.random();if(smokeRoll<.78){Math.random();Math.random();Math.random();}
+    Math.random();Math.random();Math.random();Math.random();
+    return;
+  }
   if(VISUAL_LIGHTS){
     const l=getMzLight();
     l.position.copy(pos);

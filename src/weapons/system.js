@@ -506,9 +506,9 @@ const FP_RECOIL_VISUAL=Object.freeze({
 });
 const FP_GENERATED_ART_TUNING=Object.freeze({
   // V3 is the approved framing baseline: baked hands, transparent headroom and HUD-safe lower-right placement.
-  pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:.90,flashCore:'#fff9df',flashMid:'#ffd15a',flashEdge:'#ff6d1f'},
+  pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0,flashCore:'#fff9df',flashMid:'#ffd15a',flashEdge:'#ff6d1f'},
   shotgun:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'28%',muzzleY:'39%',kickX:16,kickY:14,kickRot:2.00,kickScale:.028,flashScale:.72,flashCore:'#fff8d8',flashMid:'#ffc857',flashEdge:'#ff6320'},
-  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:.94,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
+  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
   rocket:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'31%',kickX:18,kickY:16,kickRot:2.30,kickScale:.032,flashScale:.78,flashCore:'#fff3d0',flashMid:'#ffb43e',flashEdge:'#ff4f18'},
   plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%',kickX:5,kickY:4,kickRot:.70,kickScale:.010,flashScale:.88,flashCore:'#efffff',flashMid:'#69eaff',flashEdge:'#8c62ff'},
   mine:{width:'38vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
@@ -611,7 +611,7 @@ function setGeneratedFirstPersonWeaponArt(w,model){
   wrap.style.setProperty('--fp-flash-mid',tune.flashMid||'#ffd15a');
   wrap.style.setProperty('--fp-flash-edge',tune.flashEdge||'#ff6d1f');
   wrap.style.setProperty('--fp-flash-base-scale',String(tune.flashScale||0));
-  const flashAsset=w.key==='plasma'?GAME_ASSETS.presentationCombat?.plasmaMuzzle:(w.key==='shotgun'||w.key==='rocket'?null:GAME_ASSETS.presentationCombat?.ballisticMuzzle);
+  const flashAsset=w.key==='plasma'?GAME_ASSETS.presentationCombat?.plasmaMuzzle:(['pistol','rifle','shotgun','rocket'].includes(w.key)?null:GAME_ASSETS.presentationCombat?.ballisticMuzzle);
   wrap.style.setProperty('--fp-flash-image',flashAsset?'url("'+flashAsset+'")':'none');
   fpGeneratedWeaponPending={key:w.key,model,asset};
 }

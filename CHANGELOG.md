@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-10-01
 
+### Pistol / assault-rifle muzzle presentation — oversized fire removed
+- removed the large orange first-person muzzle-fire effect from the pistol and assault rifle by disabling their generated muzzle flash layer and procedural flash/beam;
+- player-owned pistol/rifle shots no longer spawn the nearby fire/smoke/spark muzzle particles that produced the bright flame blob shown in the screenshots;
+- recoil, sound, casings, projectile travel, collision, damage, impacts and hit feedback are unchanged;
+- the silent muzzle path consumes the same historical presentation RNG draws, so this visual cleanup does not shift later gameplay randomness;
+- shotgun, rocket, plasma and sniper muzzle presentation remains unchanged; structural regression guards keep this separation explicit.
+
 ### Perk cards + sprint presentation — frame-safe text and stable lower HUD
 - rebuilt perk-choice cards as explicit internal rows for icon, rarity, name, description and metadata, with a larger bottom safe inset and smaller responsive typography so long Russian perk text no longer crosses the generated card border;
 - reduced perk-icon footprint and normalized description/meta wrapping while preserving all perk names, values, ranks, keyboard hints and selection behavior;

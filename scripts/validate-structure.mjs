@@ -528,6 +528,8 @@ for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','per
 
 const weapons=readFileSync('src/weapons/system.js','utf8');
 for(const token of ["GAME_ASSETS.presentationCombat?.plasmaMuzzle","GAME_ASSETS.presentationCombat?.ballisticMuzzle","--fp-flash-x","--fp-flash-y"])if(!weapons.includes(token))fail('generated muzzle-flash sheet wiring missing: '+token);
+if(!weapons.includes("pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0")||!weapons.includes("rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0"))fail('pistol/rifle generated muzzle fire must stay disabled');
+if(!weapons.includes("['pistol','rifle','shotgun','rocket'].includes(w.key)?null:GAME_ASSETS.presentationCombat?.ballisticMuzzle"))fail('pistol/rifle ballistic muzzle sheet must stay detached');
 const weaponDefs=[...weapons.matchAll(/weaponDef\('([^']+)'/g)].map(m=>m[1]);
 if(weaponDefs.length!==10)fail('expected 10 weapon definitions, found '+weaponDefs.length);
 if(!weaponDefs.includes('sniper'))fail('sniper weapon definition missing');
@@ -1239,6 +1241,8 @@ if(!runtime.includes('tickTacticalMinimap(dt,ts)'))fail('real tactical minimap r
 if(!runtime.includes('tickPlayerFootsteps(playerMoved,sprintingNow,onGnd)'))fail('distance-driven player footsteps missing');
 if(!runtime.includes('tickGamePresentation('))fail('settings presentation runtime tick missing');
 if(!runtime.includes('syncGeneratedFirstPersonWeaponArt(gunGrp.visible)'))fail('generated player-held weapon runtime pose sync missing');
+for(const token of ["const suppressPlayerMuzzleVisual=w.key==='pistol'||w.key==='rifle';","beamT=suppressPlayerMuzzleVisual?0:FP_MUZZLE_FLASH_SECONDS;","!suppressPlayerMuzzleVisual);"])if(!combatSource.includes(token))fail('pistol/rifle procedural muzzle fire suppression missing: '+token);
+for(const token of ["function trigMuzzle(pos,col,power=1,visual=true)","if(!visual){","const smokeRoll=Math.random();if(smokeRoll<.78)"])if(!engine.includes(token))fail('silent muzzle path must preserve presentation RNG without spawning VFX: '+token);
 for(const token of ['recoil*=Math.pow(.82,dt*60)','recoilVis=FP_RECOIL_VISUAL','recoil*recoilVis.push','recoil*recoilVis.pitch','beamT/FP_MUZZLE_FLASH_SECONDS'])if(!runtime.includes(token))fail('weapon visual recoil/muzzle lifecycle missing: '+token);
 if(!weapons.includes('if(!running){wrap.classList.remove(\'shown\')')||!weapons.includes('fpGeneratedWeaponPending={key:w.key,model,asset}'))fail('generated player-held weapon must lazy-load only after match start');
 for(const token of ['idleRenderAt=0','const menuIdle=!running','ts-idleRenderAt>=180','ts-idleRenderAt>=85']){

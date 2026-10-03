@@ -908,14 +908,15 @@ function shoot(){
     if(w.isSniper&&typeof showGeneratedSniperBoltCycleVfx==='function')showGeneratedSniperBoltCycleVfx(cycleTot);
   }
 
-  if(flashM)flashM.material.opacity=1;
-  if(beamM){beamM.material.opacity=.72;beamT=FP_MUZZLE_FLASH_SECONDS;}
+  const suppressPlayerMuzzleVisual=w.key==='pistol'||w.key==='rifle';
+  if(flashM)flashM.material.opacity=suppressPlayerMuzzleVisual?0:1;
+  if(beamM){beamM.material.opacity=suppressPlayerMuzzleVisual?0:.72;beamT=suppressPlayerMuzzleVisual?0:FP_MUZZLE_FLASH_SECONDS;}
   const bDir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
   const shots=1+(Math.random()<plr.extraShotChance?1:0);
 
   // Muzzle flash
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
-  trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1);
+  trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1,!suppressPlayerMuzzleVisual);
   showGeneratedWeaponShotVfx(w.key);
   if(typeof showProjectileTrailFx==='function'){
     const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
