@@ -136,6 +136,35 @@ if(!settingsClosed){
   session.close();
   throw new Error('real CDP click did not close settings');
 }
+
+const pickupLayout=await evaluate(`(()=>{
+  const toast=document.getElementById('pickup-toast');
+  const title=document.getElementById('pickup-toast-title');
+  const detail=document.getElementById('pickup-toast-detail');
+  if(!toast||!title||!detail)return {ok:false,reason:'missing-pickup-toast-layout-node'};
+  const oldTitle=title.textContent,oldDetail=detail.textContent;
+  title.textContent='БОЕПРИПАСЫ';
+  detail.textContent='СНАЙПЕРСКАЯ ВИНТОВКА · +200 · запас 320';
+  const tr=toast.getBoundingClientRect(),yr=title.getBoundingClientRect(),dr=detail.getBoundingClientRect();
+  const result={
+    ok:true,
+    titleCenter:(yr.top+yr.height*.5-tr.top)/tr.height,
+    detailCenter:(dr.top+dr.height*.5-tr.top)/tr.height,
+    separated:yr.bottom<=dr.top,
+    titleInside:yr.left>=tr.left&&yr.right<=tr.right&&yr.top>=tr.top&&yr.bottom<=tr.bottom,
+    detailInside:dr.left>=tr.left&&dr.right<=tr.right&&dr.top>=tr.top&&dr.bottom<=tr.bottom,
+    detailScrollWidth:detail.scrollWidth,
+    detailClientWidth:detail.clientWidth,
+    detailWhiteSpace:getComputedStyle(detail).whiteSpace
+  };
+  title.textContent=oldTitle;detail.textContent=oldDetail;
+  return result;
+})()`);
+if(!pickupLayout?.ok)throw new Error('pickup notification layout smoke failed: '+JSON.stringify(pickupLayout));
+if(pickupLayout.titleCenter<.32||pickupLayout.titleCenter>.49||pickupLayout.detailCenter<.64||pickupLayout.detailCenter>.82||!pickupLayout.separated||!pickupLayout.titleInside||!pickupLayout.detailInside||pickupLayout.detailWhiteSpace!=='nowrap'||pickupLayout.detailScrollWidth>pickupLayout.detailClientWidth+1){
+  throw new Error('pickup notification text is not aligned inside its two frame slots: '+JSON.stringify(pickupLayout));
+}
+
 if(session.hasFatalDiagnostics()){
   const tail=session.diagnosticsTail(),fatalTail=session.fatalDiagnosticsTail();
   session.close();
@@ -143,4 +172,4 @@ if(session.hasFatalDiagnostics()){
 }
 const diagnostics=session.diagnosticsTail();
 session.close();
-console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,diagnostics}));
+console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,pickupLayout,diagnostics}));

@@ -2,6 +2,11 @@
 
 ## Unreleased — 2026-10-01
 
+### Pickup notification frame — text aligned to dedicated slots
+- changed the pickup notification copy from one vertically centered text block into two fixed visual rows that match the generated frame: the title now occupies the upper blue panel and the weapon/ammo detail occupies the lower dark panel;
+- removed the old detail top margin, added dedicated lower-slot insets, and kept long reserve strings on one clipped line so text cannot drift across the decorative border;
+- added a direct-`file://` browser geometry smoke that checks normalized title/detail centers, separation, containment and overflow against the real CSS layout.
+
 ### Assault rifle presentation — stray shot overlays removed
 - removed the assault rifle's legacy center-screen ballistic-strip overlay, matching the cleaned-up pistol presentation;
 - hid the player's procedural rifle/pistol projectile mesh that produced oversized polygon/end-cap shapes and bright streaks near the camera; projectile travel, collision, penetration, ricochet and damage simulation are unchanged;
