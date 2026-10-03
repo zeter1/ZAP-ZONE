@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-10-01
 
+### HUD / firing presentation — pickup frame, pistol trail, rocket overlay and pause border
+- aligned the weapon-pickup notification with its native 1000×320 frame ratio, widened the safe text area and allowed long reserve text such as the sniper pickup message to wrap inside the panel instead of crowding the decorative edge;
+- pistol shots keep the real muzzle flash, projectile/tracer and casing behavior, but the legacy center-screen ballistic-strip overlay is no longer rendered; its historical presentation RNG draw is still consumed so gameplay RNG ordering does not shift;
+- player-owned rocket detonations keep world explosion VFX, damage, sound and the user-controlled screen-shake path, but no longer trigger the full-screen explosion-shockwave texture shown over the whole display;
+- expanded the pause-panel safe area so the generated border surrounds all four buttons, including “НАЧАТЬ ИГРУ ЗАНОВО”;
+- added structural regression guards for these presentation contracts.
+
 ### Sprint presentation — speed-line overlay removed
 - removed the full-screen sprint speed-line overlay from the live frame loop and hard-disabled its CSS surface, so sprinting no longer paints the bright radial streaks across the scene;
 - sprint speed, weapon-lowering pose, crosshair behavior, footsteps and gameplay balance are unchanged;

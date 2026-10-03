@@ -576,13 +576,13 @@ function tickExplosionFx(dt){
     }
   }
 }
-function explode(pos,col,r=3){
+function explode(pos,col,r=3,screenShockwave=true){
   const n=Math.min(6+Math.floor(r*1.2),MOBILE_LOW?6:11);
   for(let i=0;i<n;i++)spawnP(pos,col,1.18);
   for(let i=0;i<(MOBILE_LOW?1:2);i++)spawnSmoke(pos,0x664433);
   for(let i=0;i<(MOBILE_LOW?2:5);i++)spawnSpark(pos,col);
   spawnExplosionFx(pos,col,r);
-  if(typeof triggerExplosionShockwave==='function')triggerExplosionShockwave(pos,r);
+  if(screenShockwave&&typeof triggerExplosionShockwave==='function')triggerExplosionShockwave(pos,r);
   if(!VISUAL_LIGHTS)return;
   let fl=_eLights.find(l=>!l._act);
   if(!fl){fl=new THREE.PointLight(0xff4400,0,10);fl._act=false;scene.add(fl);_eLights.push(fl);}

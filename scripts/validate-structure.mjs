@@ -406,7 +406,7 @@ if(pack30Width!==256||pack30Height!==256)fail('Pack 30 plasma-flight WebP must b
 for(const token of ["pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp'",'function plasmaFlightPresentationFrame'])if(!catalog.includes(token))fail('Pack 30 plasma-flight catalog wiring missing: '+token);
 for(const token of ['PLASMA_FLIGHT_VFX_LOOP','function initPlasmaFlightAssetProbe','function plasmaFlightPresentationAvailable','function ensurePlasmaFlightArt','function syncPlasmaFlightArt','plasmaFlightPresentationFrame(frameIndex)','wallBetween(camera.position,pos,losMeshes)','syncPlasmaFlightArt();'])if(!combatSource.includes(token))fail('Pack 30 plasma-flight runtime wiring missing: '+token);
 for(const token of ["function showProjectileTrailFx(kind='ballistic',visible=true)","const rotation=((Math.random()-.5)*5).toFixed(2)+'deg';","if(!visible)return;"])if(!pack29Settings.includes(token))fail('Pack 30 Pack-8 fallback/RNG compatibility missing: '+token);
-for(const token of ["const trackedPlasmaReady=trailKind==='plasma'","const allowLegacyTrail=trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady","showProjectileTrailFx(trailKind,allowLegacyTrail)"])if(!combatSource.includes(token))fail('tracked rocket/plasma presentation must suppress the legacy center-screen trail: '+token);
+for(const token of ["const trackedPlasmaReady=trailKind==='plasma'","const allowLegacyTrail=w.key!=='pistol'&&trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady","showProjectileTrailFx(trailKind,allowLegacyTrail)"])if(!combatSource.includes(token))fail('tracked rocket/plasma and pistol presentation must suppress the legacy center-screen trail: '+token);
 for(const token of ['.plasma-flight-vfx{','.plasma-flight-vfx.ally{','.plasma-flight-vfx.enemy{'])if(!gameCss.includes(token))fail('Pack 30 plasma-flight CSS missing: '+token);
 for(const token of ["const m=mkTracer(color,w.key);","const m=visual?acquireEnemyTracer(w.key,color):null;"])if(!combatSource.includes(token))fail('Pack 30 must retain procedural Three.js plasma tracer fallback: '+token);
 const pack30TrackerStart=combatSource.indexOf('const PLASMA_FLIGHT_VFX_LOOP='),pack30TrackerEnd=combatSource.indexOf('const MAX_PLAYER_BULLETS=',pack30TrackerStart);
@@ -1186,7 +1186,8 @@ for(const token of [
 ]){
   if(!engine.includes(token))fail('core nearest-wall collision contract missing: '+token);
 }
-if(!engine.includes("typeof triggerExplosionShockwave==='function'"))fail('explosion shockwave presentation hook missing');
+if(!engine.includes("function explode(pos,col,r=3,screenShockwave=true)")||!engine.includes("if(screenShockwave&&typeof triggerExplosionShockwave==='function')"))fail('explosion shockwave presentation gate missing');
+if(!combatSource.includes("explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius,ownerType!=='player')"))fail('player rocket must suppress the full-screen explosion shockwave overlay');
 for(const file of presentationRasterAssets)if(engine.includes(file))fail('generated raster presentation asset must stay out of WebGL engine scene: '+file);
 for(const token of ['function spawnCombatImpact','function tickCombatImpactFx','function spawnHeadshotFx','function spawnExplosionFx','BALLISTIC_MATERIAL_PROFILES','function mapImpactMaterial','function mapBallisticProfile','function mapPenetrationInfo',"impactMaterial='concrete'","wall.userData.impactMaterial='metal'","body.userData.impactMaterial='wood'",'const minimapStaticGeometry=[]','minimapDescriptor','function createArenaCover','ARENA_COVER_LAYOUT','coverType','coverPalette','const palettes=','const accentColor=','const bolt=new THREE.MeshStandardMaterial','function createProceduralHazardPanel','screenMat','glyphMat','IMPACT_MARK_MAX=56','impactMarkPool','function wallImpact(pos,col,material=\'concrete\',normal=null,impactVariant=\'normal\')',"typeof syncWorldWeaponPickupArt==='function'"]){
   if(!engine.includes(token))fail('polished engine FX/material/cover integration missing: '+token);
@@ -1277,6 +1278,8 @@ for(const token of ['width:254px','width:236px','width:218px;height:218px','widt
 }
 if(!css.includes('#xhair.generated-reticle::before{content:none;}')||!css.includes('#xhair.generated-reticle .xh-arm{opacity:1;}'))fail('clean CSS reticle must suppress the dark-tile generated overlay');
 if(!css.includes('#pause .pause-actions::before{')||css.includes('#pause::before{'))fail('pause panel asset must be bound to the action group, not the whole screen');
+if(!css.includes('#pause .pause-actions{position:relative;isolation:isolate;box-sizing:border-box;width:min(840px,90vw);padding:18px 34px 42px;}'))fail('pause panel safe area must contain all four action buttons');
+if(!css.includes('box-sizing:border-box;width:min(620px,90vw);height:auto;aspect-ratio:1000/320')||!css.includes('white-space:normal;overflow-wrap:anywhere'))fail('pickup notification copy must stay inside the native 1000x320 frame');
 if(!css.includes('#weapon-bar{pointer-events:auto;flex-wrap:nowrap;justify-content:center;max-width:min(98vw,1180px);'))fail('desktop weapon bar must keep all ten weapon slots on one row');
 if(!css.includes('#weapon-bar{top:max(42px,calc(env(safe-area-inset-top) + 34px));gap:6px;flex-wrap:wrap;max-width:min(94vw,760px);'))fail('compact/coarse layouts must retain weapon-bar wrapping');
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');

@@ -918,7 +918,7 @@ function shoot(){
   if(typeof showProjectileTrailFx==='function'){
     const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
     const trackedPlasmaReady=trailKind==='plasma'&&typeof plasmaFlightPresentationAvailable==='function'&&plasmaFlightPresentationAvailable();
-    const allowLegacyTrail=trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady;
+    const allowLegacyTrail=w.key!=='pistol'&&trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady;
     if(trailKind)showProjectileTrailFx(trailKind,allowLegacyTrail);
   }
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
@@ -1208,7 +1208,7 @@ function detonateRocket(arr,index,r,pos){
   if(blastDistance<105){const proximity=Math.max(.12,1-blastDistance/110);playExplosionSound(pos,proximity);if(blastDistance<55)triggerScreenShake(proximity*.95,.20);}
   spawnCombatImpact(pos,'rocket');
   showGeneratedRocketExplosionVfx(pos);
-  explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius);
+  explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius,ownerType!=='player');
   applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28,r.ownerType==='player'?'ally':(r._src?.team||r.team||null));
   destroySceneObject(r.m);
   arr.splice(index,1);
