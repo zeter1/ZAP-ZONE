@@ -165,6 +165,29 @@ if(pickupLayout.titleCenter<.32||pickupLayout.titleCenter>.49||pickupLayout.deta
   throw new Error('pickup notification text is not aligned inside its two frame slots: '+JSON.stringify(pickupLayout));
 }
 
+
+const perkCardLayout=await evaluate(`(()=>{
+  const host=document.createElement('div');
+  host.style.cssText='position:fixed;left:-9999px;top:0;width:204px;z-index:-1;';
+  const card=document.createElement('div');
+  card.className='pcard rarity-common';
+  card.innerHTML='<img class="pcard-ic" alt=""><div class="pcard-rarity">ОБЫЧНОЕ</div><div class="pcard-nm"><span class="perk-emoji">🌀</span> Рефлекторные сервоприводы</div><div class="pcard-ds">+10% скорость движения и +10% скорость перезарядки.</div><div class="pcard-meta"><span class="pcard-path">Мобильность</span> · <span class="pcard-rank">ранг 1/3</span> · клавиша 5</div>';
+  host.appendChild(card);document.body.appendChild(host);
+  if(typeof applyPresentationAtlasVariables==='function'&&typeof perkRarityPresentationFrame==='function'){
+    applyPresentationAtlasVariables(card,'perk-frame',perkRarityPresentationFrame('common'));
+  }
+  const cr=card.getBoundingClientRect();
+  const nodes=[...card.children].map(el=>({cls:el.className,r:el.getBoundingClientRect(),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,scrollHeight:el.scrollHeight,clientHeight:el.clientHeight}));
+  const inside=nodes.every(x=>x.r.left>=cr.left+8&&x.r.right<=cr.right-8&&x.r.top>=cr.top+8&&x.r.bottom<=cr.bottom-12);
+  const noOverflow=nodes.every(x=>x.scrollWidth<=x.clientWidth+1&&x.scrollHeight<=x.clientHeight+1);
+  const ds=card.querySelector('.pcard-ds').getBoundingClientRect(),meta=card.querySelector('.pcard-meta').getBoundingClientRect();
+  const result={height:cr.height,width:cr.width,inside,noOverflow,separated:ds.bottom<=meta.top+1,bottomInset:cr.bottom-meta.bottom,nodes:nodes.map(x=>({cls:x.cls,left:x.r.left-cr.left,right:cr.right-x.r.right,top:x.r.top-cr.top,bottom:cr.bottom-x.r.bottom}))};
+  host.remove();return result;
+})()`);
+if(perkCardLayout.height<218||!perkCardLayout.inside||!perkCardLayout.noOverflow||!perkCardLayout.separated||perkCardLayout.bottomInset<12){
+  throw new Error('perk choice text escapes decorative frame safe area: '+JSON.stringify(perkCardLayout));
+}
+
 if(session.hasFatalDiagnostics()){
   const tail=session.diagnosticsTail(),fatalTail=session.fatalDiagnosticsTail();
   session.close();
@@ -172,4 +195,4 @@ if(session.hasFatalDiagnostics()){
 }
 const diagnostics=session.diagnosticsTail();
 session.close();
-console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,pickupLayout,diagnostics}));
+console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,pickupLayout,perkCardLayout,diagnostics}));

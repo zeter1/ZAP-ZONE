@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-10-01
 
+### Perk cards + sprint presentation — frame-safe text and stable lower HUD
+- rebuilt perk-choice cards as explicit internal rows for icon, rarity, name, description and metadata, with a larger bottom safe inset and smaller responsive typography so long Russian perk text no longer crosses the generated card border;
+- reduced perk-icon footprint and normalized description/meta wrapping while preserving all perk names, values, ranks, keyboard hints and selection behavior;
+- stopped the generated first-person weapon raster from inheriting the sprint lower/rotate pose; sprint speed, sprint-to-fire blocking, recovery timing, footsteps and gameplay balance are unchanged, but the odd movement near the bottom-center HUD is removed;
+- added structural guards plus a direct-`file://` browser geometry regression for a representative long perk card.
+
 ### Pickup notification frame — text aligned to dedicated slots
 - changed the pickup notification copy from one vertically centered text block into two fixed visual rows that match the generated frame: the title now occupies the upper blue panel and the weapon/ammo detail occupies the lower dark panel;
 - removed the old detail top margin, added dedicated lower-slot insets, and kept long reserve strings on one clipped line so text cannot drift across the decorative border;

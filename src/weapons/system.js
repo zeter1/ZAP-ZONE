@@ -649,11 +649,12 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   // but must not drag it across the center-bottom HUD or rotate it into a poster-like pose.
   const key=fpGeneratedWeaponPending?.key||'rifle';
   const tune=FP_GENERATED_ART_TUNING[key]||FP_GENERATED_ART_TUNING.rifle;
-  const dx=Math.max(-14,Math.min(14,(gunGrp.position.x-gunBasePos.x)*220));
-  const dy=Math.max(-10,Math.min(16,-(gunGrp.position.y-gunBasePos.y)*190));
-  const rawRot=gunGrp.rotation.z*16-gunGrp.rotation.y*3+gunGrp.rotation.x*2;
+  const sprintPresentationActive=typeof sprintBlend!=='undefined'&&sprintBlend>.01;
+  const dx=sprintPresentationActive?0:Math.max(-14,Math.min(14,(gunGrp.position.x-gunBasePos.x)*220));
+  const dy=sprintPresentationActive?0:Math.max(-10,Math.min(16,-(gunGrp.position.y-gunBasePos.y)*190));
+  const rawRot=sprintPresentationActive?0:(gunGrp.rotation.z*16-gunGrp.rotation.y*3+gunGrp.rotation.x*2);
   const rot=Math.max(-1.6,Math.min(1.6,rawRot));
-  const kick=Math.max(0,Math.min(1,recoil));
+  const kick=sprintPresentationActive?0:Math.max(0,Math.min(1,recoil));
   const drawX=Math.max(-18,Math.min(34,dx+(tune.kickX||0)*kick));
   const drawY=Math.max(-12,Math.min(34,dy+(tune.kickY||0)*kick));
   const drawRot=Math.max(-2.2,Math.min(3.2,rot+(tune.kickRot||0)*kick));
