@@ -57,20 +57,18 @@ function mkHpMesh(){
   handle.rotation.x=Math.PI/2;handle.position.set(0,.39,0);model.add(handle);
   const crossH=new THREE.Mesh(new THREE.BoxGeometry(.39,.105,.31),PICKUP_MATS.medWhite);crossH.position.z=.025;model.add(crossH);
   const crossV=new THREE.Mesh(new THREE.BoxGeometry(.105,.39,.31),PICKUP_MATS.medWhite);crossV.position.z=.025;model.add(crossV);
-  const ring=new THREE.Mesh(_pickupRingGeo,PICKUP_MATS.medGlow);ring.rotation.x=Math.PI/2;ring.position.y=-.33;g.add(ring);
-  addPickupPedestal(g,0xff4058);
-  addPickupBeacon(g,0xff4058,.86,.94);
+  // Keep the pickup itself readable without stacking glowing rings/pedestals around it.
   g.userData.proceduralPickupModel=model;
   attachWorldMedkitPickupArt(g,model);
   return g;
 }
 
 const WORLD_PICKUP_ART_TUNING=Object.freeze({
-  pistol:{maxPx:118,minPx:30,y:.18},shotgun:{maxPx:148,minPx:34,y:.20},rifle:{maxPx:154,minPx:34,y:.20},
-  rocket:{maxPx:158,minPx:36,y:.20},plasma:{maxPx:150,minPx:34,y:.20},mine:{maxPx:100,minPx:28,y:.15},
-  bomb:{maxPx:112,minPx:30,y:.16},smoke:{maxPx:84,minPx:26,y:.18},sniper:{maxPx:166,minPx:36,y:.20},grenade:{maxPx:98,minPx:28,y:.16}
+  pistol:{maxPx:94,minPx:24,y:.045},shotgun:{maxPx:116,minPx:28,y:.050},rifle:{maxPx:120,minPx:28,y:.050},
+  rocket:{maxPx:124,minPx:30,y:.050},plasma:{maxPx:116,minPx:28,y:.050},mine:{maxPx:82,minPx:22,y:.040},
+  bomb:{maxPx:88,minPx:24,y:.040},smoke:{maxPx:70,minPx:22,y:.040},sniper:{maxPx:128,minPx:30,y:.050},grenade:{maxPx:78,minPx:22,y:.040}
 });
-const WORLD_MEDKIT_PICKUP_ART_TUNING=Object.freeze({maxPx:92,minPx:26,y:.16});
+const WORLD_MEDKIT_PICKUP_ART_TUNING=Object.freeze({maxPx:74,minPx:22,y:.040});
 const _worldPickupArtPos=new THREE.Vector3(),_worldPickupArtDir=new THREE.Vector3(),_worldPickupArtScreen=new THREE.Vector3();
 const _worldPickupArtRaycaster=new THREE.Raycaster();
 let worldPickupArtLastSync=0;
@@ -79,6 +77,13 @@ function worldMedkitPickupAsset(){return GAME_ASSETS.presentation.medkitPickup||
 function hideWorldPickupArt(entry){
   if(entry?.img)entry.img.style.visibility='hidden';
   if(entry?.beacon)entry.beacon.style.visibility='hidden';
+}
+function clearWorldPickupPresentation(){
+  const layer=G('world-pickup-art-layer');if(!layer)return;
+  for(const img of layer.querySelectorAll('img')){img.onload=null;img.onerror=null;}
+  layer.replaceChildren();
+  layer.style.visibility='hidden';
+  worldPickupArtLastSync=0;
 }
 function pickupBeaconKindForWeapon(key){
   if(['rocket','sniper','bomb'].includes(key))return 'heavy';
@@ -98,11 +103,10 @@ function attachWorldWeaponPickupArt(group,key,model){
   const img=document.createElement('img');
   img.className='world-weapon-pickup-art';img.alt='';img.decoding='async';img.draggable=false;
   img.dataset.weaponKey=key;img.style.visibility='hidden';img.src=asset;
-  const beacon=createWorldPickupBeacon(layer,pickupBeaconKindForWeapon(key));
-  const entry={img,beacon,model,key,ready:false,failed:false};
+  const entry={img,beacon:null,model,key,ready:false,failed:false};
   group.userData.worldPickupArt=entry;
   img.onload=()=>{entry.ready=true;entry.failed=false;model.visible=false;};
-  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();beacon.remove();group.userData.worldPickupArt=null;};
+  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
   layer.append(img);return entry;
 }
 function attachWorldMedkitPickupArt(group,model){
@@ -111,11 +115,10 @@ function attachWorldMedkitPickupArt(group,model){
   const img=document.createElement('img');
   img.className='world-health-pickup-art';img.alt='';img.decoding='async';img.draggable=false;
   img.dataset.pickupKind='medkit';img.style.visibility='hidden';img.src=asset;
-  const beacon=createWorldPickupBeacon(layer,'medkit');
-  const entry={img,beacon,model,key:'medkit',ready:false,failed:false};
+  const entry={img,beacon:null,model,key:'medkit',ready:false,failed:false};
   group.userData.worldPickupArt=entry;
   img.onload=()=>{entry.ready=true;entry.failed=false;model.visible=false;};
-  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();beacon.remove();group.userData.worldPickupArt=null;};
+  img.onerror=()=>{entry.failed=true;entry.ready=false;model.visible=true;img.remove();group.userData.worldPickupArt=null;};
   layer.append(img);return entry;
 }
 function syncWorldWeaponPickupArt(){
@@ -145,21 +148,13 @@ function syncWorldWeaponPickupArt(){
     const cap=tune.maxPx*(MOBILE_LOW?.78:1);
     const width=Math.max(tune.minPx,Math.min(cap,cap*8.5/Math.max(5.5,dist)));
     const x=(_worldPickupArtScreen.x*.5+.5)*W,y=(-_worldPickupArtScreen.y*.5+.5)*H;
-    const tilt=Math.sin(pk.bob*.58)*1.2;
+    const tilt=pk.type==='weapon'?((pk.artTilt||0)*.35):0;
     entry.img.style.width=width.toFixed(1)+'px';
     entry.img.style.left=x.toFixed(1)+'px';entry.img.style.top=y.toFixed(1)+'px';
-    const opacity=Math.max(.68,Math.min(.98,1-(dist-8)/72));
+    const opacity=Math.max(.72,Math.min(.98,1-(dist-8)/78));
     entry.img.style.opacity=String(opacity);
     entry.img.style.transform='translate3d(-50%,-50%,0) rotate('+tilt.toFixed(2)+'deg)';
     entry.img.style.visibility='visible';
-    if(entry.beacon){
-      const beaconWidth=Math.max(34,Math.min(150,width*1.18));
-      entry.beacon.style.width=beaconWidth.toFixed(1)+'px';entry.beacon.style.height=beaconWidth.toFixed(1)+'px';
-      entry.beacon.style.left=x.toFixed(1)+'px';entry.beacon.style.top=(y+Math.max(8,width*.20)).toFixed(1)+'px';
-      entry.beacon.style.opacity=String(opacity*.72);
-      entry.beacon.style.transform='translate3d(-50%,-50%,0) scale('+(1+Math.sin(pk.bob*.8)*.035).toFixed(3)+')';
-      entry.beacon.style.visibility='visible';
-    }
   }
 }
 
@@ -168,19 +163,7 @@ const WORLD_WEAPON_COPIES=Object.freeze({pistol:2,shotgun:2,rifle:3,rocket:2,pla
 const WORLD_WEAPON_KEYS=WEAPONS.flatMap(w=>Array(WORLD_WEAPON_COPIES[w.key]||1).fill(w.key));
 function mkWeaponPickupMesh(key){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0],g=new THREE.Group();
-  const model=createWorldWeaponModel(w.key);model.position.y=.16;g.add(model);
-  const haloColor=w.bCol||w.gCol||0xffcc33;
-  const ring=new THREE.Mesh(
-    new THREE.TorusGeometry(.72,.045,7,20),
-    new THREE.MeshBasicMaterial({color:haloColor,transparent:true,opacity:.94})
-  );
-  ring.rotation.x=Math.PI/2;ring.position.y=-.30;g.add(ring);
-  const base=new THREE.Mesh(
-    new THREE.CylinderGeometry(.52,.62,.07,18),
-    new THREE.MeshStandardMaterial({color:0x111820,roughness:.62,metalness:.52,emissive:haloColor,emissiveIntensity:.15})
-  );
-  base.position.y=-.31;g.add(base);
-  addPickupBeacon(g,haloColor,.90,1.00);
+  const model=createWorldWeaponModel(w.key);model.position.y=.08;model.rotation.z=-.08;g.add(model);
   g.userData.weaponKey=w.key;g.userData.proceduralWeaponModel=model;
   attachWorldWeaponPickupArt(g,w.key,model);
   return g;
@@ -211,15 +194,17 @@ function chooseWeaponSpawnPoint(pk=null,seedIndex=-1){
 }
 function relocateWeaponPickup(pk,seedIndex=-1){
   const pt=chooseWeaponSpawnPoint(pk,seedIndex);
-  pk.m.position.set(pt[0],.62,pt[1]);
+  pk.m.position.set(pt[0],.20,pt[1]);
   pk.bob=Math.random()*Math.PI*2;
+  if(!Number.isFinite(pk.artTilt))pk.artTilt=(Math.random()-.5)*8;
 }
 
 function spawnPickups(){
+  if(pickups.length===0)clearWorldPickupPresentation();
   const hpPts=MOBILE_LOW?HP_PTS.filter((_,i)=>i%2===0):HP_PTS;
   hpPts.forEach(([x,z])=>{
-    const m=mkHpMesh();m.position.set(x,.6,z);scene.add(m);
-    pickups.push({m,type:'hp',bob:Math.random()*Math.PI*2,respawn:0,cd:0});
+    const m=mkHpMesh();m.position.set(x,.20,z);scene.add(m);
+    pickups.push({m,type:'hp',bob:Math.random()*Math.PI*2,respawn:0,cd:0,artTilt:0});
   });
 
   const keys=WORLD_WEAPON_KEYS;
@@ -266,9 +251,9 @@ function tickPickups(dt){
       continue;
     }
 
-    pk.bob+=step*(pk.type==='weapon'?1.30:1.55);
-    pk.m.position.y=(pk.type==='weapon'?.62:.55)+Math.sin(pk.bob)*(pk.type==='weapon'?.10:.13);
-    pk.m.rotation.y+=step*(pk.type==='weapon'?.70:1.0);
+    pk.bob+=step*(pk.type==='weapon'?.45:.55);
+    pk.m.position.y=(pk.type==='weapon'?.20:.20)+Math.sin(pk.bob)*(pk.type==='weapon'?.018:.024);
+    pk.m.rotation.y+=step*(pk.type==='weapon'?.10:.12);
     const beacon=pk.m.userData.pickupBeacon;
     if(beacon){
       const pulse=.5+.5*Math.sin(pk.bob*1.35+beacon.phase);

@@ -539,6 +539,7 @@ function doRespawn(){
 function clearWorldForFreshGame(){
   enemies.forEach(e=>e.destroy());enemies.length=0;
   pickups.forEach(p=>destroySceneObject(p.m));pickups.length=0;
+  if(typeof clearWorldPickupPresentation==='function')clearWorldPickupPresentation();
   for(const mn of mines)destroySceneObject(mn.m);mines.length=0;
   [...eRkts,...pRkts,...pTrs,...smokeGrenades].forEach(r=>destroySceneObject(r.m));
   eRkts.length=0;pRkts.length=0;pTrs.length=0;smokeGrenades.length=0;

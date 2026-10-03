@@ -585,9 +585,11 @@ const pickups=readFileSync('src/entities/pickups.js','utf8');
 for(const token of ['WORLD_WEAPON_COPIES','WEAPONS.flatMap','pistol:2','shotgun:2','rifle:3','rocket:2','plasma:2','sniper:2','grenade:1','function randomWeaponReserve','grantWeapon(idx,reserveGrant)','relocateWeaponPickup(pk)']){
   if(!pickups.includes(token))fail('dynamic weapon pickup economy missing: '+token);
 }
-for(const token of ['WORLD_PICKUP_ART_TUNING','WORLD_MEDKIT_PICKUP_ART_TUNING','function worldWeaponPickupAsset','function attachWorldWeaponPickupArt','function attachWorldMedkitPickupArt','function syncWorldWeaponPickupArt','GAME_ASSETS.generatedWorldWeaponPickups','GAME_ASSETS.presentation.medkitPickup','new THREE.Raycaster()','intersectObjects(wallMeshes,false)','model.visible=false','g.userData.proceduralWeaponModel=model']){
+for(const token of ['WORLD_PICKUP_ART_TUNING','WORLD_MEDKIT_PICKUP_ART_TUNING','function worldWeaponPickupAsset','function attachWorldWeaponPickupArt','function attachWorldMedkitPickupArt','function syncWorldWeaponPickupArt','function clearWorldPickupPresentation','layer.replaceChildren()','GAME_ASSETS.generatedWorldWeaponPickups','GAME_ASSETS.presentation.medkitPickup','new THREE.Raycaster()','intersectObjects(wallMeshes,false)','model.visible=false','g.userData.proceduralWeaponModel=model']){
   if(!pickups.includes(token))fail('generated world weapon pickup presentation missing: '+token);
 }
+if(!progression.includes("if(typeof clearWorldPickupPresentation==='function')clearWorldPickupPresentation();"))fail('fresh-game reset must remove stale DOM pickup art');
+if(!pickups.includes("const entry={img,beacon:null,model,key,ready:false,failed:false}")||!pickups.includes("const entry={img,beacon:null,model,key:'medkit',ready:false,failed:false}"))fail('world pickups must not stack decorative beacon circles over the item art');
 if(pickups.includes('makeAssetPlane(GAME_ASSETS.generatedWorldWeaponPickups')||pickups.includes('makeAssetSprite(GAME_ASSETS.generatedWorldWeaponPickups')||pickups.includes('gameTexture(GAME_ASSETS.generatedWorldWeaponPickups')){
   fail('generated world weapon pickup art must stay DOM-projected, not WebGL textured');
 }
