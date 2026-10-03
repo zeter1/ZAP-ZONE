@@ -592,7 +592,10 @@ function hideGeneratedFirstPersonWeaponArt(showProcedural=true){
   fpGeneratedWeaponActive=false;fpGeneratedWeaponLoading=false;
 }
 function setGeneratedFirstPersonWeaponArt(w,model){
-  const wrap=G('fp-weapon-art-wrap'),asset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
+  const wrap=G('fp-weapon-art-wrap'),catalogAsset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
+  // Pack 20 grenade idle art is a placeholder-style flat render that does not match the polished FPS rig.
+  // Keep it catalogued for provenance, but use the detailed procedural grenade + hands as the live fallback.
+  const asset=w.key==='grenade'?null:catalogAsset;
   const hasGeneratedArt=!!(wrap&&asset);
   hideGeneratedFirstPersonWeaponArt(!hasGeneratedArt);
   // file:// can load sibling WebP assets directly; HTTP cache versioning stays in gameAssetUrl().

@@ -97,7 +97,7 @@ Runtime derivatives:
 
 Integration rules:
 - both assets use the existing DOM-only elapsed-time VFX player; they are not loaded into persistent WebGL planes/sprites;
-- pistol/rifle/plasma discharge starts only from the existing successful-shot hook;
+- the Pack 26 ballistic/energy discharge sheet remains catalogued for provenance, but is no longer projected over player pistol/rifle/plasma shots because its cells contain a baked second weapon/hands silhouette; those shots use the dedicated first-person muzzle flash plus the existing procedural muzzle/impact presentation;
 - the existing rocket Pack 11 explosion remains primary/fallback and Pack 26 decorates every third rocket deterministically; the existing bomb Pack 12 detonation remains primary/fallback and Pack 26 adds the heavier fire/smoke layer;
 - no new gameplay RNG draw is introduced by variation selection; ammo, damage, blast radius, projectile physics, recoil, cadence and timing stay authoritative and unchanged;
 - source generator rasters are not duplicated in Git; provenance and source identities are recorded in `asset-staging/2026-09-30-vfx-pack-26/README.md`.
@@ -205,7 +205,7 @@ Pack 20 adds a real player fragmentation grenade instead of repurposing the mine
 
 Runtime paths:
 - `assets/weapons/grenade.svg` — compact weapon-bar/procedural fallback identity;
-- `assets/ui/weapons/fp/player-grenade-fps-20.svg` — generated-direction first-person grenade + armored hand presentation;
+- `assets/ui/weapons/fp/player-grenade-fps-20.svg` — retained as the reviewed Pack 20 source/runtime derivative, but the live idle first-person grenade deliberately uses the detailed procedural grenade + hands fallback because this flat placeholder framing does not fit the final FPS presentation;
 - `assets/ui/pickups/weapons/world-grenade-pickup-20.svg` — generated-direction map pickup presentation;
 - `assets/ui/equipment/frag-grenade-ui-atlas-20.svg` — 2×2 inventory/pickup/readiness/attack identity atlas;
 - `assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg` — 4×2 / 8 deterministic first-person throw frames;

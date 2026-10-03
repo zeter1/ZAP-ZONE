@@ -631,8 +631,9 @@ function showGeneratedWeaponShotVfx(weaponKey){
   if(weaponKey==='rocket')return playGeneratedCombatVfx('rocketBackblast',{anchor:'muzzle',scale:1.06});
   if(weaponKey==='sniper')return showGeneratedSniperShotVfx();
   if(weaponKey==='shotgun')return playGeneratedCombatVfx('shotgunMuzzle',{anchor:'muzzle',scale:1.04});
-  if(weaponKey==='plasma')return playGeneratedCombatVfx('energyDischarge26',{anchor:'muzzle',scale:1.04});
-  if(weaponKey==='pistol'||weaponKey==='rifle')return playGeneratedCombatVfx('ballisticDischarge26',{anchor:'muzzle',scale:weaponKey==='rifle'?1.02:.88});
+  // Pack 26 ballistic/energy discharge cells bake a second weapon + hands silhouette.
+  // The normal first-person muzzle flash already owns pistol/rifle/plasma shot feedback,
+  // so layering those atlas cells at the muzzle creates the duplicate tile seen in-game.
   return false;
 }
 function showGeneratedCasingFx(isShotgun=false){return playGeneratedCombatVfx(isShotgun?'shotgunShell':'brassCasing',{anchor:'ejection',rotation:(Math.random()-.5)*24,scale:isShotgun?1.02:.96});}

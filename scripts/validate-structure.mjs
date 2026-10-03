@@ -338,7 +338,12 @@ for(const token of ['showGeneratedPistolReloadVfx(reloadMode,reloadTot)',"showGe
 for(const token of ["isGeneratedFirstPersonActionActive('shotgunPump25')",'!fullShotgunPump'])if(!runtimeSource.includes(token))fail('Pack 25 runtime fallback wiring missing: '+token);
 for(const token of ["pack26Discharge:'assets/ui/fx/weapon-discharge-vfx-atlas-26.webp'","pack26HeavyExplosion:'assets/ui/fx/heavy-explosion-vfx-atlas-26.webp'","ballisticDischarge26:Object.freeze","energyDischarge26:Object.freeze","heavyExplosion26:Object.freeze"])if(!catalog.includes(token))fail('Pack 26 VFX catalog wiring missing: '+token);
 const pack26Settings=readFileSync('src/settings/settings.js','utf8');
-for(const token of ["weaponKey==='plasma')return playGeneratedCombatVfx('energyDischarge26'","weaponKey==='pistol'||weaponKey==='rifle'","playGeneratedCombatVfx('heavyExplosion26'"])if(!pack26Settings.includes(token))fail('Pack 26 runtime wiring missing: '+token);
+const pack26ShotStart=pack26Settings.indexOf('function showGeneratedWeaponShotVfx(weaponKey){');
+const pack26ShotEnd=pack26Settings.indexOf('function showGeneratedCasingFx',pack26ShotStart);
+const pack26Shot=pack26ShotStart>=0&&pack26ShotEnd>pack26ShotStart?pack26Settings.slice(pack26ShotStart,pack26ShotEnd):'';
+for(const token of ["weaponKey==='rocket'","weaponKey==='sniper'","weaponKey==='shotgun'"])if(!pack26Shot.includes(token))fail('safe generated player-shot VFX wiring missing: '+token);
+if(pack26Shot.includes('energyDischarge26')||pack26Shot.includes('ballisticDischarge26'))fail('Pack 26 discharge atlas must not duplicate the player first-person weapon/hands');
+if(!pack26Settings.includes("playGeneratedCombatVfx('heavyExplosion26'"))fail('Pack 26 heavy explosion runtime wiring missing');
 for(const token of ['ballisticDischarge26','energyDischarge26','heavyExplosion26'])if(!gameCss.includes('data-kind="'+token+'"'))fail('Pack 26 VFX CSS missing: '+token);
 for(const token of ['showGeneratedWeaponShotVfx(w.key);','showGeneratedRocketExplosionVfx(pos);','showGeneratedBombDetonationVfx(pos);'])if(!combatSource.includes(token))fail('Pack 26 authoritative combat event hook missing: '+token);
 const pack26Rocket=pack26Settings.indexOf('function showGeneratedRocketExplosionVfx'),pack26RocketFallback=pack26Settings.indexOf("playGeneratedCombatVfx('rocketExplosion'",pack26Rocket),pack26RocketHeavy=pack26Settings.indexOf("playGeneratedCombatVfx('heavyExplosion26'",pack26Rocket);
@@ -558,6 +563,7 @@ if(weapons.includes('gameTexture(GAME_ASSETS.generatedFirstPersonWeapons')||weap
 }
 if(weapons.includes('if(!GAME_HOSTED_HTTP_MODE||!wrap||!asset)return;'))fail('generated player-held weapon art must not be disabled in file:// mode');
 if(!weapons.includes('const hasGeneratedArt=!!(wrap&&asset);')||!weapons.includes('if(!hasGeneratedArt)return;'))fail('generated player-held weapon loader protocol-neutral guard missing');
+if(!weapons.includes("const asset=w.key==='grenade'?null:catalogAsset;"))fail('frag grenade first-person idle must use the procedural fallback until replacement art is approved');
 if(!weapons.includes("el.style.display=owned&&!selectable?'none':''"))fail('empty owned weapons must disappear from the weapon bar');
 const rifleStart=weapons.indexOf("weaponDef('rifle'");
 const rifleEnd=weapons.indexOf('})',rifleStart);
@@ -1264,6 +1270,10 @@ for(const token of ['#combat-medal','#status-icons','#armor-break-fx','combatMed
 for(const token of ['width:254px','width:236px','width:218px;height:218px','width:202px','width:176px;height:176px']){
   if(!css.includes(token))fail('compact tactical HUD sizing missing: '+token);
 }
+if(!css.includes('#xhair.generated-reticle::before{content:none;}')||!css.includes('#xhair.generated-reticle .xh-arm{opacity:1;}'))fail('clean CSS reticle must suppress the dark-tile generated overlay');
+if(!css.includes('#pause .pause-actions::before{')||css.includes('#pause::before{'))fail('pause panel asset must be bound to the action group, not the whole screen');
+if(!css.includes('#weapon-bar{pointer-events:auto;flex-wrap:nowrap;justify-content:center;max-width:min(98vw,1180px);'))fail('desktop weapon bar must keep all ten weapon slots on one row');
+if(!css.includes('#weapon-bar{top:max(42px,calc(env(safe-area-inset-top) + 34px));gap:6px;flex-wrap:wrap;max-width:min(94vw,760px);'))fail('compact/coarse layouts must retain weapon-bar wrapping');
 if(css.includes('crosshair.svg'))fail('CSS must not render legacy SVG crosshair');
 if(css.includes('transform:none#xp-wrap')||css.includes('transform:none#'))fail('CSS selector concatenation/corruption detected');
 const xpBase='#xp-wrap{position:absolute;top:18px;left:18px;transform:none;text-align:left';
