@@ -1,5 +1,10 @@
 # Changelog — ZAP ZONE
 
+### 2026-10-07 — CI build stamp made line-ending invariant
+
+- Исправлен cross-platform build hash: текстовые runtime-файлы теперь хешируются с каноническими LF независимо от CRLF/LF рабочей копии. Это устраняет расхождение Windows-локальной проверки и GitHub Actions/Linux без ослабления `Web build stamp` gate.
+- После синхронизации локальной версии в GitHub Actions первый run корректно обнаружил stale stamp (`Windows CRLF != Linux LF`); причина исправлена в `scripts/stamp-web-build.mjs`, а build metadata пересчитана.
+
 ### 2026-10-07 — Pack50 Blender first-person rifle experiment — rolled back
 
 - **Production rollback:** after live visual review, the user requested the previous assault-rifle asset back. Pack50 was removed from the bootstrap and runtime hooks; active first-person rifle is again the previous procedural + Pack36 generated-art presentation. Pack50 artifacts remain archived for future experimentation.

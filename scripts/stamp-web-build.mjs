@@ -1,5 +1,5 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises';
-import { resolve, relative, sep } from 'node:path';
+import { resolve, relative, sep, extname } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const root=resolve(import.meta.dirname,'..');
@@ -7,6 +7,7 @@ const indexPath=resolve(root,'index.html');
 const cssPath=resolve(root,'src/styles/game.css');
 const manifestPath=resolve(root,'version.json');
 const buildPattern=/^[0-9a-f]{16}$/;
+const textHashExtensions=new Set(['.css','.html','.js','.json','.mjs','.cjs','.svg','.txt','.md','.py']);
 
 async function walk(dir){
   const entries=await readdir(dir,{withFileTypes:true});
@@ -26,6 +27,14 @@ function normalizeIndex(text){
 }
 function normalizeCss(text){
   return text.replace(/\?v=(?:[0-9a-f]{16}|__BUILD__)(?=['")])/g,'?v=__BUILD__');
+}
+function normalizeLineEndings(text){return text.replace(/\r\n?/g,'\n');}
+async function hashBytes(path,relativePath){
+  if(relativePath==='src/styles/game.css')return Buffer.from(normalizeLineEndings(normalizeCss(cssSource)),'utf8');
+  if(textHashExtensions.has(extname(relativePath).toLowerCase())){
+    return Buffer.from(normalizeLineEndings(await readFile(path,'utf8')),'utf8');
+  }
+  return readFile(path);
 }
 function gitBlobSha(bytes){
   const header=Buffer.from('blob '+bytes.length+'\0');
@@ -51,13 +60,10 @@ const runtimeFiles=[
   ...await walk(resolve(root,'src')),
   ...await walk(resolve(root,'assets')),
 ].sort((a,b)=>rel(a).localeCompare(rel(b)));
-const entries=[{path:'index.html',sha:gitBlobSha(Buffer.from(normalizeIndex(indexSource),'utf8'))}];
+const entries=[{path:'index.html',sha:gitBlobSha(Buffer.from(normalizeLineEndings(normalizeIndex(indexSource)),'utf8'))}];
 for(const path of runtimeFiles){
   const relativePath=rel(path);
-  const bytes=relativePath==='src/styles/game.css'
-    ? Buffer.from(normalizeCss(cssSource),'utf8')
-    : await readFile(path);
-  entries.push({path:relativePath,sha:gitBlobSha(bytes)});
+  entries.push({path:relativePath,sha:gitBlobSha(await hashBytes(path,relativePath))});
 }
 entries.sort((a,b)=>a.path.localeCompare(b.path));
 const build=hashBuild(entries);
