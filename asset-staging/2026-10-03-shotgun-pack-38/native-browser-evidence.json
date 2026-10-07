@@ -1,0 +1,104 @@
+{
+  "url": "http://127.0.0.1:3063/",
+  "build": "dbbcc2d451d473a7",
+  "results": [
+    {
+      "event": "native-shot",
+      "before": {
+        "ammo": 6,
+        "count": 0
+      },
+      "after": {
+        "ammo": 5,
+        "pellets": 8,
+        "sharedFeedback": true,
+        "action": "shotgunPump37",
+        "vfx": [
+          "shotgunMuzzle37",
+          "shotgunSmoke37"
+        ],
+        "recoilPitch": 0.057772434854888255
+      }
+    },
+    {
+      "event": "native-current-frame-emitters",
+      "quality": {
+        "checks": 26,
+        "preDelayChecks": 2,
+        "muzzle": 3,
+        "smoke": 23,
+        "shells": [
+          {
+            "origin": {
+              "x": 1471.364501953125,
+              "y": 781.750244140625
+            },
+            "port": {
+              "x": 1471.364501953125,
+              "y": 781.750244140625
+            },
+            "pose": 1,
+            "age": 0.24140000000000056
+          }
+        ],
+        "maxDelta": 0.043286132812454525,
+        "impactCount": 0,
+        "shellLast": {
+          "age": 0.514,
+          "x": 1582.4,
+          "y": 1008.5,
+          "origin": {
+            "x": 1471.364501953125,
+            "y": 781.750244140625
+          }
+        }
+      }
+    },
+    {
+      "event": "reload-interrupt",
+      "before": {
+        "ammo": 3,
+        "uAmmo": 3
+      },
+      "after": {
+        "ammo": 2,
+        "uAmmo": 3,
+        "action": "shotgunPump37"
+      }
+    },
+    {
+      "event": "empty-reload-reserve-exhaustion",
+      "ammo": 2,
+      "uAmmo": 0
+    },
+    {
+      "event": "switch-reload-cancel",
+      "state": {
+        "ammo": 1,
+        "uAmmo": 4,
+        "reloading": false,
+        "action": null
+      }
+    },
+    {
+      "event": "pause-resume",
+      "pausedState": {
+        "reloadT": 0.51,
+        "age": 0.007
+      },
+      "state": {
+        "ammo": 5,
+        "uAmmo": 0
+      }
+    },
+    {
+      "event": "real-three-wall-collision",
+      "spawn": -0.28,
+      "wallHit": [
+        0.030000000000000027,
+        0.030000000000000027
+      ]
+    }
+  ],
+  "errors": []
+}

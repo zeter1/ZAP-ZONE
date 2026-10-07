@@ -1,0 +1,13 @@
+{
+  "url": "file:///G:/%D0%9C%D0%9E%D0%AF%20%D0%92%D0%B5%D0%B1-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D0%B0/ZAP_ZONE/index.html",
+  "cdnMocked": false,
+  "pass": true,
+  "state": {
+    "ammo": 1,
+    "cd": 179.48939999999985,
+    "file": true,
+    "node": "matrix3d(0.269758, 0, 0, 0, -0.280778, -0.0156373, 0, -0.0004387, 0, 0, 1, 0, 570.942, 495.816, 0, 1)"
+  },
+  "errors": [],
+  "failed": []
+}

@@ -10,7 +10,8 @@ const BOT_SHOT_OUTCOME=Object.freeze({
   EMITTED:'emitted',
   OCCLUDED:'blocked-occluded',
   FRIENDLY_FIRE:'blocked-friendly-fire',
-  ROCKET_SAFETY:'blocked-rocket-safety'
+  ROCKET_SAFETY:'blocked-rocket-safety',
+  ROCKET_COOLDOWN:'blocked-rocket-cooldown'
 });
 
 const BOT_FIRE_RECOIL_PROFILES=Object.freeze({
@@ -137,7 +138,6 @@ function startBotReload(bot){
   if(bot.reloadT<=0){
     bot.reloadT=bot.weapon.reload*(0.86+Math.random()*.18);
     playWeaponMechanicSound('reload',.32,bot.weapon.key,bot.group.position);
-    if(typeof showGeneratedBotReloadVfx==='function')showGeneratedBotReloadVfx(bot);
   }
 }
 
@@ -171,6 +171,7 @@ function dealBotDamageToCurrentTarget(bot,amount,dir){
 
 function executeBotShot(bot,tp,dist,suppressMemory=false){
   const wp=bot.weapon;
+  if(wp.isRocket&&bot.rocketShotCD>0)return BOT_SHOT_OUTCOME.ROCKET_COOLDOWN;
   const from=getBotMuzzlePos(bot);
   const aim=getBotAimPoint(bot,tp);
   const wallHitDist=firstWallHitDistance(from,aim,losMeshes);
@@ -210,13 +211,13 @@ function executeBotShot(bot,tp,dist,suppressMemory=false){
   emitBotCombatNoise(from,bot,wp,wp.isRocket?'rocket':'shot');
   playWeaponShotSound(wp.key,bot.team==='enemy'?1:.72,from);
   trigMuzzle(from,shotCol,wp.isRocket?1.45:wp.isSniper?1.38:wp.key==='shotgun'?1.2:1);
-  showGeneratedBotMuzzleVfx(from,bot);
   if(wp.key!=='rocket'&&wp.key!=='plasma'){
     const q=new THREE.Quaternion().setFromAxisAngle(_UP,bot.group.rotation.y);
     ejectCasing(from.clone().add(new THREE.Vector3(0,.08,0)),q,wp.key==='shotgun');
   }
 
   if(wp.isRocket){
+    bot.rocketShotCD=ROCKET_FIRE_INTERVAL;
     spawnERkt(from,dir,wp.dmg*BOT_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*bot.baseDmgMul,bot.team,bot);
     bot.mag--;
     return BOT_SHOT_OUTCOME.EMITTED;

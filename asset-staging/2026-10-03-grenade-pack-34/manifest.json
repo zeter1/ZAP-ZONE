@@ -1,0 +1,763 @@
+{
+  "name": "ZAP ZONE — fragmentation grenade asset pack 34",
+  "status": "INTEGRATED_LOCAL",
+  "runtime_integration": true,
+  "approval": "User requested runtime integration and subsequently adjusted flight, blast, damage, floor crater, hold/release and complete arms in this conversation.",
+  "preparation": "Exact floor-based slicing; remove verified neighbor strip at lower-row throw cell tops (14px cell4; 24px cells5-7), without shifting/stretching content; 32px transparent padding on world/FX; resize and alpha-preserving WebP encoding. No background repaint/removal.",
+  "sources": [
+    {
+      "file": "sources/ready-source.png",
+      "bytes": 723222,
+      "sha256": "7ade80e625c18c6448e64023545314448d0e9ff1ec27b6806825b8ebccdc287b",
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 82.443,
+      "prompt": "Create a production-ready transparent first-person fragmentation grenade asset for the browser FPS ZAP ZONE. Reference 1 is the existing game's smoke-grenade first-person art: match exactly its high-quality stylized hard-surface sci-fi rendering, black tactical armored glove, brushed silver worn edges, small cyan and amber accent lights, crisp silhouette. Reference 2 is gameplay screenshot: use it only for HUD clearance and camera composition; do NOT reproduce the arena or UI. Subject: ONE right hand holds a compact OVAL SEGMENTED fragmentation grenade, graphite pineapple-shaped armor panels with deep dark grooves, beveled silver top fuse assembly, realistic small metal pull ring and a dark safety lever that lies alongside the body. Distinct from cylindrical smoke grenade: squat oval body, clear segmented fragmentation shell. Cyan seam accents are restrained; small amber status indicator. No oversized torus ring, no oversized bloom. Camera: first-person looking slightly down at right hand, grenade body visible in three-quarter front view. Output landscape 4:3 canvas, genuine alpha transparency, no scene, no text, no labels, no checkerboard paint, no fire, no trails, no UI. Composition like reference 1: entire upper half and left 40% empty transparent headroom, grenade between x=52%-77%, y=38%-78%, glove and forearm extend to bottom-right edge. Wrist may exit bottom/right only, grenade and fingers fully in frame; no floating weapon parts. Center crosshair remains empty. Physically plausible five-finger grip. Preserve this precise grenade identity for subsequent throw and world asset sheets. It is a game-ready image, not a concept board.",
+      "generator": "built-in image_gen"
+    },
+    {
+      "file": "sources/throw-source.png",
+      "bytes": 2235300,
+      "sha256": "8ba608c61e3b45be8a0958827949c5f58358699dfa3e56c4010467afe1aa057c",
+      "size": [
+        2048,
+        768
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent_percent": 63.794,
+      "prompt": "Use case stylized-concept. Create ONE transparent production sprite atlas, EXACTLY 4 columns by 2 rows, 8 equal landscape 4:3 cells, overall wide 8:3 aspect. The reference image is the exact character/glove/grenade identity to preserve, not a board to repeat. First-person fragmentation-grenade throw animation for ZAP ZONE. SAME segmented oval graphite body, brushed silver beveled panels, cyan fine seams, orange indicator, realistic small top pull ring and side safety lever, SAME armored black right glove and silver/orange wrist armor in ALL frames. Fixed first-person camera, fixed scale, matching lighting. In each cell preserve transparent upper 35% and left 25%; never cross a cell boundary, no cell lines, no labels, no text, no shadows onto background. Row-major ordered frames: 0 ready right-hand grip matching reference; 1 LEFT gloved hand reaches for the ring while right hand firmly holds same grenade; 2 left hand pulls metal ring away from top, right hand retains grenade and lever; 3 left hand exits, right hand draws grenade back and down in anticipation; 4 right forearm swings forward/up with grenade toward upper-left of its cell; 5 hand opens releasing grenade, SAME grenade just ahead of open fingers; 6 empty extended open right hand, grenade has exited view, NO grenade in this frame; 7 right empty hand retracts to bottom right, NO grenade in this frame. This is one continuous throw, not repeated ready poses. All objects fully within own cell, 5% transparent gutter to adjacent cells, forearm ends within cell bottom edge. Genuine alpha transparent background. No world, no UI, no smoke, no trails, no giant ring. Grid boundaries exactly W*c/4,H*r/2. This sheet will be sliced into individual frames and played in this order.\n\nCorrection:\nEDIT this existing 4x2 first-person grenade throw sheet for production. Keep the SAME exact eight poses and frame order, SAME graphite segmented grenade, brushed silver/cyan/orange details and black armored hands, camera and proportions. Fix verified defects: bottom-row cells 5,6,7 have stray strips of arms/light from previous row at their upper edge; all cells have a faint broad grey/orange background haze. Completely remove the stray neighbor fragments and all background haze from every cell. Keep only solid hand/glove/grenade silhouettes with natural thin anti-aliased edges; no shadows/bloom cast onto the transparent backdrop. EXACT 4 columns, 2 rows. Every cell is a landscape 4:3 canvas with a completely transparent upper 20% and blank left 10%; five percent transparent gutters left/right/top, arms may end cleanly at their OWN bottom edge only. Bottom-row frames must start with fully empty transparent top band, no orange/grey smear and no previous-row pixel ghost. Keep cells 6 and7 empty-handed, cell5 the release with grenade airborne ahead of fingers. Do NOT replace poses with repeated idle frames; pin pull, swing and release must still be distinct. All objects belong wholly to their own cell, exact quarter/half canvas boundaries. Actual alpha zero outside silhouettes, no fake checkerboard, no background rectangles. No labels, grid lines or text. Re-render if needed with careful separation and crisp detail.\n",
+      "generator": "built-in image_gen"
+    },
+    {
+      "file": "sources/world-source.png",
+      "bytes": 1463341,
+      "sha256": "57718cc8c664ca290a33025974443dd5bf4b375225e5062106239c60147d8dd9",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 65.08,
+      "prompt": "Use case stylized-concept. Create ONE production transparent 4 columns x 2 rows sprite sheet, 8 equal square cells, overall 2:1 canvas. Reference is exact grenade identity: graphite elongated oval segmented fragmentation shell, brushed silver bevels, small cyan luminous seams, amber orange top status lamp, small metal ring, mechanical fuse and side safety lever. Match reference render style, materials and construction across all eight sprites. No hands or body; isolated grenade only. Row-major: cell0 upright intact three-quarter front grenade for WORLD PICKUP and HUD weapon icon; cell1 the exact grenade LYING horizontally on its side with pin and lever attached, viewpoint slightly above for RESTING ON GROUND; cell2 same intact grenade rear three-quarter view; cell3 same grenade sideways horizontal IN FLIGHT with pin removed and lever released (do not draw released lever separately); cell4 same active grenade rotated diagonally 45 degrees flight; cell5 same active grenade rotated diagonally opposite way flight; cell6 same active grenade upright/tilted lying ready to explode with orange top light lit more brightly and tiny restrained fuse ember, NO beam; cell7 isolated detached metallic pull-pin ring and safety lever together for optional prop, NO grenade body. Every sprite centered and evenly scaled in own cell, occupies at most 70% cell width and height, minimum 12% fully transparent margin all four sides. Cell1 viewed low/three-quarter so it is recognizably lying rather than merely a rotated upright billboard. No labels, no lines, no background, no floor, no scene, no giant fire, no motion streaks, no UI. Exact equal grid boundaries. True transparent alpha. Crisply readable at small icon sizes.",
+      "generator": "built-in image_gen"
+    },
+    {
+      "file": "sources/effects-source.png",
+      "bytes": 1411445,
+      "sha256": "af2177028674dd8c1c0176f71eb0ebbd5a30cad0bd1d4e9794088df8e966427b",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 58.11,
+      "prompt": "Use case stylized-concept. Create a transparent production GAME VFX SPRITE ATLAS for fragmentation grenade detonation in sci-fi FPS ZAP ZONE. EXACTLY FOUR columns and FOUR rows, SIXTEEN equal SQUARE cells, square canvas. Reference grenade image is palette/material style reference only; do NOT include grenade, hands, character or weapons. Realistic stylized high-quality VFX, warm amber orange fiery flash with white-hot small core, gritty metal fragmentation shards, billowing dark gray smoke, correct soft alpha falloff. Crisp bounded silhouettes, no giant laser lines. Row-major cells 0-7 are one expanding-and-dissipating explosion sequence: 0 compact white-hot ignition and short orange sparks; 1 bright compact orange blast; 2 growing irregular fireball plus short shards; 3 maximum turbulent orange fireball with gray smoke around; 4 fireball cooling into smoke with sparse sparks; 5 smoky ember cloud, little flame; 6 fading dark smoke puff, NO bright core; 7 sparse fading smoke wisps, NO flame. Row3 cells8-11: a separate four-frame after-blast SMOKE sequence, compact dark-gray puff -> broader billowing charcoal smoke -> thinner soft grey smoke -> faint transparent wisps. Row4 cell12 metallic SHARDS at early dispersal, short compact orange incandescent trails; cell13 scattered cooling SHARDS at later dispersal, no long lines; cell14 hot scorch decal, slightly elliptical dark crater mark with a subtle ember edge, overhead/ground-projection view; cell15 cold scorch decal, same footprint dark charcoal fragments, no glowing edge. All effects centered on same anchor in each square cell; 10% transparent safety gutter all sides including smoke softness and sparks; no sprite crosses into another cell. No text, no grid lines, no labels, no checkerboard paint, no rectangle backdrop or ground plane. Genuine alpha transparency in negative space and smoke. Different physical stages, especially last blast frame truly extinguished. Suitable sliced playback, NOT a concept collage.\n\nPadding correction:\nEDIT the provided 4x4 sixteen-cell transparent VFX sheet. Keep exactly its 16 states in the same row-major order, identical style, colors, physical stages and smoke/scorch/debris identity. Correct the sprite-atlas production defect: the largest fireballs, sparks, smoke, fragments currently touch or cross cell borders and get clipped. Re-render EACH entire effect at 70% of its previous footprint, CENTERED exactly in its own equal square cell, preserving all glowing fringe/smoke softness without cropping. EVERY cell must have at least 12% completely transparent EMPTY margin around the effect on ALL FOUR sides; for biggest peak fireball minimum 12% left/right/top/bottom. No effect may enter another cell, no visible rectangle. Reconstruct any previously clipped cloud edge smoothly in this edit. First eight cells still a sequential explosion from ignition to extinguished smoke. Third row still 4 after-blast smoke frames. Bottom row still 2 debris stages plus hot then cold scorch decal. Last blast/smoke frames should stay fading translucent. Preserve genuine transparent alpha; DO NOT paint any black, grey or checkerboard backdrop. No text, no grid lines, no extra elements. Output one square exactly 4x4 equal cells. This is only a bounded padding correction to the existing sheet.",
+      "generator": "built-in image_gen"
+    },
+    {
+      "file": "sources/crater-source.png",
+      "bytes": 1997050,
+      "sha256": "e6dca104a53c99f6cb2b1a5ae13f543f8611354df8ad037800285db607a43657",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 49.762,
+      "prompt": "Edit target: the attached two-frame grenade scorch atlas. Replace it with a more realistic shallow fragmentation blast crater decal for the ground of the sci-fi FPS ZAP ZONE. Keep exactly two equal square cells side by side, identical crater silhouette and alignment, transparent background. Orthographic camera DIRECTLY ABOVE, exactly 90 degrees to horizontal ground, absolutely no perspective ellipse, no upright crater. Crater is a shallow blackened central depression in cool gray concrete/packed dust, irregular fractured gray rim, small charcoal debris and subtle radial soot fading into transparency. No brown circular island, no raised volcano or huge mound. Left frame: freshly blasted with only a few tiny dim amber embers in cracks, no orange ring of fire or visible flames. Right frame: the same crater cooled and fully dark, charcoal center, realistic broken gray concrete edge, restrained shading to suggest shallow depth. Match low-poly gray arena floor while rendering debris crisp and detailed. Lighting diffuse from above, no cast background shadow. Entire circular decal inside each cell with at least 15% fully transparent margin on all four sides. No text, no UI, no checkerboard painted into pixels, no scene. This must be a true alpha game atlas, laid flat through ground-plane projection in runtime.",
+      "generator": "built-in image_gen"
+    },
+    {
+      "file": "sources/throw-full-arms-source.png",
+      "bytes": 1066728,
+      "sha256": "a2f667741b9b40ac24ae17728ecbf0e87cd45f18844237959967c4aa37be5bf0",
+      "size": [
+        1182,
+        1330
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "generator": "built-in image_gen",
+      "prompt": "Edit target is the existing ZAP ZONE grenade throw sprite atlas. Retain exact same graphite segmented grenade, silver bevels, small cyan seams, orange status lamps, black armored gloves and silver forearm armor. The problem to FIX is amputated forearms visible inside gameplay: both complete visible forearms must continue naturally down to the bottom screen boundary in every pose. Create a NEW exact 2 columns by 4 rows atlas, eight equal landscape 16:9 cells, overall portrait 8:9 ratio. Every cell represents the ENTIRE gameplay viewport, not a small cropped weapon card. Upper 45% of EVERY cell fully transparent. Both left and right forearms may leave ONLY their own BOTTOM edge; absolutely NO cut wrists/arms at the left or right cell boundaries, no isolated stumps or disconnected hand pieces. Blank 7% side margins. Anatomically complete glove, wrist and long continuous armored forearm extending to bottom. First-person camera. Frame order row-major: 0 ready right hand holding grenade at x80% y70%; 1 left hand reaches from bottom-left to pull pin while right holds at x80%; 2 left hand withdraws metal pin, both forearms attached to bottom edge; 3 right hand winds back still holding grenade; 4 right hand swings forward, grenade still held; 5 right hand releases toward upper forward direction, grenade just above fingertips; 6 follow-through empty right hand with FULL extended forearm to bottom; 7 right hand retracts empty and forearm still extends to bottom. Real physical release only frame5; frames6/7 contain no grenade. Keep body of grenade modest approximately 18% cell height. Smooth coherent anatomy, no duplicated fingers or limbs. Only hands, forearms, grenade/pin. No text, no numbered panels, no painted checkerboard, no background, no haze, no shadows cast on transparent canvas. True RGBA transparency. Strict equal grid and complete headroom separating rows; limbs never overlap other cell. Reframe/extensively rerender as necessary to fix arm continuity rather than copying the amputated source edges."
+    }
+  ],
+  "assets": [
+    {
+      "file": "candidates/player-grenade-ready-34.webp",
+      "bytes": 77714,
+      "sha256": "9e9cde363b3b521ab332d6b6e78db3a9f0af37b16717be9ebbb46cb9f299b761",
+      "size": [
+        960,
+        720
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 82.417,
+      "role": "first-person ready with right hand"
+    },
+    {
+      "file": "candidates/player-grenade-throw-atlas-34.webp",
+      "bytes": 392990,
+      "sha256": "58c2fb9854b3cd33ca37a562963e8d2ab962d4f54b2c273dc80b4926be440ef0",
+      "size": [
+        1536,
+        1728
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 74.847,
+      "role": "first-person throw; frames row-major",
+      "grid": [
+        2,
+        4
+      ],
+      "cell": [
+        768,
+        432
+      ],
+      "frames": 8,
+      "source_bounds": [
+        [
+          4,
+          4,
+          587,
+          328
+        ],
+        [
+          595,
+          4,
+          1178,
+          328
+        ],
+        [
+          4,
+          336,
+          587,
+          661
+        ],
+        [
+          595,
+          336,
+          1178,
+          661
+        ],
+        [
+          4,
+          669,
+          587,
+          993
+        ],
+        [
+          595,
+          669,
+          1178,
+          993
+        ],
+        [
+          4,
+          1001,
+          587,
+          1326
+        ],
+        [
+          595,
+          1001,
+          1178,
+          1326
+        ]
+      ],
+      "frame_labels": [
+        "ready",
+        "reach-pin",
+        "pull-pin",
+        "wind-up",
+        "swing",
+        "release",
+        "follow-through",
+        "recover"
+      ],
+      "suggested_duration_s": 0.58,
+      "release_frame": 5,
+      "note": "Full-viewport 16:9 action; hands and complete forearms exit viewport bottom, release frame5.",
+      "source": "sources/throw-full-arms-source.png"
+    },
+    {
+      "file": "candidates/grenade-world-states-atlas-34.webp",
+      "bytes": 98444,
+      "sha256": "7de46d87b78410fe1904981196a7012a5208714da3712b89c3f32dd7de1f0411",
+      "size": [
+        1024,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 80.331,
+      "role": "world prop states; no hands",
+      "grid": [
+        4,
+        2
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 8,
+      "source_bounds": [
+        [
+          0,
+          0,
+          443,
+          443
+        ],
+        [
+          443,
+          0,
+          887,
+          443
+        ],
+        [
+          887,
+          0,
+          1330,
+          443
+        ],
+        [
+          1330,
+          0,
+          1774,
+          443
+        ],
+        [
+          0,
+          443,
+          443,
+          887
+        ],
+        [
+          443,
+          443,
+          887,
+          887
+        ],
+        [
+          887,
+          443,
+          1330,
+          887
+        ],
+        [
+          1330,
+          443,
+          1774,
+          887
+        ]
+      ],
+      "padding_px": 32,
+      "frame_labels": [
+        "pickup",
+        "resting",
+        "rear",
+        "flight-side",
+        "flight-left",
+        "flight-right",
+        "live-fuse",
+        "pin-lever"
+      ]
+    },
+    {
+      "file": "candidates/grenade-pickup-34.webp",
+      "bytes": 14052,
+      "sha256": "f276fb17b024d7fa2a31bf76593005ea078edf51cf3ed7b1796090170473c478",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 77.078,
+      "role": "pickup"
+    },
+    {
+      "file": "candidates/grenade-resting-34.webp",
+      "bytes": 12856,
+      "sha256": "cb66beee0cc26ae21411e7b80895fb2670b575035c698a5cbcc2587e2167e61d",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 79.33,
+      "role": "resting"
+    },
+    {
+      "file": "candidates/grenade-rear-34.webp",
+      "bytes": 12772,
+      "sha256": "c8692040009870de4a71255463fa5df518140f86e68ad1dcd180544986f6dbf1",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 78.252,
+      "role": "rear"
+    },
+    {
+      "file": "candidates/grenade-flight-side-34.webp",
+      "bytes": 11996,
+      "sha256": "b8bb26c3c731f4c7789e4c279231716273f14240de8cea04d03a5a4c7aff94fe",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 80.788,
+      "role": "flight-side"
+    },
+    {
+      "file": "candidates/grenade-flight-left-34.webp",
+      "bytes": 12410,
+      "sha256": "0c8ed1b06a7252213ff6cd9fb7d8e4a425225282acee8a2ca01008bbc51beb24",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 79.741,
+      "role": "flight-left"
+    },
+    {
+      "file": "candidates/grenade-flight-right-34.webp",
+      "bytes": 12350,
+      "sha256": "2cf9cf51e66f0bbc2255388abbb73346a41ea1a0aa36d107ac951f328d4b4ee7",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 79.967,
+      "role": "flight-right"
+    },
+    {
+      "file": "candidates/grenade-live-fuse-34.webp",
+      "bytes": 12650,
+      "sha256": "e37a9a90cd6b473b74c571e4daae3912b06ff81a52b2e47fd17206da7959825d",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 79.987,
+      "role": "live-fuse"
+    },
+    {
+      "file": "candidates/grenade-pin-lever-34.webp",
+      "bytes": 11536,
+      "sha256": "f3332110115f8fd692b6cfc0b41ba56e21ad7c462ca8ee12c28b2fb20471041c",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 87.503,
+      "role": "pin-lever"
+    },
+    {
+      "file": "candidates/grenade-weapon-icon-34.webp",
+      "bytes": 4948,
+      "sha256": "ae03bad2075b0431c70ba8b863d2a554c16548849de0292efbf88d9b7c87138f",
+      "size": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 76.056,
+      "role": "weapon-bar inventory pickup notification icon"
+    },
+    {
+      "file": "candidates/grenade-flight-atlas-34.webp",
+      "bytes": 36468,
+      "sha256": "0db6c31e904fa596a9f1e150a0c0674dd88ddf365d176e84923328285fdf0e04",
+      "size": [
+        768,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 80.165,
+      "role": "flight rotation views; trajectory remains gameplay-owned",
+      "grid": [
+        3,
+        1
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 3
+    },
+    {
+      "file": "candidates/grenade-effects-overview-atlas-34.webp",
+      "bytes": 226124,
+      "sha256": "471d059216bf449e7de9b3a9e061f9ffc22a6115e18cd5218428c8c9d776a2af",
+      "size": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 75.564,
+      "role": "all effect frames for review",
+      "grid": [
+        4,
+        4
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 16,
+      "source_bounds": [
+        [
+          0,
+          0,
+          313,
+          313
+        ],
+        [
+          313,
+          0,
+          627,
+          313
+        ],
+        [
+          627,
+          0,
+          940,
+          313
+        ],
+        [
+          940,
+          0,
+          1254,
+          313
+        ],
+        [
+          0,
+          313,
+          313,
+          627
+        ],
+        [
+          313,
+          313,
+          627,
+          627
+        ],
+        [
+          627,
+          313,
+          940,
+          627
+        ],
+        [
+          940,
+          313,
+          1254,
+          627
+        ],
+        [
+          0,
+          627,
+          313,
+          940
+        ],
+        [
+          313,
+          627,
+          627,
+          940
+        ],
+        [
+          627,
+          627,
+          940,
+          940
+        ],
+        [
+          940,
+          627,
+          1254,
+          940
+        ],
+        [
+          0,
+          940,
+          313,
+          1254
+        ],
+        [
+          313,
+          940,
+          627,
+          1254
+        ],
+        [
+          627,
+          940,
+          940,
+          1254
+        ],
+        [
+          940,
+          940,
+          1254,
+          1254
+        ]
+      ],
+      "padding_px": 32,
+      "frame_labels": [
+        "ignition",
+        "blast-start",
+        "blast-grow",
+        "blast-peak",
+        "blast-cool",
+        "embers",
+        "blast-smoke",
+        "blast-end",
+        "smoke-start",
+        "smoke-grow",
+        "smoke-thin",
+        "smoke-end",
+        "debris-hot",
+        "debris-cool",
+        "scorch-hot",
+        "scorch-cold"
+      ]
+    },
+    {
+      "file": "candidates/grenade-explosion-atlas-34.webp",
+      "bytes": 113932,
+      "sha256": "f9e1c4e5821af9abe7856d286d7b02a73ecb439430183be8f3a66b94c1f3f50d",
+      "size": [
+        1024,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 75.973,
+      "role": "blast sequence",
+      "grid": [
+        4,
+        2
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 8,
+      "suggested_duration_s": 0.76
+    },
+    {
+      "file": "candidates/grenade-smoke-atlas-34.webp",
+      "bytes": 41448,
+      "sha256": "06a085bf08182e3e44661d968b5354c8acb2e74d33eb63c6f97c9d1e4974679f",
+      "size": [
+        1024,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        253
+      ],
+      "transparent_percent": 76.525,
+      "role": "after-blast smoke sequence",
+      "grid": [
+        4,
+        1
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 4,
+      "suggested_duration_s": 1.35
+    },
+    {
+      "file": "candidates/grenade-debris-atlas-34.webp",
+      "bytes": 38540,
+      "sha256": "7fa1ceb9b84e79ac1d77f838078422b095e09497a7a4fc0825d97eae969433d7",
+      "size": [
+        512,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 75.539,
+      "role": "hot/cooling fragments",
+      "grid": [
+        2,
+        1
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 2,
+      "suggested_duration_s": 0.7
+    },
+    {
+      "file": "candidates/grenade-scorch-atlas-34.webp",
+      "bytes": 33426,
+      "sha256": "d646f2b3dbb0234adcc65e3fa60b25f87bdc988c0a8b471db8d8cb99e11bba7b",
+      "size": [
+        512,
+        256
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_percent": 72.033,
+      "role": "floor-projected shallow concrete crater",
+      "grid": [
+        2,
+        1
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "frames": 2,
+      "suggested_duration_s": 2.6,
+      "source": "sources/crater-source.png",
+      "padding_px": 32,
+      "duration_s": 15,
+      "cool_after_s": 0.65,
+      "fade_seconds": 2
+    }
+  ],
+  "fallback": "Existing procedural geometry and Pack20/21 SVGs retained. Do not layer new and legacy effects simultaneously.",
+  "verification_limits": "Local unit/browser proof in VERIFICATION.md; external publication and remote CI not performed.",
+  "runtime_files": {
+    "player-grenade-ready-34.webp": "assets/ui/weapons/fp/player-grenade-ready-34.webp",
+    "player-grenade-throw-atlas-34.webp": "assets/ui/fx/player-grenade-throw-atlas-34.webp",
+    "grenade-pickup-34.webp": "assets/ui/pickups/weapons/world-grenade-pickup-34.webp",
+    "grenade-weapon-icon-34.webp": "assets/ui/equipment/grenade-weapon-icon-34.webp",
+    "grenade-world-states-atlas-34.webp": "assets/ui/equipment/grenade-world-states-atlas-34.webp",
+    "grenade-explosion-atlas-34.webp": "assets/ui/fx/grenade-explosion-atlas-34.webp",
+    "grenade-smoke-atlas-34.webp": "assets/ui/fx/grenade-smoke-atlas-34.webp",
+    "grenade-debris-atlas-34.webp": "assets/ui/fx/grenade-debris-atlas-34.webp",
+    "grenade-scorch-atlas-34.webp": "assets/ui/fx/grenade-scorch-atlas-34.webp"
+  },
+  "gameplay": {
+    "damage_radius_m": 8,
+    "damage_max_hp_fraction": 0.8,
+    "armor_reduction_max": 0.1,
+    "height_aware_swept_collision": true,
+    "full_damage_radius_m": 2,
+    "charge_seconds": 1.1,
+    "launch_speed_min_max": [
+      11.6,
+      18
+    ],
+    "upward_lift_min_max": [
+      5.8,
+      8.2
+    ],
+    "fuse_after_release_s": 1.82,
+    "scorch_lifetime_s": 15,
+    "scorch_fade_last_s": 2
+  },
+  "consumers": {
+    "ready_throw": "src/weapons/system.js; src/combat/combat.js::throwFragGrenade; src/settings/settings.js::showGeneratedGrenadeThrowVfx",
+    "world_pickup": "src/entities/pickups.js + src/assets/catalog.js",
+    "flight_fuse": "src/combat/combat.js::syncGrenadeFlightArt after authoritative projectile physics",
+    "detonation": "src/settings/settings.js::showGeneratedFragGrenadeVfx, authoritative frag detonation in src/combat/combat.js",
+    "icon": "src/assets/catalog.js; existing weapon-bar and inventory presentation"
+  },
+  "tested_runtime_build": "a9fec638fc17c148"
+}

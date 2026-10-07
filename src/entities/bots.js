@@ -51,6 +51,8 @@ class Enemy{
     this.motionX=0;this.motionZ=0;
     this.fireMoveInstability=0;
     this.fireBurstRecoil=0;this.fireRecoilWeaponKey='';
+    this.visualAimBlend=0;this.visualReloadBlend=0;this.visualCrouchBlend=0;
+    this.visualHeadYaw=0;this.visualTorsoYaw=0;this.landingCompression=0;
     this.gaitPhase=Math.random()*Math.PI*2;this.gaitSpeed=0;this.footstepDistance=Math.random()*1.1;
     this.targetScanT=0;this.targetIsPlayer=false;
     this.reactionT=.22+Math.random()*.22;
@@ -106,7 +108,7 @@ class Enemy{
     this.rocketCheckT=.18+Math.random()*.10;
 
     const built=mkHuman(et,team);
-    this.group=built.g;this.pts=built.pts;this.weaponPivot=built.weaponPivot;this.armRig=built.armRig;
+    this.group=built.g;this.pts=built.pts;this.weaponPivot=built.weaponPivot;this.armRig=built.armRig;this.legRig=built.legRig;this.model46=built.model46;
     this.group.position.set(x,0,z);
     scene.add(this.group);
 
@@ -119,6 +121,7 @@ class Enemy{
     this.mag=this.weapon.clip;
     this.syncScale(true);
     refreshBotWeaponVisual(this);
+    if(typeof syncBotModel46RoleVariant==='function')syncBotModel46RoleVariant(this);
   }
 
   syncScale(force=false){
@@ -159,9 +162,7 @@ class Enemy{
 
 
   triggerDodge(preferredDir=0,urgency=1){
-    const dodgeStarted=this.dodgeT<=0&&this.dodgeCD<=0;
     applyBotDodgeResponse(this,preferredDir,urgency);
-    if(dodgeStarted&&this.dodgeT>0&&typeof showGeneratedBotDodgeVfx==='function')showGeneratedBotDodgeVfx(this);
   }
 
   registerSuppression(source,intensity=.6){
@@ -186,8 +187,12 @@ class Enemy{
     if(this.flashT>0){this.flashT-=dt;if(this.flashT<=0)this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(0,0,0);});}
 
     if(this.jV!==0||this.group.position.y>0){
+      const wasAirborne=this.group.position.y>.001||this.jV!==0;
       this.jV-=22*dt;this.group.position.y+=this.jV*dt;
-      if(this.group.position.y<=0){this.group.position.y=0;this.jV=0;}
+      if(this.group.position.y<=0){
+        if(wasAirborne&&this.jV<0)this.landingCompression=1;
+        this.group.position.y=0;this.jV=0;
+      }
     }
 
     if(this.dodgeCD>0)this.dodgeCD-=dt;
@@ -579,17 +584,25 @@ class Enemy{
     if(this.pts[9]){this.pts[9].position.y=.52+rightLift*.018;this.pts[9].position.z=-rightSwing*.035;}
     if(this.pts[12])this.pts[12].position.z=.05-leftSwing*.060;
     if(this.pts[13])this.pts[13].position.z=.05-rightSwing*.060;
+    applyBotLegVisualPose(this.legRig,leftSwing,rightSwing,leftLift,rightLift,strideBob,hipSway,strafeRoll,sideRatio,gaitNorm);
     if(this.weaponPivot){
       const idleBreath=Math.sin(this.ph*.55)*(1-Math.min(1,gaitNorm))*.008;
       const stepBob=Math.sin(this.gaitPhase*2)*.012*gaitNorm;
-      const pose=this.weaponPivot.userData.pose||{p:[.39,1.23,-.07],r:[.05,.07,-.35]};
+      const visualRecoil=Math.min(.075,Math.max(0,this.fireBurstRecoil||0)*.090);
+      const pose=this.weaponPivot.userData.pose||{p:[.39,1.23,.07],r:[.05,Math.PI+.07,-.35]};
       this.weaponPivot.position.x=pose.p[0]+Math.sin(this.gaitPhase)*.008*gaitNorm;
-      this.weaponPivot.position.y=pose.p[1]+stepBob;
-      this.weaponPivot.position.z=pose.p[2];
-      this.weaponPivot.rotation.x=pose.r[0]+idleBreath+stepBob*1.8+(combatPose?.05:0);
+      this.weaponPivot.position.y=pose.p[1]+stepBob+visualRecoil*.12;
+      // Weapon presentation now faces the same +Z convention as bot gameplay;
+      // recoil therefore moves backward along -Z instead of pushing the gun forward.
+      this.weaponPivot.position.z=pose.p[2]-visualRecoil;
+      this.weaponPivot.rotation.x=pose.r[0]+idleBreath+stepBob*1.8+(combatPose?.05:0)+visualRecoil*.58;
       this.weaponPivot.rotation.y=pose.r[1]+(combatPose?.14*this.strafeDir:0)+sideRatio*.025*gaitNorm;
       this.weaponPivot.rotation.z=pose.r[2]+(combatPose?-.05*this.strafeDir:0)-strafeRoll*.35;
     }
+    // Mechanical presentation is deliberately applied after the base weapon/gait
+    // pose and before the grip solver: reload/aim/crouch/recoil can move the
+    // weapon and body, then both real hands are re-solved onto the final grips.
+    updateBotMechanicalPresentation(this,{targetPos,combatPose,gaitNorm,strafeRoll,bodyLean,dt});
     // The arm solver runs after weapon sway/pose so both hands stay physically
     // attached to the real grip points while walking, strafing and fighting.
     updateBotWeaponHands(this);
@@ -667,14 +680,11 @@ class Enemy{
     this.pts.forEach(p=>{if(p.material&&p.material.emissive)p.material.emissive.setRGB(1,0,0);});
     if(this.hp>0&&Math.random()<Math.min(.90,.48+level*.018+kills*.0025))this.triggerDodge();
     applyBotDamageReaction(this,dmg,fromTeam,source);
-    if(this.hp>0&&typeof showGeneratedBotHitVfx==='function')showGeneratedBotHitVfx(this,dir);
     if(this.hp<=0)this.die(dmg,dir);
   }
 
   die(dmg,dir){
     this.alive=false;
-    const deathVfxPos=this.group.position.clone();deathVfxPos.y+=1.05;
-    showGeneratedBotDeathVfx(deathVfxPos);
     for(const mn of mines)if(mn.src===this)mn.src=null;
     const force=Math.min(3+dmg*.05,10);
     const gc=Math.min(Math.floor(3+dmg*.07),this.pts.length);
@@ -759,7 +769,7 @@ function pickSpawnSet(pool,count,used,minDist,opts={}){
   return out;
 }
 function applyPlayerSpawn(pos){
-  camera.position.set(pos[0],1.75,pos[1]);
+  camera.position.set(pos[0],PLAYER_STAND_EYE_HEIGHT,pos[1]);
   prevPX=camera.position.x;prevPZ=camera.position.z;
 }
 function pickPlayerRespawnPoint(){
@@ -829,7 +839,6 @@ function spawnBot(team,showSpawnVfx=true){
   if(Math.random()<.16)typ=0;
   const en=new Enemy(pt[0],pt[1],typ,team);
   enemies.push(en);
-  if(showSpawnVfx&&typeof showGeneratedBotSpawnVfx==='function')showGeneratedBotSpawnVfx(en);
 }
 function spawnInitial(){
   const plan=generateSpawnPlan();

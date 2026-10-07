@@ -1,0 +1,120 @@
+{
+  "root": "C:\\Users\\Zeter\\Documents\\Codex\\2026-10-03\\g-zap-zone-zap-zone\\work\\zap-zone",
+  "build": "dbbcc2d451d473a7",
+  "results": [
+    {
+      "smoke": "browser-boot-smoke.mjs",
+      "status": "PASS"
+    },
+    {
+      "smoke": "browser-menu-smoke.mjs",
+      "status": "PASS"
+    },
+    {
+      "mode": "normal-file",
+      "ready": {
+        "active": true,
+        "pack": "37",
+        "procedural": false
+      },
+      "shot": {
+        "ammo": 5,
+        "action": "shotgunPump37",
+        "muzzle": true,
+        "beam": 0,
+        "beamT": 0,
+        "cycleT": 0.62
+      },
+      "faults": 0,
+      "errors": []
+    },
+    {
+      "mode": "action-missing",
+      "ready": {
+        "active": true,
+        "pack": "37",
+        "procedural": false
+      },
+      "shot": {
+        "ammo": 5,
+        "action": "shotgunHold37",
+        "muzzle": true,
+        "beam": 0,
+        "beamT": 0,
+        "cycleT": 0.62
+      },
+      "faults": 1,
+      "errors": []
+    },
+    {
+      "mode": "ready-missing",
+      "ready": {
+        "active": true,
+        "pack": "01",
+        "procedural": false
+      },
+      "shot": {
+        "ammo": 5,
+        "action": "shotgunPump25",
+        "muzzle": true,
+        "beam": 0,
+        "beamT": 0,
+        "cycleT": 0.62
+      },
+      "faults": 1,
+      "errors": []
+    },
+    {
+      "mode": "both-ready-missing",
+      "ready": {
+        "active": false,
+        "procedural": true
+      },
+      "shot": {
+        "ammo": 5,
+        "muzzle": false,
+        "beam": 0.72,
+        "beamT": 0.075,
+        "cycleT": 0.62
+      },
+      "faults": 2,
+      "errors": []
+    },
+    {
+      "mode": "effects-missing",
+      "ready": {
+        "active": true,
+        "pack": "37",
+        "procedural": false
+      },
+      "shot": {
+        "ammo": 5,
+        "action": "shotgunPump37",
+        "muzzle": false,
+        "beam": 0.72,
+        "beamT": 0.075,
+        "cycleT": 0.62
+      },
+      "faults": 1,
+      "errors": []
+    },
+    {
+      "mode": "ready-wrong-dimensions",
+      "ready": {
+        "active": true,
+        "pack": "01",
+        "procedural": false
+      },
+      "shot": {
+        "ammo": 5,
+        "action": "shotgunPump25",
+        "muzzle": true,
+        "beam": 0,
+        "beamT": 0,
+        "cycleT": 0.62
+      },
+      "faults": 1,
+      "errors": []
+    }
+  ]
+}

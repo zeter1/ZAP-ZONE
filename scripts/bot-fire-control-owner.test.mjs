@@ -25,7 +25,7 @@ function createHarness(overrides={}){
   const context={
     THREE:{Vector3:Vec3,Quaternion},
     camera:{position:new Vec3(0,1.7,20)},
-    BOT_ROCKET_SPEED:24,TRACER_SPEED:{plasma:68},plrVx:0,plrVz:0,
+    BOT_ROCKET_SPEED:24,ROCKET_FIRE_INTERVAL:10,TRACER_SPEED:{plasma:68},plrVx:0,plrVz:0,
     wallBetween:()=>false,firstWallHitDistance:()=>Infinity,wallMeshes:[],smokeBlocksSight:()=>false,losMeshes:[],
     playWeaponMechanicSound:(...args)=>events.push(['mechanic',...args]),
     spawnInstantSniperTrace:(...args)=>events.push(['trace',...args]),
@@ -34,7 +34,6 @@ function createHarness(overrides={}){
     emitBotCombatNoise:(...args)=>events.push(['noise',...args]),
     playWeaponShotSound:(...args)=>events.push(['shot-sound',...args]),
     trigMuzzle:(...args)=>events.push(['muzzle',...args]),
-    showGeneratedBotMuzzleVfx:(...args)=>events.push(['generated-muzzle',...args]),
     _UP:new Vec3(0,1,0),ejectCasing:(...args)=>events.push(['casing',...args]),
     spawnERkt:(...args)=>events.push(['rocket',...args]),
     BOT_DAMAGE_BOOST:1,EXPLOSION_DAMAGE_BOOST:1,
@@ -198,7 +197,7 @@ test('hitscan execution preserves damage, kill accounting and ammo consumption',
   assert.equal(bot.kills,1);
   assert.equal(context.allyKills,1);
   assert.equal(context.events.some(e=>e[0]==='trace'),true);
-  assert.equal(context.events.some(e=>e[0]==='generated-muzzle'),true);
+  assert.equal(context.events.some(e=>e[0]==='muzzle'),true);
   assert.equal(context.events.some(e=>e[0]==='kill-feed'),true);
 });
 

@@ -7,14 +7,15 @@ const OUTCOME=Object.freeze({
   EMITTED:'emitted',
   OCCLUDED:'blocked-occluded',
   FRIENDLY_FIRE:'blocked-friendly-fire',
-  ROCKET_SAFETY:'blocked-rocket-safety'
+  ROCKET_SAFETY:'blocked-rocket-safety',
+  ROCKET_COOLDOWN:'blocked-rocket-cooldown'
 });
 const source=readFileSync(new URL('../src/ai/bot-fire-cadence.js',import.meta.url),'utf8');
 
 function createHarness(randomValues=[]){
   const events=[];
   const context={
-    __OUTCOME:OUTCOME,
+    __OUTCOME:OUTCOME,ROCKET_FIRE_INTERVAL:10,
     __randomValues:[...randomValues],
     __randomIndex:0,
     startBotReload(bot){
@@ -58,7 +59,7 @@ test('suppressing enemy-player rifle preserves burst extension and shorter playe
 test('sniper, rocket and shotgun keep their non-player single-shot burst and pause bases',()=>{
   for(const [label,weapon,pause] of [['sniper',makeWeapon({key:'sniper',isSniper:true,rate:.4}),.72],['rocket',makeWeapon({key:'rocket',isRocket:true,rate:.6}),.58],['shotgun',makeWeapon({key:'shotgun',rate:.55}),.34]]){
     const h=createHarness([0,0,0]),bot=makeBot({burstLeft:1,weapon});h.apply(bot);
-    assert.equal(bot.burstLeft,1,label+' burst');near(bot.burstPauseT,pause,label+' pause');near(bot.sT,weapon.rate*.96,label+' next-shot timer');assert.equal(h.calls(),3,label+' RNG count');
+    assert.equal(bot.burstLeft,1,label+' burst');near(bot.burstPauseT,pause,label+' pause');near(bot.sT,weapon.isRocket?10:weapon.rate*.96,label+' next-shot timer');assert.equal(h.calls(),3,label+' RNG count');
   }
 });
 test('ally emitted cadence floor remains 55ms',()=>{

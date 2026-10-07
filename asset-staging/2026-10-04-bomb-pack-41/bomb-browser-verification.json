@@ -1,0 +1,33 @@
+{
+  "url": "http://127.0.0.1:6959/",
+  "results": [
+    "real low dark rounded bomb shell rests on ground0, native duplicate controls hidden, compact timer",
+    "HTTP/native LMB: reserve then exactly one world bomb/ammo spend",
+    "native successful placement starts individual180s lock; repeat rejected",
+    "native R refills next bombs with complete presentation",
+    "G → weapon switch cancels before release; committed bomb remains",
+    "G → native pause cancels; committed fuse freezes during pause",
+    "old blue fuse badge absent through arming/armed/danger and existing stale badge removed",
+    "real bomb fuse updates emit zero obsolete sparks/smoke, compact timer remains",
+    "render 16x9/ready: production frame 0, unbroken bottom exits",
+    "render 16x9/arming: production frame 1, unbroken bottom exits",
+    "render 16x9/lower: production frame 2, unbroken bottom exits",
+    "render 16x9/release: production frame 3, unbroken bottom exits",
+    "render 16x9/recovery: production frame 4, unbroken bottom exits",
+    "render 5x4/ready: production frame 0, unbroken bottom exits",
+    "render 5x4/arming: production frame 1, unbroken bottom exits",
+    "render 5x4/lower: production frame 2, unbroken bottom exits",
+    "render 5x4/release: production frame 3, unbroken bottom exits",
+    "render 5x4/recovery: production frame 4, unbroken bottom exits",
+    "actual fuse expiration removes bomb and damages/kills hostile via canonical pipeline",
+    "six chronological generated shockwave frames lie on arena floor at actual detonation",
+    "fire40percent wider and ground wave28m; actual player34m/bot32m damage unchanged",
+    "all17 consecutive explosion frames actually visible, distinct atlas coordinates",
+    "640px window retains wide fire ratio and512square wave with all four floor corners projected within1px",
+    "all6 retained chronological smoke frames visible with true alpha",
+    "file:// boot/ready with byte-identical HTTP CDN fixture (remote availability isolated)",
+    "real HTTP missing Pack41: revised native rig remains, obsolete ready/explosion never return",
+    "both ready images and bomb effects unavailable: native3D remains visible, timed gameplay still commits"
+  ],
+  "pageErrors": []
+}

@@ -4,6 +4,10 @@
 // Fire-control reports what happened; this owner decides when the next firearm
 // attempt is allowed and which outcomes consume a real burst slot.
 function applyBotFireCadence(bot,shotOutcome){
+  if(shotOutcome===BOT_SHOT_OUTCOME.ROCKET_COOLDOWN){
+    bot.sT=Math.max(.05,bot.rocketShotCD||0);
+    return;
+  }
   if(shotOutcome===BOT_SHOT_OUTCOME.FRIENDLY_FIRE){
     bot.sT=.10+Math.random()*.12;
     return;
@@ -33,5 +37,6 @@ function applyBotFireCadence(bot,shotOutcome){
     bot.burstPauseT=attackingPlayer?(suppressing?.24+Math.random()*.22:.42+Math.random()*.42):normalPause;
   }
   bot.sT=Math.max((bot.team==='enemy'&&bot.targetIsPlayer)?0.095:0.055,bot.weapon.rate*bot.fireRateMul*(.96+Math.random()*.24));
+  if(bot.weapon.isRocket&&shotOutcome===BOT_SHOT_OUTCOME.EMITTED)bot.sT=Math.max(bot.sT,ROCKET_FIRE_INTERVAL);
   if(bot.mag<=0)startBotReload(bot);
 }

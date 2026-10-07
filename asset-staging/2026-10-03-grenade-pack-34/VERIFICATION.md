@@ -1,0 +1,20 @@
+# Проверка результата — Pack34
+
+VERIFIED: комплект подключён в локальную ZAP_ZONE, финальный build `a9fec638fc17c148`.
+
+- 18 focused grenade regressions + 5 sniper + 4 wall geometry = 27 PASS. Проверены реальный release/ammo, charge cap, cancellation, falloff/cover/team, 80% maxHp, броня максимум10%, thin-wall sweep, перелёт, roof support, ground perspective, отдельный decal budget и 15s expiry.
+- Последовательность native ЛКМ/Pointer Lock → animation → реальный летящий объект → лежащий объект → world explosion → 15s crater cleanup прошла в изолированном браузере. HTTP и file:// boot/menu, все Pack34 decode и отказ atlas с procedural fallback прошли. Native sequence/eight-frame screenshots: build6e7c923db9636c8b; последний support fix изменяет только сход с крыши, проверен отдельно в финальном браузере/VM builda9fec638fc17c148. Свидетельства находятся в `verification/`.
+- Все восемь action poses проверены в фактическом DOM над отрисованной сценой, 1280×720 и1024×768: цельные предплечья уходят за нижний/боковой край viewport; ready/action не складываются в два слоя. После отмены/завершения action возвращается в исходный stage, последующие reload actions работают штатно.
+- Урон: 80% максимального здоровья в пределах2м, плавный спад до0 на8м (существующий radius perk масштабирует радиус). При100HP:80 без брони,72 с достаточной бронёй,77 при3 armor. Damage buffs и прежний self multiplier не умножают гранатный урон. Боты не имеют отдельной системы armor; их maxHp используется напрямую.
+- Swept collision использует canonical wallAABBs с реальной высотой: выше стены — перелёт, контакт с её объёмом — отскок, крыша/потолок учитываются. Статические bounds повёрнутых стен сохраняют принятую в арене AABB approximation.
+- Воронка лежит на реальной поверхности: arena floor y=-.025; roof height из конечного support. При воздушном взрыве воронки нет. Исторический ошибочный grounded после контакта/схода в том же tick воспроизведён независимо, исправлен и проверен: x1.524903 вне крыши → groundedfalse → groundYnull → crater0.
+- Manifest: точные SHA/bytes/alpha для18WebP; девять runtime-файлов побайтно совпадают с candidates. Старые Pack20/21/procedural fallbacks сохранены.
+- Новый source throw —2×4 full-viewport16:9; кадр768×432. WebP alpha равен подготовленным PNG; world/FX alpha-border32px. Воронка — новый orthographic top-down source. Все оригинальные generated sources и промпты сохранены.
+
+Ранние проверки не считаются зелёными: исправлены action lifetime/cancel и queue eviction defects. Browser harness раньше столкнулся с TTL preview, неподходящим глобальным cleanup assertion и timeout второго context без доказанной причины. Отдельная запись ошибочного теста лежит в рабочем evidence; последующий запуск с закрытием завершённых contexts прошёл. При остановленном RAF canvas очистился на screenshots; QA теперь сохраняет render при замороженной симуляции, финальные кадры показывают настоящую сцену. Эти сбои не доказывали новый gameplay defect.
+
+Личные правила FPS-ассетов обновлены по явному запросу: цельная кисть→запястье→предплечье, выход за viewport, каждый ready/pin/throw/reload/recovery кадр в игре, два соотношения окна, alpha/grid/HUD/style. Exact patch и protected-group checks PASS, byte budget15973/16384. Полная системная проверка имеет прежние несвязанные проблемы: отсутствующий PyYAML и устаревшие GitHub skill documentation/counts. Будущее автоматическое соблюдение правила моделью NOT_VERIFIED. Одна штатная попытка записать обезличенный журнал вернула AGENT_SKILL_JOURNAL_NOT_WRITTEN:ObservationError; запись журнала NOT_VERIFIED, повторов не было.
+
+NOT_VERIFIED: внешняя публикация/HTTPS/remote CI; игровые сценарии на всех мобильных устройствах; будущие окна/оружейные ассеты вне проверенного scope. Изменения сохранены локально, Git metadata в указанной папке отсутствует.
+
+Ручная проверка: слот0 → прицелиться выше верхушки стены → удерживать ЛКМ до1,1сек → отпустить. Полёт должен пройти над стеной, при попадании в неё — отскочить. После взрыва на полу/крыше воронка исчезает через15сек; в воздухе её нет. При FAIL сохранить короткую запись с броском, размер окна, build ID и ошибки console.

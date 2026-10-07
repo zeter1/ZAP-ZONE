@@ -1,0 +1,53 @@
+[
+  {
+    "mode": "missing-all",
+    "before": {
+      "active": false,
+      "rig": true,
+      "actionReady": false,
+      "cloudReady": false
+    },
+    "after": {
+      "ammo": 0,
+      "grenades": 1,
+      "action": null,
+      "rig": true,
+      "cloudFallback": true
+    },
+    "errors": []
+  },
+  {
+    "mode": "missing-action",
+    "before": {
+      "active": true,
+      "rig": false,
+      "actionReady": false,
+      "cloudReady": true
+    },
+    "after": {
+      "ammo": 0,
+      "grenades": 1,
+      "action": null,
+      "rig": false,
+      "cloudFallback": false
+    },
+    "errors": []
+  },
+  {
+    "mode": "wrong-size",
+    "before": {
+      "active": false,
+      "rig": true,
+      "actionReady": false,
+      "cloudReady": false
+    },
+    "after": {
+      "ammo": 0,
+      "grenades": 1,
+      "action": null,
+      "rig": true,
+      "cloudFallback": true
+    },
+    "errors": []
+  }
+]

@@ -25,11 +25,23 @@
 21. `src/game/frontline.js` — Frontline objective state/capture/rotation/save/HUD/marker.
 22. `src/entities/bot-presentation.js` — procedural bot body, hit meshes, weapon pivot и two-hand arm rig.
 23. `src/entities/bots.js` — per-bot state execution, event-driven state overrides, broad fire gate и tactical execution; state/cadence timer lifecycle остаётся здесь, а progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables/state-policy owners используются как consumer dependencies.
-24. `src/entities/pickups.js` — ammo/health/bomb/weapon pickups.
+24. `src/entities/pickups.js` — подбираемые предметы: подробные парящие DOM-рендеры, 3D-fallback без напольной тени, покадровая проекция и случайные позиции/боеприпасы. Контракт — [ASSETS.md](ASSETS.md#подбираемые-предметы-парящие-подробные-3d-рендеры).
 25. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
 26. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
 27. `src/ui/minimap.js` — тактическая миникарта.
 28. `src/game/runtime.js` — frame simulation/render loop и boot.
+
+## Бомба Pack41
+
+Установка/отмена/выпуск/контакт земли: combat; общий корпус и FPS: system; strict decode/FX: settings/catalog; индивидуальный bot cooldown: bot-deployables. Полный контракт и проверка — [docs/ASSETS.md](ASSETS.md), раздел «Бомба — Pack41».
+
+## Пистолет Pack40
+
+Asset/pose metadata — `src/assets/catalog.js`; single FPS ready/action, per-pose painted-edge viewport guards и reticle bore alignment — `src/weapons/system.js`; strict effects decode/nozzle/casing/audio — `src/settings/settings.js`; actual bullet flight, guarded muzzle, authoritative reload/ammo — `src/combat/combat.js`; exponential camera recoil — `src/game/runtime.js`. Shared flight owner сохраняет procedural tracer до успешной DOM замены. Полный контракт и fallback: [ASSETS.md](ASSETS.md#пистолет--pack40); oracle: `scripts/pistol-presentation-owner.test.mjs`.
+
+## Ракетница Pack35
+
+`src/weapons/system.js::rocketPresentationLayout` владеет направлением ствола и выходами рук за viewport; каталог задаёт interval10s и base radius9.1m. `src/combat/combat.js` владеет общим 3D-корпусом, powered flight, защитой launch offset и ближайшим непрерывным контактом; проверка стен использует локальные координаты actual mesh и не меняет LOS-owner. DOM добавляет только необязательный боковой выхлоп. `tickRocketFireCooldowns` вызывается обычным runtime и killcam до новой стрельбы; state player и per-bot timers переживают reload/weapon switch. Подробности и fallback — [ASSETS.md](ASSETS.md#rocket-launcher-presentation--pack35); oracle — rocket contact/cadence/presentation/damage tests.
 
 ## Bot progression-scaling policy owner
 
@@ -255,9 +267,9 @@ Damage применяется только в момент фактическо�
 
 SR-9 намеренно является исключением: `hitscan:true` означает немедленный ray hit в момент выстрела. Для неё нет artificial travel delay или bullet drop. Визуальный shot trace краткоживущий и не участвует в damage timing.
 
-RMB/ADS изолирован через `aimMode:'scope'`. Этот флаг есть только у SR-9. Input не меняет `zooming` у остальных профилей, а runtime дополнительно проверяет тот же `aimMode`, поэтому случайный `zoomFov` или stale state не может включить прицел другого оружия.
+RMB/ADS изолирован через `aimMode:'scope'`. Этот флаг есть у SR-9 и штурмовой винтовки. Input не меняет `zooming` у остальных профилей, а runtime дополнительно проверяет тот же `aimMode`, поэтому случайный `zoomFov` или stale state не может включить прицел другого оружия.
 
-У SR-9 обычный center crosshair скрыт и в hip state, и внутри scope. У остальных оружий динамический crosshair визуализирует текущий итоговый spread с учётом movement, air penalty и weapon bloom.
+У SR-9 обычный center crosshair скрыт и в hip state, и внутри scope. У штурмовой винтовки Pack36 одна и та же центральная отметка видна в hip и ADS; рамка оптики не дублирует её. У остальных оружий динамический crosshair визуализирует текущий итоговый spread с учётом movement, air penalty и weapon bloom.
 
 
 ## Projectile ricochet ownership v23.9
@@ -293,7 +305,7 @@ SR-9 имеет `oneShot:true`, но guaranteed lethal применяется т
 
 Gameplay-reticle имеет один источник истины: DOM-элементы `.xh-arm` + `.xh-dot`. Старый `assets/ui/crosshair.svg` удалён. Это исключает одновременный static + dynamic overlay.
 
-SR-9 не использует gameplay-reticle: runtime скрывает `#xhair` для любого `aimMode:'scope'`, а sniper optic рендерится отдельно через `#sniper-scope`.
+SR-9 не использует gameplay-reticle: runtime скрывает `#xhair` для SR-9 с `aimMode:'scope'`; штурмовая винтовка сохраняет общую hip/ADS отметку, а sniper optic рендерится отдельно через `#sniper-scope`.
 
 
 ## Tactical AI 2.0 v22.4
@@ -367,7 +379,7 @@ Runtime всё ещё использует общий `dt <= 0.033`, поэто�
 
 Граница намеренно не совпадает с «всё, где упоминается Frontline». `src/ai/tactics.js` остаётся owner-ом `BOT_MAP_ZONES` и doctrine/map policy; `src/entities/bots.js` остаётся owner-ом индивидуального bot FSM и только читает active objective/presence для tactical execution; `src/ui/minimap.js` только визуализирует objective/zone ownership; `src/player/state.js` вызывает публичный save/restore contract; `src/game/runtime.js` только вызывает tick и boot HUD/marker.
 
-Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-progression-scaling → bot-perception → bot-damage-reaction → bot-suppression-response → bot-dodge-response → bot-navigation → bot-positioning → bot-cover-execution → bot-weapon-policy → bot-fire-control → bot-fire-cadence → bot-deployables → tactics → frontline → bot-presentation → bots`; navigation, positioning, cover-execution, weapon-policy, fire-control, fire-cadence, deployables, Frontline и presentation являются отдельными prerequisites `bots.js`, при этом presentation не зависит от Frontline. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
+Evaluation-time зависимость Frontline — `BOT_MAP_ZONES`, поэтому Frontline остаётся между tactics и bot consumer. Текущий общий graph — `combat → bot-progression-scaling → bot-perception → bot-damage-reaction → bot-suppression-response → bot-dodge-response → bot-navigation → bot-positioning → bot-cover-execution → bot-weapon-policy → bot-fire-control → bot-fire-cadence → bot-deployables → tactics → frontline → zap-bot-modular-46.runtime.js → bot-model3d → bot-presentation → bots`; navigation, positioning, cover-execution, weapon-policy, fire-control, fire-cadence, deployables, Frontline, Pack46 geometry/model owner и presentation являются отдельными prerequisites `bots.js`. Semantic presentation не зависит от Frontline; соседство здесь отражает sequential classic-script load order. Остальные зависимости (`botZonePresence`, `updateTeamScore`, player score/XP, audio, save, DOM/Three.js) используются только при вызове функций после завершения последовательного bootstrap и не становятся вторыми owners.
 
 Pure extraction сохраняет буквально `rotateSeconds:44`, `captureSeconds:8.5`, `capturePoints:3`, clamp/restore semantics, capture reward `+150 score / +35 XP`, UI copy и side-effect order. Эти значения нельзя «заодно улучшать» в ownership-refactor; balance/UX change требует отдельной задачи и отдельного evidence.
 
@@ -376,13 +388,13 @@ Regression contract состоит из двух независимых слоё
 
 ## Bot presentation ownership v23.9
 
-**Canonical owner:** `src/entities/bot-presentation.js`. Он владеет procedural body construction, стабильным gameplay `pts[]` hit-mesh order, decorative armor/readability, `weaponPivot`, real body hands/`armRig` и two-bone grip solver. Полный узкий контракт — `docs/specs/BOT_PRESENTATION.md`.
+Bot presentation теперь разделён намеренно. `src/entities/bot-model3d.js` — canonical owner volumetric Blender Pack46 instancing, shared component geometry/material mapping и low-power/missing-pack fallback selection; общий Blender/export workflow — `docs/BLENDER_ASSET_PIPELINE.md`. `src/entities/bot-presentation.js` — canonical owner procedural fallback body, стабильного gameplay `pts[]` hit-mesh order, articulated `legRig`, `weaponPivot`, real body hands/`armRig` и two-bone grip solver. Полный узкий rig/hit-mesh контракт — `docs/specs/BOT_PRESENTATION.md`.
 
 Граница намеренно не совпадает со всем visual code внутри `Enemy`. `src/entities/bots.js` остаётся owner-ом FSM, gait/combat motion и health-bar lifecycle: он создаёт presentation через `mkHuman()`, потребляет `src/ai/bot-navigation.js` для locomotion mechanics, двигает `weaponPivot` по уже выбранной gait/combat pose и затем вызывает `updateBotWeaponHands(this)`. `src/weapons/system.js` остаётся owner-ом weapon data и per-weapon `gripR/gripL/elbowR/elbowL` metadata.
 
-Evaluation-time dependency presentation owner-а — глобальный `THREE`, потому что scratch vectors создаются при загрузке script. Поэтому `bot-presentation.js` обязан быть раньше `bots.js`. `MOBILE_LOW` и bot/weapon runtime objects используются только при вызове функций после bootstrap. Текущий canonical load sequence содержит `frontline → bot-presentation → bots`, но presentation не зависит от Frontline; оба являются независимыми prerequisites consumer-а.
+Evaluation-time dependency presentation owner-а — глобальный `THREE`, потому что scratch vectors создаются при загрузке script. Поэтому Pack46 load order обязан оставаться `frontline → zap-bot-modular-46.runtime.js → bot-model3d.js → bot-presentation.js → bots.js`. `MOBILE_LOW` и bot/weapon runtime objects используются только при вызове функций после bootstrap. Desktop `PERF_MODE/MOBILE_LOW` не является основанием отключать Pack46; procedural low-power fallback допускается только для coarse-touch устройств либо missing/incomplete model pack.
 
-Pure extraction сохраняет geometry/material constants, gameplay hit-mesh order, default weapon pivot, shoulder constants, arm lengths, scale clamp и coordinate transform `weapon local → world → bot local`. Вынесенные helpers запрещены в `bots.js` structural guard-ом, а consumer markers обязаны остаться там. `scripts/bot-presentation-owner.test.mjs` отдельно проверяет pin рук к grip points, coordinate-space conversion и fail-closed no-op при неполной pose metadata.
+Pure rig extraction сохраняет gameplay hit-mesh order, default weapon pivot, shoulder constants, arm lengths, scale clamp и coordinate transform `weapon local → world → bot local`. Blender component geometry/material constants живут отдельно у Pack46 owner-а и не должны возвращаться в `bots.js`/`bot-presentation.js`. Вынесенные helpers запрещены в `bots.js` structural guard-ом, а consumer markers обязаны остаться там. `scripts/bot-model3d-owner.test.mjs` проверяет component/runtime/fallback contract; `scripts/bot-presentation-owner.test.mjs` отдельно проверяет pin рук к grip points, coordinate-space conversion и fail-closed no-op при неполной pose metadata.
 
 
 ## Reusable cross-system patterns

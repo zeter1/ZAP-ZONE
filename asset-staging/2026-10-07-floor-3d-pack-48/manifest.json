@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "packVersion": 48,
+  "generator": "asset-staging/2026-10-07-floor-3d-pack-48/build_floor_kit_48.py",
+  "blenderVersion": "5.2.2 LTS",
+  "coordinateBridge": "Blender (x,y,z) -> runtime (x,z,-y); positions q16-normalized per component by qScale",
+  "collisionContract": "visual floor only; arenaFloor remains the flat gameplay ground owner",
+  "components": {
+    "FLOOR_Panel_8m": {
+      "triangles": 1308,
+      "runtimeVertices": 3924,
+      "materialGroups": 5,
+      "qScale": 4.0
+    },
+    "FLOOR_Far_8m": {
+      "triangles": 2,
+      "runtimeVertices": 6,
+      "materialGroups": 1,
+      "qScale": 4.0
+    },
+    "FLOOR_Trench_8m": {
+      "triangles": 1476,
+      "runtimeVertices": 4428,
+      "materialGroups": 7,
+      "qScale": 4.0
+    },
+    "FLOOR_Grate_8m": {
+      "triangles": 1188,
+      "runtimeVertices": 3564,
+      "materialGroups": 4,
+      "qScale": 4.0
+    },
+    "FLOOR_Hatch_8m": {
+      "triangles": 1852,
+      "runtimeVertices": 5556,
+      "materialGroups": 6,
+      "qScale": 4.0
+    },
+    "FLOOR_Guide_8m": {
+      "triangles": 792,
+      "runtimeVertices": 2376,
+      "materialGroups": 5,
+      "qScale": 4.0
+    },
+    "FLOOR_Capture_12m": {
+      "triangles": 2168,
+      "runtimeVertices": 6504,
+      "materialGroups": 5,
+      "qScale": 6.0
+    }
+  },
+  "artifacts": {
+    "glb": {
+      "bytes": 498040,
+      "sha256": "1701888820609e466e2942c76e621bc9c37d5bc1cfcfca8200f69d08ad106b62"
+    },
+    "runtimeJs": {
+      "bytes": 423908,
+      "sha256": "4482331c039437184f6269c393632fae7ab8104badb6c6c313ab0e5cf4b668eb"
+    },
+    "blend": {
+      "bytes": 182155,
+      "sha256": "28edf95b3525f7c931eb44d78a166ff13a5ebe15022b70e154050e5c79b481c7"
+    },
+    "preview": {
+      "bytes": 1584348,
+      "sha256": "86a9429db716a51c0e9c5ef163820d193edf66e93eb6cd0f967776a81f218840"
+    },
+    "builder": {
+      "bytes": 15102,
+      "sha256": "fbcb4a1fb9c69a0fac226e6504021945c15e1ea0af1eec0121cc9359d50b2984"
+    }
+  }
+}

@@ -7,7 +7,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyR')doReload();
   if(e.code==='KeyQ')quickSwitchWeapon();
   if(e.code==='KeyF')throwMine();
-  if(e.code==='KeyG')placeBomb();
+  if(e.code==='KeyG'&&!e.repeat)placeBomb();
   if(e.code==='Digit0'||e.code==='Numpad0')switchW(GRENADE_WEAPON_INDEX);
   const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
 });
@@ -41,11 +41,11 @@ document.addEventListener('mousedown',e=>{
   if(running&&!paused&&!lvlAnnOpen&&!perkPickOpen&&!dying&&e.button===0){mouseDown=true;shoot();}
 });
 document.addEventListener('mouseup',e=>{
-  if(e.button===0)mouseDown=false;
+  if(e.button===0){mouseDown=false;releaseFragGrenadeCharge();}
   if(e.button===2)zooming=false;
 });
-window.addEventListener('blur',()=>{mouseDown=false;zooming=false;});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){mouseDown=false;zooming=false;}});
+window.addEventListener('blur',()=>{mouseDown=false;zooming=false;cancelFragGrenadeThrow();cancelPendingMineThrow(true);if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);cancelPendingBombPlant();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){mouseDown=false;zooming=false;cancelFragGrenadeThrow();cancelPendingMineThrow(true);if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);cancelPendingBombPlant();}});
 document.addEventListener('contextmenu',e=>{if(!IS_TOUCH)e.preventDefault();});
 
 function bindMobileControls(){ if(!IS_TOUCH) return; }
@@ -78,14 +78,19 @@ const _UP=new THREE.Vector3(0,1,0);
 function mkRkt(col){
   const g=new THREE.Group();
   const body=new THREE.Mesh(
-    new THREE.CylinderGeometry(.07,.07,.58,7),
-    new THREE.MeshLambertMaterial({color:col})
+    new THREE.CylinderGeometry(.085,.085,.58,12),
+    new THREE.MeshPhongMaterial({color:0x87929f,specular:0xaec8dd,shininess:70})
   );
   g.add(body);
-  const tip=new THREE.Mesh(new THREE.ConeGeometry(.072,.26,7),new THREE.MeshLambertMaterial({color:0xffe45a}));tip.position.y=.42;g.add(tip);
+  const tip=new THREE.Mesh(new THREE.ConeGeometry(.085,.26,12),new THREE.MeshPhongMaterial({color:0xe2a047,shininess:65}));tip.position.y=.42;g.add(tip);
+  for(const y of [-.20,.17]){
+    const band=new THREE.Mesh(new THREE.TorusGeometry(.088,.012,5,12),new THREE.MeshBasicMaterial({color:y<0?col:0xff9c28}));
+    band.rotation.x=Math.PI/2;band.position.y=y;g.add(band);
+  }
+  const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(.065,.082,.10,12,1,true),new THREE.MeshPhongMaterial({color:0x252a31,side:THREE.DoubleSide,shininess:50}));nozzle.position.y=-.34;g.add(nozzle);
   for(let i=0;i<4;i++){
     const f=new THREE.Mesh(new THREE.BoxGeometry(.022,.23,.15),new THREE.MeshLambertMaterial({color:0x8f99a4}));
-    f.position.y=-.23;f.rotation.y=i*Math.PI/2;g.add(f);
+    const angle=i*Math.PI/2;f.position.set(Math.sin(angle)*.085,-.23,Math.cos(angle)*.085);f.rotation.y=angle;g.add(f);
   }
   // Красивое пламя без отдельных источников света: additive blending заметен на тёмной карте и почти не нагружает GPU.
   const flameOuter=new THREE.Mesh(
@@ -115,52 +120,7 @@ function mkMine(){
   return g;
 }
 
-function mkBomb(){
-  const g=new THREE.Group();
-  const body=new THREE.Mesh(new THREE.SphereGeometry(.38,14,10),new THREE.MeshLambertMaterial({color:0x151515}));
-  body.scale.y=.84;g.add(body);
-  const band=new THREE.Mesh(new THREE.TorusGeometry(.31,.052,8,18),new THREE.MeshBasicMaterial({color:0xffaa00}));
-  band.rotation.x=Math.PI/2;band.position.y=.02;g.add(band);
-  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.115,.15,.18,9),new THREE.MeshLambertMaterial({color:0x666666}));
-  cap.position.y=.34;g.add(cap);
-
-  const fuseGroup=new THREE.Group();
-  const points=[];
-  const segmentCount=MOBILE_LOW?14:24;
-  for(let i=0;i<=segmentCount;i++){
-    const t=i/segmentCount;
-    const ang=t*Math.PI*2.15;
-    const rad=.04+t*.70;
-    points.push(new THREE.Vector3(
-      .05+Math.sin(ang)*rad*.72,
-      .45+t*.56+Math.sin(t*Math.PI)*.11,
-      Math.cos(ang)*rad*.48
-    ));
-  }
-  const segments=[];
-  for(let i=0;i<points.length-1;i++){
-    const a=points[i],b=points[i+1],dir=b.clone().sub(a),len=dir.length();
-    const seg=new THREE.Mesh(
-      new THREE.CylinderGeometry(.020,.024,len,6),
-      new THREE.MeshBasicMaterial({color:i%2?0xc4833d:0x9a5b2b})
-    );
-    seg.position.copy(a).add(b).multiplyScalar(.5);
-    seg.quaternion.setFromUnitVectors(_UP,dir.normalize());
-    seg.userData.bombFuseIndex=i;
-    fuseGroup.add(seg);segments.push(seg);
-  }
-  const spark=new THREE.Mesh(
-    new THREE.SphereGeometry(.075,8,6),
-    new THREE.MeshBasicMaterial({color:0xffff66,transparent:true,opacity:1})
-  );
-  spark.position.copy(points[points.length-1]);spark._bombSpark=true;spark.visible=false;fuseGroup.add(spark);
-  g.add(fuseGroup);
-  g.userData.fuseGroup=fuseGroup;
-  g.userData.fuseSegments=segments;
-  g.userData.fusePoints=points;
-  g.userData.bombSpark=spark;
-  return g;
-}
+function mkBomb(){return createBombDevice41();}
 
 function mkSmokeGrenade(){
   const g=new THREE.Group();
@@ -183,8 +143,193 @@ function mkFragGrenade(team='enemy'){
 }
 function removeSmokeCloud(cloud){
   if(!cloud)return;
+  removeSmokeArt42(cloud);
   destroySceneObject(cloud.m);
 }
+// Bounded DOM art belongs to the real cloud/projectile, never to the short combat-VFX pool.
+function smokeArtLayer42(){
+  let root=G('smoke-world-layer-42');
+  if(!root){root=document.createElement('div');root.id='smoke-world-layer-42';root.setAttribute('aria-hidden','true');document.body.appendChild(root);}
+  return root;
+}
+function removeSmokeArt42(item){
+  for(const el of item?.art42||[])el.remove();
+  if(item)item.art42=null;
+}
+function clearSmokePresentation42(){
+  for(const item of [...smokeGrenades,...smokeClouds])removeSmokeArt42(item);
+  G('smoke-world-layer-42')?.replaceChildren();
+}
+function makeSmokeArt42(item,count){
+  if(!item.art42){
+    item.art42=[];
+    for(let i=0;i<count;i++){
+      const el=document.createElement('div');el.className='smoke-world-art-42';
+      smokeArtLayer42().appendChild(el);item.art42.push(el);
+    }
+  }
+  return item.art42;
+}
+function positionSmokeArt42(el,pos,size,opacity,key,frame,cols,rows,angle=0){
+  const screen=pos.clone().project(camera),distance=camera.position.distanceTo(pos);
+  if(distance<.18||screen.z<=-1||screen.z>=1||(wallBetween(camera.position,pos,wallMeshes)||(typeof smokeVisibilityBetween42==='function'&&smokeVisibilityBetween42(camera.position,pos)<.015))){
+    el.style.visibility='hidden';return;
+  }
+  const pixels=Math.min(innerHeight*4,size*innerHeight/(2*Math.tan(camera.fov*Math.PI/360))/Math.max(.18,distance));
+  const x=(screen.x*.5+.5)*innerWidth,y=(-screen.y*.5+.5)*innerHeight;
+  if(x+pixels/2<0||x-pixels/2>innerWidth||y+pixels/2<0||y-pixels/2>innerHeight){el.style.visibility='hidden';return;}
+  el.style.visibility='visible';el.style.left=x+'px';el.style.top=y+'px';
+  el.style.width=pixels+'px';el.style.height=pixels+'px';el.style.opacity=String(Math.max(0,Math.min(1,opacity)));
+  el.style.backgroundImage='url("'+gameAssetUrl(GAME_ASSETS.presentationVfx[key])+'")';
+  el.style.backgroundSize=cols*100+'% '+rows*100+'%';
+  el.style.backgroundPosition=(cols===1?0:frame%cols*100/(cols-1))+'% '+(rows===1?0:Math.floor(frame/cols)*100/(rows-1))+'%';
+  el.style.transform='translate(-50%,-50%) rotate('+angle+'deg)';
+}
+function syncSmokeBodyArt42(g){
+  const ready=smokePresentationAssetReady42('pack42SmokeWorld');
+  // Art replaces only the device meshes; the simulation group remains authoritative.
+  for(const child of g.m.children)child.visible=!ready;
+  if(!ready){removeSmokeArt42(g);return;}
+  const el=makeSmokeArt42(g,1)[0];
+  const angle=Math.atan2(g.vy,Math.hypot(g.vx,g.vz)||.001)*-180/Math.PI;
+  positionSmokeArt42(el,g.m.position,.57,1,'pack42SmokeWorld',Math.floor(g.age*7)%4,4,2,angle);
+}
+function smokeVolumeSupported42(){
+  return !!(THREE.ShaderMaterial&&renderer.capabilities.getMaxPrecision('highp')==='highp'&&
+    (renderer.capabilities.isWebGL2||renderer.extensions.has('WEBGL_depth_texture')));
+}
+function smokeVolumeGlsl42(){
+  // Shared density/integration for the fast volume and exact silhouette correction.
+  return `vec3 smokeMin42,smokeMax42;float smokeAge42,smokeDensity42,smokeSeed42;
+      float hash3(vec3 p){p=fract(p*0.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
+      float noise3(vec3 p){
+        vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+        return mix(mix(mix(hash3(i),hash3(i+vec3(1,0,0)),f.x),mix(hash3(i+vec3(0,1,0)),hash3(i+vec3(1,1,0)),f.x),f.y),
+          mix(mix(hash3(i+vec3(0,0,1)),hash3(i+vec3(1,0,1)),f.x),mix(hash3(i+vec3(0,1,1)),hash3(i+vec3(1,1,1)),f.x),f.y),f.z);
+      }
+      float fbm(vec3 p){return noise3(p)*0.70+noise3(p*2.03+17.1)*0.30;}
+      float densityAt(vec3 p){
+        if(p.y<smokeMin42.y||p.y>smokeMax42.y)return 0.0;
+        float growth=mix(0.12,1.0,smoothstep(0.0,4.0,smokeAge42));
+        vec3 halfSize=(smokeMax42-smokeMin42)*0.5,center=(smokeMin42+smokeMax42)*0.5;
+        vec2 q=(p.xz-center.xz)/(halfSize.xz*growth);
+        float radial=length(q),height=(p.y-smokeMin42.y)/(2.0*halfSize.y*growth);
+        vec3 flow=p*0.43+vec3(smokeSeed42+smokeAge42*0.055,-smokeAge42*0.21,smokeSeed42*0.73);
+        flow.xz+=vec2(sin(p.y*0.6+smokeAge42*0.22),cos(p.x*0.35+smokeAge42*0.18))*0.38;
+        float n=fbm(flow);
+        float broad=noise3(flow*0.48+7.0);
+        // The enclosing box has zero density on ALL faces, including noisy billows.
+        float rim=1.0-smoothstep(0.84,1.0,radial);
+        float dome=length(vec3(q,height*1.03));
+        float billow=dome+(broad-0.5)*0.70+(n-0.5)*0.28;
+        float top=1.0-smoothstep(0.90,1.0,height);
+        float envelope=(1.0-smoothstep(0.76,1.02,billow))*rim*top;
+        // A continuous dense interior cannot acquire transparent holes from the noise.
+        float coreShape=sqrt(dot(q,q)+height*height*height*height)+(broad-0.5)*0.12;
+        float core=(1.0-smoothstep(0.66,1.02,coreShape))*rim*top;
+        float density=max(envelope*(0.35+1.10*smoothstep(0.36,0.66,n)),core*1.20);
+        return density*smoothstep(0.0,0.03,p.y-smokeMin42.y)*smokeDensity42;
+      }
+
+      vec4 smokeRaymarch42(vec3 origin,vec3 rd,float limit){
+        vec3 safeDir=vec3(rd.x<0.0?-max(abs(rd.x),0.00001):max(abs(rd.x),0.00001),
+          rd.y<0.0?-max(abs(rd.y),0.00001):max(abs(rd.y),0.00001),rd.z<0.0?-max(abs(rd.z),0.00001):max(abs(rd.z),0.00001));
+        vec3 a=(smokeMin42-origin)/safeDir,b=(smokeMax42-origin)/safeDir;
+        vec3 lo=min(a,b),hi=max(a,b);
+        float start=max(0.0,max(lo.x,max(lo.y,lo.z))),end=min(hi.x,min(hi.y,hi.z));
+        if(end<=start||limit<=start||smokeDensity42<=0.0)return vec4(0.0);
+        // Keep the sampling grid independent of opaque geometry inside the cloud.
+        float stepSize=(end-start)/float(SMOKE_STEPS);
+        end=min(end,limit);
+        vec4 acc=vec4(0.0);
+        for(int i=0;i<SMOKE_STEPS;i++){
+          float segmentStart=start+float(i)*stepSize;
+          if(segmentStart>=end)break;
+          float segment=min(stepSize,end-segmentStart);
+          vec3 p=origin+rd*(segmentStart+segment*0.5);float d=densityAt(p);
+          float alpha=1.0-exp(-d*segment*4.2);
+          float shadow=densityAt(p+vec3(0.7,1.5,0.5))*1.8+densityAt(p+vec3(1.8,3.8,1.3))*2.4;
+          float light=clamp(exp(-shadow*2.4)*0.86+0.07,0.0,1.0);
+          vec3 color=mix(vec3(0.045,0.053,0.063),vec3(0.52,0.55,0.58),light);
+          acc.rgb+=(1.0-acc.a)*alpha*color;acc.a+=(1.0-acc.a)*alpha;
+          if(acc.a>0.9995)break;
+        }
+        return acc;
+
+      }`;
+}
+function createSmokeVolume42(c){
+  const material=new THREE.ShaderMaterial({
+    precision:'highp',transparent:true,depthWrite:false,depthTest:false,side:THREE.BackSide,
+    uniforms:{uMin:{value:new THREE.Vector3()},uMax:{value:new THREE.Vector3()},uAge:{value:0},uDensity:{value:0},uSeed:{value:0},
+      uDepth:{value:null},uResolution:{value:new THREE.Vector2(1,1)},uNear:{value:camera.near},uFar:{value:camera.far}},
+    vertexShader:`varying vec3 vWorld;
+      void main(){vec4 world=modelMatrix*vec4(position,1.0);vWorld=world.xyz;gl_Position=projectionMatrix*viewMatrix*world;}`,
+    fragmentShader:`
+      uniform vec3 uMin,uMax;uniform float uAge,uDensity,uSeed,uNear,uFar;
+      uniform sampler2D uDepth;uniform vec2 uResolution;varying vec3 vWorld;
+      ${smokeVolumeGlsl42()}
+      void main(){
+        smokeMin42=uMin;smokeMax42=uMax;smokeAge42=uAge;smokeDensity42=uDensity;smokeSeed42=uSeed;
+        vec3 rd=normalize(vWorld-cameraPosition);
+        float depth=texture2D(uDepth,gl_FragCoord.xy/uResolution).x;
+        float viewDepth=uNear*uFar/(uFar+(uNear-uFar)*depth);
+        float opaqueDistance=viewDepth/max(0.0001,-(viewMatrix*vec4(rd,0.0)).z);
+        vec4 acc=smokeRaymarch42(cameraPosition,rd,opaqueDistance);
+        if(acc.a<0.003)discard;
+        gl_FragColor=vec4(acc.rgb/max(acc.a,0.001),acc.a);
+        #include <tonemapping_fragment>
+        #include <encodings_fragment>
+      }`,defines:{SMOKE_STEPS:PERF_MODE?24:40}
+  });
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),material);
+  mesh.renderOrder=12;mesh.frustumCulled=false;c.m.add(mesh);c.volume42=mesh;
+  mesh.layers.set(1);
+}
+function updateSmokeVolume42(c){
+  const floor=Math.max(0,c.m.position.y-.12),height=c.radius*.48;
+  const x=c.m.position.x,z=c.m.position.z,u=c.volume42.material.uniforms;
+  u.uMin.value.set(x-c.radius,floor,z-c.radius);u.uMax.value.set(x+c.radius,floor+height,z+c.radius);
+  u.uAge.value=c.age;u.uDensity.value=c.density;u.uSeed.value=c.puffs[0]?.userData.phase||0;
+  c.volume42.position.set(0,floor+height*.5-c.m.position.y,0);c.volume42.scale.set(c.radius*2,height,c.radius*2);
+}
+function syncSmokeCloudArt42(c){
+  // Cloud density is world-space, independent of image loading and camera facing.
+  removeSmokeArt42(c);c.m.visible=true;
+  if(!c.volume42&&smokeVolumeSupported42())createSmokeVolume42(c);
+  if(c.volume42){for(const puff of c.puffs)puff.visible=false;updateSmokeVolume42(c);}
+}
+
+function smokeEnvelope42(c,x,y,z){
+  const t=Math.max(0,Math.min(1,c.age/4)),growth=.12+.88*t*t*(3-2*t);
+  const r=c.radius*growth,h=c.radius*.48*growth,floor=Math.max(0,c.m.position.y-.12);
+  const radial=Math.hypot(x-c.m.position.x,z-c.m.position.z)/r,ny=(y-floor)/h;
+  if(radial>=1||ny<=0||ny>=1)return 0;
+  const smooth=(a,b,v)=>{const q=Math.max(0,Math.min(1,(v-a)/(b-a)));return q*q*(3-2*q);};
+  return (1-smooth(.56,1,radial))*(1-smooth(.84,1,radial))*(1-smooth(.55,.98,ny))*(1-smooth(.90,1,ny))*smooth(0,.03,y-floor);
+}
+function smokeVisibilityBetween42(from,to){
+  const dx=to.x-from.x,dy=to.y-from.y,dz=to.z-from.z,length=Math.hypot(dx,dy,dz);
+  if(length<.001)return 1;
+  let optical=0;
+  for(const c of smokeClouds){
+    if(c.life<=0||c.density<=.001)continue;
+    const t=Math.max(0,Math.min(1,c.age/4)),growth=.12+.88*t*t*(3-2*t),r=c.radius*growth;
+    const ox=from.x-c.m.position.x,oz=from.z-c.m.position.z,a=dx*dx+dz*dz,b=ox*dx+oz*dz,q=ox*ox+oz*oz-r*r;
+    let entry=0,exit=1;
+    if(a>.000001){const discriminant=b*b-a*q;if(discriminant<=0)continue;const s=Math.sqrt(discriminant);entry=Math.max(entry,(-b-s)/a);exit=Math.min(exit,(-b+s)/a);}
+    else if(q>=0)continue;
+    const floor=Math.max(0,c.m.position.y-.12),roof=floor+c.radius*.48*growth;
+    if(Math.abs(dy)>.000001){const l=(floor-from.y)/dy,u=(roof-from.y)/dy;entry=Math.max(entry,Math.min(l,u));exit=Math.min(exit,Math.max(l,u));}
+    else if(from.y<=floor||from.y>=roof)continue;
+    if(exit<=entry)continue;
+    const step=(exit-entry)/6;
+    for(let i=0;i<6;i++){const s=entry+(i+.5)*step;optical+=smokeEnvelope42(c,from.x+dx*s,from.y+dy*s,from.z+dz*s)*c.density*.8*length*step*4.2;}
+    if(optical>8)return 0;
+  }
+  return Math.exp(-optical);
+}
+
 function deploySmokeCloud(pos,radiusM=1,durationM=1,team=null){
   while(smokeClouds.length>=MAX_ACTIVE_SMOKE_CLOUDS)removeSmokeCloud(smokeClouds.shift());
   const group=new THREE.Group();
@@ -204,20 +349,22 @@ function deploySmokeCloud(pos,radiusM=1,durationM=1,team=null){
     const geo=new THREE.SphereGeometry(1,PERF_MODE?5:6,PERF_MODE?4:5);
     const matObj=new THREE.MeshBasicMaterial({
       color:i%3===0?0x667077:(i%3===1?0x515a60:0x798187),
-      transparent:true,opacity:0,depthWrite:true,depthTest:true
+      transparent:true,opacity:0,depthWrite:false,depthTest:true
     });
     const puff=new THREE.Mesh(geo,matObj);
     puff.position.set(Math.cos(ang)*rr,center?1.65:(core?1.0+Math.random()*2.1:.65+Math.random()*3.2),Math.sin(ang)*rr);
     const base=center?radius*.70:(core?radius*(.44+Math.random()*.13):radius*(.30+Math.random()*.22));
     puff.scale.set(base*(.92+Math.random()*.18),base*(.68+Math.random()*.20),base*(.92+Math.random()*.18));
     puff.userData.baseScale=puff.scale.clone();
+    puff.userData.baseY=puff.position.y;
     puff.userData.phase=Math.random()*Math.PI*2;
     puff.userData.baseOpacity=core?1:.90+Math.random()*.08;
     puff.renderOrder=11;
     group.add(puff);puffs.push(puff);
   }
   scene.add(group);
-  smokeClouds.push({m:group,center:new THREE.Vector3(pos.x,1.6,pos.z),radius,life:duration,maxLife:duration,age:0,puffs,density:0,team});
+  smokeClouds.push({m:group,center:new THREE.Vector3(pos.x,Math.max(1.6,pos.y+1.48),pos.z),radius,life:duration,maxLife:duration,age:0,puffs,density:0,team});
+  playSmokeSound42('vent',group.position);
   showGeneratedSmokeDeployVfx(group.position);
   if(!team)showMsg('🌫️ Дымовое облако развёрнуто на '+Math.round(duration)+' сек.');
 }
@@ -247,21 +394,19 @@ function smokeStrengthAt(pos){
   return strength;
 }
 function tickSmoke(dt){
+  // Camera transforms change earlier in the frame; DOM projection precedes renderer.render.
+  // Refresh the inverse once for the whole smoke batch, without visiting the FPS rig.
+  if(smokeGrenades.length||smokeClouds.length)camera.updateWorldMatrix(true,false);
   for(let i=smokeGrenades.length-1;i>=0;i--){
     const g=smokeGrenades[i];g.age+=dt;g.life-=dt;g.vy-=18*dt;
-    const ox=g.m.position.x,oz=g.m.position.z;
-    g.m.position.x+=g.vx*dt;g.m.position.y+=g.vy*dt;g.m.position.z+=g.vz*dt;
+    moveSmokeGrenade42(g,dt);
     g.m.rotation.x+=g.rx*dt;g.m.rotation.z+=g.rz*dt;
-    const coll=collideWalls(g.m.position.x,g.m.position.z,.12);
-    if(Math.abs(coll.x-g.m.position.x)>.001){g.vx*=-.28;g.m.position.x=coll.x;}else g.m.position.x=coll.x;
-    if(Math.abs(coll.z-g.m.position.z)>.001){g.vz*=-.28;g.m.position.z=coll.z;}else g.m.position.z=coll.z;
-    if(g.m.position.y<=.13){
-      g.m.position.y=.13;g.vy=Math.abs(g.vy)*.24;g.vx*=.72;g.vz*=.72;g.grounded=true;
-    }
+    syncSmokeBodyArt42(g);
     g.trailT-=dt;
     if(g.trailT<=0){g.trailT=.12;spawnSmoke(g.m.position,0x899095);}
     if((g.grounded&&g.age>=1.05)||g.age>=1.85||g.life<=0){
-      const p=g.m.position.clone();p.y=.12;
+      const p=g.m.position.clone();p.y=Math.max(.12,p.y-.01);
+      removeSmokeArt42(g);
       destroySceneObject(g.m);smokeGrenades.splice(i,1);deploySmokeCloud(p,g.radiusM||1,g.durationM||1,g.team||null);
     }
   }
@@ -270,25 +415,33 @@ function tickSmoke(dt){
     const fadeIn=Math.min(1,c.age/1.35);
     const fadeOut=Math.min(1,Math.max(0,c.life)/4);
     c.density=fadeIn*fadeOut;
-    c.m.rotation.y+=dt*.018;
+    // World-space bounds stay aligned with the arena support plane.
     for(const puff of c.puffs){
       const pulse=1+Math.sin(c.age*.45+puff.userData.phase)*.025;
       const b=puff.userData.baseScale;
       puff.scale.set(b.x*pulse,b.y*(1+Math.cos(c.age*.36+puff.userData.phase)*.025),b.z*pulse);
       puff.material.opacity=puff.userData.baseOpacity*c.density;
+      const growth=.12+.88*Math.min(1,c.age/4);puff.scale.multiplyScalar(growth);
+      puff.position.y=Math.max(puff.userData.baseY??puff.position.y,puff.scale.y-Math.min(.12,c.m.position.y));
     }
+    syncSmokeCloudArt42(c);
     if(c.life<=0){removeSmokeCloud(c);smokeClouds.splice(i,1);}
   }
   const overlay=G('smoke-overlay');
-  if(overlay)overlay.style.opacity=String(Math.min(1,smokeStrengthAt(camera.position)*2.25));
+  if(overlay){
+    const strength=Math.min(1,smokeStrengthAt(camera.position)*2.25);
+    overlay.style.opacity=String(smokeClouds.some(c=>c.volume42)?0:strength);
+    overlay.style.setProperty('--smoke-overlay-image','none');
+  }
 }
 
 function ensureBombTimer(mn){
   if(mn.timerSprite)return;
   const c=document.createElement('canvas');c.width=192;c.height=48;
   const tex=new THREE.CanvasTexture(c);
-  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
-  sp.scale.set(1.9,.47,1);sp.position.set(0,1.55,0);mn.m.add(sp);
+  tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:true,depthWrite:false}));
+  sp.scale.set(.28,.07,1);sp.position.set(0,.03,0);mn.m.add(sp);
   mn.timerCanvas=c;mn.timerTexture=tex;mn.timerSprite=sp;mn.timerSecond=-1;
 }
 function updateBombFuseVisual(mn,dt){
@@ -296,34 +449,29 @@ function updateBombFuseVisual(mn,dt){
   const left=Math.max(0,mn.fuseT);
   const ratio=Math.max(0,Math.min(1,left/total));
   const segs=mn.m.userData.fuseSegments||[];
-  const pts=mn.m.userData.fusePoints||[];
   const remaining=Math.max(0,Math.min(segs.length,Math.ceil(ratio*segs.length)));
   for(let i=0;i<segs.length;i++)segs[i].visible=i<remaining;
   const spark=mn.m.userData.bombSpark;
-  if(spark&&pts.length){
-    spark.position.copy(pts[Math.min(pts.length-1,remaining)]);
-    const fast=left<=10;
-    spark.visible=Math.sin((mn.ph||0)*(fast?34:18))>-.35;
-    spark.scale.setScalar((fast?1.35:1)*(1+Math.sin((mn.ph||0)*22)*.18));
-    spark.material.color.setHex(left<=5?0xffffff:left<=15?0xff7a22:0xffff55);
-  }
+  if(spark)spark.visible=false;
   mn.sparkEmitT=(mn.sparkEmitT||0)-dt;
   if(mn.sparkEmitT<=0&&spark){
     mn.sparkEmitT=left<=10?.045:.10;
-    const wp=new THREE.Vector3();spark.getWorldPosition(wp);spawnSpark(wp,left<=8?0xffffff:0xffb22e);
-    if(Math.random()<.45)spawnSmoke(wp,0x5d5148);
+    // Preserve the prior decoration RNG stream, without emitting old fuse particles.
+    // engine::spawnSpark consumes four draws; spawnSmoke consumes three.
+    for(let i=0;i<4;i++)Math.random();
+    if(Math.random()<.45)for(let i=0;i<3;i++)Math.random();
   }
   ensureBombTimer(mn);
   const sec=Math.ceil(left);
   if(sec!==mn.timerSecond){
     mn.timerSecond=sec;
     const ctx=mn.timerCanvas.getContext('2d');ctx.clearRect(0,0,mn.timerCanvas.width,mn.timerCanvas.height);
-    ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(8,4,176,40);
-    ctx.strokeStyle=sec<=10?'#ff3b24':'#ffbf23';ctx.lineWidth=3;ctx.strokeRect(8,4,176,40);
-    ctx.fillStyle=sec<=10?'#ff6650':'#ffe27a';ctx.font='900 24px Segoe UI, sans-serif';ctx.textAlign='center';ctx.fillText('🧨 '+sec+'с',96,32);
+    ctx.fillStyle='rgba(8,14,20,.86)';ctx.fillRect(35,4,122,40);
+    ctx.fillStyle=sec<=10?'#ff6650':'#ffe27a';ctx.font='700 30px Consolas, monospace';ctx.textAlign='center';ctx.fillText('00:'+String(sec).padStart(2,'0'),96,34);
     mn.timerTexture.needsUpdate=true;
   }
 }
+const PLASMA_PROJECTILE_VISUAL_SCALE=.78;
 function mkTracer(col,key='default'){
   const g=new THREE.Group();
   const plasma=key==='plasma';
@@ -356,6 +504,7 @@ function mkTracer(col,key='default'){
   tail.rotation.x=Math.PI/2;tail.position.z=-len*.28;tail.renderOrder=16;g.add(tail);
   g.userData.halo=halo;g.userData.tail=tail;g.userData.phase=Math.random()*Math.PI*2;
   g.userData.baseOpacities=g.children.map(child=>child.material?.opacity??1);
+  if(plasma)g.scale.setScalar(PLASMA_PROJECTILE_VISUAL_SCALE);
   return g;
 }
 
@@ -373,6 +522,11 @@ function rocketFlightFrameIndex(r){
   const phase=Number.isInteger(r?._flightVfxPhase)?r._flightVfxPhase:0;
   return ROCKET_FLIGHT_VFX_LOOP[(Math.floor((age-.18)*16)+phase)%ROCKET_FLIGHT_VFX_LOOP.length];
 }
+function rocketFlightFrameIndex35(r){return Math.floor(Math.max(0,Number(r?.fT)||0)*16)%4;}
+function restoreRocketFlightMesh(r){
+  for(const [mesh,visible] of r?._rocketMeshVisibility||[])mesh.visible=visible;
+  if(r)r._rocketMeshVisibility=null;
+}
 function ensureRocketFlightArt(r){
   const layer=G('projectile-trail-layer');
   if(!layer||typeof rocketFlightPresentationFrame!=='function'||typeof applyPresentationAtlasFrame!=='function')return null;
@@ -389,23 +543,32 @@ function syncRocketFlightArt(){
   const live=new Set([...eRkts,...pRkts]);
   for(const el of [...rocketFlightArtNodes]){
     if(live.has(el._rocketRef))continue;
-    if(el._rocketRef)el._rocketRef._flightArt=null;
+    if(el._rocketRef){restoreRocketFlightMesh(el._rocketRef);el._rocketRef._flightArt=null;el._rocketRef._flightVfxFrame=null;}
     el.remove();rocketFlightArtNodes.delete(el);
   }
   for(const r of live){
     const el=ensureRocketFlightArt(r),pos=r.m?.position;
     if(!el||!pos){if(el)el.style.visibility='hidden';continue;}
+    const ready35=rocketPresentationAssetReady35('pack35RocketEffects');
+    // A missile must retain its actual 3D silhouette/depth from every viewpoint.
+    // The atlas contributes only side-on exhaust, never a second metallic body.
+    restoreRocketFlightMesh(r);
+    el.classList.toggle('pack35',ready35);
     rocketFlightScreenPos.copy(pos).project(camera);
     if(rocketFlightScreenPos.z<-1||rocketFlightScreenPos.z>1||Math.abs(rocketFlightScreenPos.x)>1.18||Math.abs(rocketFlightScreenPos.y)>1.18){
       el.style.visibility='hidden';continue;
     }
-    if(typeof wallBetween==='function'&&wallBetween(camera.position,pos,losMeshes)){
+    if(typeof wallBetween==='function'&&(wallBetween(camera.position,pos,wallMeshes)||(typeof smokeVisibilityBetween42==='function'&&smokeVisibilityBetween42(camera.position,pos)<.015))){
       el.style.visibility='hidden';continue;
     }
     rocketFlightDir.set(r.vx||0,r.vy||0,r.vz||0);
     const speed=rocketFlightDir.length();
     if(speed<.001){el.style.visibility='hidden';continue;}
     rocketFlightDir.multiplyScalar(1/speed);
+    const view=pos.clone().sub(camera.position).normalize();
+    const side=Math.sqrt(Math.max(0,1-Math.pow(rocketFlightDir.dot(view),2)));
+    el.style.setProperty('--rocket-flight-side',side.toFixed(3));
+    if(!ready35||side<.28){el.style.visibility='hidden';continue;}
     rocketFlightAheadPos.copy(pos).addScaledVector(rocketFlightDir,1.25).project(camera);
     const x=(rocketFlightScreenPos.x*.5+.5)*innerWidth;
     const y=(-rocketFlightScreenPos.y*.5+.5)*innerHeight;
@@ -413,11 +576,13 @@ function syncRocketFlightArt(){
     const ay=(-rocketFlightAheadPos.y*.5+.5)*innerHeight;
     const tailAngle=Math.atan2(ay-y,ax-x)*180/Math.PI+180;
     const distance=Math.max(.1,camera.position.distanceTo(pos));
-    const size=Math.max(46,Math.min(116,156/(.82+distance*.042)));
-    const frameIndex=rocketFlightFrameIndex(r);
-    if(r._flightVfxFrame!==frameIndex){
-      applyPresentationAtlasFrame(el,rocketFlightPresentationFrame(frameIndex));
-      r._flightVfxFrame=frameIndex;
+    const focal=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
+    const size=Math.max(3,Math.min(140,innerWidth*.14,1.4*focal/distance));
+    const frameIndex=ready35?rocketFlightFrameIndex35(r):rocketFlightFrameIndex(r);
+    const frameKey=(ready35?'35:':'28:')+frameIndex;
+    if(r._flightVfxFrame!==frameKey){
+      applyPresentationAtlasFrame(el,ready35?rocketFlightPresentationFrame35(frameIndex):rocketFlightPresentationFrame(frameIndex));
+      r._flightVfxFrame=frameKey;
     }
     el.style.left=x.toFixed(1)+'px';el.style.top=y.toFixed(1)+'px';
     el.style.setProperty('--rocket-flight-size',size.toFixed(1)+'px');
@@ -508,7 +673,7 @@ function syncPlasmaFlightArt(){
     const ax=(plasmaFlightAheadPos.x*.5+.5)*innerWidth;
     const ay=(-plasmaFlightAheadPos.y*.5+.5)*innerHeight;
     const angle=Math.atan2(ay-y,ax-x)*180/Math.PI;
-    const size=Math.max(50,Math.min(124,164/(.82+distance*.045)));
+    const size=PLASMA_PROJECTILE_VISUAL_SCALE*Math.max(50,Math.min(124,164/(.82+distance*.045)));
     const el=existing||ensurePlasmaFlightArt(b,team);
     if(!el)continue;
     const frameIndex=plasmaFlightFrameIndex(b);
@@ -525,6 +690,130 @@ function syncPlasmaFlightArt(){
 }
 initPlasmaFlightAssetProbe();
 
+// Pack34: persistent grenade body projection, separate from short one-shot VFX.
+// The real botGrenades collection owns trajectory, bounce, resting and lifetime.
+const grenadeFlightArtNodes=new Set();
+const grenadeFlightScreenPos=new THREE.Vector3();
+let grenadeFlightAssetState=0,grenadeFlightAssetProbe=null;
+function clearGrenadeFlightArt(){
+  for(const el of [...grenadeFlightArtNodes]){
+    const g=el._grenadeRef;
+    if(g){
+      for(const [mesh,visible] of g._grenadeMeshVisibility||[])mesh.visible=visible;
+      g._grenadeMeshVisibility=null;g._grenadeFlightArt=null;
+    }
+    el.remove();grenadeFlightArtNodes.delete(el);
+  }
+}
+function grenadeFlightPresentationAvailable(){
+  if(grenadeFlightAssetState===0&&GAME_PRESENTATION_ASSETS_ENABLED){
+    const asset=GAME_ASSETS.presentationVfx?.pack34GrenadeWorld;
+    if(!asset||typeof Image==='undefined')return false;
+    grenadeFlightAssetState=1;
+    const probe=new Image();grenadeFlightAssetProbe=probe;
+    probe.onload=()=>{
+      grenadeFlightAssetState=probe.naturalWidth===1024&&probe.naturalHeight===512?2:-1;
+      grenadeFlightAssetProbe=null;
+      if(grenadeFlightAssetState!==2)clearGrenadeFlightArt();
+    };
+    probe.onerror=()=>{grenadeFlightAssetState=-1;grenadeFlightAssetProbe=null;clearGrenadeFlightArt();};
+    probe.src=gameAssetUrl(asset);
+  }
+  return grenadeFlightAssetState===2;
+}
+function grenadeFlightFrameIndex(g){
+  if(g.grounded)return 1; // lying, rather than an upright inventory sprite
+  return [3,4,5][Math.floor(Math.abs(g.m.rotation.x)*1.5)%3];
+}
+function syncGrenadeFlightArt(){
+  const live=new Set(botGrenades.filter(g=>g.fuse>0&&g.m?.parent));
+  for(const el of [...grenadeFlightArtNodes]){
+    if(live.has(el._grenadeRef))continue;
+    const g=el._grenadeRef;
+    if(g){
+      for(const [mesh,visible] of g._grenadeMeshVisibility||[])mesh.visible=visible;
+      g._grenadeMeshVisibility=null;g._grenadeFlightArt=null;
+    }
+    el.remove();grenadeFlightArtNodes.delete(el);
+  }
+  if(!live.size||!grenadeFlightPresentationAvailable())return;
+  const layer=G('projectile-trail-layer');if(!layer)return;
+  for(const g of live){
+    let el=g._grenadeFlightArt;
+    if(!el?.isConnected){
+      el=document.createElement('span');el.className='grenade-flight-art '+(g.team==='ally'?'ally':'enemy');
+      el._grenadeRef=g;el.setAttribute('aria-hidden','true');
+      layer.appendChild(el);grenadeFlightArtNodes.add(el);g._grenadeFlightArt=el;g._grenadeFlightFrame=-1;
+      suppressLegacyGrenadeMotionVfx(g.m);
+      g._grenadeMeshVisibility=g.m.children.map(mesh=>[mesh,mesh.visible]);
+      for(const [mesh] of g._grenadeMeshVisibility)mesh.visible=false;
+    }
+    const pos=g.m.position,distance=camera.position.distanceTo(pos);
+    grenadeFlightScreenPos.copy(pos).project(camera);
+    if(distance>60||distance<.15||grenadeFlightScreenPos.z<=-1||grenadeFlightScreenPos.z>=1||
+       Math.abs(grenadeFlightScreenPos.x)>1.08||Math.abs(grenadeFlightScreenPos.y)>1.08||
+       (wallBetween(camera.position,pos,wallMeshes)||(typeof smokeVisibilityBetween42==='function'&&smokeVisibilityBetween42(camera.position,pos)<.015))){
+      el.style.visibility='hidden';continue;
+    }
+    const frame=grenadeFlightFrameIndex(g);
+    if(g._grenadeFlightFrame!==frame){
+      applyPresentationAtlasFrame(el,grenadeFlightPresentationFrame(frame));g._grenadeFlightFrame=frame;
+    }
+    // Readable screen size without changing the physical radius or trajectory.
+    const size=Math.max(32,Math.min(108,560/Math.max(4,distance)));
+    const rotation=g.grounded?0:g.m.rotation.z*180/Math.PI;
+    el.dataset.state=g.grounded?'resting':'flight';
+    el.classList.toggle('armed',g.fuse<=.78);
+    el.style.left=((grenadeFlightScreenPos.x*.5+.5)*innerWidth).toFixed(1)+'px';
+    el.style.top=((-grenadeFlightScreenPos.y*.5+.5)*innerHeight).toFixed(1)+'px';
+    el.style.width=size.toFixed(1)+'px';el.style.height=size.toFixed(1)+'px';
+    el.style.transform='translate(-50%,-50%) rotate('+rotation.toFixed(1)+'deg)';
+    el.style.visibility='visible';
+  }
+}
+// End Pack34 grenade body projection.
+
+// Rifle art follows live ballistic objects; no cosmetic projectile or extra RNG.
+const rifleFlightArtNodes36=new Set();
+const rifleFlightScreen36=new THREE.Vector3(),rifleFlightAhead36=new THREE.Vector3();
+function syncRifleFlightArt36(){
+  const live=new Set([...pBullets,...eBullets].filter(b=>b.wKey==='rifle'||b.wKey==='shotgun'||b.wKey==='pistol'));
+  const rifleReady=riflePresentationAssetReady36('pack36RifleEffects'),shotgunReady=shotgunPresentationAssetReady37('pack37ShotgunEffects'),layer=G('projectile-trail-layer');
+  const pistolReady=pistolPresentationAssetReady40('pack40PistolEffects');
+  const ready=b=>b.wKey==='pistol'?pistolReady:b.wKey==='shotgun'?shotgunReady:rifleReady;
+  for(const el of [...rifleFlightArtNodes36]){
+    if(ready(el._rifleRef)&&live.has(el._rifleRef))continue;
+    const b=el._rifleRef;if(b?.m&&live.has(b))b.m.visible=b._rifleMeshVisible??true;
+    if(b){b._rifleArt=null;b._rifleMeshVisible=null;}
+    el.remove();rifleFlightArtNodes36.delete(el);
+  }
+  if(!layer)return;
+  for(const b of live){
+    if(!ready(b))continue;
+    const pos=b.pos;if(!pos)continue;
+    let el=b._rifleArt;
+    if(!el?.isConnected){
+      if(b.wKey==='rifle'&&rifleFlightArtNodes36.size>=32)continue;
+      if(b.wKey==='pistol'&&rifleFlightArtNodes36.size>=32)continue;
+      if(rifleFlightArtNodes36.size>=96)continue;
+      el=document.createElement('span');el.className='rifle-flight-vfx';el.setAttribute('aria-hidden','true');el._rifleRef=b;
+      b._rifleArt=el;if(b.m){b._rifleMeshVisible=b.m.visible;b.m.visible=false;}
+      layer.appendChild(el);rifleFlightArtNodes36.add(el);
+    }
+    rifleFlightScreen36.copy(pos).project(camera);
+    if(rifleFlightScreen36.z<=-1||rifleFlightScreen36.z>=1||Math.abs(rifleFlightScreen36.x)>1.12||Math.abs(rifleFlightScreen36.y)>1.12||(wallBetween(camera.position,pos,wallMeshes)||(typeof smokeVisibilityBetween42==='function'&&smokeVisibilityBetween42(camera.position,pos)<.015))){el.style.visibility='hidden';continue;}
+    rifleFlightAhead36.copy(pos).addScaledVector(b.vel,.008).project(camera);
+    const x=(rifleFlightScreen36.x*.5+.5)*innerWidth,y=(-rifleFlightScreen36.y*.5+.5)*innerHeight;
+    const dx=(rifleFlightAhead36.x-rifleFlightScreen36.x)*innerWidth,dy=-(rifleFlightAhead36.y-rifleFlightScreen36.y)*innerHeight;
+    const frame=Math.floor(Math.max(0,b.maxLife-b.life)*24)%4;
+    applyPresentationAtlasFrame(el,presentationAtlasFrame(b.wKey==='pistol'?GAME_ASSETS.presentationVfx.pack40PistolEffects:b.wKey==='shotgun'?GAME_ASSETS.presentationVfx.pack37ShotgunEffects:GAME_ASSETS.presentationVfx.pack36RifleEffects,frame,2,4,4));
+    const focal=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
+    const size=Math.max(6,Math.min(b.wKey==='shotgun'?26:54,(b.wKey==='shotgun'?.16:.42)*focal/Math.max(.7,camera.position.distanceTo(pos))));
+    el.style.left=x.toFixed(1)+'px';el.style.top=y.toFixed(1)+'px';el.style.width=size.toFixed(1)+'px';el.style.height=size.toFixed(1)+'px';
+    el.style.transform='translate(-50%,-50%) rotate('+(Math.atan2(dy,dx)*180/Math.PI+(b.wKey==='pistol'?180:0)).toFixed(1)+'deg)';el.style.visibility='visible';
+  }
+}
+
 const MAX_PLAYER_BULLETS=180;
 const MAX_ENEMY_BULLETS=260;
 const MAX_ACTIVE_ENEMY_TRACERS=PERF_MODE?28:62;
@@ -533,6 +822,62 @@ const enemyTracerPool=new Map();
 let activeEnemyTracers=0,enemyTracerSequence=0;
 const MAX_BOT_GRENADES=8;
 const MAX_PLAYER_FRAG_GRENADES=3;
+const FRAG_GRENADE_BLAST=Object.freeze({radius:8,innerRadius:2,healthFraction:.8,armorReduction:.1});
+function fragGrenadeDamageScale(distance,radius=FRAG_GRENADE_BLAST.radius){
+  if(distance>=radius)return 0;
+  const inner=radius*(FRAG_GRENADE_BLAST.innerRadius/FRAG_GRENADE_BLAST.radius);
+  return distance<=inner?1:Math.max(0,(radius-distance)/(radius-inner));
+}
+let pendingFragGrenadeThrow=null;
+const FRAG_GRENADE_THROW=Object.freeze({chargeSeconds:1.1,minSpeed:11.6,maxSpeed:18,minLift:5.8,maxLift:8.2});
+let fragGrenadeCharge=null;
+function updateFragGrenadeChargeHud(){
+  const hud=G('whud');if(!hud)return;
+  let el=G('grenade-charge');
+  if(!el){
+    el=document.createElement('div');el.id='grenade-charge';el.setAttribute('aria-label','Сила броска гранаты');
+    const label=document.createElement('span');label.className='grenade-charge-label';
+    const track=document.createElement('div');track.className='grenade-charge-track';
+    const fill=document.createElement('div');fill.className='grenade-charge-fill';track.appendChild(fill);
+    el.append(label,track);hud.appendChild(el);
+  }
+  el.hidden=!fragGrenadeCharge;
+  if(fragGrenadeCharge){
+    const pct=Math.round(Math.min(1,fragGrenadeCharge.age/FRAG_GRENADE_THROW.chargeSeconds)*100);
+    el.querySelector('.grenade-charge-label').textContent='СИЛА БРОСКА · '+pct+'%';
+    el.querySelector('.grenade-charge-fill').style.width=pct+'%';
+  }
+}
+function cancelFragGrenadeThrow(){
+  fragGrenadeCharge=null;pendingFragGrenadeThrow=null;
+  if(typeof fpGeneratedWeaponAction!=='undefined'&&fpGeneratedWeaponAction?.kind==='grenadeThrow34')stopGeneratedFirstPersonAction();
+  const el=G('grenade-charge');if(el)el.hidden=true;
+}
+function beginFragGrenadeCharge(){
+  if(fragGrenadeCharge||pendingFragGrenadeThrow||sCD>0||weaponActionBlocked()||reloading||dying||!running||paused)return;
+  if(!ownsWeapon(GRENADE_WEAPON_INDEX)||weaponAmmoValue(GRENADE_WEAPON_INDEX)<=0){throwFragGrenade();return;}
+  if(activePlayerFragGrenades()>=MAX_PLAYER_FRAG_GRENADES){showMsg('💥 Слишком много активных гранат — дождитесь взрыва');return;}
+  fragGrenadeCharge={weaponIndex:curW,age:0};updateFragGrenadeChargeHud();
+}
+function tickFragGrenadeCharge(dt){
+  if(!fragGrenadeCharge)return;
+  if(curW!==fragGrenadeCharge.weaponIndex||reloading||dying||!running||paused||lvlAnnOpen||perkPickOpen){cancelFragGrenadeThrow();return;}
+  fragGrenadeCharge.age=Math.min(FRAG_GRENADE_THROW.chargeSeconds,fragGrenadeCharge.age+Math.max(0,dt));
+  updateFragGrenadeChargeHud();
+}
+function releaseFragGrenadeCharge(){
+  const charge=fragGrenadeCharge;if(!charge)return;
+  if(curW!==charge.weaponIndex||!running||paused||reloading||dying||lvlAnnOpen||perkPickOpen||weaponActionBlocked()){cancelFragGrenadeThrow();return;}
+  const strength=Math.min(1,charge.age/FRAG_GRENADE_THROW.chargeSeconds);
+  fragGrenadeCharge=null;updateFragGrenadeChargeHud();throwFragGrenade(false,strength);
+}
+
+function tickPendingFragGrenadeThrow(dt){
+  const pending=pendingFragGrenadeThrow;if(!pending)return;
+  if(curW!==pending.weaponIndex||reloading||dying||!running||paused){cancelFragGrenadeThrow();return;}
+  pending.remaining-=dt;
+  if(pending.remaining<=0){pendingFragGrenadeThrow=null;throwFragGrenade(true,pending.strength);}
+}
 function activeBotFragGrenades(){let c=0;for(const g of botGrenades)if((g.ownerType||'bot')==='bot')c++;return c;}
 function activePlayerFragGrenades(){let c=0;for(const g of botGrenades)if(g.ownerType==='player')c++;return c;}
 const MAX_PLAYER_MINES=100;
@@ -610,9 +955,12 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
   const calculatedDamage=w.dmg*(b.damageScale||1)*distanceScale*PLAYER_DAMAGE_BOOST*(b.shotDamageM||1)*rangeBonus*(hd?headshotMult*plr.headshotM:1)*(isCrit?plr.critMult:1)*(lowTarget?1+plr.executeBonus:1);
   const dmg=w.oneShot&&b.oneShotEligible?Math.max(calculatedDamage,en.hp+1):calculatedDamage;
   en.hurt(dmg,dir.clone(),'ally');
-  if(b.markerEligible)playHitImpactSound(hd?'head':hitZone,hitFx,hd?1.05:.86);
+  const feedback=b.shotFeedback;
+  const markerEligible=w.key==='shotgun'&&feedback?!feedback.seen:b.markerEligible;
+  if(markerEligible)playHitImpactSound(hd?'head':hitZone,hitFx,hd?1.05:.86);
   const lethalHeadshot=hd&&!en.alive;
-  if(b.markerEligible||!en.alive){
+  if(markerEligible||(!en.alive&&(!feedback||!feedback.kill))){
+    if(feedback){feedback.seen=true;if(!en.alive)feedback.kill=true;}
     const hitKind=!en.alive?'kill':isCrit?'crit':hd?'head':'hit';
     showHitMarker(hitKind);playSfx(hitKind==='kill'?'kill':hitKind==='crit'?'crit':'hit',1,w.key);
   }
@@ -620,7 +968,6 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
   if(hd&&plr.headshotArmor>0){armor=Math.min(plr.maxArmor,armor+plr.headshotArmor);markHUD();}
   if(b.markerEligible||w.key==='plasma'){spawnSpark(hitFx,b.color);if(w.key==='plasma')spawnP(hitFx,0xc47cff,.55);}
   if(b.markerEligible)spawnCombatImpact(hitFx,weaponImpactType(w,isCrit));
-  if(isCrit)showGeneratedCriticalHitVfx(hitFx);
   if(w.key==='plasma')showGeneratedPlasmaImpactVfx(hitFx);
   if(hd){
     spawnHeadshotFx(hitFx,lethalHeadshot);
@@ -659,17 +1006,32 @@ function resolvePlayerBulletHit(b,en,hd,hitFx,dir,travelDist,hitZone='body'){
   return dmg;
 }
 function spawnInstantSniperTrace(from,dir,dist,color){
-  const start=from.clone().addScaledVector(dir,.48),end=from.clone().addScaledVector(dir,dist);
+  const groundDistance=firstGroundHitDistance(from,dir,dist);
+  if(groundDistance<dist-1e-7){
+    dist=groundDistance;
+    const impact=from.clone().addScaledVector(dir,dist);impact.y=arenaFloor.position.y;
+    wallImpact(impact,color,'concrete',_UP,'heavy');spawnCombatImpact(impact,'sniper');playSurfaceImpactSound('concrete',impact,.54,false);
+  }
+  const start=from.clone().addScaledVector(dir,Math.min(.48,dist)),end=from.clone().addScaledVector(dir,dist);
   const geo=new THREE.BufferGeometry().setFromPoints([start,end]);
   const mat=new THREE.LineBasicMaterial({color,transparent:true,opacity:.92,depthWrite:false,blending:THREE.AdditiveBlending});
   const line=new THREE.Line(geo,mat);line.renderOrder=30;scene.add(line);
   setTimeout(()=>{scene.remove(line);geo.dispose();mat.dispose();},70);
 }
+function firstFirearmSurfaceHit(from,dir,maxDistance){
+  _rc.ray.origin.copy(from);_rc.ray.direction.copy(dir);_rc.near=0;_rc.far=maxDistance;
+  _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
+  const wall=_rcWallHits[0]||null,groundDistance=firstGroundHitDistance(from,dir,maxDistance);
+  if(Number.isFinite(groundDistance)&&(!wall||groundDistance<=wall.distance)){
+    const point=from.clone().addScaledVector(dir,groundDistance);point.y=arenaFloor.position.y;
+    return {distance:groundDistance,point,ground:true,object:arenaFloor};
+  }
+  return wall;
+}
 function fireInstantSniper(from,dir,w,meta={}){
   const maxRange=w.range||120,color=PLR_TCOL[w.key]||0xcff8ff;
-  _rc.ray.origin.copy(from);_rc.ray.direction.copy(dir);_rc.near=0;_rc.far=maxRange;
-  _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
-  const wallDist=_rcWallHits.length?_rcWallHits[0].distance:maxRange;
+  const wallHit=firstFirearmSurfaceHit(from,dir,maxRange);
+  const wallDist=wallHit?wallHit.distance:maxRange;
   const first=hitEnemy(from,dir,'ally',null,maxRange);
   let traceDist=wallDist;
   if(first.en&&first.dist<wallDist){
@@ -687,34 +1049,56 @@ function fireInstantSniper(from,dir,w,meta={}){
         traceDist=second.dist;
       }
     }
-  }else if(_rcWallHits.length){
-    const wallHit=_rcWallHits[0],hitFx=wallHit.point.clone(),surface=mapImpactMaterial(wallHit.object);
-    wallImpact(hitFx,color,surface,null,'heavy');spawnCombatImpact(hitFx,'sniper');playSurfaceImpactSound(surface,hitFx,.92,surface==='metal');
+  }else if(wallHit){
+    const hitFx=wallHit.point.clone(),surface=mapImpactMaterial(wallHit.object);
+    wallImpact(hitFx,color,surface,wallHit.ground?_UP:null,'heavy');spawnCombatImpact(hitFx,'sniper');playSurfaceImpactSound(surface,hitFx,.92,surface==='metal');
   }
-  spawnInstantSniperTrace(from,dir,Math.max(.6,traceDist),color);
+  spawnInstantSniperTrace(from,dir,Math.max(0,traceDist),color);
 }
 const _playerMuzzleScreenRay=new THREE.Vector3(),_playerMuzzleAimPoint=new THREE.Vector3();
 function playerVisualMuzzleShot(from,dir,w,distance=.72){
   const fallbackPos=from.clone().addScaledVector(dir,w?.key==='rocket'?.90:.48);
-  fallbackPos.y-=w?.key==='rocket'?.05:.04;
+  fallbackPos.y-=w?.key==='rocket'?.05:(w?.key==='rifle'||w?.key==='shotgun')?0:.04;
   const fallback={pos:fallbackPos,dir:dir.clone()};
-  if(!['plasma','rocket'].includes(w?.key)||typeof fpGeneratedWeaponActive==='undefined'||!fpGeneratedWeaponActive)return fallback;
-  const flash=G('fp-weapon-flash');if(!flash||innerWidth<=0||innerHeight<=0)return fallback;
-  const r=flash.getBoundingClientRect();if(!(r.width>0&&r.height>0))return fallback;
-  const sx=r.left+r.width*.5,sy=r.top+r.height*.5;
+  if(w?.key==='rocket')fallback.pos.copy(guardRocketLaunch(from,fallback.pos));
+  if(w?.key==='rifle'||w?.key==='shotgun'||w?.key==='pistol'||w?.key==='plasma'){
+    const target=from.clone().addScaledVector(dir,w.range||75);
+    const wall=Math.min(firstWallHitDistance(from,target,wallMeshes),firstGroundHitDistance(from,dir,w.range||75));
+    if(Number.isFinite(wall))fallback.pos.copy(from).addScaledVector(dir,Math.max(0,Math.min(.48,wall-.03)));
+    if(w.key==='rifle'&&adsBlend>.88)return fallback;
+  }
+  if(!['plasma','rocket','rifle','shotgun','pistol'].includes(w?.key)||typeof fpGeneratedWeaponActive==='undefined'||!fpGeneratedWeaponActive)return fallback;
+  // The flash scales to zero between shots; its bounding-box center is not the barrel.
+  // A zero-size marker inherits the weapon stage's sway/recoil transform exactly.
+  const anchor=G(w.key==='pistol'?'fp-pistol-muzzle-anchor':w.key==='shotgun'?'fp-shotgun-muzzle-anchor':w.key==='rifle'?'fp-rifle-muzzle-anchor':w.key==='plasma'?'fp-plasma-muzzle-anchor':'fp-rocket-muzzle-anchor');
+  if(!anchor||innerWidth<=0||innerHeight<=0)return fallback;
+  const r=anchor.getBoundingClientRect();
+  const sx=r.left,sy=r.top;
   _playerMuzzleScreenRay.set(sx/innerWidth*2-1,1-sy/innerHeight*2,.12).unproject(camera).sub(camera.position).normalize();
   const pos=from.clone().addScaledVector(_playerMuzzleScreenRay,distance);
-  _playerMuzzleAimPoint.copy(from).addScaledVector(dir,Math.max(24,w.range||90));
+  let aimDistance=Math.max(24,w.range||90);
+  if(w.key==='rifle'||w.key==='shotgun'||w.key==='pistol'||w.key==='rocket'||w.key==='plasma'){
+    // Converge on the nearest real target under the mark, not an arbitrary far plane.
+    const end=from.clone().addScaledVector(dir,aimDistance);
+    const wall=Math.min(firstWallHitDistance(from,end,wallMeshes),firstGroundHitDistance(from,dir,aimDistance)),enemy=hitEnemy(from,dir,'ally',null,aimDistance);
+    aimDistance=Math.max(.08,Math.min(aimDistance,wall,enemy.dist));
+    if(aimDistance<distance)pos.copy(from).addScaledVector(_playerMuzzleScreenRay,Math.max(0,aimDistance-.03));
+    const muzzleEnd=from.clone().addScaledVector(_playerMuzzleScreenRay,from.distanceTo(pos)+(w.key==='shotgun'?.20:.15));
+    const muzzleWall=Math.min(firstWallHitDistance(from,muzzleEnd,wallMeshes),firstGroundHitDistance(from,_playerMuzzleScreenRay,from.distanceTo(muzzleEnd)));
+    if(Number.isFinite(muzzleWall))pos.copy(from).addScaledVector(_playerMuzzleScreenRay,Math.max(0,muzzleWall-.03));
+  }
+  if(w.key==='rocket')pos.copy(guardRocketLaunch(from,pos));
+  _playerMuzzleAimPoint.copy(from).addScaledVector(dir,aimDistance);
   return{pos,dir:_playerMuzzleAimPoint.sub(pos).normalize().clone()};
 }
 function spawnPlayerBullet(from,dir,w,meta={}){
   while(pBullets.length>=MAX_PLAYER_BULLETS)destroyPlayerBullet(0);
   const speed=Math.max(1,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
   const color=PLR_TCOL[w.key]||0xffffaa;
-  const suppressPlayerBallisticVisual=w.key==='pistol'||w.key==='rifle';
-  const m=suppressPlayerBallisticVisual?null:mkTracer(color,w.key);
-  if(suppressPlayerBallisticVisual)Math.random(); // Preserve the historical mkTracer phase RNG draw.
-  const launch=w.key==='plasma'?playerVisualMuzzleShot(from,dir,w,.74):null;
+  // Retain the procedural tracer until a real decoded DOM flight node is
+  // admitted. Shared presentation capacity or a missing layer cannot hide a shot.
+  const m=mkTracer(color,w.key);
+  const launch=w.key==='plasma'||w.key==='rifle'||w.key==='shotgun'||w.key==='pistol'?playerVisualMuzzleShot(from,dir,w,.74):null;
   const shotDir=launch?.dir||dir;
   const pos=launch?.pos||from.clone().addScaledVector(dir,.48);if(!launch)pos.y-=.04;
   if(m){m.position.copy(pos);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),shotDir);scene.add(m);}
@@ -722,7 +1106,7 @@ function spawnPlayerBullet(from,dir,w,meta={}){
   pBullets.push({
     m,pos,vel:shotDir.clone().multiplyScalar(speed),gravity:w.bulletGravity||0,
     life,maxLife:life,range:w.range||100,travel:0,wKey:w.key,color,
-    markerEligible:meta.pelletIndex===0,damageScale:1,shotDamageM:playerDamageMultiplier(),
+    markerEligible:meta.pelletIndex===0,shotFeedback:meta.shotFeedback||null,damageScale:1,shotDamageM:playerDamageMultiplier(),
     penetrationLeft:(w.basePenetration||0)+(plr.piercing?1:0),ignoreEnemy:null,
     wallEnergy:projectileWallEnergy(w,true),wallPenetrations:0,ricochets:0
   });
@@ -834,11 +1218,14 @@ function applyEnemyBulletToBot(b,target,damage,dir){
 
 let playerReloadUsesFullPresentation=false;
 function weaponActionBlocked(){
-  return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0;
+  return weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0||!!(typeof pendingBombPlant!=='undefined'&&pendingBombPlant);
 }
 function finishPlayerReload(playDone=true,settle=true){
   const completedWeapon=getW(),usedFullPresentation=playerReloadUsesFullPresentation;
   playerReloadUsesFullPresentation=false;
+  if(completedWeapon.key==='shotgun'&&usedFullPresentation)stopGeneratedFirstPersonAction();
+  if(completedWeapon.key==='pistol'&&usedFullPresentation)stopGeneratedFirstPersonAction();
+  if(completedWeapon.key==='smoke'&&usedFullPresentation)stopGeneratedFirstPersonAction();
   reloading=false;reloadT=0;reloadTot=0;reloadMode='mag';reloadShellLoaded=0;
   if(settle)weaponReadyT=Math.max(weaponReadyT,.08);
   if(playDone){
@@ -859,12 +1246,13 @@ function completePlayerReloadStep(){
   if(reloadMode==='shell'){
     if(ammo<w.clip&&uAmmo>0){
       ammo++;uAmmo--;reloadShellLoaded++;syncCurrentAmmo();wHUD();playWeaponMechanicSound('shell',1,w.key);
-      if(w.key==='shotgun'&&typeof showGeneratedShotgunShellInsertVfx==='function')showGeneratedShotgunShellInsertVfx();
+      if(w.key==='shotgun'&&!playerReloadUsesFullPresentation&&typeof showGeneratedShotgunShellInsertVfx==='function')showGeneratedShotgunShellInsertVfx();
       G('rmsg').textContent=`ПАТРОН ${ammo} / ${w.clip} · ЛКМ — ПРЕРВАТЬ`;
     }
     if(ammo>=w.clip||uAmmo<=0){finishPlayerReload(true);return;}
     reloadT=Math.max(.16,w.reload*(w.shellInsertM||.26));
     reloadTot=reloadT;
+    if(w.key==='shotgun')playerReloadUsesFullPresentation=showGeneratedShotgunLoadVfx(reloadTot);
     return;
   }
   const need=w.clip-ammo,take=Math.min(need,uAmmo);
@@ -872,13 +1260,17 @@ function completePlayerReloadStep(){
 }
 
 function shoot(){
+  if(typeof pendingMineThrow!=='undefined'&&pendingMineThrow)return;
   const w=getW(),infiniteAmmo=testingInfiniteAmmoEnabled();
+  if(w.isRocket&&(reloading||playerRocketShotCD>0)){
+    showMsg('Перезарядка и остывание ракетницы',true);return;
+  }
   if(reloading){
     if(w.reloadStyle==='shell'&&ammo>0)cancelPlayerReload();
     else return;
   }
   if(sCD>0||weaponActionBlocked())return;
-  if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}if(w.isGrenade){throwFragGrenade();return;}
+  if(w.isMine){throwMine();return;}if(w.isBomb){placeBomb();return;}if(w.isSmoke){throwSmokeGrenade();return;}if(w.isGrenade){beginFragGrenadeCharge();return;}
   if(!infiniteAmmo&&ammo<=0){
     doReload();
     if(!reloading){playSfx('dry');sCD=Math.max(sCD,.18);}
@@ -887,7 +1279,7 @@ function shoot(){
   if(!infiniteAmmo&&Math.random()>=plr.ammoSaveChance)ammo--;
   syncCurrentAmmo();
   if(!infiniteAmmo&&ammo<=0&&uAmmo<=0)updateWeaponBar();
-  sCD=w.rate;recoil=1;wHUD();
+  sCD=w.isRocket?0:w.key==='rifle'?w.rate+Math.min(0,sCD):w.rate;recoil=1;wHUD();
   playWeaponShotSound(w.key,1,null);pulseCrosshair('fire');
   const shakePower=w.isRocket?1.15:w.isSniper?.98:w.key==='shotgun'?.78:w.key==='rifle'?.36:.22;
   const shakeDuration=w.isRocket?.22:w.isSniper?.20:.11;
@@ -908,7 +1300,7 @@ function shoot(){
     if(w.isSniper&&typeof showGeneratedSniperBoltCycleVfx==='function')showGeneratedSniperBoltCycleVfx(cycleTot);
   }
 
-  const suppressPlayerMuzzleVisual=w.key==='pistol'||w.key==='rifle';
+  const suppressPlayerMuzzleVisual=(w.key==='rifle'&&G('sniper-scope')?.classList.contains('on'))||(w.key==='pistol'&&fpGeneratedWeaponActive&&pistolPresentationAssetReady40('pack40PistolEffects'))||(w.key==='shotgun'&&fpGeneratedWeaponActive&&shotgunPresentationAssetReady37('pack37ShotgunEffects'))||(w.key==='rifle'&&fpGeneratedWeaponActive&&riflePresentationAssetReady36('pack36RifleEffects'))||(w.key==='rocket'&&fpGeneratedWeaponActive&&rocketPresentationAssetReady35('pack35RocketEffects'))||(w.isSniper&&sniperPresentationAssetReady32('pack32SniperEffects'));
   if(flashM)flashM.material.opacity=suppressPlayerMuzzleVisual?0:1;
   if(beamM){beamM.material.opacity=suppressPlayerMuzzleVisual?0:.72;beamT=suppressPlayerMuzzleVisual?0:FP_MUZZLE_FLASH_SECONDS;}
   const bDir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
@@ -918,37 +1310,35 @@ function shoot(){
   const mfp=camera.position.clone().addScaledVector(bDir,.7);mfp.y-=.1;
   trigMuzzle(mfp,w.bCol,w.key==='rocket'?1.55:w.isSniper?1.45:w.key==='shotgun'?1.25:1,!suppressPlayerMuzzleVisual);
   showGeneratedWeaponShotVfx(w.key);
-  if(typeof showProjectileTrailFx==='function'){
-    const trailKind=w.isSniper?'sniper':w.isRocket?'rocket':w.key==='plasma'?'plasma':['pistol','shotgun','rifle'].includes(w.key)?'ballistic':'';
-    const trackedPlasmaReady=trailKind==='plasma'&&typeof plasmaFlightPresentationAvailable==='function'&&plasmaFlightPresentationAvailable();
-    const allowLegacyTrail=!['pistol','rifle'].includes(w.key)&&trailKind!=='rocket'&&trailKind!=='plasma'&&!trackedPlasmaReady;
-    if(trailKind)showProjectileTrailFx(trailKind,allowLegacyTrail);
-  }
   if(w.key!=='rocket'&&w.key!=='plasma'&&w.key!=='shotgun'&&!w.isSniper){
     const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
     ejectCasing(casingPos,camera.quaternion,false);
+    if(w.key==='rifle'&&fpGeneratedWeaponActive&&riflePresentationAssetReady36('pack36RifleEffects')&&casings.length)casings[casings.length-1].m.visible=false;
+    if(w.key==='pistol'&&fpGeneratedWeaponActive&&pistolPresentationAssetReady40('pack40PistolEffects')&&casings.length)casings[casings.length-1].m.visible=false;
     showGeneratedCasingFx(false);
   }
 
   if(w.isRocket){
+    playerRocketShotCD=ROCKET_FIRE_INTERVAL;
     for(let s=0;s<shots;s++){
       const d=bDir.clone();if(s>0){d.x+=(Math.random()-.5)*.12;d.z+=(Math.random()-.5)*.12;d.normalize();}
       const launch=playerVisualMuzzleShot(camera.position,d,w,.86),fireDir=launch.dir;
       const rk=mkRkt(0xff6600),sp=launch.pos;
       rk.position.copy(sp);rk.quaternion.setFromUnitVectors(_UP,fireDir);scene.add(rk);
-      pRkts.push({m:rk,vx:fireDir.x*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,vy:fireDir.y*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,vz:fireDir.z*PLAYER_ROCKET_SPEED*plr.rocketSpeedM,life:13,maxSpeed:PLAYER_ROCKET_SPEED*plr.rocketSpeedM,dmg:w.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.rocketDamageM*plr.explosiveDamageM,sT:0,fT:0,team:'player',ownerType:'player',_src:null,blastRadius:6.5*plr.explosiveRadiusM*plr.rocketRadiusM});
+      pRkts.push({m:rk,vx:fireDir.x*PLAYER_ROCKET_SPEED*plr.rocketSpeedM*.82,vy:fireDir.y*PLAYER_ROCKET_SPEED*plr.rocketSpeedM*.82,vz:fireDir.z*PLAYER_ROCKET_SPEED*plr.rocketSpeedM*.82,life:13,maxSpeed:PLAYER_ROCKET_SPEED*plr.rocketSpeedM,dmg:w.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.rocketDamageM*plr.explosiveDamageM,sT:0,fT:0,team:'player',ownerType:'player',_src:null,blastRadius:ROCKET_BLAST_RADIUS*plr.explosiveRadiusM*plr.rocketRadiusM});
     }
     return;
   }
   const tc=PLR_TCOL[w.key]||0xffffaa;
   const shotBloom=weaponBloom;
+  const shotFeedback=w.key==='shotgun'?{seen:false,kill:false}:null;
   for(let s=0;s<shots;s++){
     for(let p=0;p<w.pellets;p++){
       const d=bDir.clone();
       const sp2=effectiveWeaponSpread(w,p,s>0,shotBloom,firstShot);
       if(sp2>0){d.x+=(Math.random()-.5)*sp2*2;d.y+=(Math.random()-.5)*sp2*2;d.z+=(Math.random()-.5)*sp2*2;d.normalize();}
       if(w.hitscan)fireInstantSniper(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
-      else spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0});
+      else spawnPlayerBullet(camera.position,d,w,{pelletIndex:p,extraShot:s>0,shotFeedback});
     }
   }
   if(w.isSniper)playWeaponMechanicSound('bolt',1,w.key);
@@ -967,6 +1357,10 @@ function spawnTracer(from,dir,dist,col,key='default'){
   pTrs.push({m,vx:dir.x*speed,vy:dir.y*speed,vz:dir.z*speed,life:maxLife,maxLife});
 }
 function doReload(){
+  if(typeof cancelPendingBombPlant==='function')cancelPendingBombPlant();
+  if(typeof cancelPendingMineThrow==='function')cancelPendingMineThrow();
+  if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow();
+  if(getW().isGrenade)cancelFragGrenadeThrow();
   const w=getW();
   if(reloading||ammo===w.clip||uAmmo===0||weaponActionBlocked())return;
   if(w.aimMode==='scope'&&zooming)zooming=false;
@@ -981,6 +1375,10 @@ function doReload(){
     reloadT=Math.max(.30,w.reload*mult);
   }
   reloadTot=reloadT;
+  const fullBombReload=w.isBomb?showGeneratedBombReloadVfx(reloadTot):false;
+  const fullSmokeReload=w.isSmoke?showGeneratedSmokeReloadVfx(reloadTot):false;
+  const fullMineReload=w.isMine?showGeneratedMineReloadVfx(reloadTot):false;
+  const fullShotgunReload=w.key==='shotgun'?showGeneratedShotgunLoadVfx(reloadTot):false;
   const fullPistolReload=w.key==='pistol'&&typeof showGeneratedPistolReloadVfx==='function'
     ?showGeneratedPistolReloadVfx(reloadMode,reloadTot)
     :false;
@@ -993,17 +1391,39 @@ function doReload(){
   const fullPlasmaReload=w.key==='plasma'&&typeof showGeneratedPlasmaCoreReloadVfx==='function'
     ?showGeneratedPlasmaCoreReloadVfx(reloadMode,reloadTot)
     :false;
-  playerReloadUsesFullPresentation=!!(fullPistolReload||fullRifleReload||fullRocketReload||fullPlasmaReload);
-  if(reloadMode!=='shell'&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload&&!fullPlasmaReload)showGeneratedMagazineDropFx(w.key);
+  const fullSniperReload=w.key==='sniper'&&typeof showGeneratedSniperReloadVfx==='function'
+    ?showGeneratedSniperReloadVfx(reloadMode,reloadTot)
+    :false;
+  playerReloadUsesFullPresentation=!!(fullSmokeReload||fullBombReload||fullMineReload||fullShotgunReload||fullPistolReload||fullRifleReload||fullRocketReload||fullPlasmaReload||fullSniperReload);
+  if(reloadMode!=='shell'&&!w.isSmoke&&!fullBombReload&&!fullMineReload&&!fullPistolReload&&!fullRifleReload&&!fullRocketReload&&!fullPlasmaReload&&!fullSniperReload)showGeneratedMagazineDropFx(w.key);
+  // Full SR-9 reload replaces only the picture, preserving its historical RNG draw.
+  if(fullSniperReload)showGeneratedMagazineDropFx(w.key,false);
+  if(fullBombReload)showGeneratedMagazineDropFx(w.key,false);
   const reloadArt=G('reload-state-art');
   if(reloadArt&&typeof applyPresentationAtlasFrame==='function')applyPresentationAtlasFrame(reloadArt,reloadPresentationFrame(reloadMode));
-  playWeaponMechanicSound('reload',1,w.key);
+  // Pack42 audio replaces the old reload sound; retain its one historical pitch draw.
+  if(w.isSmoke)Math.random();else playWeaponMechanicSound('reload',1,w.key);
   G('rmsg').textContent=reloadMode==='shell'?'ЗАРЯДКА ПАТРОНОВ...':reloadMode==='empty'?'ПУСТОЙ МАГАЗИН...':'ТАКТИЧЕСКАЯ ПЕРЕЗАРЯДКА...';
   G('rmsg').style.opacity='1';G('reload-wrap').style.display='block';G('reload-fill').style.width='0%';
 }
-function throwMine(){
+let pendingMineThrow=null;
+const MINE_THROW_DURATION39=.58,MINE_THROW_RELEASE39=MINE_THROW_DURATION39*3/6;
+function cancelPendingMineThrow(stopReload=false){
+  pendingMineThrow=null;
+  if(typeof fpGeneratedWeaponAction!=='undefined'&&(['mineThrow39','mineThrow24'].includes(fpGeneratedWeaponAction?.kind)||(stopReload&&fpGeneratedWeaponAction?.kind==='mineReload39')))stopGeneratedFirstPersonAction();
+}
+function tickPendingMineThrow(dt){
+  const pending=pendingMineThrow;if(!pending)return;
+  if(curW!==pending.weaponIndex||reloading||dying||!running||paused||lvlAnnOpen||perkPickOpen){cancelPendingMineThrow();return;}
+  pending.age+=Math.max(0,Math.min(.05,Number(dt)||0));
+  if(pending.age+1e-9<MINE_THROW_RELEASE39)return;
+  pendingMineThrow=null;if(!throwMine(true))cancelPendingMineThrow();
+}
+function throwMine(release=false){
+  if(typeof pendingBombPlant!=='undefined'&&pendingBombPlant)return;
+  if(typeof pendingSmokeThrow!=='undefined'&&pendingSmokeThrow)return;
   const mineIdx=5,mineW=WEAPONS[mineIdx];
-  if(reloading||sCD>0)return;
+  if(!running||paused||dying||lvlAnnOpen||perkPickOpen||reloading||(!release&&(sCD>0||pendingMineThrow)))return;
   if(!ownsWeapon(mineIdx)){showMsg('💣 Сначала найдите МИНУ на карте');return;}
   if(playerMineCD>0){showMsg('💣 Новую мину можно поставить через '+Math.ceil(playerMineCD)+' сек.');return;}
   if(playerMineCount()>=MAX_PLAYER_MINES||mines.length>=MAX_MINES){showMsg('Лимит активных мин достигнут!');return;}
@@ -1015,6 +1435,9 @@ function throwMine(){
     }else showMsg('💣 Боезапас мин пуст — подберите ещё МИНУ на карте');
     return;
   }
+  if(!release&&typeof showGeneratedMineThrowVfx==='function'&&showGeneratedMineThrowVfx(MINE_THROW_DURATION39)){
+    pendingMineThrow={weaponIndex:curW,age:0};zooming=false;return;
+  }
   if(!testingInfiniteAmmoEnabled())setWeaponAmmo(mineIdx,mineAmmo-1);
   if(!testingInfiniteAmmoEnabled()&&mineAmmo-1<=0&&weaponReserveValue(mineIdx)<=0)updateWeaponBar();
   sCD=mineW.rate;
@@ -1023,13 +1446,58 @@ function throwMine(){
   const m=mkMine();m.position.copy(camera.position.clone().addScaledVector(dir,.6));scene.add(m);
   const vv=dir.clone().multiplyScalar(9);vv.y+=5;
   mines.push({m,vx:vv.x,vy:vv.y,vz:vv.z,fall:true,life:Infinity,armed:false,aT:1.5,checkT:.08,ph:0,team:'player',owner:'player',dmg:mineW.dmg*PLAYER_DAMAGE_BOOST*EXPLOSION_DAMAGE_BOOST*playerDamageMultiplier()*plr.mineDamageM*plr.explosiveDamageM,radius:9*plr.explosiveRadiusM*plr.mineRadiusM});
-  if(typeof showGeneratedMineThrowVfx==='function')showGeneratedMineThrowVfx();
+  playMineSound39('Throw',m.position);
   playerMineCD=MINE_COOLDOWN_SECONDS*plr.mineCooldownM;
   mineHudSecond=-1;updateMineHUD();
+  return true;
+}
+// One gameplay owner: art readiness never controls release or ammo consumption.
+let pendingBombPlant=null;
+const BOMB_PLANT_DURATION41=.96,BOMB_PLANT_RELEASE41=.48;
+function cancelPendingBombPlant(){
+  pendingBombPlant=null;
+  if(typeof fpGeneratedWeaponAction!=='undefined'&&fpGeneratedWeaponAction?.kind==='bombPlant41')stopGeneratedFirstPersonAction();
+}
+function bombPlantActionBlocked(){
+  return !running||paused||dying||lvlAnnOpen||perkPickOpen||reloading||!onGnd||
+    weaponEquipT>0||weaponReadyT>0||sprintExitT>0||sprintBlend>.20||wasWeaponSprinting||cycleT>0;
+}
+// Sweep the full ground footprint, not just the endpoint: thin walls must not be crossed.
+function safeBombPlacement(origin,dir,distance){
+  if(!origin||!dir||![origin.x,origin.z,dir.x,dir.z,distance].every(Number.isFinite))return null;
+  const radius=.42,dx=dir.x*distance,dz=dir.z*distance;
+  let travel=1;
+  for(const bb of wallAABBs){
+    const minX=bb.min.x-radius,maxX=bb.max.x+radius,minZ=bb.min.z-radius,maxZ=bb.max.z+radius;
+    if(origin.x>minX&&origin.x<maxX&&origin.z>minZ&&origin.z<maxZ)return null;
+    let enter=0,leave=1;
+    for(const [p,delta,min,max]of [[origin.x,dx,minX,maxX],[origin.z,dz,minZ,maxZ]]){
+      if(Math.abs(delta)<1e-10){if(p<min||p>max){leave=-1;break;}continue;}
+      const a=(min-p)/delta,b=(max-p)/delta;
+      enter=Math.max(enter,Math.min(a,b));leave=Math.min(leave,Math.max(a,b));
+    }
+    if(enter<=leave&&leave>=0&&enter<=1)travel=Math.min(travel,Math.max(0,enter-1e-4));
+  }
+  const x=origin.x+dx*travel,z=origin.z+dz*travel;
+  if(Math.abs(x)>93||Math.abs(z)>93)return null;
+  for(const bb of wallAABBs)if(x>bb.min.x-radius&&x<bb.max.x+radius&&z>bb.min.z-radius&&z<bb.max.z+radius)return null;
+  return new THREE.Vector3(x,.34,z);
+}
+function playerBombPlacement(){
+  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  dir.y=0;if(dir.lengthSq()<.01)dir.set(0,0,-1);dir.normalize();
+  return safeBombPlacement(camera.position,dir,1.15);
+}
+function tickPendingBombPlant(dt){
+  const pending=pendingBombPlant;if(!pending)return;
+  if(curW!==pending.weaponIndex||bombPlantActionBlocked()){cancelPendingBombPlant();return;}
+  pending.age+=Math.max(0,Math.min(.05,Number(dt)||0));
+  if(!pending.committed&&pending.age+1e-9>=BOMB_PLANT_RELEASE41&&!commitPendingBombPlant(pending)){cancelPendingBombPlant();return;}
+  if(pending.age+1e-9>=BOMB_PLANT_DURATION41)pendingBombPlant=null;
 }
 function placeBomb(){
-  const bombIdx=6,bombW=WEAPONS[bombIdx];
-  if(reloading||sCD>0)return;
+  if(pendingBombPlant||pendingMineThrow||fragGrenadeCharge||pendingFragGrenadeThrow||(typeof pendingSmokeThrow!=='undefined'&&pendingSmokeThrow)||bombPlantActionBlocked()||sCD>0)return false;
+  const bombIdx=6;
   if(!ownsWeapon(bombIdx)){showMsg('🧨 Сначала найдите БОМБУ на карте');return;}
   if(playerBombCD>0){showMsg('🧨 Новую бомбу можно поставить через '+Math.ceil(playerBombCD)+' сек.');return;}
   const bombAmmo=weaponAmmoValue(bombIdx);
@@ -1040,31 +1508,42 @@ function placeBomb(){
     return;
   }
   if(mines.length>=MAX_MINES){showMsg('Лимит активной взрывчатки достигнут');return;}
+  if(!playerBombPlacement()){showMsg('🧨 Для бомбы нужно свободное место на земле');return false;}
+  pendingBombPlant={weaponIndex:curW,age:0,committed:false};
+  zooming=false;
+  if(typeof showGeneratedBombArmVfx==='function')showGeneratedBombArmVfx(BOMB_PLANT_DURATION41);
+  return true;
+}
+function commitPendingBombPlant(pending){
+  if(pending!==pendingBombPlant||pending.committed||curW!==pending.weaponIndex||bombPlantActionBlocked())return false;
+  const bombIdx=6,bombW=WEAPONS[bombIdx],bombAmmo=weaponAmmoValue(bombIdx);
+  if(!ownsWeapon(bombIdx)||bombAmmo<=0||playerBombCD>0||mines.length>=MAX_MINES)return false;
+  const pos=playerBombPlacement();if(!pos)return false;
+  const m=mkBomb();m.position.copy(pos);scene.add(m);
+  const fuse=BOMB_FUSE_SECONDS*plr.bombFuseM;
+  mines.push({
+    m,vx:0,vy:0,vz:0,fall:false,life:Infinity,armed:true,aT:0,checkT:0,ph:0,
+    team:'player',owner:'player',src:null,kind:'bomb',fuseT:fuse,fuseTotal:fuse,
+    dmg:BOMB_BASE_DAMAGE*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*plr.bombDamageM*plr.explosiveDamageM,
+    radius:BOMB_BLAST_RADIUS*plr.bombRadiusM*plr.explosiveRadiusM
+  });
+  pending.committed=true;
   if(!testingInfiniteAmmoEnabled())setWeaponAmmo(bombIdx,bombAmmo-1);
   if(!testingInfiniteAmmoEnabled()&&bombAmmo-1<=0&&weaponReserveValue(bombIdx)<=0)updateWeaponBar();
   sCD=bombW.rate;
   if(curW===bombIdx)wHUD();
-  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
-  dir.y=0;if(dir.lengthSq()<.01)dir.set(0,0,-1);dir.normalize();
-  const m=mkBomb();
-  const pos=camera.position.clone().addScaledVector(dir,1.15);pos.y=.34;
-  const coll=collideWalls(pos.x,pos.z,.42);m.position.set(coll.x,.34,coll.z);scene.add(m);
-  mines.push({
-    m,vx:0,vy:0,vz:0,fall:false,life:Infinity,armed:true,aT:0,checkT:0,ph:0,
-    team:'player',owner:'player',src:null,kind:'bomb',fuseT:BOMB_FUSE_SECONDS*plr.bombFuseM,fuseTotal:BOMB_FUSE_SECONDS*plr.bombFuseM,
-    dmg:BOMB_BASE_DAMAGE*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*plr.bombDamageM*plr.explosiveDamageM,
-    radius:BOMB_BLAST_RADIUS*plr.bombRadiusM*plr.explosiveRadiusM
-  });
-  if(typeof showGeneratedBombArmVfx==='function')showGeneratedBombArmVfx();
   playerBombCD=BOMB_COOLDOWN_SECONDS;
   bombHudSecond=-1;updateMineHUD();
-  showMsg('🧨 Фитиль зажжён: мощный взрыв через 45 секунд!');
+  showMsg('🧨 Фитиль зажжён: мощный взрыв через '+Number(fuse.toFixed(1))+' сек.!');
+  return true;
 }
 function spawnBotSmokeGrenade(from,target,team,src){
   if(smokeGrenades.length>=4||!from||!target)return false;
   const flat=new THREE.Vector3(target.x-from.x,0,target.z-from.z),dist=Math.max(1,flat.length());
   flat.multiplyScalar(1/dist);
-  const m=mkSmokeGrenade();m.position.copy(from).addScaledVector(flat,.55);m.position.y=Math.max(.75,from.y);scene.add(m);
+  const m=mkSmokeGrenade(),spawn=from.clone().addScaledVector(flat,.55);spawn.y=Math.max(.75,from.y);
+  const contact=sweepWallSphere(from,spawn,.12);
+  m.position.copy(from).addScaledVector(spawn.clone().sub(from),contact?Math.max(0,contact.t-1e-4):1);scene.add(m);
   const speed=Math.max(8.5,Math.min(13,8.8+dist*.12));
   smokeGrenades.push({
     m,vx:flat.x*speed,vy:4.8+Math.min(2.8,dist*.07),vz:flat.z*speed,
@@ -1082,14 +1561,16 @@ function spawnBotFragGrenade(from,target,team,src){
   botGrenades.push({
     m,vx:flat.x*speed,vy:5.4+Math.min(2.4,dist*.065),vz:flat.z*speed,
     rx:8+Math.random()*5,rz:7+Math.random()*4,fuse:1.72+Math.random()*.22,
-    team,src,ownerType:'bot',dmg:78*(src?.baseDmgMul||1),radius:5.4,bounces:0
+    team,src,ownerType:'bot',dmg:0,radius:FRAG_GRENADE_BLAST.radius,bounces:0
   });
   if(typeof showGeneratedGrenadeFlightVfx==='function')showGeneratedGrenadeFlightVfx(m);
   return true;
 }
-function throwFragGrenade(){
+function throwFragGrenade(release=false,strength=0){
+  if(typeof pendingBombPlant!=='undefined'&&pendingBombPlant)return;
+  if(typeof pendingMineThrow!=='undefined'&&pendingMineThrow)return;
   const grenadeIdx=GRENADE_WEAPON_INDEX,grenadeW=WEAPONS[grenadeIdx];
-  if(grenadeIdx<0||reloading||sCD>0)return;
+  if(grenadeIdx<0||reloading||(!release&&(sCD>0||pendingFragGrenadeThrow)))return;
   if(!ownsWeapon(grenadeIdx)){showMsg('💥 Сначала найдите ОСКОЛОЧНУЮ ГРАНАТУ на карте');return;}
   if(activePlayerFragGrenades()>=MAX_PLAYER_FRAG_GRENADES){showMsg('💥 Слишком много активных гранат — дождитесь взрыва');return;}
   const grenadeAmmo=weaponAmmoValue(grenadeIdx);
@@ -1099,25 +1580,52 @@ function throwFragGrenade(){
     }else showMsg('💥 Гранаты закончились — найдите новый pickup на карте');
     return;
   }
+  if(!release){
+    const animated=showGeneratedGrenadeThrowVfx();
+    if(animated){
+      pendingFragGrenadeThrow={weaponIndex:grenadeIdx,remaining:.58*5/8,strength};
+      sCD=.58*5/8;return;
+    }
+  }
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
   const m=mkFragGrenade('ally');m.position.copy(camera.position).addScaledVector(dir,.62);m.position.y-=.12;scene.add(m);
-  const v=dir.clone().multiplyScalar(11.6);v.y+=5.8;
+  const power=Math.max(0,Math.min(1,Number(strength)||0));
+  const speed=FRAG_GRENADE_THROW.minSpeed+(FRAG_GRENADE_THROW.maxSpeed-FRAG_GRENADE_THROW.minSpeed)*power;
+  const lift=FRAG_GRENADE_THROW.minLift+(FRAG_GRENADE_THROW.maxLift-FRAG_GRENADE_THROW.minLift)*power;
+  const v=dir.clone().multiplyScalar(speed);v.y+=lift;
   botGrenades.push({
     m,vx:v.x,vy:v.y,vz:v.z,rx:9.5,rz:8.2,fuse:1.82,team:'ally',src:null,ownerType:'player',
-    dmg:grenadeW.dmg*PLAYER_DAMAGE_BOOST*playerDamageMultiplier()*plr.explosiveDamageM,
-    radius:5.8*plr.explosiveRadiusM,bounces:0
+    dmg:0, // Grenade damage is target-relative, not multiplied by firearm/perk damage.
+    radius:FRAG_GRENADE_BLAST.radius*plr.explosiveRadiusM,bounces:0
   });
   if(typeof showGeneratedGrenadeFlightVfx==='function')showGeneratedGrenadeFlightVfx(m);
-  if(typeof showGeneratedGrenadeThrowVfx==='function')showGeneratedGrenadeThrowVfx();
+  // The projectile is emitted at the action's release frame; no second hand layer is spawned.
   if(!testingInfiniteAmmoEnabled())setWeaponAmmo(grenadeIdx,grenadeAmmo-1);
   if(!testingInfiniteAmmoEnabled()&&grenadeAmmo-1<=0&&weaponReserveValue(grenadeIdx)<=0)updateWeaponBar();
   sCD=grenadeW.rate;recoil=.35;recoilPitch+=(grenadeW.recoilY||.02)*plr.recoilM;
   wHUD();showMsg('💥 Осколочная граната брошена · запал 1.8 сек.');
 }
 
-function throwSmokeGrenade(){
+// Mechanics own release even when a presentation file is missing or still decoding.
+let pendingSmokeThrow=null;
+const SMOKE_THROW_DURATION42=.58,SMOKE_THROW_RELEASE42=SMOKE_THROW_DURATION42*3/6;
+function cancelPendingSmokeThrow(stopReload=false){
+  pendingSmokeThrow=null;
+  if(typeof fpGeneratedWeaponAction!=='undefined'&&(fpGeneratedWeaponAction?.kind==='smokeThrow42'||(stopReload&&fpGeneratedWeaponAction?.kind==='smokeReload42')))stopGeneratedFirstPersonAction();
+}
+function tickPendingSmokeThrow(dt){
+  const pending=pendingSmokeThrow;if(!pending)return;
+  if(curW!==pending.weaponIndex||!running||paused||dying||lvlAnnOpen||perkPickOpen||reloading){cancelPendingSmokeThrow();return;}
+  pending.age+=Math.max(0,Math.min(.05,Number(dt)||0));
+  if(pending.age+1e-9<SMOKE_THROW_RELEASE42)return;
+  pendingSmokeThrow=null;
+  if(!throwSmokeGrenade(true))cancelPendingSmokeThrow();
+}
+function throwSmokeGrenade(release=false){
+  if(typeof pendingBombPlant!=='undefined'&&pendingBombPlant)return;
+  if(pendingMineThrow)return;
   const smokeIdx=SMOKE_WEAPON_INDEX,smokeW=WEAPONS[smokeIdx];
-  if(reloading||sCD>0)return;
+  if(!running||paused||dying||lvlAnnOpen||perkPickOpen||reloading||sCD>0||(!release&&pendingSmokeThrow))return;
   if(!ownsWeapon(smokeIdx)){showMsg('🌫️ Сначала найдите ДЫМОВУХУ на карте');return;}
   if(playerSmokeCD>0){showMsg('🌫️ Дымовуха будет готова через '+Math.ceil(playerSmokeCD)+' сек.');return;}
   if(smokeGrenades.length>=2){showMsg('🌫️ Дождитесь раскрытия предыдущей дымовухи');return;}
@@ -1128,20 +1636,55 @@ function throwSmokeGrenade(){
     }else showMsg('🌫️ Боезапас дымовух пуст — подберите ещё ДЫМОВУХУ на карте');
     return;
   }
+  if(!release){
+    pendingSmokeThrow={weaponIndex:curW,age:0};zooming=false;
+    if(typeof showGeneratedSmokeThrowVfx==='function')showGeneratedSmokeThrowVfx(SMOKE_THROW_DURATION42);
+    playSmokeSound42('pin');return true;
+  }
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).normalize();
   const m=mkSmokeGrenade();
-  m.position.copy(camera.position).addScaledVector(dir,.72);m.position.y-=.12;scene.add(m);
+  const spawn=camera.position.clone().addScaledVector(dir,.72);spawn.y-=.12;
+  const contact=sweepWallSphere(camera.position,spawn,.12);
+  m.position.copy(camera.position).addScaledVector(spawn.clone().sub(camera.position),contact?Math.max(0,contact.t-1e-4):1);
+  scene.add(m);
   const v=dir.clone().multiplyScalar(12.5);v.y+=5.2;
   smokeGrenades.push({m,vx:v.x,vy:v.y,vz:v.z,rx:7+Math.random()*5,rz:6+Math.random()*5,age:0,life:3,grounded:false,trailT:.02});
-  if(typeof showGeneratedSmokeThrowVfx==='function')showGeneratedSmokeThrowVfx();
+  playSmokeSound42('throw',m.position);
   if(!testingInfiniteAmmoEnabled())setWeaponAmmo(smokeIdx,smokeAmmo-1);
   if(!testingInfiniteAmmoEnabled()&&smokeAmmo-1<=0&&weaponReserveValue(smokeIdx)<=0)updateWeaponBar();
   sCD=smokeW.rate;recoil=.45;
   recoilPitch+=(smokeW.recoilY||.02)*plr.recoilM;
-  trigMuzzle(camera.position.clone().addScaledVector(dir,.62),0xcbd4d8,.72);
+  trigMuzzle(camera.position.clone().addScaledVector(dir,.62),0xcbd4d8,.72,!smokePresentationAssetReady42('pack42SmokeWorld'));
   playerSmokeCD=SMOKE_COOLDOWN_SECONDS*plr.smokeCooldownM;
   smokeHudSecond=-1;wHUD();
   showMsg('🌫️ Дымовуха запущена · следующая через '+Math.ceil(playerSmokeCD)+' сек.');
+  return true;
+}
+
+function moveSmokeGrenade42(g,dt){
+  let remaining=dt;g.grounded=false;
+  for(let contact=0;contact<4&&remaining>1e-7;contact++){
+    const from=g.m.position.clone(),to=from.clone().add(new THREE.Vector3(g.vx,g.vy,g.vz).multiplyScalar(remaining));
+    let hit=sweepWallSphere(from,to,.12);
+    if(to.y<=.13&&g.vy<0){
+      const t=Math.max(0,(.13-from.y)/(to.y-from.y));
+      if(!hit||t<hit.t)hit={t,axis:'y',sign:1,boundary:.13};
+    }
+    if(!hit){g.m.position.copy(to);break;}
+    g.m.position.copy(from).addScaledVector(to.clone().sub(from),hit.t);
+    g.m.position[hit.axis]=hit.boundary+hit.sign*.0001;
+    if(hit.axis==='y'&&hit.sign>0){
+      if(Math.abs(g.vy)>.9)g.vy=Math.abs(g.vy)*.24;else{g.vy=0;g.grounded=true;}
+      g.vx*=.72;g.vz*=.72;
+    }else g['v'+hit.axis]*=-.28;
+    playSmokeSound42('bounce',g.m.position);
+    remaining*=1-hit.t;
+  }
+  if(g.grounded&&g.m.position.y>.1302){
+    const below=g.m.position.clone();below.y-=.002;
+    const support=sweepWallSphere(g.m.position,below,.12);
+    g.grounded=Boolean(support&&support.axis==='y'&&support.sign>0);
+  }
 }
 
 // ─── UPDATE PROJECTILES ─────────────────
@@ -1173,7 +1716,7 @@ function awardExplosionKill(victim,ownerType,ownerBot,kind,ownerTeam=null){
     }
   }
 }
-function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,kind='rocket',playerSelfScale=.35,ownerTeamOverride=null){
+function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,kind='rocket',playerSelfScale=.35,ownerTeamOverride=null,directRocketTarget=null){
   const r2=radius*radius;
   const dir=new THREE.Vector3();
   const ownerTeam=ownerType==='player'?'ally':(ownerBot?.team||ownerTeamOverride||null);
@@ -1184,11 +1727,15 @@ function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,k
     const d2=dx*dx+dy*dy+dz*dz;
     if(d2>=r2)continue;
     const d=Math.sqrt(d2);
-    let falloff=Math.max(.08,1-d/radius);
-    if(wallBetween(pos,center,losMeshes))falloff*=.48;
+    let falloff=kind==='grenade'?fragGrenadeDamageScale(d,radius):Math.max(.08,1-d/radius);
+    if(kind==='grenade'){if(wallBetween(pos,center,wallMeshes))continue;}
+    else if(wallBetween(pos,center,losMeshes))falloff*=.48;
     const before=en.alive;
     dir.set(dx,Math.max(.12,dy),dz).normalize();
-    en.hurt(maxDamage*falloff,dir,ownerTeam||'world',ownerType==='player'?'player':ownerBot);
+    const blastDamage=(kind==='grenade'?en.maxHp*FRAG_GRENADE_BLAST.healthFraction:maxDamage)*falloff;
+    // Only the hostile target accepted by projectile collision receives lethal direct damage.
+    const damage=kind==='rocket'&&directRocketTarget===en?Math.max(en.hp,blastDamage):blastDamage;
+    en.hurt(damage,dir,ownerTeam||'world',ownerType==='player'?'player':ownerBot);
     if(before&&!en.alive)awardExplosionKill(en,ownerType,ownerBot,kind,ownerTeam);
   }
   const canHitPlayer=ownerType==='player'||ownerTeam==='enemy'||!ownerTeam;
@@ -1196,41 +1743,147 @@ function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,k
   const pd2=pdx*pdx+pdy*pdy+pdz*pdz;
   if(canHitPlayer&&pd2<r2&&!dying){
     const pd=Math.sqrt(pd2);
-    let falloff=Math.max(.06,1-pd/radius);
-    if(wallBetween(pos,camera.position.clone(),losMeshes))falloff*=.48;
-    if(ownerType==='player')falloff*=playerSelfScale;
-    let playerBlast=maxDamage*falloff;
+    let falloff=kind==='grenade'?fragGrenadeDamageScale(pd,radius):Math.max(.06,1-pd/radius);
+    if(kind==='grenade'&&wallBetween(pos,camera.position,wallMeshes))falloff=0;
+    else if(kind!=='grenade'&&wallBetween(pos,camera.position.clone(),losMeshes))falloff*=.48;
+    if(ownerType==='player'&&kind!=='grenade')falloff*=playerSelfScale;
+    let playerBlast=(kind==='grenade'?plr.maxHp*FRAG_GRENADE_BLAST.healthFraction:maxDamage)*falloff;
     if(kind==='bomb')playerBlast=Math.min(playerBlast,850);
-    applyDamageToPlayer(playerBlast,kind,ownerBot);
+    applyDamageToPlayer(playerBlast,kind,ownerBot,kind==='rocket'&&directRocketTarget==='player');
   }
 }
-function detonateRocket(arr,index,r,pos){
+// Contact uses each actual box in its local space: rotated cover must not acquire
+// invisible AABB corners. LOS deliberately retains its separate endpoint tolerance.
+function rocketWallContact(from,to,radius=.10){
+  let nearest=null;
+  for(const mesh of wallMeshes){
+    const p=mesh.geometry?.parameters;if(!p?.width||!p?.height||!p?.depth)continue;
+    const a=mesh.worldToLocal(from.clone()),b=mesh.worldToLocal(to.clone());
+    const scale=mesh.getWorldScale(new THREE.Vector3());
+    const bounds={x:p.width*.5,y:p.height*.5,z:p.depth*.5};
+    let enter=0,leave=1,axis=null,sign=0,inside=true,escape=null;
+    for(const key of ['x','y','z']){
+      const padding=radius/Math.max(.0001,Math.abs(scale[key])),min=-bounds[key]-padding,max=bounds[key]+padding;
+      const start=a[key],delta=b[key]-start;
+      if(start<=min||start>=max)inside=false;
+      const side=start-min<max-start?{axis:key,sign:-1,gap:start-min}:{axis:key,sign:1,gap:max-start};
+      if(!escape||side.gap<escape.gap)escape=side;
+      if(Math.abs(delta)<1e-10){if(start<min||start>max){leave=-1;break;}continue;}
+      const t1=(min-start)/delta,t2=(max-start)/delta;
+      if(Math.min(t1,t2)>=enter){enter=Math.min(t1,t2);axis=key;sign=delta>0?-1:1;}
+      leave=Math.min(leave,Math.max(t1,t2));if(enter>leave)break;
+    }
+    if(inside){enter=0;axis=escape.axis;sign=escape.sign;}
+    if(!axis||enter<0||enter>leave||enter>1||nearest&&enter>=nearest.t)continue;
+    const local=a.clone().addScaledVector(b.clone().sub(a),enter);
+    local[axis]=sign*bounds[axis];
+    const normal=new THREE.Vector3();normal[axis]=sign;
+    const pos=mesh.localToWorld(local.clone().addScaledVector(normal,.025));
+    nearest={t:enter,mesh,local,normal,pos,ground:false,directTarget:null};
+  }
+  return nearest;
+}
+function rocketActorContact(from,to,center,radius){
+  const dx=to.x-from.x,dy=to.y-from.y,dz=to.z-from.z;
+  const ox=from.x-center.x,oy=from.y-center.y,oz=from.z-center.z;
+  const a=dx*dx+dy*dy+dz*dz,c=ox*ox+oy*oy+oz*oz-radius*radius;
+  if(c<=0)return 0;if(a<1e-12)return Infinity;
+  const b=ox*dx+oy*dy+oz*dz,disc=b*b-a*c;if(disc<0)return Infinity;
+  const t=(-b-Math.sqrt(disc))/a;return t>=0&&t<=1?t:Infinity;
+}
+function firstRocketContact(r,from,to,playerTargetPos){
+  let hit=rocketWallContact(from,to);
+  const accept=(t,ground=false,target=null)=>{
+    if(!Number.isFinite(t)||t<0||t>1||hit&&t>=hit.t)return;
+    const pos=from.clone().addScaledVector(to.clone().sub(from),t);if(ground)pos.y=.10;
+    hit={t,pos,ground,directTarget:target};
+  };
+  if(from.y<=.10)accept(0,true);
+  else if(to.y<=.10)accept((.10-from.y)/(to.y-from.y),true);
+  const team=r.ownerType==='player'?'ally':(r._src?.team||r.team||null);
+  for(const en of enemies){
+    if(!en.alive||en===r._src)continue;
+    accept(rocketActorContact(from,to,en.group.position,Math.sqrt(2.65)),false,en.team===team?null:en);
+  }
+  // The shooter is excluded; other friendly bodies still stop the physical missile.
+  if(r.ownerType!=='player'&&!dying)accept(rocketActorContact(from,to,playerTargetPos,Math.sqrt(2.5)),false,team==='enemy'?'player':null);
+  return hit;
+}
+function guardRocketLaunch(from,to){
+  const hit=rocketWallContact(from,to,.12);
+  if(!hit)return to.clone();
+  const length=from.distanceTo(to),t=Math.max(0,hit.t-.025/Math.max(.001,length));
+  return from.clone().addScaledVector(to.clone().sub(from),t);
+}
+// Presentation receives the very same accepted wall face as simulation.
+function rocketWallImpactSurface(from,to,contact=null){
+  const dir=new THREE.Vector3().subVectors(to,from),distance=dir.length();
+  if(!contact&&distance<.15)return null;
+  const ray=contact?null:new THREE.Raycaster(from,dir.multiplyScalar(1/distance),0,distance);
+  const hit=contact?null:ray.intersectObjects(wallMeshes,false)[0],mesh=contact?.mesh||hit?.object;
+  if(!mesh?.geometry?.parameters||!contact&&!hit?.face)return null;
+  const local=contact?contact.local.clone():mesh.worldToLocal(hit.point.clone()),normal=contact?.normal||hit.face.normal;
+  const axis=Math.abs(normal.x)>.5?'x':Math.abs(normal.y)>.5?'y':'z';
+  const u=axis==='x'?'z':'x',v=axis==='y'?'z':'y',p=mesh.geometry.parameters;
+  const bounds={x:p.width*.5,y:p.height*.5,z:p.depth*.5};
+  // Fit inside the actual box face, including rotated walls and edge impacts.
+  const half=Math.min(1.4,bounds[u]-Math.abs(local[u])-.025,bounds[v]-Math.abs(local[v])-.025);
+  if(!Number.isFinite(half)||half<.06)return null;
+  local[axis]+=(normal[axis]>0?1:-1)*.025;
+  const center=mesh.localToWorld(local.clone()),corners=[];
+  for(const [du,dv] of [[-1,1],[1,1],[1,-1],[-1,-1]]){
+    const point=local.clone();point[u]+=du*half;point[v]+=dv*half;corners.push(mesh.localToWorld(point));
+  }
+  return{center,corners};
+}
+function detonateRocket(arr,index,r,pos,groundImpact=false,wallSurface=null,directTarget=null){
   const ownerType=r.ownerType||'bot';
-  const radius=r.blastRadius||6.5;
+  const radius=r.blastRadius||ROCKET_BLAST_RADIUS;
   const blastDistance=camera.position.distanceTo(pos);
   if(blastDistance<105){const proximity=Math.max(.12,1-blastDistance/110);playExplosionSound(pos,proximity);if(blastDistance<55)triggerScreenShake(proximity*.95,.20);}
-  spawnCombatImpact(pos,'rocket');
-  showGeneratedRocketExplosionVfx(pos);
-  explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius,ownerType!=='player');
-  applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28,r.ownerType==='player'?'ally':(r._src?.team||r.team||null));
+  const generatedBlast=showGeneratedRocketExplosionVfx(pos,groundImpact,wallSurface);
+  // Pack35 owns the blast; fallback has particles only, without retired rings/rays/art.
+  explode(pos.clone(),ownerType==='player'?0xff8800:0xff3300,radius,false,generatedBlast?false:'particles');
+  applyBlastDamage(pos,radius,r.dmg,ownerType,r._src||null,'rocket',.28,r.ownerType==='player'?'ally':(r._src?.team||r.team||null),directTarget);
   destroySceneObject(r.m);
   arr.splice(index,1);
+}
+
+// Continuous 3D contact prevents tunnelling through thin walls at strong throws.
+function moveFragGrenade(g,dt){
+  let remaining=dt;g.grounded=false;
+  for(let contact=0;contact<3&&remaining>1e-7;contact++){
+    const from=g.m.position.clone(),to=from.clone();
+    to.x+=g.vx*remaining;to.y+=g.vy*remaining;to.z+=g.vz*remaining;
+    let hit=sweepWallSphere(from,to,.14);
+    if(to.y<=.14&&g.vy<0){
+      const t=Math.max(0,(.14-from.y)/(to.y-from.y));
+      if(!hit||t<hit.t)hit={t,axis:'y',sign:1,boundary:.14};
+    }
+    if(!hit){g.m.position.copy(to);break;}
+    g.m.position.set(from.x+(to.x-from.x)*hit.t,from.y+(to.y-from.y)*hit.t,from.z+(to.z-from.z)*hit.t);
+    g.m.position[hit.axis]=hit.boundary+hit.sign*.0001;
+    const velocity='v'+hit.axis;
+    if(hit.axis==='y'&&hit.sign>0){
+      if(Math.abs(g.vy)>.9){g.vy=Math.abs(g.vy)*.34;g.vx*=.76;g.vz*=.76;g.bounces++;}
+      else{g.vy=0;g.vx*=.90;g.vz*=.90;g.grounded=true;}
+    }else{g[velocity]*=-.34;g.bounces++;}
+    remaining*=1-hit.t;
+  }
+  // A contact earlier in this step is not proof of support at the final position.
+  // Sliding off a roof must restore flight before presentation/detonation consumes it.
+  if(g.grounded&&g.m.position.y>.1402){
+    const below=g.m.position.clone();below.y-=.002;
+    const support=sweepWallSphere(g.m.position,below,.14);
+    g.grounded=Boolean(support&&support.axis==='y'&&support.sign>0);
+  }
 }
 
 function tickBotGrenades(dt){
   for(let i=botGrenades.length-1;i>=0;i--){
     const g=botGrenades[i];g.fuse-=dt;g.vy-=18*dt;
-    const prevX=g.m.position.x,prevZ=g.m.position.z;
-    g.m.position.x+=g.vx*dt;g.m.position.y+=g.vy*dt;g.m.position.z+=g.vz*dt;
+    moveFragGrenade(g,dt);
     g.m.rotation.x+=g.rx*dt;g.m.rotation.z+=g.rz*dt;
-    const coll=collideWalls(g.m.position.x,g.m.position.z,.14);
-    if(Math.abs(coll.x-g.m.position.x)>.001){g.vx*=-.34;g.m.position.x=coll.x;g.bounces++;}
-    if(Math.abs(coll.z-g.m.position.z)>.001){g.vz*=-.34;g.m.position.z=coll.z;g.bounces++;}
-    if(g.m.position.y<=.14){
-      g.m.position.y=.14;
-      if(Math.abs(g.vy)>.9){g.vy=Math.abs(g.vy)*.34;g.vx*=.76;g.vz*=.76;g.bounces++;}
-      else{g.vy=0;g.vx*=.90;g.vz*=.90;}
-    }
     if(g.fuse>0){
       if(!g._generatedFuseVfx&&g.fuse<=.78&&g.m.position.distanceToSquared(camera.position)<625){
         g._generatedFuseVfx=true;
@@ -1242,11 +1895,15 @@ function tickBotGrenades(dt){
     const ownerType=g.ownerType||'bot',ownerTeam=ownerType==='player'?'ally':g.team;
     const blastDistance=camera.position.distanceTo(pos),proximity=Math.max(.18,1-blastDistance/70);
     playExplosionSound(pos,.80*proximity);if(blastDistance<42)triggerScreenShake(proximity*.70,.15);
-    explode(pos,ownerTeam==='ally'?0x4caeff:0xff5a2a,7);spawnCombatImpact(pos,'rocket');
-    showGeneratedFragGrenadeVfx(pos);
+    explode(pos,ownerTeam==='ally'?0x4caeff:0xff5a2a,4,false);spawnCombatImpact(pos,'rocket');
+    showGeneratedFragGrenadeVfx(pos,g.grounded?(g.m.position.y<=.141?-.04:g.m.position.y-.14):null);
     applyBlastDamage(pos,g.radius,g.dmg,ownerType,g.src,'grenade',.28,ownerTeam);
     destroySceneObject(g.m);botGrenades.splice(i,1);
   }
+}
+function tickRocketFireCooldowns(dt){
+  playerRocketShotCD=Math.max(0,playerRocketShotCD-dt);
+  for(const bot of enemies)bot.rocketShotCD=Math.max(0,(bot.rocketShotCD||0)-dt);
 }
 function tickProjectiles(dt){
   let warn=false;
@@ -1256,9 +1913,21 @@ function tickProjectiles(dt){
     for(let i=arr.length-1;i>=0;i--){
       const r=arr[i];r.life-=dt;
       _prev.copy(r.m.position);
-      r.m.position.x+=r.vx*dt;r.m.position.y+=r.vy*dt;r.m.position.z+=r.vz*dt;
       const rs=Math.hypot(r.vx,r.vy,r.vz);
-      if(r.maxSpeed&&rs<r.maxSpeed){const mul=1+dt*.55;r.vx*=mul;r.vy*=mul;r.vz*=mul;}
+      // Powered flight accelerates smoothly to the existing weapon speed.
+      // Integrate both distance and velocity, so FPS cannot change the flight path.
+      const step=Math.min(dt,Math.max(0,r.life+dt));
+      let travel=rs*step;
+      if(r.maxSpeed&&rs>.001){
+        const start=Math.min(rs,r.maxSpeed),decay=Math.exp(-step/.18);
+        travel=r.maxSpeed*step-(r.maxSpeed-start)*.18*(1-decay);
+        const speed=r.maxSpeed-(r.maxSpeed-start)*decay,mul=speed/rs;
+        r.vx*=mul;r.vy*=mul;r.vz*=mul;
+      }
+      const dir=new THREE.Vector3(r.vx,r.vy,r.vz).normalize();
+      r.m.position.addScaledVector(dir,travel);r.m.quaternion.setFromUnitVectors(_UP,dir);
+      const contact=firstRocketContact(r,_prev,r.m.position,playerTargetPos);
+      if(contact)r.m.position.copy(contact.pos);
       r.fT=(r.fT||0)+dt;
       const flamePulse=.88+Math.sin(r.fT*32)*.12;
       const flames=r.m.userData.flames||[];
@@ -1271,26 +1940,18 @@ function tickProjectiles(dt){
       r.sT=(r.sT||0)+dt;
       if(r.sT>.058){
         r.sT=0;
-        spawnSmoke(r.m.position,0x4b4f55);
-        if(!PERF_MODE||Math.random()<.55)spawnP(r.m.position,0xffa02a,.45);
+        const exhaust=r.m.position.clone().addScaledVector(dir,-.38);
+        spawnSmoke(exhaust,0x4b4f55);
+        if(!PERF_MODE||Math.random()<.55)spawnP(exhaust,0xffa02a,.45);
       }
       const rocketTeam=r.ownerType==='player'?'ally':(r._src?.team||r.team||null);
       if((r.ownerType||'bot')==='bot'&&rocketTeam==='enemy'&&r.m.position.distanceToSquared(playerTargetPos)<225)warn=true;
 
-      let impact=false;
-      if(r.m.position.y<=.10)impact=true;
-      else if(wallBetween(_prev,r.m.position,wallMeshes))impact=true;
-      else{
-        for(const en of enemies){
-          if(!en.alive||en===r._src||(rocketTeam&&en.team===rocketTeam))continue;
-          if(r.m.position.distanceToSquared(en.group.position)<2.65){impact=true;break;}
-        }
-        if(!impact&&(r.ownerType||'bot')==='bot'&&rocketTeam==='enemy'&&r.m.position.distanceToSquared(playerTargetPos)<2.5)impact=true;
-      }
-      if(impact||r.life<=0){
+      if(contact||r.life<=0){
         const pos=r.m.position.clone();
         if(pos.y<.10)pos.y=.10;
-        detonateRocket(arr,i,r,pos);
+        const wallSurface=contact?.mesh?rocketWallImpactSurface(_prev,pos,contact):null;
+        detonateRocket(arr,i,r,pos,Boolean(contact?.ground),wallSurface,contact?.directTarget||null);
       }
     }
   };
@@ -1298,6 +1959,7 @@ function tickProjectiles(dt){
   processRockets(pRkts);
   syncRocketFlightArt();
   tickBotGrenades(dt);
+  syncGrenadeFlightArt();
 
   // Player firearm projectiles use swept segment collision, so fast rounds cannot tunnel through bots or walls.
   const _stepDir=new THREE.Vector3(),_hitPos=new THREE.Vector3(),_ricochetDir=new THREE.Vector3();
@@ -1312,9 +1974,8 @@ function tickProjectiles(dt){
     if(stepDist<=1e-5){if(b.life<=0)destroyPlayerBullet(i);continue;}
     _stepDir.multiplyScalar(1/stepDist);
 
-    _rc.ray.origin.copy(_prev);_rc.ray.direction.copy(_stepDir);_rc.near=0;_rc.far=stepDist;
-    _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
-    const wallDist=_rcWallHits.length?_rcWallHits[0].distance:Infinity;
+    const wallHit=firstFirearmSurfaceHit(_prev,_stepDir,stepDist);
+    const wallDist=wallHit?wallHit.distance:Infinity;
     const hit=hitEnemy(_prev,_stepDir,'ally',b.ignoreEnemy,stepDist+1.2);
     const enemyDist=hit.en?hit.dist:Infinity;
 
@@ -1324,13 +1985,16 @@ function tickProjectiles(dt){
       resolvePlayerBulletHit(b,hit.en,hit.hd,_hitPos.clone(),_stepDir,travelDist,hit.zone);
       if(b.penetrationLeft>0){
         b.penetrationLeft--;b.damageScale*=w.isSniper?.72:.64;b.ignoreEnemy=hit.en;
-        b.pos.copy(_hitPos).addScaledVector(_stepDir,.14);b.travel=travelDist+.14;
+        // Actor separation must not teleport a piercing round through the floor/cover.
+        const offsetSurface=firstFirearmSurfaceHit(_hitPos,_stepDir,.14);
+        const offset=offsetSurface?Math.max(0,offsetSurface.distance-.0001):.14;
+        b.pos.copy(_hitPos).addScaledVector(_stepDir,offset);b.travel=travelDist+offset;
       }else{destroyPlayerBullet(i);continue;}
     }else if(wallDist<=stepDist){
-      const wallHit=_rcWallHits[0],surface=mapImpactMaterial(wallHit?.object);
-      _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
-      const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
-      const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,true):null;
+      const surface=mapImpactMaterial(wallHit?.object);
+      _hitPos.copy(wallHit.point);
+      const n=wallHit.ground?_UP:wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
+      const pen=!wallHit.ground&&b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,true):null;
       const impactVariant=(pen||(w.key==='shotgun'&&b.markerEligible))?'heavy':'normal';
       wallImpact(_hitPos,b.color,surface,n,impactVariant);spawnCombatImpact(_hitPos,weaponImpactType(w,false));
       if(w.key==='plasma')showGeneratedPlasmaImpactVfx(_hitPos);
@@ -1343,7 +2007,8 @@ function tickProjectiles(dt){
         b.travel+=wallDist+pen.thickness+.08;b.wallPenetrations++;b.ignoreEnemy=null;
         continue;
       }
-      if(w.key!=='plasma'&&n){
+      if(wallHit.ground)playSurfaceImpactSound(surface,_hitPos,.62,false);
+      if(!wallHit.ground&&w.key!=='plasma'&&n){
         const incidence=Math.abs(_stepDir.dot(n));
         const ricochet=rollProjectileRicochet(surface,incidence,b.ricochets,true);
         playSurfaceImpactSound(surface,_hitPos,Math.max(.35,1-incidence),!!ricochet);
@@ -1384,9 +2049,8 @@ function tickProjectiles(dt){
     if(stepDist<=1e-5){if(b.life<=0)destroyEnemyBullet(i);continue;}
     _stepDir.multiplyScalar(1/stepDist);
 
-    _rc.ray.origin.copy(_prev);_rc.ray.direction.copy(_stepDir);_rc.near=0;_rc.far=stepDist;
-    _rcWallHits.length=0;_rc.intersectObjects(wallMeshes,false,_rcWallHits);
-    const wallDist=_rcWallHits.length?_rcWallHits[0].distance:Infinity;
+    const wallHit=firstFirearmSurfaceHit(_prev,_stepDir,stepDist);
+    const wallDist=wallHit?wallHit.distance:Infinity;
     const botHit=hitEnemy(_prev,_stepDir,b.team,b.src,stepDist+.8);
     const botDist=botHit.en?botHit.dist:Infinity;
     const playerDist=b.team==='enemy'?hitPlayerByEnemyBullet(_prev,_stepDir,stepDist):Infinity;
@@ -1430,10 +2094,10 @@ function tickProjectiles(dt){
       destroyEnemyBullet(i);continue;
     }
     if(wallDist<=stepDist){
-      const wallHit=_rcWallHits[0],surface=mapImpactMaterial(wallHit?.object);
-      _hitPos.copy(_prev).addScaledVector(_stepDir,wallDist);
-      const n=wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
-      const pen=b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,false):null;
+      const surface=mapImpactMaterial(wallHit?.object);
+      _hitPos.copy(wallHit.point);
+      const n=wallHit.ground?_UP:wallHit?.face?.normal?wallHit.face.normal.clone().transformDirection(wallHit.object.matrixWorld).normalize():null;
+      const pen=!wallHit.ground&&b.wallPenetrations<2?tryProjectileWallPenetration(b,w,wallHit,_stepDir,false):null;
       wallImpact(_hitPos,b.color,surface,n,pen?'heavy':'normal');spawnCombatImpact(_hitPos,w.key==='plasma'?'plasma':'wall');
       if(w.key==='plasma')showGeneratedPlasmaImpactVfx(_hitPos);
       if(pen){
@@ -1446,7 +2110,8 @@ function tickProjectiles(dt){
         b.travel+=wallDist+pen.thickness+.08;b.wallPenetrations++;
         continue;
       }
-      if(w.key!=='plasma'&&n){
+      if(wallHit.ground)playSurfaceImpactSound(surface,_hitPos,.54,false);
+      if(!wallHit.ground&&w.key!=='plasma'&&n){
         const incidence=Math.abs(_stepDir.dot(n));
         const ricochet=rollProjectileRicochet(surface,incidence,b.ricochets,false);
         playSurfaceImpactSound(surface,_hitPos,Math.max(.30,1-incidence),!!ricochet);
@@ -1471,7 +2136,7 @@ function tickProjectiles(dt){
     if(b.life<=0||b.travel>=b.range)destroyEnemyBullet(i);
   }
 
-  syncPlasmaFlightArt();
+  syncPlasmaFlightArt();syncRifleFlightArt36();
 
   for(let i=pTrs.length-1;i>=0;i--){
     const tr=pTrs[i];tr.life-=dt;
@@ -1490,11 +2155,164 @@ function tickProjectiles(dt){
 
 function spawnERkt(from,dir,dmg,team,src){
   const color=team==='ally'?0x35bfff:0xff2200;
-  const m=mkRkt(color);m.position.copy(from).addScaledVector(dir,1.4);m.quaternion.setFromUnitVectors(_UP,dir);scene.add(m);
-  eRkts.push({m,vx:dir.x*BOT_ROCKET_SPEED,vy:dir.y*BOT_ROCKET_SPEED,vz:dir.z*BOT_ROCKET_SPEED,life:12,maxSpeed:BOT_ROCKET_SPEED,dmg,sT:0,fT:0,team,ownerType:'bot',_src:src,blastRadius:6.2});
+  const m=mkRkt(color);m.position.copy(guardRocketLaunch(from,from.clone().addScaledVector(dir,.42)));m.quaternion.setFromUnitVectors(_UP,dir);scene.add(m);
+  eRkts.push({m,vx:dir.x*BOT_ROCKET_SPEED*.82,vy:dir.y*BOT_ROCKET_SPEED*.82,vz:dir.z*BOT_ROCKET_SPEED*.82,life:12,maxSpeed:BOT_ROCKET_SPEED,dmg,sT:0,fT:0,team,ownerType:'bot',_src:src,blastRadius:ROCKET_BLAST_RADIUS});
+}
+
+// Real bomb owns this optional skin; the 3D body remains on decode failure.
+const bombWorldArtNodes41=new Set();
+function clearBombWorldArt41(){for(const el of bombWorldArtNodes41)el.remove();bombWorldArtNodes41.clear();}
+function syncBombWorldArt41(){
+  const live=mines.filter(m=>m.kind==='bomb'&&!m.removed&&m.m?.parent);
+  for(const el of [...bombWorldArtNodes41])if(!live.includes(el._bombRef)){el.remove();bombWorldArtNodes41.delete(el);}
+  if(!live.length||!bombPresentationAssetReady41('pack41BombWorldTop'))return;
+  const asset=GAME_ASSETS.presentationVfx.pack41BombWorldTop;
+  for(const mn of live){
+    if(!GAME_LOCAL_FILE_MODE){
+      if(!mn.m.userData.topSkin41){
+        const texture=new THREE.Texture(bombPresentationProbes41.get(asset));
+        texture.encoding=THREE.sRGBEncoding;texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=false;texture.needsUpdate=true;
+        const top=new THREE.Mesh(new THREE.PlaneGeometry(.60,.80),new THREE.MeshBasicMaterial({map:texture,transparent:true,alphaTest:.025,depthTest:true,depthWrite:true}));
+        top.rotation.x=-Math.PI/2;top.position.y=-.217;mn.m.add(top);mn.m.userData.topSkin41=top;
+      }
+      if(mn.m.userData.nativeDetails41)mn.m.userData.nativeDetails41.visible=false;
+      continue;
+    }
+    let el=mn._bombTop41;
+    if(!el?.isConnected){
+      const layer=G('projectile-trail-layer');if(!layer)continue;
+      el=document.createElement('span');el.className='bomb-world-top-art';el._bombRef=mn;el.setAttribute('aria-hidden','true');
+      el.style.backgroundImage='url("'+gameAssetUrl(asset)+'")';layer.appendChild(el);bombWorldArtNodes41.add(el);mn._bombTop41=el;
+    }
+    if(mn.m.userData.nativeDetails41)mn.m.userData.nativeDetails41.visible=false;
+    mn.m.updateMatrixWorld(true);
+    const corners=[[-.30,-.40],[.30,-.40],[.30,.40],[-.30,.40]].map(([x,z])=>mn.m.localToWorld(new THREE.Vector3(x,-.217,z)));
+    positionGroundGrenadeDecal({el,worldPos:mn.m.position.clone().add(new THREE.Vector3(0,-.217,0)),surfaceCorners:corners,spec:{surfacePlane:true,size:512,worldSizeM:.8},scale:1,rotation:0});
+  }
 }
 
 // ─── MINES ──────────────────────────────
+// Pack39 mine body: the real mines collection owns position/state/lifetime.
+const mineWorldArtNodes39=new Set();
+const mineWorldScreen39=new THREE.Vector3();
+let mineWorldTexture39=null,mineWorldTextureUsers39=0;
+function acquireMineWorldTexture39(){
+  if(!mineWorldTexture39){
+    const image=minePresentationProbes39.get(GAME_ASSETS.presentationVfx.pack39MineWorld);
+    const texture=new THREE.Texture(image);
+    texture.repeat.set(.25,.25);texture.offset.set(1088/1536,64/1536); // cell8 crop64..448 removes transparent padding
+    texture.encoding=THREE.sRGBEncoding;texture.minFilter=THREE.LinearFilter;texture.magFilter=THREE.LinearFilter;
+    texture.generateMipmaps=false;texture.needsUpdate=true;mineWorldTexture39=texture;
+  }
+  mineWorldTextureUsers39++;return mineWorldTexture39;
+}
+function releaseMineWorldTexture39(){
+  if(mineWorldTextureUsers39<=0)return;
+  if(--mineWorldTextureUsers39===0){mineWorldTexture39.dispose();mineWorldTexture39=null;}
+}
+function makeMineBody39(){
+  // HTTP shares one GPU atlas. file:// uses a horizontal DOM top above native sides.
+  const texture=GAME_LOCAL_FILE_MODE?null:acquireMineWorldTexture39();
+  const body=new THREE.Group();body.userData.minePack39=true;body.userData.texture39=texture;
+  const add=(geometry,material,y)=>{
+    const mesh=new THREE.Mesh(geometry,material);mesh.position.y=y;body.add(mesh);return mesh;
+  };
+  // Physics center stays .08. All visible parts rest directly on surface y=center-.08.
+  add(new THREE.CylinderGeometry(.305,.305,.052,48),new THREE.MeshLambertMaterial({color:0x53636e}),-.054);
+  add(new THREE.CylinderGeometry(.31,.31,.006,48),new THREE.MeshLambertMaterial({color:0x6a7d89}),-.025);
+  add(new THREE.CylinderGeometry(.306,.306,.009,48,1,true),new THREE.MeshBasicMaterial({color:0x32bfe0}),-.060);
+  const lugs=new THREE.InstancedMesh(new THREE.BoxGeometry(.09,.058,.045),new THREE.MeshLambertMaterial({color:0x718694}),6);
+  const vents=new THREE.InstancedMesh(new THREE.BoxGeometry(.066,.013,.004),new THREE.MeshLambertMaterial({color:0x15242d}),6);
+  const matrix=new THREE.Matrix4();
+  for(let i=0;i<6;i++){
+    const angle=i*Math.PI/3;
+    matrix.makeRotationY(angle);matrix.setPosition(Math.sin(angle)*.293,-.051,Math.cos(angle)*.293);lugs.setMatrixAt(i,matrix);
+    matrix.makeRotationY(angle);matrix.setPosition(Math.sin(angle)*.318,-.049,Math.cos(angle)*.318);vents.setMatrixAt(i,matrix);
+  }
+  lugs.instanceMatrix.needsUpdate=true;vents.instanceMatrix.needsUpdate=true;body.add(lugs);body.add(vents);
+  body.userData.lugs=lugs;body.userData.vents=vents;
+  let top;
+  if(texture){
+    top=add(new THREE.PlaneGeometry(.64,.64),new THREE.MeshBasicMaterial({map:texture,transparent:true,alphaTest:.025,depthTest:true,depthWrite:true}),-.021);
+    top.rotation.x=-Math.PI/2;
+  }else{
+    // Keep a filled metal backing flush with the sides below the approved DOM top.
+    top=add(new THREE.CylinderGeometry(.30,.30,.002,48),new THREE.MeshLambertMaterial({color:0x365462}),-.023);
+  }
+  body.userData.top=top;
+  const indicator=add(new THREE.CylinderGeometry(.012,.012,.004,12),new THREE.MeshBasicMaterial({color:0xffa32e}),-.019);
+  indicator.position.x=.17;body.userData.indicator=indicator;
+  return body;
+}
+function removeMineWorldArt39(el){
+  const mn=el._mineRef;
+  if(mn){
+    if(mn._mineBody39){
+      // Generic material disposal owns its maps; detach the shared map before it runs.
+      mn._mineBody39.userData.top.material.map=null;
+      mn._mineBody39.userData.lugs.dispose();mn._mineBody39.userData.vents.dispose();
+      const ownsTexture=!!mn._mineBody39.userData.texture39;
+      mn.m.remove(mn._mineBody39);destroySceneObject(mn._mineBody39);mn._mineBody39=null;
+      if(ownsTexture)releaseMineWorldTexture39();
+    }
+    if(mn.m)mn.m.visible=mn._mineMeshVisible39??true;
+    for(const [mesh,visible] of mn._mineChildVisibility39||[])mesh.visible=visible;
+    mn._mineArt39=null;mn._mineMeshVisible39=null;mn._mineChildVisibility39=null;
+  }
+  el.remove();mineWorldArtNodes39.delete(el);
+}
+function clearMineWorldArt39(){for(const el of [...mineWorldArtNodes39])removeMineWorldArt39(el);}
+function mineWorldFrame39(mn){return 5+Math.floor((mn.ph||0)*4)%3;}
+function syncMineWorldArt39(){
+  const live=new Set(mines.filter(mn=>mn.kind!=='bomb'&&!mn.removed&&mn.m?.parent));
+  const ready=live.size&&minePresentationAssetReady39('pack39MineWorld');
+  for(const el of [...mineWorldArtNodes39])if(!ready||!live.has(el._mineRef))removeMineWorldArt39(el);
+  const layer=G('projectile-trail-layer');if(!ready||!layer)return;
+  for(const mn of live){
+    let el=mn._mineArt39;
+    if(!el?.isConnected){
+      if(mineWorldArtNodes39.size>=MAX_MINES)continue;
+      el=document.createElement('span');el.className='mine-world-art';el._mineRef=mn;el.setAttribute('aria-hidden','true');
+      layer.appendChild(el);mineWorldArtNodes39.add(el);mn._mineArt39=el;
+      mn._mineMeshVisible39=mn.m.visible;
+      mn._mineChildVisibility39=(mn.m.children||[]).map(mesh=>[mesh,mesh.visible]);
+    }
+    if(!mn.fall){
+      if(!mn._mineBody39){mn._mineBody39=makeMineBody39();mn.m.add(mn._mineBody39);}
+      mn.m.visible=mn._mineMeshVisible39??true;
+      for(const [mesh] of mn._mineChildVisibility39)mesh.visible=false;
+      mn._mineBody39.visible=true;
+      mn._mineBody39.userData.indicator.material.color.setHex(mn.armed?(Math.sin((mn.ph||0)*8)>0?0xff7626:0x8f441c):0xffa32e);
+      // Actual horizontal mesh: WebGL camera projection, depth-test and wall occlusion.
+      el.style.visibility='hidden';el.dataset.state=mn.armed?'armed':'arming';el.dataset.plane='mesh';
+      if(GAME_LOCAL_FILE_MODE){
+        applyPresentationAtlasFrame(el,presentationAtlasFrame(gameAssetUrl(GAME_ASSETS.presentationVfx.pack39MineWorld),2,2,3,3));
+        // cell8 crop64..448: 384px of1536, a .64m surface at actual top y=.059.
+        el.style.backgroundSize='400% 400%';el.style.backgroundPosition='94.444444% 94.444444%';
+        el.style.width='512px';el.style.height='512px';el.style.opacity='1';el.dataset.plane='ground';
+        positionGroundGrenadeDecal({el,worldPos:mn.m.position,groundY:mn.m.position.y-.021-.015,
+          spec:{size:512,worldSizeM:.64},scale:1,rotation:(mn.m.rotation?.y||0)*180/Math.PI});
+      }
+      continue;
+    }
+    mn.m.visible=false;if(mn._mineBody39)mn._mineBody39.visible=false;
+    const pos=mn.m.position,dist=camera.position.distanceTo(pos);
+    mineWorldScreen39.copy(pos).project(camera);
+    if(dist<.15||dist>60||mineWorldScreen39.z<=-1||mineWorldScreen39.z>=1||Math.abs(mineWorldScreen39.x)>1.08||Math.abs(mineWorldScreen39.y)>1.08||(wallBetween(camera.position,pos,wallMeshes)||(typeof smokeVisibilityBetween42==='function'&&smokeVisibilityBetween42(camera.position,pos)<.015))){
+      el.style.visibility='hidden';continue;
+    }
+    const frame=mineWorldFrame39(mn);
+    applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack39MineWorld,frame%3,Math.floor(frame/3),3,3));
+    el.dataset.state='flight';el.dataset.plane='flight';el.style.opacity='1';el.style.transformOrigin='50% 50%';
+    el.style.transform='translate(-50%,-50%)';
+    const focal=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
+    const size=Math.max(6,Math.min(180,.85*focal/Math.max(.6,dist)));
+    el.style.left=((mineWorldScreen39.x*.5+.5)*innerWidth).toFixed(1)+'px';
+    el.style.top=((-mineWorldScreen39.y*.5+.5)*innerHeight).toFixed(1)+'px';
+    el.style.width=size.toFixed(1)+'px';el.style.height=size.toFixed(1)+'px';el.style.visibility='visible';
+  }
+}
+// End Pack39 mine body.
 const explosiveFuseArtNodes=new Set();
 const explosiveFuseScreenPos=new THREE.Vector3();
 function explosiveFusePresentationState(mn){
@@ -1508,6 +2326,7 @@ function explosiveFusePresentationState(mn){
   return mn.armed?'armed':'arming';
 }
 function ensureExplosiveFuseArt(mn){
+  if(mn.kind==='bomb')return null; // Pack41 uses the device and compact timer only.
   const layer=G('explosive-fuse-layer');if(!layer)return null;
   if(mn._fuseArt?.isConnected)return mn._fuseArt;
   const el=document.createElement('span');
@@ -1518,9 +2337,14 @@ function ensureExplosiveFuseArt(mn){
 function syncExplosiveFuseArt(){
   const live=new Set(mines);
   for(const el of [...explosiveFuseArtNodes]){
-    if(!live.has(el._mineRef)){el.remove();explosiveFuseArtNodes.delete(el);}
+    if(!live.has(el._mineRef)||el._mineRef.kind==='bomb'){
+      el.remove();explosiveFuseArtNodes.delete(el);
+      if(el._mineRef._fuseArt===el)el._mineRef._fuseArt=null;
+    }
   }
   for(const mn of mines){
+    if(mn.kind==='bomb')continue;
+    if(mn.kind!=='bomb'&&mn._mineArt39){if(mn._fuseArt)mn._fuseArt.style.visibility='hidden';continue;}
     const el=ensureExplosiveFuseArt(mn);if(!el||!mn.m)continue;
     explosiveFuseScreenPos.copy(mn.m.position);explosiveFuseScreenPos.y+=.72;
     const dist=camera.position.distanceTo(explosiveFuseScreenPos);
@@ -1541,6 +2365,31 @@ function syncExplosiveFuseArt(){
     el.style.visibility='hidden';
   }
 }
+// Contact mines use their real .32m footprint plus the canonical actor collider.
+function mineContactActors(mn){
+  if(mn.kind==='bomb'||mn.fall||!mn.armed||mn.removed)return [];
+  const mp=mn.m.position,surfaceY=mp.y-.08,contacts=[];
+  const touching=(pos,radius)=>{
+    const dx=pos.x-mp.x,dz=pos.z-mp.z;
+    return dx*dx+dz*dz<=(.32+radius)**2&&Math.abs(pos.y-surfaceY)<=.10&&
+      !wallBetween(new THREE.Vector3(pos.x,surfaceY+.14,pos.z),mp,wallMeshes);
+  };
+  for(const en of enemies)if(en.alive&&!en.jV&&touching(en.group.position,BOT_R))contacts.push(en);
+  if(!dying&&onGnd&&touching(new THREE.Vector3(camera.position.x,camera.position.y-1.75,camera.position.z),PLR_R))contacts.push('player');
+  return contacts;
+}
+function applyMineContactKills(contacts,pos,ownerType,ownerBot,ownerTeam){
+  for(const target of contacts){
+    if(target==='player'){
+      if(!dying)applyDamageToPlayer(Math.max(1,hp),'mine',ownerBot,false,true);
+      continue;
+    }
+    if(!target.alive)continue;
+    const dir=new THREE.Vector3(target.group.position.x-pos.x,.2,target.group.position.z-pos.z).normalize();
+    target.hurt(Math.max(1,target.hp),dir,ownerTeam||'world',ownerType==='player'?'player':ownerBot);
+    if(!target.alive&&ownerTeam&&target.team!==ownerTeam&&target!==ownerBot)awardExplosionKill(target,ownerType,ownerBot,'mine',ownerTeam);
+  }
+}
 function tickMines(dt){
   for(let i=mines.length-1;i>=0;i--){
     const mn=mines[i];
@@ -1551,6 +2400,7 @@ function tickMines(dt){
       if(mn.m.position.y<=.08){
         mn.m.position.y=.08;mn.fall=false;mn.vx=mn.vy=mn.vz=0;
         mn.checkT=.04+Math.random()*.08;
+        if(mn.kind!=='bomb'){playMineSound39('Land',mn.m.position);showGeneratedMineEvent39('mineLand39',mn.m.position);}
       }
       continue;
     }
@@ -1564,47 +2414,41 @@ function tickMines(dt){
       const radius=mn.radius||BOMB_BLAST_RADIUS;
       playExplosionSound(pos,1.08);
       const bombProximity=Math.max(0,1-camera.position.distanceTo(pos)/90);if(bombProximity>0)triggerScreenShake(bombProximity*.78,.22);
-      explode(pos,ownerType==='player'?0xffb000:0xff3b18,18);
+      explode(pos,ownerType==='player'?0xffb000:0xff3b18,18,false,false);
       showGeneratedBombDetonationVfx(pos);
-      spawnBombBlastWave(pos,radius,ownerType);
+      spawnBombBlastWave(pos,radius,ownerType,false);
       applyBlastDamage(pos,radius,mn.dmg||BOMB_BASE_DAMAGE,ownerType,mn.src||null,'bomb',.18,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
       mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
       continue;
     }
 
     mn.aT-=dt;
-    if(!mn.armed&&mn.aT<=0)mn.armed=true;
+    if(!mn.armed&&mn.aT<=0){mn.armed=true;playMineSound39('Arm',mn.m.position);showGeneratedMineEvent39('mineActivation39',mn.m.position);}
     mn.checkT=(mn.checkT||0)-dt;
-    if(mn.checkT>0)continue;
-    mn.checkT=.12+Math.random()*.10;
-    const lens=mn.m.children[2];
-    if(lens&&lens.material)lens.material.color.setHex(mn.armed?(Math.sin(mn.ph*8)>0?0xff0000:0x880000):0xff8800);
+    if(mn.checkT<=0){
+      mn.checkT=.12+Math.random()*.10;
+      const lens=mn.m.children[2];
+      if(lens&&lens.material)lens.material.color.setHex(mn.armed?(Math.sin(mn.ph*8)>0?0xff0000:0x880000):0xff8800);
+    }
     if(!mn.armed)continue;
-
-    const mp=mn.m.position;
-    const mineTeam=mn.owner==='player'?'ally':(mn.src?.team||mn.team||null);
-    let trig=false;
-    for(const en of enemies){
-      if(!en.alive||en===mn.src||(mineTeam&&en.team===mineTeam))continue;
-      const dx=mp.x-en.group.position.x,dz=mp.z-en.group.position.z;
-      if(dx*dx+dz*dz<10){trig=true;break;}
-    }
-    if(!trig&&mineTeam==='enemy'){
-      const pdx=mp.x-camera.position.x,pdz=mp.z-camera.position.z;
-      if(pdx*pdx+pdz*pdz<10)trig=true;
-    }
-    if(!trig)continue;
-
+    // Contact detection runs every physics frame, independently of the cosmetic lens poll.
+    const contacts=mineContactActors(mn);if(!contacts.length)continue;
     const ownerType=mn.owner==='player'?'player':'bot';
+    const ownerBot=mn.src||null,ownerTeam=mn.owner==='player'?'ally':(ownerBot?.team||mn.team||null);
     const radius=mn.radius||9;
-    const pos=mp.clone();
-    playExplosionSound(pos,.88);
+    const pos=mn.m.position.clone();
+    playMineSound39('Trigger',pos);playMineSound39('Detonate',pos);
     const mineProximity=Math.max(0,1-camera.position.distanceTo(pos)/55);if(mineProximity>0)triggerScreenShake(mineProximity*.52,.14);
-    explode(pos,0xff4400,6);
-    showGeneratedMineDetonationVfx(pos);
-    applyBlastDamage(pos,radius,mn.dmg||WEAPONS[5].dmg,ownerType,mn.src||null,'mine',.25,mn.owner==='player'?'ally':(mn.src?.team||mn.team||null));
+    const generated=mineDetonationPresentationReady39();
+    explode(pos,0xff4400,6,false,false);
+    if(generated&&minePresentationAssetReady39('pack39MineWorld'))playGeneratedCombatVfx('mineTriggered39',{worldPos:pos});
+    showGeneratedMineDetonationVfx(pos,!mn.fall&&pos.y<=.1?-.04:null);
+    applyMineContactKills(contacts,pos,ownerType,ownerBot,ownerTeam);
+    applyBlastDamage(pos,radius,mn.dmg||WEAPONS[5].dmg,ownerType,ownerBot,'mine',.25,ownerTeam);
+    if(mn._mineArt39)removeMineWorldArt39(mn._mineArt39);
     mn.removed=true;destroySceneObject(mn.m);mines.splice(i,1);updateMineHUD();
   }
+  syncMineWorldArt39();syncBombWorldArt41();
 }
 
 // ═══════════════════════════════════════════

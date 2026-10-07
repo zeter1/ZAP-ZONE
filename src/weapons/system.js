@@ -3,20 +3,22 @@
 // ─── WEAPONS ────────────────────────────
 // One catalog drives player balance, bot variants, ammo defaults and UI assets.
 const WEAPON_ASSET_DIR='assets/weapons';
+const ROCKET_FIRE_INTERVAL=10;
+const ROCKET_BLAST_RADIUS=9.1;
 function weaponDef(key,label,icon,config){
   return {key,label,icon,name:`${icon} ${label}`,asset:`${WEAPON_ASSET_DIR}/${key}.svg`,...config};
 }
 const WEAPONS=[
-  weaponDef('pistol','ПИСТОЛЕТ','🔫',{clip:15,reload:1.25,rate:.22,dmg:26,spread:.012,adsSpread:.006,moveSpread:.010,airSpread:.035,falloffStart:20,falloffEnd:55,minDamageM:.62,bCol:0xffffaa,gCol:0xf5c800,brlCol:0xcccccc,pellets:1,recoilX:.016,recoilY:.032,recoilReturn:14,recoilDelay:.12,recoilPattern:[-.35,.18,-.12,.28],bloomPerShot:.0048,bloomMax:.024,bloomDecay:.060,firstShotM:.62,equipTime:.26,sprintRecover:.12,tacticalReloadM:.88,emptyReloadM:1.08,adsIn:.16,adsOut:.12,automatic:false,fireMode:'semi',zoomFov:52,startingAmmo:15,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xffd27a,muzzleVelocity:85,bulletGravity:4.8,range:55,viewPos:[.28,-.25,-.48],bot:{range:44,opt:20,hitBias:.90}}),
-  weaponDef('shotgun','ДРОБОВИК','💥',{clip:6,reload:2.35,rate:.82,dmg:19,spread:.10,adsSpread:.075,moveSpread:.025,airSpread:.055,falloffStart:8,falloffEnd:24,minDamageM:.28,bCol:0xff8844,gCol:0x884422,brlCol:0x665533,pellets:8,recoilX:.045,recoilY:.085,recoilReturn:8.5,recoilDelay:.22,recoilPattern:[-.20,.18],bloomPerShot:.010,bloomMax:.030,bloomDecay:.050,firstShotM:.82,equipTime:.50,sprintRecover:.27,reloadStyle:'shell',shellStartM:.22,shellInsertM:.26,cycleTime:.62,adsIn:.22,adsOut:.16,automatic:false,fireMode:'pump',zoomFov:58,startingAmmo:6,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xffb06a,muzzleVelocity:68,bulletGravity:5.5,range:24,viewPos:[.30,-.27,-.54],bot:{range:20,opt:10,hitBias:.85}}),
-  weaponDef('rifle','ШТУРМОВАЯ ВИНТОВКА','🎯',{clip:30,reload:2.15,rate:.10,dmg:31,spread:.008,adsSpread:.0035,moveSpread:.014,airSpread:.035,falloffStart:30,falloffEnd:75,minDamageM:.72,bCol:0x44ffaa,gCol:0x336644,brlCol:0x224433,pellets:1,recoilX:.011,recoilY:.026,recoilReturn:11,recoilDelay:.16,recoilPattern:[-.35,-.10,.16,.31,.08,-.22,.18,.35],bloomPerShot:.0032,bloomMax:.034,bloomDecay:.040,firstShotM:.54,equipTime:.40,sprintRecover:.20,tacticalReloadM:.90,emptyReloadM:1.12,adsIn:.19,adsOut:.13,automatic:true,fireMode:'auto',aimMode:'scope',scopeAsset:'assets/ui/scopes/rifle-scope-tech-01.webp',scopeFallback:'assets/ui/rifle-scope.svg',zoomFov:30,startingAmmo:30,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xffe0a0,muzzleVelocity:125,bulletGravity:3.2,range:75,viewPos:[.30,-.27,-.55],bot:{range:68,opt:36,hitBias:.94}}),
-  weaponDef('rocket','РАКЕТНИЦА','🚀',{clip:1,reload:2.85,rate:1.10,dmg:155,spread:.006,adsSpread:.002,moveSpread:.012,airSpread:.025,bCol:0xff4400,gCol:0x553300,brlCol:0x442200,pellets:1,isRocket:true,recoilX:.05,recoilY:.105,recoilReturn:7.5,recoilDelay:.30,equipTime:.58,sprintRecover:.32,emptyReloadM:1.05,automatic:false,fireMode:'launcher',zoomFov:50,startingAmmo:1,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,viewPos:[.31,-.28,-.58],bot:{range:55,opt:30,hitBias:.88,dmg:140}}),
-  weaponDef('plasma','ПЛАЗМА','⚡',{clip:40,reload:1.65,rate:.07,dmg:20,spread:.019,adsSpread:.010,moveSpread:.017,airSpread:.035,falloffStart:20,falloffEnd:58,minDamageM:.58,bCol:0xcc44ff,gCol:0x6622cc,brlCol:0x9944ff,pellets:1,recoilX:.009,recoilY:.015,recoilReturn:15,recoilDelay:.08,recoilPattern:[-.12,.08,-.06,.10],bloomPerShot:.0022,bloomMax:.025,bloomDecay:.060,firstShotM:.70,equipTime:.36,sprintRecover:.17,tacticalReloadM:.90,emptyReloadM:1.06,adsIn:.15,adsOut:.11,automatic:true,fireMode:'auto',zoomFov:46,startingAmmo:40,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xc47cff,muzzleVelocity:48,bulletGravity:0,range:58,viewPos:[.30,-.26,-.54],bot:{range:44,opt:23,hitBias:.89}}),
-  weaponDef('mine','МИНА','💣',{clip:4,reload:3.2,rate:.90,dmg:130,spread:0,bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0,equipTime:.30,sprintRecover:.10,automatic:false,fireMode:'deploy',startingAmmo:4,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xff8800,viewPos:[.29,-.27,-.52]}),
-  weaponDef('bomb','БОМБА','🧨',{clip:2,reload:.90,rate:1.2,dmg:240,spread:0,bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0,equipTime:.34,sprintRecover:.14,automatic:false,fireMode:'deploy',startingAmmo:0,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,viewPos:[.29,-.27,-.52]}),
-  weaponDef('smoke','ДЫМОВУХА','🌫️',{clip:1,reload:.80,rate:.55,dmg:0,spread:0,bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025,equipTime:.28,sprintRecover:.10,automatic:false,fireMode:'throw',startingAmmo:1,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xcbd4d8,viewPos:[.30,-.27,-.56]}),
-  weaponDef('sniper','СНАЙПЕРСКАЯ ВИНТОВКА','🔭',{clip:5,reload:3.4,rate:1.30,dmg:118,spread:.040,adsSpread:.00045,moveSpread:.060,airSpread:.12,falloffStart:55,falloffEnd:110,minDamageM:.82,bCol:0x8fe8ff,gCol:0x17365b,brlCol:0xb8d5e8,pellets:1,isSniper:true,aimMode:'scope',scopeAsset:'assets/ui/scopes/sniper-scope-tech-01.webp',scopeFallback:'assets/ui/sniper-scope.svg',hitscan:true,oneShot:true,headshotMult:2.55,recoilX:.028,recoilY:.115,recoilReturn:6.8,recoilDelay:.34,recoilPattern:[-.12,.10],bloomPerShot:.016,bloomMax:.020,bloomDecay:.028,firstShotM:.34,equipTime:.66,sprintRecover:.34,tacticalReloadM:.94,emptyReloadM:1.10,cycleTime:.92,adsIn:.34,adsOut:.20,automatic:false,fireMode:'bolt',zoomFov:12,startingAmmo:5,pickupAmmoMin:50,pickupAmmoMax:400,reserveCap:9999,tracerColor:0xcff8ff,basePenetration:1,range:110,viewPos:[.31,-.29,-.62],bot:{range:108,opt:74,hitBias:.982}}),
-  weaponDef('grenade','ОСКОЛОЧНАЯ ГРАНАТА','💥',{clip:2,reload:1.10,rate:.72,dmg:110,spread:0,bCol:0xff8a24,gCol:0x3fe7ff,brlCol:0x3b454b,pellets:1,isGrenade:true,recoilX:.010,recoilY:.020,equipTime:.30,sprintRecover:.12,automatic:false,fireMode:'throw',startingAmmo:0,pickupAmmoMin:1,pickupAmmoMax:3,reserveCap:12,tracerColor:0xff9a32,viewPos:[.30,-.27,-.56]})
+  weaponDef('pistol','ПИСТОЛЕТ','🔫',{asset:gameAssetUrl('assets/ui/weapons/pistol-icon-40.webp'),clip:15,reload:1.25,rate:.22,dmg:26,spread:.012,adsSpread:.006,moveSpread:.010,airSpread:.035,falloffStart:20,falloffEnd:55,minDamageM:.62,bCol:0xffffaa,gCol:0xf5c800,brlCol:0xcccccc,pellets:1,recoilX:.016,recoilY:.032,recoilReturn:14,recoilDelay:.12,recoilPattern:[-.35,.18,-.12,.28],bloomPerShot:.0048,bloomMax:.024,bloomDecay:.060,firstShotM:.62,equipTime:.26,sprintRecover:.12,tacticalReloadM:.88,emptyReloadM:1.08,adsIn:.16,adsOut:.12,automatic:false,fireMode:'semi',zoomFov:52,startingAmmo:15,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xffd27a,muzzleVelocity:85,bulletGravity:4.8,range:55,viewPos:[.28,-.25,-.48],bot:{range:44,opt:20,hitBias:.90}}),
+  weaponDef('shotgun','ДРОБОВИК','💥',{asset:gameAssetUrl('assets/ui/weapons/shotgun-icon-37.webp'),clip:6,reload:2.35,rate:.82,dmg:19,spread:.10,adsSpread:.075,moveSpread:.025,airSpread:.055,falloffStart:8,falloffEnd:24,minDamageM:.28,bCol:0xff8844,gCol:0x884422,brlCol:0x665533,pellets:8,recoilX:.045,recoilY:.085,recoilReturn:8.5,recoilDelay:.22,recoilPattern:[-.20,.18],bloomPerShot:.010,bloomMax:.030,bloomDecay:.050,firstShotM:.82,equipTime:.50,sprintRecover:.27,reloadStyle:'shell',shellStartM:.22,shellInsertM:.26,cycleTime:.62,adsIn:.22,adsOut:.16,automatic:false,fireMode:'pump',zoomFov:58,startingAmmo:6,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xffb06a,muzzleVelocity:68,bulletGravity:5.5,range:24,viewPos:[.30,-.27,-.54],bot:{range:20,opt:10,hitBias:.85}}),
+  weaponDef('rifle','ШТУРМОВАЯ ВИНТОВКА','🎯',{asset:gameAssetUrl('assets/ui/weapons/rifle-icon-36.webp'),clip:30,reload:2.15,rate:.10,dmg:31,spread:.008,adsSpread:.0035,moveSpread:.014,airSpread:.035,falloffStart:30,falloffEnd:75,minDamageM:.72,bCol:0x44ffaa,gCol:0x336644,brlCol:0x224433,pellets:1,recoilX:.011,recoilY:.026,recoilReturn:11,recoilDelay:.16,recoilPattern:[-.35,-.10,.16,.31,.08,-.22,.18,.35],bloomPerShot:.0032,bloomMax:.034,bloomDecay:.040,firstShotM:.54,equipTime:.40,sprintRecover:.20,tacticalReloadM:.90,emptyReloadM:1.12,adsIn:.19,adsOut:.13,automatic:true,fireMode:'auto',aimMode:'scope',scopeAsset:'assets/ui/scopes/rifle-optic-frame-36.svg',scopeFallback:'assets/ui/scopes/rifle-optic-frame-36.svg',zoomFov:30,startingAmmo:30,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xffe0a0,muzzleVelocity:125,bulletGravity:3.2,range:75,viewPos:[.30,-.27,-.55],bot:{range:68,opt:36,hitBias:.94}}),
+  weaponDef('rocket','РАКЕТНИЦА','🚀',{asset:gameAssetUrl(GAME_ASSETS.generatedWorldWeaponPickups.rocket),clip:1,reload:2.85,rate:ROCKET_FIRE_INTERVAL,dmg:155,spread:.006,adsSpread:.002,moveSpread:.012,airSpread:.025,bCol:0xff4400,gCol:0x553300,brlCol:0x442200,pellets:1,isRocket:true,recoilX:.05,recoilY:.105,recoilReturn:7.5,recoilDelay:.30,equipTime:.58,sprintRecover:.32,emptyReloadM:1.05,automatic:false,fireMode:'launcher',zoomFov:50,startingAmmo:1,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,viewPos:[.31,-.28,-.58],bot:{range:55,opt:30,hitBias:.88,dmg:140}}),
+  weaponDef('plasma','ПЛАЗМА','⚡',{clip:40,reload:1.65,rate:.07,dmg:20,spread:.019,adsSpread:.010,moveSpread:.017,airSpread:.035,falloffStart:20,falloffEnd:58,minDamageM:.58,bCol:0xcc44ff,gCol:0x6622cc,brlCol:0x9944ff,pellets:1,recoilX:.009,recoilY:.015,recoilReturn:15,recoilDelay:.08,recoilPattern:[-.12,.08,-.06,.10],bloomPerShot:.0022,bloomMax:.025,bloomDecay:.060,firstShotM:.70,equipTime:.36,sprintRecover:.17,tacticalReloadM:.90,emptyReloadM:1.06,adsIn:.15,adsOut:.11,automatic:true,fireMode:'auto',zoomFov:46,startingAmmo:40,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xc47cff,muzzleVelocity:48,bulletGravity:0,range:58,viewPos:[.30,-.26,-.54],bot:{range:44,opt:23,hitBias:.89}}),
+  weaponDef('mine','МИНА','💣',{asset:gameAssetUrl('assets/ui/weapons/mine-weapon-icon-39.webp'),clip:4,reload:3.2,rate:.90,dmg:130,spread:0,bCol:0xff8800,gCol:0x222222,brlCol:0x444444,pellets:1,isMine:true,recoilX:0,recoilY:0,equipTime:.30,sprintRecover:.10,automatic:false,fireMode:'deploy',startingAmmo:4,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xff8800,viewPos:[.29,-.27,-.52]}),
+  weaponDef('bomb','БОМБА','🧨',{asset:gameAssetUrl('assets/ui/weapons/bomb-icon-41.webp'),clip:2,reload:.90,rate:1.2,dmg:240,spread:0,bCol:0xffcc22,gCol:0x551100,brlCol:0x111111,pellets:1,isBomb:true,recoilX:0,recoilY:0,equipTime:.34,sprintRecover:.14,automatic:false,fireMode:'deploy',startingAmmo:0,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,viewPos:[.29,-.27,-.52]}),
+  weaponDef('smoke','ДЫМОВУХА','🌫️',{asset:gameAssetUrl('assets/ui/weapons/smoke-icon-42.webp'),clip:1,reload:.80,rate:.55,dmg:0,spread:0,bCol:0xc8d0d4,gCol:0x3f515a,brlCol:0x7d8b91,pellets:1,isSmoke:true,recoilX:.012,recoilY:.025,equipTime:.28,sprintRecover:.10,automatic:false,fireMode:'throw',startingAmmo:1,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xcbd4d8,viewPos:[.30,-.27,-.56]}),
+  weaponDef('sniper','СНАЙПЕРСКАЯ ВИНТОВКА','🔭',{clip:5,reload:3.4,rate:1.30,dmg:118,spread:.040,adsSpread:.00045,moveSpread:.060,airSpread:.12,falloffStart:55,falloffEnd:110,minDamageM:.82,bCol:0x8fe8ff,gCol:0x17365b,brlCol:0xb8d5e8,pellets:1,isSniper:true,aimMode:'scope',scopeAsset:'assets/ui/scopes/sniper-scope-tech-01.webp',scopeFallback:'assets/ui/sniper-scope.svg',hitscan:true,oneShot:true,headshotMult:2.55,recoilX:.028,recoilY:.115,recoilReturn:6.8,recoilDelay:.34,recoilPattern:[-.12,.10],bloomPerShot:.016,bloomMax:.020,bloomDecay:.028,firstShotM:.34,equipTime:.66,sprintRecover:.34,tacticalReloadM:.94,emptyReloadM:1.10,cycleTime:.92,adsIn:.34,adsOut:.20,automatic:false,fireMode:'bolt',zoomFov:12,startingAmmo:5,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xcff8ff,basePenetration:1,range:110,viewPos:[.31,-.29,-.62],bot:{range:108,opt:74,hitBias:.982}}),
+  weaponDef('grenade','ОСКОЛОЧНАЯ ГРАНАТА','💥',{asset:gameAssetUrl('assets/ui/equipment/grenade-weapon-icon-34.webp'),clip:2,reload:1.10,rate:.72,dmg:80,spread:0,bCol:0xff8a24,gCol:0x3fe7ff,brlCol:0x3b454b,pellets:1,isGrenade:true,recoilX:.010,recoilY:.020,equipTime:.30,sprintRecover:.12,automatic:false,fireMode:'throw',startingAmmo:0,pickupAmmoMin:3,pickupAmmoMax:100,reserveCap:9999,tracerColor:0xff9a32,viewPos:[.30,-.27,-.56]})
 ];
 const WEAPON_BY_KEY=Object.fromEntries(WEAPONS.map(w=>[w.key,w]));
 const SMOKE_WEAPON_INDEX=WEAPONS.findIndex(w=>w.key==='smoke');
@@ -62,12 +64,12 @@ let deathReason='';
 let lastPlayerAttacker=null;
 const MINE_COOLDOWN_SECONDS=30;
 const BOMB_FUSE_SECONDS=45;
-const BOMB_COOLDOWN_SECONDS=60;
+const BOMB_COOLDOWN_SECONDS=180;
 const BOMB_BLAST_RADIUS=34;
 const BOMB_BASE_DAMAGE=12000;
 const SMOKE_COOLDOWN_SECONDS=30;
 const SMOKE_DURATION_SECONDS=60;
-const SMOKE_RADIUS=15.5;
+const SMOKE_RADIUS=19.5;
 const MAX_ACTIVE_SMOKE_CLOUDS=3;
 const MAX_TRACERS=72;
 const BOT_MINE_CFG={dmg:105,triggerRange:12,cooldown:MINE_COOLDOWN_SECONDS};
@@ -188,12 +190,63 @@ function findCoverPoint(from,target,sideBias=0){
 function weaponMaterial(color,rough=.42,metal=.58,emissive=0x000000,emissiveIntensity=0){
   return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal,emissive,emissiveIntensity});
 }
+// Shared coherent bomb body: FPS fallback, bots, pickups and planted world device.
+function createBombDevice41(){
+  const group=new THREE.Group();group.name='bomb-device-41';
+  const box=(x,y,z,sx,sy,sz,color,glow=false)=>{
+    const mat=glow?new THREE.MeshBasicMaterial({color}):new THREE.MeshLambertMaterial({color});
+    const mesh=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);mesh.position.set(x,y,z);group.add(mesh);return mesh;
+  };
+  // Dark low shell follows the generated device footprint; no tall silver edge bars.
+  box(0,-.28,0,.48,.12,.72,0x14191f);
+  const details=new THREE.Group();details.name='bomb-native-details-41';
+  for(const x of [-.265,.265]){
+    const pod=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.70,20),new THREE.MeshLambertMaterial({color:0x273038}));
+    pod.rotation.x=Math.PI/2;pod.position.set(x,-.285,0);group.add(pod);
+    for(const z of [-.29,.29]){box(x,-.005,z,.10,.035,.13,0x8e9aa6);box(x,.016,z,.055,.018,.08,0x29313a);}
+    box(x,.003,-.20,.036,.02,.09,0x47e8f0,true);box(x,.003,.23,.036,.02,.10,0x47e8f0,true);
+  }
+  box(0,-.015,-.065,.30,.045,.26,0x8596a3);
+  box(0,.012,-.065,.25,.02,.20,0x0a111a);
+  box(0,.026,-.185,.20,.018,.022,0x61edff,true);
+  const segments=[],points=[];
+  for(let i=0;i<4;i++){
+    const x=(i-1.5)*.048;
+    segments.push(box(x,.032,-.065,.025,.018,.067,0xffbd38,true));points.push(new THREE.Vector3(x,.05,-.065));
+  }
+  points.push(new THREE.Vector3(.11,.05,-.065));
+  box(0,.025,.08,.13,.028,.05,0xffbb27);
+  box(0,.008,.255,.29,.028,.16,0x121820);
+  for(let i=-1;i<=1;i++){const stripe=box(i*.069,.026,.255,.031,.008,.12,0xeabc35);stripe.rotation.y=-.42;}
+  box(0,.007,-.32,.33,.025,.10,0xd3a327);
+  box(0,-.19,.398,.14,.11,.012,0x111820);box(0,-.17,.409,.07,.02,.01,0xffbd38,true);
+  box(.21,.145,-.33,.025,.28,.025,0x84939e);box(.21,.29,-.33,.04,.035,.04,0x5af0ff,true);
+  const spark=new THREE.Mesh(new THREE.SphereGeometry(.016,8,6),new THREE.MeshBasicMaterial({color:0xffdc72}));
+  spark.visible=false;spark.position.copy(points[4]);group.add(spark);
+  group.userData.fuseSegments=segments;group.userData.fusePoints=points;group.userData.bombSpark=spark;
+  // A low device rests on the floor; top details follow the thinner body.
+  // Top artwork owns all decorative controls once decoded. Native controls are
+  // one group, so fuse updates cannot re-enable a duplicate screen or antenna.
+  for(const mesh of [...group.children])if(mesh!==group.children[0]&&mesh.geometry?.type!=='CylinderGeometry'){
+    if(mesh.position.y>=-.015)mesh.position.y-=.18;
+    details.add(mesh);
+  }
+  group.add(details);group.userData.nativeDetails41=details;
+  for(const point of points)point.y-=.18;
+  return group;
+}
 function createWeaponModel(key,options={}){
   const w=WEAPON_BY_KEY[key]||WEAPONS[0];
   const mode=options.mode||'world';
   const detail=options.detail??(mode==='firstPerson'?2:(MOBILE_LOW?0:1));
   const team=options.team||'neutral';
   const accentColor=team==='ally'?0x5ab2ff:(w.bCol||w.gCol||0xffb31a);
+  // Pack49 owns only bot/world presentation for six firearms. First-person
+  // deliberately stays on the existing procedural/generated-art path.
+  if(mode!=='firstPerson'&&typeof createWorldWeaponModel49==='function'){
+    const blenderModel=createWorldWeaponModel49(w.key,{mode,team,accentColor});
+    if(blenderModel)return blenderModel;
+  }
   const group=new THREE.Group();
   group.name='weapon-'+w.key;
 
@@ -294,10 +347,7 @@ function createWeaponModel(key,options={}){
     if(detail>0){for(let i=0;i<8;i++){const a=i*Math.PI/4;box(Math.cos(a)*.27,.01,-.22+Math.sin(a)*.27,.07,.06,.16,dark,0,-a,0);}}
     muzzleZ=-.56;
   }else if(w.key==='bomb'){
-    sphere(0,-.005,-.33,.255,dark2,16);torus(0,-.005,-.33,.205,.035,steel,Math.PI/2);
-    cyl(0,.25,-.33,.068,.085,.17,steel,0,0,0,10);cyl(.052,.38,-.33,.018,.018,.25,wood,0,0,-.35,8);
-    sphere(.105,.49,-.33,.048,weaponMaterial(0xffd55a,.18,.10,0xffaa00,1.6),8);
-    if(detail>0){rail(-.17,-.01,-.18,.055,.055,.12);rail(.17,-.01,-.18,.055,.055,.12);}
+    const device=createBombDevice41();device.scale.setScalar(.65);device.position.set(0,.13,-.33);group.add(device);
     muzzleZ=-.62;
   }else if(w.key==='grenade'){
     sphere(0,.00,-.30,.18,dark2,14);sphere(0,.00,-.30,.145,steel,12);
@@ -366,10 +416,7 @@ function createWeaponModel(key,options={}){
       torus(0,.10,-.22,.24,.018,glow,Math.PI/2);sphere(0,.19,-.22,.055,red,10);
       for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5])sphere(Math.cos(a)*.19,.13,-.22+Math.sin(a)*.19,.022,amber,8);
     }else if(w.key==='bomb'){
-      torus(0,-.005,-.33,.235,.022,amber,Math.PI/2);
-      for(let i=0;i<6;i++){const a=i*Math.PI/3;box(Math.cos(a)*.19,.0,-.33+Math.sin(a)*.19,.07,.08,.13,carbon,0,-a,0);}
-      box(0,.28,-.33,.16,.07,.16,carbon);sphere(.12,.36,-.33,.032,red,8);sphere(-.12,.36,-.33,.032,glow,8);
-      box(0,-.21,-.33,.20,.045,.18,edge);
+      // The shared device owns its panels and indicators; no legacy fuse overlay.
     }else if(w.key==='grenade'){
       for(let i=0;i<6;i++){const a=i*Math.PI/3;box(Math.cos(a)*.155,.03,-.30+Math.sin(a)*.155,.065,.045,.15,carbon,0,-a,0);}
       torus(0,.02,-.30,.176,.016,glow,Math.PI/2);sphere(0,.04,-.30,.048,amber,9);
@@ -457,7 +504,10 @@ function addFirstPersonHands(target,key){
   const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);target.add(m);return m;};
   const arm=(d,side)=>{
     const [x,y,z,rx,rz]=d;
-    add(new THREE.CylinderGeometry(.085,.105,.34,8),sleeve,x,y+.13,z+.16,Math.PI/2+rx,0,rz);
+    const extension=key==='smoke'?.64:0;
+    // Extend the rear end along the cylinder axis; keep the wrist endpoint unchanged.
+    const forearm=add(new THREE.CylinderGeometry(.085,.105,.34+extension,8),sleeve,x,y+.13,z+.16,Math.PI/2+rx,0,rz);
+    if(extension)forearm.position.add(new THREE.Vector3(0,extension/2,0).applyEuler(forearm.rotation));
     add(new THREE.BoxGeometry(.16,.11,.15),guard,x,y+.03,z+.02,rx,0,rz);
     add(new THREE.BoxGeometry(.14,.15,.19),glove,x,y,z,rx,0,rz);
     for(let i=0;i<3;i++)add(new THREE.BoxGeometry(.035,.04,.13),glove,x+(i-1)*.042*side,y+.015,z-.105,rx,0,rz);
@@ -506,15 +556,15 @@ const FP_RECOIL_VISUAL=Object.freeze({
 });
 const FP_GENERATED_ART_TUNING=Object.freeze({
   // V3 is the approved framing baseline: baked hands, transparent headroom and HUD-safe lower-right placement.
-  pistol:{width:'54vw',right:'-1vw',bottom:'-1vh',muzzleX:'49%',muzzleY:'38%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0,flashCore:'#fff9df',flashMid:'#ffd15a',flashEdge:'#ff6d1f'},
-  shotgun:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'28%',muzzleY:'39%',kickX:16,kickY:14,kickRot:2.00,kickScale:.028,flashScale:.72,flashCore:'#fff8d8',flashMid:'#ffc857',flashEdge:'#ff6320'},
-  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'26%',muzzleY:'37%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
-  rocket:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'31%',kickX:18,kickY:16,kickRot:2.30,kickScale:.032,flashScale:.78,flashCore:'#fff3d0',flashMid:'#ffb43e',flashEdge:'#ff4f18'},
+  pistol:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'30%',muzzleY:'23%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0,flashCore:'#fff9df',flashMid:'#ffd15a',flashEdge:'#ff6d1f'},
+  shotgun:{width:'46vw',right:'4vw',bottom:'-1vh',muzzleX:'34.3%',muzzleY:'20.1%',kickX:16,kickY:14,kickRot:2.00,kickScale:.028,flashScale:.72,flashCore:'#fff8d8',flashMid:'#ffc857',flashEdge:'#ff6320'},
+  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'20.3%',muzzleY:'22.5%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
+  rocket:{width:'55vw',right:'-1vw',bottom:'-1vh',muzzleX:'31.5%',muzzleY:'36%',kickX:18,kickY:16,kickRot:2.30,kickScale:.032,flashScale:.78,flashCore:'#fff3d0',flashMid:'#ffb43e',flashEdge:'#ff4f18'},
   plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%',kickX:5,kickY:4,kickRot:.70,kickScale:.010,flashScale:.88,flashCore:'#efffff',flashMid:'#69eaff',flashEdge:'#8c62ff'},
   mine:{width:'38vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
   bomb:{width:'40vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
   smoke:{width:'34vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:6,kickY:8,kickRot:1.15,kickScale:.008,flashScale:0},
-  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'33%',muzzleY:'38%',kickX:15,kickY:12,kickRot:1.80,kickScale:.024,flashScale:1.20,flashCore:'#f3fdff',flashMid:'#a4e7ff',flashEdge:'#5fa8ff'},
+  sniper:{width:'54vw',right:'-2vw',bottom:'-2vh',muzzleX:'37%',muzzleY:'40%',kickX:15,kickY:12,kickRot:1.80,kickScale:.024,flashScale:0,flashCore:'#f3fdff',flashMid:'#a4e7ff',flashEdge:'#5fa8ff'},
   grenade:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:5,kickY:7,kickRot:1.0,kickScale:.006,flashScale:0}
 });
 function setProceduralFirstPersonRigVisible(visible){
@@ -525,18 +575,33 @@ let fpGeneratedWeaponAction=null;
 function stopGeneratedFirstPersonAction(){
   const action=G('fp-weapon-action'),img=G('fp-weapon-art');
   if(action){
-    action.classList.remove('on');action.style.opacity='0';
+    action.classList.remove('on','grenade-throw-viewport','mine-action-viewport','bomb-action-viewport','smoke-action-viewport');action.style.opacity='0';
+    const stage=G('fp-weapon-art-stage');if(stage&&action.parentElement!==stage)stage.appendChild(action);
     action.style.removeProperty('background-image');action.style.removeProperty('background-size');action.style.removeProperty('background-position');
   }
   if(img)img.style.opacity='';
+  if(['mineThrow39','bombPlant41','smokeThrow42','smokeReload42'].includes(fpGeneratedWeaponAction?.kind)&&!fpGeneratedWeaponActive){setProceduralFirstPersonRigVisible(true);G('fp-weapon-art-wrap')?.classList.remove('on','shown');}
   fpGeneratedWeaponAction=null;
 }
 function playGeneratedFirstPersonAction(kind,duration=0){
   const action=G('fp-weapon-action'),img=G('fp-weapon-art');
   const spec=typeof generatedCombatVfxSpec==='function'?generatedCombatVfxSpec(kind):null;
   const first=typeof generatedCombatVfxFrame==='function'?generatedCombatVfxFrame(kind,0):null;
-  if(!fpGeneratedWeaponActive||!action||!img||!spec||!first)return false;
+  if((!fpGeneratedWeaponActive&&!['mineThrow39','bombPlant41','smokeThrow42','smokeReload42'].includes(kind))||!action||!img||!spec||!first)return false;
   stopGeneratedFirstPersonAction();
+  if(kind==='mineThrow39'||kind==='mineReload39'){
+    const wrap=G('fp-weapon-art-wrap');wrap?.appendChild(action);action.classList.add('mine-action-viewport');
+    wrap?.classList.add('on','shown');wrap?.classList.remove('scope-hidden');setProceduralFirstPersonRigVisible(false);
+  }
+  if(kind==='bombPlant41'||kind==='bombReload41'){
+    const wrap=G('fp-weapon-art-wrap');wrap?.appendChild(action);action.classList.add('bomb-action-viewport');
+    wrap?.classList.add('on','shown');wrap?.classList.remove('scope-hidden');setProceduralFirstPersonRigVisible(false);
+  }
+  if(kind==='smokeThrow42'||kind==='smokeReload42'){
+    const wrap=G('fp-weapon-art-wrap');wrap?.appendChild(action);action.classList.add('smoke-action-viewport');
+    wrap?.classList.add('on','shown');wrap?.classList.remove('scope-hidden');setProceduralFirstPersonRigVisible(false);
+  }
+  if(kind==='grenadeThrow34'){G('fp-weapon-art-wrap')?.appendChild(action);action.classList.add('grenade-throw-viewport');}
   fpGeneratedWeaponAction={kind,spec,age:0,duration:Math.max(.12,Number(duration)||spec.duration),frame:-1};
   img.style.opacity='0';action.style.opacity='1';action.classList.add('on');
   applyPresentationAtlasFrame(action,first);
@@ -546,6 +611,9 @@ function tickGeneratedFirstPersonAction(dt){
   const state=fpGeneratedWeaponAction,action=G('fp-weapon-action');
   if(!state||!action)return;
   state.age+=Math.max(0,Math.min(.05,Number(dt)||0));
+  if(state.kind==='pistolReloadEmpty40'&&!state.slidePlayed&&state.age>=state.duration*4/6){
+    state.slidePlayed=true;if(typeof playPistolSlideSound40==='function')playPistolSlideSound40();
+  }
   const progress=Math.max(0,Math.min(1,state.age/Math.max(.001,state.duration)));
   const frame=Math.min(state.spec.frames-1,Math.floor(progress*state.spec.frames));
   if(frame!==state.frame){
@@ -555,48 +623,101 @@ function tickGeneratedFirstPersonAction(dt){
   if(progress>=1)stopGeneratedFirstPersonAction();
 }
 function showGeneratedPistolReloadVfx(mode='tactical',duration=0){
+  if(!fpGeneratedWeaponActive)return false;
+  const pack=G('fp-weapon-art')?.dataset.pistolPack;
+  if(pack==='40')return playGeneratedFirstPersonAction(pistolPresentationAssetReady40('pack40PistolReload')?(mode==='empty'?'pistolReloadEmpty40':'pistolReloadTactical40'):'pistolReloadHold40',duration);
+  if(pack!=='01'||!pistolPresentationAssetReady40('pack25PistolReload'))return false;
   return playGeneratedFirstPersonAction(mode==='empty'?'pistolReloadEmpty25':'pistolReloadTactical25',duration);
 }
 function showGeneratedRifleReloadVfx(mode='tactical',duration=0){
+  if(!fpGeneratedWeaponActive)return false;
+  const img=G('fp-weapon-art');
+  if(img?.dataset.riflePack==='36'){
+    const kind=riflePresentationAssetReady36('pack36RifleReload')?(mode==='empty'?'rifleReloadEmpty36':'rifleReloadTactical36'):'rifleReloadHold36';
+    return playGeneratedFirstPersonAction(kind,duration);
+  }
+  if(!riflePresentationAssetReady36('pack22RifleReload'))return false;
   return playGeneratedFirstPersonAction(mode==='empty'?'rifleReloadEmpty':'rifleReloadTactical',duration);
 }
+// Probe once; an unloaded action never hides a successfully decoded ready image.
+let plasmaReloadProbe33=null;
+function plasmaReloadAssetReady33(){
+  if(!plasmaReloadProbe33){
+    plasmaReloadProbe33=new Image();plasmaReloadProbe33.src=GAME_ASSETS.presentationVfx.pack33PlasmaReload;
+  }
+  return plasmaReloadProbe33.complete&&plasmaReloadProbe33.naturalWidth>0&&plasmaReloadProbe33.naturalHeight>0;
+}
 function showGeneratedPlasmaCoreReloadVfx(mode='tactical',duration=0){
+  if(!fpGeneratedWeaponActive)return false;
+  const img=G('fp-weapon-art'),ready=GAME_ASSETS.generatedFirstPersonWeapons.plasma;
+  if(img&&(img.currentSrc||img.src)===ready){
+    const kind=plasmaReloadAssetReady33()?(mode==='empty'?'plasmaReloadEmpty33':'plasmaReloadTactical33'):'plasmaReloadHold33';
+    return playGeneratedFirstPersonAction(kind,duration);
+  }
   return playGeneratedFirstPersonAction(mode==='empty'?'plasmaReloadEmpty31':'plasmaReloadTactical31',duration);
 }
 function showGeneratedRocketReloadVfx(duration=0){
+  if(!fpGeneratedWeaponActive)return false;
+  const img=G('fp-weapon-art');
+  if(img?.dataset.rocketPack==='35')return playGeneratedFirstPersonAction(rocketPresentationAssetReady35('pack35RocketReload')?'rocketReload35':'rocketReloadHold35',duration);
   return playGeneratedFirstPersonAction('rocketReload24',duration);
 }
-function showGeneratedMineThrowVfx(duration=0){
-  return playGeneratedFirstPersonAction('mineThrow24',duration);
+function showGeneratedMineThrowVfx(duration=.58){
+  if(minePresentationAssetReady39('pack39MineThrow'))return playGeneratedFirstPersonAction('mineThrow39',duration);
+  // A missing Pack39 action must leave the decoded ready visible. Legacy actions match legacy ready only.
+  return G('fp-weapon-art')?.dataset.minePack==='01'&&getW().isMine?playGeneratedFirstPersonAction('mineThrow24',duration):false;
+}
+function showGeneratedBombReloadVfx(duration){
+  if(G('fp-weapon-art')?.dataset.bombPack!=='41')return false;
+  return playGeneratedFirstPersonAction(bombPresentationAssetReady41('pack41BombPlant')?'bombReload41':'bombReloadHold41',duration);
+}
+function showGeneratedMineReloadVfx(duration){
+  return G('fp-weapon-art')?.dataset.minePack==='39'&&minePresentationAssetReady39('pack39MineReload')?playGeneratedFirstPersonAction('mineReload39',duration):false;
 }
 function showGeneratedShotgunPumpVfx(duration=0){
+  if(G('fp-weapon-art')?.dataset.shotgunPack==='37')return playGeneratedFirstPersonAction(shotgunPresentationAssetReady37('pack37ShotgunAction')?'shotgunPump37':'shotgunHold37',duration);
   return playGeneratedFirstPersonAction('shotgunPump25',duration);
 }
+function showGeneratedShotgunLoadVfx(duration=0){
+  if(!fpGeneratedWeaponActive||G('fp-weapon-art')?.dataset.shotgunPack!=='37')return false;
+  return playGeneratedFirstPersonAction(shotgunPresentationAssetReady37('pack37ShotgunAction')?'shotgunLoad37':'shotgunHold37',duration);
+}
+function showGeneratedSniperReloadVfx(mode='tactical',duration=0){
+  if(!sniperPresentationAssetReady32('pack32SniperAction'))return false;
+  return playGeneratedFirstPersonAction(mode==='empty'?'sniperReloadEmpty32':'sniperReloadTactical32',duration);
+}
 function showGeneratedSniperBoltCycleVfx(duration=0){
-  return playGeneratedFirstPersonAction('sniperBoltCycle',duration);
+  if(!sniperPresentationAssetReady32('pack32SniperAction'))return false;
+  return playGeneratedFirstPersonAction('sniperBoltCycle32',duration);
 }
 function isGeneratedFirstPersonActionActive(kind=''){
   return !!fpGeneratedWeaponAction&&(!kind||fpGeneratedWeaponAction.kind===kind);
 }
 function generatedFirstPersonActionBlocksScope(){
-  return isGeneratedFirstPersonActionActive('sniperBoltCycle');
+  return isGeneratedFirstPersonActionActive('sniperBoltCycle')||isGeneratedFirstPersonActionActive('sniperBoltCycle32');
 }
 function hideGeneratedFirstPersonWeaponArt(showProcedural=true){
+  if(typeof cancelFragGrenadeThrow==='function')cancelFragGrenadeThrow();
+  if(typeof cancelPendingMineThrow==='function')cancelPendingMineThrow();
+  if(typeof cancelPendingBombPlant==='function')cancelPendingBombPlant();
+  if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   stopGeneratedFirstPersonAction();
   const wrap=G('fp-weapon-art-wrap'),flash=G('fp-weapon-flash'),img=G('fp-weapon-art');
-  if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');delete wrap.dataset.weaponKey;}
+  if(wrap){wrap.classList.remove('on');wrap.classList.remove('shown');wrap.classList.remove('scope-hidden');delete wrap.dataset.weaponKey;delete wrap.dataset.minePack;delete wrap.dataset.bombPack;delete wrap.dataset.smokePack;}
   if(flash)flash.style.opacity='0';
-  if(img){img.onload=null;img.onerror=null;img.removeAttribute('src');delete img.dataset.weaponKey;}
+  if(img){img.onload=null;img.onerror=null;img.removeAttribute('src');delete img.dataset.weaponKey;delete img.dataset.pistolPack;delete img.dataset.rocketPack;delete img.dataset.riflePack;delete img.dataset.shotgunPack;delete img.dataset.minePack;delete img.dataset.bombPack;delete img.dataset.smokePack;}
   setProceduralFirstPersonRigVisible(showProcedural);
   fpGeneratedWeaponLoadId+=1;fpGeneratedWeaponModel=null;fpGeneratedWeaponPending=null;
   fpGeneratedWeaponActive=false;fpGeneratedWeaponLoading=false;
 }
 function setGeneratedFirstPersonWeaponArt(w,model){
   const wrap=G('fp-weapon-art-wrap'),catalogAsset=GAME_ASSETS.generatedFirstPersonWeapons?.[w.key];
-  // Pack 20 grenade idle art is a placeholder-style flat render that does not match the polished FPS rig.
-  // Keep it catalogued for provenance, but use the detailed procedural grenade + hands as the live fallback.
-  const asset=w.key==='grenade'?null:catalogAsset;
+  // Pack34 grenade ready matches throw/world identity; decode errors retain the procedural rig.
+  const asset=catalogAsset;
   const hasGeneratedArt=!!(wrap&&asset);
+  // When a generated replacement exists, hide the procedural rig immediately. Pack42 used
+  // to keep the native smoke model visible while its ready WebP decoded, producing a brief
+  // old-asset flash on weapon selection. A terminal load failure restores the native rig.
   hideGeneratedFirstPersonWeaponArt(!hasGeneratedArt);
   // file:// can load sibling WebP assets directly; HTTP cache versioning stays in gameAssetUrl().
   // During a generated-art swap, keep the procedural rig hidden so a stale/fallback model
@@ -613,16 +734,88 @@ function setGeneratedFirstPersonWeaponArt(w,model){
   wrap.style.setProperty('--fp-flash-base-scale',String(tune.flashScale||0));
   const flashAsset=w.key==='plasma'?GAME_ASSETS.presentationCombat?.plasmaMuzzle:(['pistol','rifle','shotgun','rocket'].includes(w.key)?null:GAME_ASSETS.presentationCombat?.ballisticMuzzle);
   wrap.style.setProperty('--fp-flash-image',flashAsset?'url("'+flashAsset+'")':'none');
+  if(w.key==='pistol'){
+    const stage=G('fp-weapon-art-stage');
+    if(stage)for(const id of ['fp-pistol-muzzle-anchor','fp-pistol-ejection-anchor']){if(!G(id)){const marker=document.createElement('span');marker.id=id;marker.setAttribute('aria-hidden','true');stage.appendChild(marker);}}
+    pistolPresentationAssetReady40('pack40PistolReload');pistolPresentationAssetReady40('pack40PistolEffects');
+  }
+  if(w.key==='rocket'){
+    const stage=G('fp-weapon-art-stage');
+    if(stage&&!G('fp-rocket-muzzle-anchor')){const anchor=document.createElement('span');anchor.id='fp-rocket-muzzle-anchor';anchor.setAttribute('aria-hidden','true');stage.appendChild(anchor);}
+    rocketPresentationAssetReady35('pack35RocketReload');
+    rocketPresentationAssetReady35('pack35RocketEffects');
+    rocketPresentationAssetReady35('pack35RocketScorch');
+    rocketPresentationAssetReady35('pack35RocketWall');
+  }
+  if(w.key==='shotgun'){
+    const stage=G('fp-weapon-art-stage');
+    if(stage)for(const id of ['fp-shotgun-muzzle-anchor','fp-shotgun-ejection-anchor']){if(!G(id)){const marker=document.createElement('span');marker.id=id;marker.setAttribute('aria-hidden','true');stage.appendChild(marker);}}
+    shotgunPresentationAssetReady37('pack37ShotgunAction');shotgunPresentationAssetReady37('pack37ShotgunEffects');
+  }
+  if(w.key==='rifle'){
+    const stage=G('fp-weapon-art-stage');
+    if(stage&&!G('fp-rifle-muzzle-anchor')){const marker=document.createElement('span');marker.id='fp-rifle-muzzle-anchor';marker.setAttribute('aria-hidden','true');stage.appendChild(marker);}
+    riflePresentationAssetReady36('pack36RifleReload');riflePresentationAssetReady36('pack36RifleEffects');
+  }
+  if(w.key==='mine')for(const key of Object.keys(MINE_PRESENTATION_DIMENSIONS39))minePresentationAssetReady39(key);
+  if(w.key==='smoke')for(const key of Object.keys(SMOKE_PRESENTATION_DIMENSIONS42))smokePresentationAssetReady42(key);
+  if(w.key==='bomb')for(const key of Object.keys(BOMB_PRESENTATION_DIMENSIONS41))bombPresentationAssetReady41(key);
+  if(w.key==='plasma')plasmaReloadAssetReady33();
+  if(w.key==='sniper'){sniperPresentationAssetReady32('pack32SniperAction');sniperPresentationAssetReady32('pack32SniperEffects');}
+  if(w.key==='grenade')for(const key of ['pack34GrenadeThrow','pack34GrenadeBlast','pack34GrenadeSmoke','pack34GrenadeDebris','pack34GrenadeScorch'])grenadePresentationAssetReady34(key);
   fpGeneratedWeaponPending={key:w.key,model,asset};
 }
 function ensureGeneratedFirstPersonWeaponArtLoaded(){
-  if(!running||fpGeneratedWeaponActive||fpGeneratedWeaponLoading||!fpGeneratedWeaponPending)return;
+  if(!running||fpGeneratedWeaponActive||fpGeneratedWeaponLoading||!fpGeneratedWeaponPending||fpGeneratedWeaponPending.failed)return;
   const wrap=G('fp-weapon-art-wrap'),img=G('fp-weapon-art');
   if(!wrap||!img)return;
   const pending=fpGeneratedWeaponPending,loadId=String(++fpGeneratedWeaponLoadId);
   fpGeneratedWeaponLoading=true;img.dataset.loadId=loadId;img.dataset.weaponKey=pending.key;
-  img.onload=()=>{
+  img.onload=async()=>{
     if(img.dataset.loadId!==loadId||img.dataset.weaponKey!==pending.key||fpGeneratedWeaponPending?.key!==pending.key)return;
+    if(pending.key==='pistol'){
+      const size=pending.fallbackTried?[960,720]:[1448,1086];
+      if(img.naturalWidth!==size[0]||img.naturalHeight!==size[1]){img.onerror();return;}
+      img.dataset.pistolPack=pending.fallbackTried?'01':'40';
+      wrap.style.setProperty('--fp-muzzle-x',pending.fallbackTried?'49%':(431/1448*100)+'%');
+      wrap.style.setProperty('--fp-muzzle-y',pending.fallbackTried?'38%':(150/1086*100)+'%');
+      wrap.style.setProperty('--fp-eject-x',pending.fallbackTried?'52%':(640/1448*100)+'%');
+      wrap.style.setProperty('--fp-eject-y',pending.fallbackTried?'35%':(182/1086*100)+'%');
+    }
+    if(pending.key==='smoke'){
+      if(img.naturalWidth!==1600||img.naturalHeight!==900){img.onerror();return;}
+      try{await img.decode();}catch(e){if(img.dataset.loadId===loadId)img.onerror();return;}
+      if(img.dataset.loadId!==loadId||img.dataset.weaponKey!==pending.key||fpGeneratedWeaponPending!==pending)return;
+      if(img.naturalWidth!==1600||img.naturalHeight!==900){img.onerror();return;}
+      img.dataset.smokePack='42';wrap.dataset.smokePack='42';
+    }
+    if(pending.key==='bomb'){
+      const size=[1600,900];
+      if(img.naturalWidth!==size[0]||img.naturalHeight!==size[1]){img.onerror();return;}
+      img.dataset.bombPack='41';wrap.dataset.bombPack='41';
+    }
+    if(pending.key==='mine'){
+      if(!pending.fallbackTried&&(img.naturalWidth!==1600||img.naturalHeight!==900)){img.onerror();return;}
+      img.dataset.minePack=pending.fallbackTried?'01':'39';wrap.dataset.minePack=img.dataset.minePack;
+    }
+    if(pending.key==='shotgun'){
+      if(!pending.fallbackTried&&(img.naturalWidth!==1448||img.naturalHeight!==1086)){img.onerror();return;}
+      img.dataset.shotgunPack=pending.fallbackTried?'01':'37';
+      wrap.style.setProperty('--fp-muzzle-x',pending.fallbackTried?'28%':'34.3%');
+      wrap.style.setProperty('--fp-muzzle-y',pending.fallbackTried?'39%':'20.1%');
+    }
+    if(pending.key==='rifle'&&!pending.fallbackTried&&(img.naturalWidth!==960||img.naturalHeight!==720)){img.onerror();return;}
+    if(pending.key==='rifle'){
+      img.dataset.riflePack=pending.fallbackTried?'01':'36';
+      wrap.style.setProperty('--fp-muzzle-x',pending.fallbackTried?'26%':'20.3%');
+      wrap.style.setProperty('--fp-muzzle-y',pending.fallbackTried?'37%':'22.5%');
+    }
+    if(pending.key==='rocket'&&!pending.fallbackTried&&(img.naturalWidth!==960||img.naturalHeight!==720)){img.onerror();return;}
+    if(pending.key==='rocket'){
+      img.dataset.rocketPack=pending.fallbackTried?'01':'35';
+      wrap.style.setProperty('--fp-muzzle-x',pending.fallbackTried?'34%':'31.5%');
+      wrap.style.setProperty('--fp-muzzle-y',pending.fallbackTried?'35%':'36%');
+    }
     fpGeneratedWeaponLoading=false;fpGeneratedWeaponModel=pending.model;fpGeneratedWeaponActive=true;
     // V2 art includes its own correctly posed hands/forearms, so never double-render
     // the procedural weapon body or blocky fallback hands underneath it.
@@ -630,17 +823,107 @@ function ensureGeneratedFirstPersonWeaponArtLoaded(){
   };
   img.onerror=()=>{
     if(img.dataset.loadId!==loadId)return;
-    fpGeneratedWeaponLoading=false;setProceduralFirstPersonRigVisible(true);wrap.classList.remove('on');
+    const fallback=GAME_ASSETS.generatedFirstPersonWeaponFallbacks?.[pending.key];
+    if(fallback&&!pending.fallbackTried){pending.fallbackTried=true;img.src=fallback;return;}
+    pending.failed=true;
+    fpGeneratedWeaponLoading=false;
+    // A decoded throw owns the visible hand layer while ready/fallback finishes loading.
+    const mineActionVisible=['mineThrow39','bombPlant41','smokeThrow42','smokeReload42'].includes(fpGeneratedWeaponAction?.kind);
+    setProceduralFirstPersonRigVisible(!mineActionVisible);
+    if(!mineActionVisible)wrap.classList.remove('on');
     console.warn('Не удалось загрузить first-person weapon art:',pending.asset);
   };
   img.src=pending.asset;
+}
+// Pixel landmarks measured on the HD sprites (half-size reference:724x543).
+const SHOTGUN_PRESENTATION_ANCHORS38=Object.freeze([
+  [[245,110],[434,228]],[[213,87],[403,207]],[[222,95],[402,208]],
+  [[239,88],[454,218]],[[231,85],[448,206]],[[219,99],[434,208]]
+].map(p=>Object.freeze({muzzle:Object.freeze([p[0][0]/724,p[0][1]/543]),ejection:Object.freeze([p[1][0]/724,p[1][1]/543])})));
+function updateGeneratedShotgunAnchors38(){
+  const wrap=G('fp-weapon-art-wrap'),img=G('fp-weapon-art');
+  if(!wrap||img?.dataset.shotgunPack!=='37')return;
+  const state=fpGeneratedWeaponAction;
+  let pose=0;
+  if(state?.spec.asset==='pack37ShotgunAction'){
+    const f=Math.min(state.spec.frames-1,Math.floor(Math.max(0,state.age)/Math.max(.001,state.duration)*state.spec.frames));
+    pose=state.spec.sequence?.[f]??f;
+  }
+  const p=SHOTGUN_PRESENTATION_ANCHORS38[pose]||SHOTGUN_PRESENTATION_ANCHORS38[0];
+  wrap.style.setProperty('--fp-muzzle-x',(p.muzzle[0]*100)+'%');
+  wrap.style.setProperty('--fp-muzzle-y',(p.muzzle[1]*100)+'%');
+  wrap.style.setProperty('--fp-eject-x',(p.ejection[0]*100)+'%');
+  wrap.style.setProperty('--fp-eject-y',(p.ejection[1]*100)+'%');
+}
+// Full-resolution Pack40 source landmarks, row-major; pose0 and recovered pose5 share identity.
+const PISTOL_PRESENTATION_ANCHORS40=Object.freeze([
+  [[431,150],[640,182]],[[530,171],[736,169]],[[530,171],[736,169]],
+  [[530,151],[724,160]],[[628,176],[856,245]],[[431,150],[640,182]]
+].map(p=>Object.freeze({muzzle:Object.freeze([p[0][0]/1448,p[0][1]/1086]),ejection:Object.freeze([p[1][0]/1448,p[1][1]/1086])})));
+// Opaque forearm exits measured on the original 1448x1086 canvases.
+// Each pose has different exits; guarding the transparent rectangle hides the
+// manipulating hand, while using ready exits for slide-rack clips the pistol.
+const PISTOL_ARM_EXITS40=Object.freeze([
+  [544,965,892],[560,1060,885],[469,1060,885],
+  [531,1062,879],[408,1136,858],[544,965,892]
+]);
+function pistolPresentationPose40(){
+  const state=fpGeneratedWeaponAction;
+  if(state?.spec.asset!=='pack40PistolReload')return 0;
+  const frame=Math.min(state.spec.frames-1,Math.floor(Math.max(0,state.age)/Math.max(.001,state.duration)*state.spec.frames));
+  return state.spec.sequence?.[frame]??frame;
+}
+function pistolPresentationLayout40(viewWidth,viewHeight,width,scale,pose){
+  const mx=431/1448*width,my=150/1448*width,height=width*.75;
+  const exits=PISTOL_ARM_EXITS40[pose]||PISTOL_ARM_EXITS40[0];
+  let rotation=-12,x=0,y=0;
+  // Solve the reticle direction while keeping every painted canvas exit beyond
+  // the viewport. The blank corners are deliberately not anatomical exits.
+  for(let i=0;i<16;i++){
+    const radians=rotation*Math.PI/180,sn=Math.sin(radians),cs=Math.cos(radians);
+    const rightBottom=(exits[1]/1448*width-mx)*cs-(height-my)*sn;
+    const rightSide=(width-mx)*cs-(exits[2]/1448*width-my)*sn;
+    x=viewWidth+24-scale*Math.min(rightBottom,rightSide);
+    y=viewHeight+24-scale*((exits[0]/1448*width-mx)*sn+(height-my)*cs);
+    // Slide-rack pose has a wider rear sight: retain clearance in 4:3 instead
+    // of aiming during the non-firing reload mechanic.
+    rotation=Math.max(-28,Math.min(pose===4?-12:0,Math.atan2(viewHeight*.5-y,viewWidth*.5-x)*180/Math.PI+158.5));
+  }
+  return {left:x-mx,top:y-my,rotation};
+}
+function updateGeneratedPistolAnchors40(){
+  const wrap=G('fp-weapon-art-wrap'),img=G('fp-weapon-art');
+  if(!wrap||img?.dataset.pistolPack!=='40')return;
+  const pose=pistolPresentationPose40();
+  const p=PISTOL_PRESENTATION_ANCHORS40[pose]||PISTOL_PRESENTATION_ANCHORS40[0];
+  wrap.style.setProperty('--fp-muzzle-x',(p.muzzle[0]*100)+'%');wrap.style.setProperty('--fp-muzzle-y',(p.muzzle[1]*100)+'%');
+  wrap.style.setProperty('--fp-eject-x',(p.ejection[0]*100)+'%');wrap.style.setProperty('--fp-eject-y',(p.ejection[1]*100)+'%');
+}
+function rocketPresentationLayout(viewWidth,viewHeight,scale=1,drawX=0,drawY=0,legacy=false){
+  const width=Math.min(980,viewWidth*(viewWidth/viewHeight<1.1?.50:.65)),height=width*.75;
+  const mx=legacy?.34:.315,my=legacy?.35:.36,bore=(legacy?-149:-152)*Math.PI/180,margin=24;
+  let left=viewWidth+margin-width,top=viewHeight+margin-height,angle=0;
+  // Measured source-edge exits of the baked forearms, not the transparent corners.
+  const exits=[[.23,1],[.55,1],[1,.88],[1,1]];
+  for(let i=0;i<12;i++){
+    const x=left+width*mx+drawX,y=top+height*my+drawY;
+    angle=Math.atan2(viewHeight*.5-y,viewWidth*.5-x)-bore;
+    const cos=Math.cos(angle),sin=Math.sin(angle);
+    const points=exits.map(([u,v])=>({x:x+scale*((u-mx)*width*cos-(v-my)*height*sin),y:y+scale*((u-mx)*width*sin+(v-my)*height*cos)}));
+    const dx=Math.max(0,viewWidth+margin-Math.min(points[2].x,points[3].x));
+    const dy=Math.max(0,viewHeight+margin-Math.min(points[0].y,points[1].y));
+    left+=dx;top+=dy;if(dx+dy<.01)break;
+  }
+  const x=left+width*mx+drawX,y=top+height*my+drawY;
+  angle=Math.atan2(viewHeight*.5-y,viewWidth*.5-x)-bore;
+  return{width,height,left,top,rotation:angle*180/Math.PI};
 }
 function syncGeneratedFirstPersonWeaponArt(visible=true){
   const wrap=G('fp-weapon-art-wrap'),stage=G('fp-weapon-art-stage'),flash=G('fp-weapon-flash');
   if(!wrap||!stage)return;
   if(!running){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
   ensureGeneratedFirstPersonWeaponArtLoaded();
-  if(!fpGeneratedWeaponActive){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
+  if(!fpGeneratedWeaponActive&&!fpGeneratedWeaponAction){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
   const actionVisible=!!fpGeneratedWeaponAction;
   const show=Boolean(visible)||actionVisible;
   wrap.classList.toggle('shown',show);wrap.classList.toggle('scope-hidden',!show);
@@ -649,6 +932,12 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   // but must not drag it across the center-bottom HUD or rotate it into a poster-like pose.
   const key=fpGeneratedWeaponPending?.key||'rifle';
   const tune=FP_GENERATED_ART_TUNING[key]||FP_GENERATED_ART_TUNING.rifle;
+  if(key==='shotgun')updateGeneratedShotgunAnchors38();
+  if(key==='pistol')updateGeneratedPistolAnchors40();
+  if((key==='smoke'&&G('fp-weapon-art')?.dataset.smokePack==='42')||(key==='bomb'&&G('fp-weapon-art')?.dataset.bombPack==='41')||(key==='mine'&&G('fp-weapon-art')?.dataset.minePack==='39')){
+    stage.style.setProperty('--fp-dx','0px');stage.style.setProperty('--fp-dy','0px');
+    stage.style.setProperty('--fp-rot','0deg');stage.style.setProperty('--fp-scale','1');return;
+  }
   const sprintPresentationActive=typeof sprintBlend!=='undefined'&&sprintBlend>.01;
   const dx=sprintPresentationActive?0:Math.max(-14,Math.min(14,(gunGrp.position.x-gunBasePos.x)*220));
   const dy=sprintPresentationActive?0:Math.max(-10,Math.min(16,-(gunGrp.position.y-gunBasePos.y)*190));
@@ -659,13 +948,88 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   const drawY=Math.max(-12,Math.min(34,dy+(tune.kickY||0)*kick));
   const drawRot=Math.max(-2.2,Math.min(3.2,rot+(tune.kickRot||0)*kick));
   const baseScale=1-Math.min(.025,Math.abs(gunGrp.rotation.x)*.01);
+  let boreRotation=0;
+  if(key==='pistol'){
+    // Ready/action share one scale and pivot; source-edge guards follow the actual pose.
+    const primary=G('fp-weapon-art')?.dataset.pistolPack==='40';
+    if(primary){
+      const tall=innerWidth/innerHeight<1.5;
+      const width=Math.min(980,tall?Math.max(innerWidth*.50,innerHeight*.72):Math.min(innerWidth*.50,innerHeight*.72));
+      const height=width*.75,scale=baseScale*(1+(tune.kickScale||0)*kick);
+      const layout=pistolPresentationLayout40(innerWidth,innerHeight,width,scale,pistolPresentationPose40());
+      // Compensation preserves the measured bore and arm exits under sway and
+      // kick scale. Camera recoil remains authoritative for shot feedback.
+      boreRotation=layout.rotation-drawRot;
+      wrap.style.setProperty('--fp-width',width.toFixed(1)+'px');
+      wrap.style.setProperty('--fp-right',(innerWidth-(layout.left-drawX)-width).toFixed(1)+'px');
+      wrap.style.setProperty('--fp-bottom',(innerHeight-(layout.top-drawY)-height).toFixed(1)+'px');
+      stage.style.transformOrigin=(431/1448*100)+'% '+(150/1086*100)+'%';
+    }else{
+    const mx=.49,my=.38;
+    const tall=innerWidth/innerHeight<1.5;
+    const width=Math.min(980,tall?Math.max(innerWidth*.50,innerHeight*.72):Math.min(innerWidth*.50,innerHeight*.72));
+    const height=width*.75;
+    const right=innerWidth-innerWidth*(tall?.72:.64)-width*(1-mx);
+    let left=innerWidth-right-width;
+    // Place the fixed ready bore on its actual line to the reticle. Adapt width
+    // to height on wide windows so the whole manipulating hand stays readable.
+    const bore=36;
+    const muzzleY=innerHeight*.5+Math.tan(bore*Math.PI/180)*(left+width*mx-innerWidth*.5);
+    let top=muzzleY-height*my;
+    const x=left+width*mx+drawX,y=top+height*my+drawY;
+    const angle=Math.atan2(innerHeight*.5-y,innerWidth*.5-x)*180/Math.PI;
+    boreRotation=Math.max(-35,Math.min(35,((angle-(-144)+540)%360)-180));
+    if(!tall){
+      // Wide Pack40 also has a source-edge exit at the right forearm. Retain
+      // the baked heading and put both anatomical exits beyond the viewport.
+      boreRotation=-drawRot;left=innerWidth+24-width;top=innerHeight+24-height;
+    }
+    const radians=(drawRot+boreRotation)*Math.PI/180,scale=baseScale*(1+(tune.kickScale||0)*kick);
+    const bottomY=Math.min(...[0,width].map(corner=>top+height*my+drawY+scale*((corner-width*mx)*Math.sin(radians)+height*(1-my)*Math.cos(radians))));
+    // Bottom exits must stay outside at every mild sway/recoil transform.
+    top+=Math.max(0,innerHeight+24-bottomY);
+    if(!tall){
+      const rightX=Math.min(...[0,height].map(corner=>left+width*mx+drawX+scale*((width-width*mx)*Math.cos(radians)-(corner-height*my)*Math.sin(radians))));
+      left+=Math.max(0,innerWidth+24-rightX);
+    }
+    wrap.style.setProperty('--fp-width',width.toFixed(1)+'px');
+    wrap.style.setProperty('--fp-right',(innerWidth-left-width).toFixed(1)+'px');
+    wrap.style.setProperty('--fp-bottom',(innerHeight-top-height).toFixed(1)+'px');
+    stage.style.transformOrigin=(mx*100)+'% '+(my*100)+'%';
+    }
+  }else if(key==='rocket'){
+    const scale=baseScale*(1+(tune.kickScale||0)*kick);
+    const legacy=G('fp-weapon-art')?.dataset.rocketPack==='01';
+    const layout=rocketPresentationLayout(innerWidth,innerHeight,scale,drawX,drawY,legacy);
+    wrap.style.setProperty('--fp-width',layout.width.toFixed(1)+'px');
+    wrap.style.setProperty('--fp-right',(innerWidth-layout.left-layout.width).toFixed(1)+'px');
+    wrap.style.setProperty('--fp-bottom',(innerHeight-layout.top-layout.height).toFixed(1)+'px');
+    stage.style.transformOrigin=legacy?'34% 35%':'31.5% 36%';
+    boreRotation=layout.rotation-drawRot;
+  }else if(key==='rifle'||key==='shotgun'){
+    // Ready36 bore is measured at -157 degrees; rotate around its
+    // actual muzzle, so extending that line reaches the live center reticle.
+    const mx=parseFloat(wrap.style.getPropertyValue('--fp-muzzle-x'))/100;
+    const my=parseFloat(wrap.style.getPropertyValue('--fp-muzzle-y'))/100;
+    const tall=innerWidth/innerHeight<1.5;
+    const width=Math.min(980,Math.max(innerWidth*(key==='shotgun'?.46:.48),innerHeight*.72));
+    wrap.style.setProperty('--fp-width',tall?width.toFixed(1)+'px':tune.width);
+    wrap.style.setProperty('--fp-right',tall?(innerWidth-innerWidth*(key==='shotgun'?.60:.64)-width*(1-mx)).toFixed(1)+'px':tune.right);
+    const bottom=tall?innerHeight*.38-stage.offsetHeight*(1-my):Math.min(-innerHeight*.10,innerHeight*.38-stage.offsetHeight*(1-my));
+    wrap.style.setProperty('--fp-bottom',bottom.toFixed(1)+'px');
+    stage.style.transformOrigin=(mx*100)+'% '+(my*100)+'%';
+    const x=stage.offsetLeft+stage.offsetWidth*mx+drawX,y=stage.offsetTop+stage.offsetHeight*my+drawY;
+    const angle=Math.atan2(innerHeight*.5-y,innerWidth*.5-x)*180/Math.PI;
+    const spriteBore=key==='shotgun'?-145:G('fp-weapon-art')?.dataset.riflePack==='36'?-157:-144;
+    boreRotation=Math.max(-35,Math.min(35,((angle-spriteBore+540)%360)-180));
+  }else stage.style.transformOrigin='';
   stage.style.setProperty('--fp-dx',drawX.toFixed(1)+'px');
   stage.style.setProperty('--fp-dy',drawY.toFixed(1)+'px');
-  stage.style.setProperty('--fp-rot',drawRot.toFixed(2)+'deg');
+  stage.style.setProperty('--fp-rot',(drawRot+boreRotation).toFixed(2)+'deg');
   stage.style.setProperty('--fp-scale',(baseScale*(1+(tune.kickScale||0)*kick)).toFixed(3));
   if(flash){
     const life=Math.max(0,Math.min(1,beamT/FP_MUZZLE_FLASH_SECONDS));
-    const flashScale=(tune.flashScale||0)*(.72+life*.42);
+    const flashScale=((key==='shotgun'&&shotgunPresentationAssetReady37('pack37ShotgunEffects'))||(key==='rocket'&&rocketPresentationAssetReady35('pack35RocketEffects'))?0:(tune.flashScale||0))*(.72+life*.42);
     flash.style.opacity=!actionVisible&&visible&&life>0&&flashScale>0?String(Math.pow(life,.55)):'0';
     flash.style.setProperty('--fp-flash-pop',flashScale.toFixed(3));
     flash.style.setProperty('--fp-flash-twist',((((shotSequence%5)-2)*1.8)).toFixed(1)+'deg');
@@ -701,15 +1065,19 @@ function buildGun(w){
   const p=w.viewPos||WEAPONS[0].viewPos;gunBasePos.set(p[0],p[1],p[2]);gunGrp.position.copy(gunBasePos);
 }
 const BOT_WEAPON_POSES={
-  pistol:{p:[.19,1.34,-.16],r:[.03,.02,-.14],s:.72,gripR:[.105,-.105,.075],gripL:[-.015,-.085,-.015],elbowR:[.62,-.58,.18],elbowL:[-.56,-.52,.20]},
-  shotgun:{p:[.14,1.36,-.20],r:[.02,.025,-.13],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.40],elbowR:[.64,-.58,.15],elbowL:[-.78,-.50,.26]},
-  rifle:{p:[.14,1.37,-.21],r:[.015,.02,-.12],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34],elbowR:[.62,-.58,.14],elbowL:[-.72,-.52,.24]},
-  rocket:{p:[.10,1.42,-.16],r:[0,.035,-.10],s:.62,gripR:[.105,-.105,.08],gripL:[-.10,-.07,-.36],elbowR:[.62,-.62,.12],elbowL:[-.82,-.50,.30]},
-  plasma:{p:[.14,1.37,-.20],r:[.02,.025,-.12],s:.67,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34],elbowR:[.62,-.58,.14],elbowL:[-.72,-.52,.24]},
-  mine:{p:[.13,1.31,-.16],r:[.08,.02,-.10],s:.68,gripR:[.12,-.07,-.12],gripL:[-.12,-.06,-.31],elbowR:[.58,-.62,.16],elbowL:[-.62,-.60,.20]},
-  bomb:{p:[.13,1.31,-.16],r:[.08,.02,-.10],s:.68,gripR:[.13,-.06,-.16],gripL:[-.13,-.05,-.40],elbowR:[.58,-.62,.16],elbowL:[-.66,-.58,.22]},
-  smoke:{p:[.14,1.32,-.16],r:[.07,.02,-.11],s:.68,gripR:[.11,-.07,-.12],gripL:[-.11,-.06,-.34],elbowR:[.58,-.62,.16],elbowL:[-.64,-.58,.22]},
-  sniper:{p:[.12,1.39,-.23],r:[.012,.018,-.11],s:.65,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.46],elbowR:[.62,-.58,.14],elbowL:[-.82,-.48,.28]}
+  // Bot gameplay yaw/muzzle forward is +Z; weapon models are authored toward
+  // local -Z. Store the presentation correction in the canonical pose data so
+  // initial refresh, per-frame sway and the two-hand solver share one convention.
+  pistol:{p:[.19,1.34,.16],r:[.03,Math.PI+.02,-.14],s:.72,gripR:[.105,-.105,.075],gripL:[-.015,-.085,-.015],elbowR:[.62,-.58,.18],elbowL:[-.56,-.52,.20]},
+  shotgun:{p:[.16,1.30,.23],r:[.03,Math.PI+.025,-.12],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.40],elbowR:[.70,-.76,.18],elbowL:[-.84,-.70,.28]},
+  rifle:{p:[.16,1.31,.24],r:[.025,Math.PI+.02,-.11],s:.68,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34],elbowR:[.68,-.75,.17],elbowL:[-.80,-.70,.27]},
+  rocket:{p:[.10,1.42,.16],r:[0,Math.PI+.035,-.10],s:.62,gripR:[.105,-.105,.08],gripL:[-.10,-.07,-.36],elbowR:[.62,-.62,.12],elbowL:[-.82,-.50,.30]},
+  plasma:{p:[.16,1.31,.23],r:[.03,Math.PI+.025,-.11],s:.67,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.34],elbowR:[.68,-.75,.17],elbowL:[-.80,-.70,.27]},
+  mine:{p:[.13,1.31,.16],r:[.08,Math.PI+.02,-.10],s:.68,gripR:[.12,-.07,-.12],gripL:[-.12,-.06,-.31],elbowR:[.58,-.62,.16],elbowL:[-.62,-.60,.20]},
+  bomb:{p:[.13,1.31,.16],r:[.08,Math.PI+.02,-.10],s:.68,gripR:[.13,-.06,-.16],gripL:[-.13,-.05,-.40],elbowR:[.58,-.62,.16],elbowL:[-.66,-.58,.22]},
+  smoke:{p:[.14,1.32,.16],r:[.07,Math.PI+.02,-.11],s:.68,gripR:[.11,-.07,-.12],gripL:[-.11,-.06,-.34],elbowR:[.58,-.62,.16],elbowL:[-.64,-.58,.22]},
+  sniper:{p:[.14,1.32,.26],r:[.02,Math.PI+.018,-.10],s:.65,gripR:[.105,-.105,.055],gripL:[-.10,-.07,-.46],elbowR:[.70,-.74,.17],elbowL:[-.88,-.66,.30]},
+  grenade:{p:[.13,1.31,.16],r:[.10,Math.PI+.02,-.10],s:.70,gripR:[.11,-.035,-.18],gripL:[-.10,-.025,-.36],elbowR:[.58,-.62,.16],elbowL:[-.64,-.58,.22]}
 }
 function makeBotWeaponMesh(key,team){
   return createWeaponModel(key,{mode:'bot',team,detail:MOBILE_LOW?0:2});
@@ -741,7 +1109,7 @@ function buildWeaponBar(){
 
     const asset=document.createElement('img');
     asset.className='wb-asset';asset.src=w.asset;asset.alt='';asset.decoding='async';asset.draggable=false;
-    asset.addEventListener('error',()=>asset.remove(),{once:true});
+    asset.addEventListener('error',()=>{if((w.isGrenade||w.isRocket||w.isMine)&&!asset.dataset.fallback){asset.dataset.fallback='true';asset.src=gameAssetUrl(w.isMine?'assets/weapons/mine.svg':w.isRocket?'assets/weapons/rocket.svg':'assets/weapons/grenade.svg');}else asset.remove();});
 
     const key=document.createElement('div');key.className='wb-key';key.textContent=owned?weaponSlotKeyLabel(i):'🔒';
     const name=document.createElement('div');name.className='wb-name';name.textContent=owned?w.label:'НЕ НАЙДЕНО';

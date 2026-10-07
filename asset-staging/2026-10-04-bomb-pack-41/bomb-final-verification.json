@@ -1,0 +1,44 @@
+{
+  "build": "6e39248d342cf16a",
+  "target": "G:\\МОЯ Веб-разработка\\ZAP_ZONE",
+  "nodeTests": {
+    "passed": 239,
+    "failed": 0,
+    "independentPassed": 239
+  },
+  "browserChecks": 27,
+  "pageErrors": [],
+  "directFilePassed": true,
+  "cdnMocked": false,
+  "obsoleteFuse": {
+    "badge": "no bomb badge in45/43/8/1, stale removed",
+    "sparkCalls": 0,
+    "smokeCalls": 0
+  },
+  "visual": {
+    "fireWidth": 1075,
+    "fireHeight": 768,
+    "waveMeters": 28,
+    "smallWindowWidth": 640,
+    "projectedCornersErrorPx": "<1"
+  },
+  "damage": {
+    "playerRadius": 34,
+    "botRadius": 32,
+    "changed": false
+  },
+  "cooldownSeconds": 180,
+  "exactFileMappings": 10,
+  "backup": "bomb-before-no-fuse-update.zip",
+  "reviewedSnapshots": [
+    "bomb-ground-angle.png",
+    "bomb-blast-frame-05.png",
+    "bomb-wide-fire-640.png",
+    "bomb-wide-wave-640.png"
+  ],
+  "limitations": [
+    "Hosting/CI not run",
+    "Subjective audio listening not run",
+    "Existing ground quad near-plane clipping remains"
+  ]
+}

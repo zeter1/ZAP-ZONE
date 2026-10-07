@@ -1,0 +1,75 @@
+[
+  {
+    "nativeStart": false
+  },
+  {
+    "release": {
+      "pre": {
+        "ammo": 1,
+        "count": 0
+      },
+      "post": {
+        "ammo": 0,
+        "count": 1,
+        "cd": 30
+      },
+      "once": 1
+    }
+  },
+  {
+    "cancel": {
+      "pending": null,
+      "count": 0,
+      "ammo": 1,
+      "action": null
+    }
+  },
+  {
+    "cloud": "far",
+    "nodes": 10,
+    "visible": 8,
+    "overlay": "0",
+    "image": "url(\"http://127.0.0.1:9509/assets/ui/overlays/smoke-inside-edge-42.webp?v=343e322521c941d5\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloud": "near",
+    "nodes": 10,
+    "visible": 8,
+    "overlay": "0",
+    "image": "url(\"http://127.0.0.1:9509/assets/ui/overlays/smoke-inside-edge-42.webp?v=343e322521c941d5\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloud": "edge",
+    "nodes": 10,
+    "visible": 8,
+    "overlay": "0.362865",
+    "image": "url(\"http://127.0.0.1:9509/assets/ui/overlays/smoke-inside-edge-42.webp?v=343e322521c941d5\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloud": "inside",
+    "nodes": 10,
+    "visible": 1,
+    "overlay": "1",
+    "image": "url(\"http://127.0.0.1:9509/assets/ui/overlays/smoke-inside-dense-42.webp?v=343e322521c941d5\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cleanup": {
+      "cap": 3,
+      "nodes": 30,
+      "remaining": 0,
+      "dom": 0
+    }
+  },
+  {
+    "errors": [],
+    "build": "343e322521c941d5"
+  }
+]

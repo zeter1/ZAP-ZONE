@@ -1,0 +1,388 @@
+{
+  "httpBoot": "6c8b\",\"http://127.0.0.1:8000/src/ai/bot-fire-control.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/ai/bot-fire-cadence.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/ai/bot-deployables.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/ai/bot-state-policy.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/ai/tactics.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/game/frontline.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/entities/bot-presentation.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/entities/bots.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/entities/pickups.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/progression/progression.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/game/session.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/ui/minimap.js?v=6e7c923db9636c8b\",\"http://127.0.0.1:8000/src/game/runtime.js?v=6e7c923db9636c8b\"],\"globals\":{\"perception\":\"function\",\"bots\":\"function\",\"runtime\":\"function\",\"noise\":\"object\",\"preload\":\"function\"},\"wallGeometry\":{\"noHitClear\":true,\"nearest\":2.899999998509884,\"nearestOk\":true,\"endpointClear\":true,\"wallBetweenHit\":true,\"wallBetweenClear\":true,\"wallBetweenEndpointClear\":true,\"ok\":true},\"diagnostics\":[]}\n",
+  "nativePointerLock": true,
+  "testLane": {
+    "x": -80,
+    "z": -80,
+    "yaw": 3.141592653589793
+  },
+  "launch": [
+    {
+      "fuse": 1.7384000000000006,
+      "grounded": false,
+      "position": {
+        "x": -80,
+        "y": 2.0252984199999977,
+        "z": -78.43343999999999
+      },
+      "state": "flight",
+      "visibility": "visible",
+      "left": "640px",
+      "top": "308.4px",
+      "width": "108px",
+      "frame": 4
+    }
+  ],
+  "ground": [
+    {
+      "fuse": 0.4259000000000007,
+      "grounded": true,
+      "position": {
+        "x": -80,
+        "y": 0.1401,
+        "z": -65.3173742053083
+      },
+      "state": "resting",
+      "visibility": "visible",
+      "left": "640px",
+      "top": "457.2px",
+      "width": "37.9px",
+      "frame": 1
+    }
+  ],
+  "blast": [
+    {
+      "kind": "grenadeExplosion34",
+      "age": 0.2166000000000004,
+      "worldPos": {
+        "x": -80,
+        "y": 0.9401,
+        "z": -64.6896665945745
+      },
+      "visibility": "visible",
+      "transform": "",
+      "scale": "0.907",
+      "duration": 0.76,
+      "worldSizeM": 8
+    },
+    {
+      "kind": "grenadeDebris34",
+      "age": 0.2166000000000004,
+      "worldPos": {
+        "x": -80,
+        "y": 0.9401,
+        "z": -64.6896665945745
+      },
+      "visibility": "visible",
+      "transform": "",
+      "scale": "1.098",
+      "duration": 0.7,
+      "worldSizeM": 8.4
+    },
+    {
+      "kind": "grenadeSmoke34",
+      "age": 0.2166000000000004,
+      "worldPos": {
+        "x": -80,
+        "y": 0.9401,
+        "z": -64.6896665945745
+      },
+      "visibility": "visible",
+      "transform": "",
+      "scale": "0.761",
+      "duration": 1.35,
+      "worldSizeM": 6.4
+    },
+    {
+      "kind": "grenadeScorch34",
+      "age": 0.2166000000000004,
+      "worldPos": {
+        "x": -80,
+        "y": 0.1401,
+        "z": -64.6896665945745
+      },
+      "visibility": "hidden",
+      "transform": "matrix3d(-0.515079, 0.0112984, 0, 2.82e-05, 0.669293, 0.409105, 0, 0.0010228, 0, 0, 1, 0, 686.659, 466.152, 0, 1)",
+      "scale": "",
+      "duration": 15,
+      "worldSizeM": 2.8
+    }
+  ],
+  "crater": {
+    "age": 2.1889000000000003,
+    "duration": 15,
+    "frame": 1,
+    "opacity": "1",
+    "transform": "matrix3d(-0.515079, 0.0112984, 0, 2.82e-05, 0.669293, 0.409105, 0, 0.0010228, 0, 0, 1, 0, 686.659, 466.152, 0, 1)"
+  },
+  "craterRemovedAt15": true,
+  "afterBlast": {
+    "originalArt": false,
+    "originalParent": false,
+    "others": []
+  },
+  "charge": {
+    "age": 1.1,
+    "pending": null,
+    "label": "СИЛА БРОСКА · 100%"
+  },
+  "chargedLaunch": {
+    "vx": -2.204364238465236e-15,
+    "vy": 7.951599999999947,
+    "vz": 18,
+    "fuse": 1.8061999999999971,
+    "radius": 8
+  },
+  "switchCancel": {
+    "charge": null,
+    "pending": null,
+    "hidden": true
+  },
+  "balance": {
+    "maxHp": 100,
+    "bare": 80,
+    "armored": 72
+  },
+  "overWall": {
+    "wallTop": 1.549999976158142,
+    "from": {
+      "x": -29.9207166388932,
+      "y": 1.949999976158142,
+      "z": -18
+    },
+    "to": {
+      "x": -24.0792833611068,
+      "y": 1.949999976158142,
+      "z": -18
+    },
+    "bounces": 0
+  },
+  "framing": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 0,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 1,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 2,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 3,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 4,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 5,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 6,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "frame": 7,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1305.59375,
+      "height": 734.390625,
+      "bottom": 734.390625,
+      "left": -12.796875,
+      "top": 0,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 0,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 1,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 2,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 3,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 4,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 5,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 6,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "frame": 7,
+      "parent": "fp-weapon-art-wrap",
+      "width": 1044.46875,
+      "height": 587.515625,
+      "bottom": 783.359375,
+      "left": -10.234375,
+      "top": 195.84375,
+      "atlas": "200% 400%"
+    }
+  ],
+  "errors": [],
+  "faultBootErrors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "failure": {
+    "state": -1,
+    "nodes": 0,
+    "bodyVisible": true
+  },
+  "fileMenu": "ack/armor-break-tech-01.webp\",\"complete\":true,\"naturalWidth\":256},{\"id\":\"\",\"src\":\"assets/ui/feedback/levelup-core-tech-01.webp\",\"generated\":\"assets/ui/feedback/levelup-core-tech-01.webp\",\"complete\":true,\"naturalWidth\":256},{\"id\":\"brand-logo\",\"src\":\"assets/ui/zap-zone-logo-01.png\",\"generated\":\"assets/ui/zap-zone-logo-01.png\",\"complete\":true,\"naturalWidth\":720}]},\"pickupLayout\":{\"ok\":true,\"titleCenter\":0.44223040044353074,\"detailCenter\":0.6844923271423833,\"titleCenterX\":0.5974924926341472,\"detailCenterX\":0.5599924772523021,\"separated\":true,\"titleInside\":true,\"detailInside\":true,\"titleScrollWidth\":388,\"titleClientWidth\":388,\"detailScrollWidth\":335,\"detailClientWidth\":335,\"detailWhiteSpace\":\"nowrap\"},\"perkCardLayout\":{\"height\":220.90625,\"width\":204,\"inside\":true,\"noOverflow\":true,\"separated\":true,\"bottomInset\":24,\"nodes\":[{\"cls\":\"pcard-ic\",\"left\":74,\"right\":74,\"top\":15,\"bottom\":149.90625},{\"cls\":\"pcard-rarity\",\"left\":17,\"right\":17,\"top\":77.53125,\"bottom\":128.453125},{\"cls\":\"pcard-nm\",\"left\":17,\"right\":17,\"top\":97,\"bottom\":92},{\"cls\":\"pcard-ds\",\"left\":17,\"right\":17,\"top\":131.90625,\"bottom\":62.125},{\"cls\":\"pcard-meta\",\"left\":17,\"right\":17,\"top\":181.71875,\"bottom\":24}]},\"diagnostics\":[]}\n",
+  "fileAtlas": 2,
+  "filePack34": true
+}

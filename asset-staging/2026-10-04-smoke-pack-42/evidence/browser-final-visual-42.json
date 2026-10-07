@@ -1,0 +1,726 @@
+[
+  {
+    "programmaticVisualFixture": true,
+    "nativeInputVerifiedSeparately": true
+  },
+  {
+    "ready": {
+      "viewport": [
+        1600,
+        900
+      ],
+      "stage": {
+        "x": 496,
+        "y": 288,
+        "w": 1120,
+        "h": 630
+      },
+      "pack": "42",
+      "rig": false
+    }
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeThrow42",
+    "frame": 0,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "0% 0%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeThrow42",
+    "frame": 1,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "50% 0%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeThrow42",
+    "frame": 2,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "100% 0%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeThrow42",
+    "frame": 3,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "0% 100%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeThrow42",
+    "frame": 4,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "50% 100%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeThrow42",
+    "frame": 5,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "100% 100%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeReload42",
+    "frame": 0,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "0% 50%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeReload42",
+    "frame": 1,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "50% 50%"
+  },
+  {
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "kind": "smokeReload42",
+    "frame": 2,
+    "rect": {
+      "x": 496,
+      "y": 288,
+      "w": 1120,
+      "h": 630
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "100% 50%"
+  },
+  {
+    "ready": {
+      "viewport": [
+        1280,
+        1024
+      ],
+      "stage": {
+        "x": 396.796875,
+        "y": 540.46875,
+        "w": 896,
+        "h": 504
+      },
+      "pack": "42",
+      "rig": false
+    }
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeThrow42",
+    "frame": 0,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "0% 0%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeThrow42",
+    "frame": 1,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "50% 0%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeThrow42",
+    "frame": 2,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "100% 0%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeThrow42",
+    "frame": 3,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "0% 100%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeThrow42",
+    "frame": 4,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "50% 100%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeThrow42",
+    "frame": 5,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "100% 100%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeReload42",
+    "frame": 0,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "0% 50%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeReload42",
+    "frame": 1,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "50% 50%"
+  },
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "kind": "smokeReload42",
+    "frame": 2,
+    "rect": {
+      "x": 396.796875,
+      "y": 540.46875,
+      "w": 896,
+      "h": 504
+    },
+    "imgOpacity": "0",
+    "actionOpacity": "1",
+    "rig": false,
+    "position": "100% 50%"
+  },
+  {
+    "release": {
+      "pre": {
+        "ammo": 1,
+        "count": 0
+      },
+      "post": {
+        "ammo": 0,
+        "count": 1,
+        "cd": 30
+      },
+      "once": 1
+    }
+  },
+  {
+    "cancel": {
+      "pending": null,
+      "count": 0,
+      "ammo": 1,
+      "action": null
+    }
+  },
+  {
+    "cloud": "far",
+    "nodes": 10,
+    "visible": 6,
+    "overlay": "0",
+    "image": "url(\"http://127.0.0.1:9025/assets/ui/overlays/smoke-inside-edge-42.webp?v=834f3af971284de9\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloudPaint": "far",
+    "center": [
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "451.416px",
+        "opacity": "0.85"
+      },
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "451.416px",
+        "opacity": "0"
+      },
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "451.416px",
+        "opacity": "1"
+      }
+    ],
+    "overlayPaint": "0"
+  },
+  {
+    "cloud": "near",
+    "nodes": 10,
+    "visible": 6,
+    "overlay": "0",
+    "image": "url(\"http://127.0.0.1:9025/assets/ui/overlays/smoke-inside-edge-42.webp?v=834f3af971284de9\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloudPaint": "near",
+    "center": [
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "453.421px",
+        "opacity": "0.85"
+      },
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "453.421px",
+        "opacity": "0.818163"
+      },
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "453.421px",
+        "opacity": "0.181837"
+      }
+    ],
+    "overlayPaint": "0"
+  },
+  {
+    "cloud": "edge",
+    "nodes": 10,
+    "visible": 6,
+    "overlay": "0.362865",
+    "image": "url(\"http://127.0.0.1:9025/assets/ui/overlays/smoke-inside-edge-42.webp?v=834f3af971284de9\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloudPaint": "edge",
+    "center": [
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "456.316px",
+        "opacity": "0.85"
+      },
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "456.316px",
+        "opacity": "1"
+      },
+      {
+        "visibility": "visible",
+        "x": "800px",
+        "y": "456.316px",
+        "opacity": "0"
+      }
+    ],
+    "overlayPaint": "0.362865"
+  },
+  {
+    "cloud": "inside",
+    "nodes": 10,
+    "visible": 0,
+    "overlay": "1",
+    "image": "url(\"http://127.0.0.1:9025/assets/ui/overlays/smoke-inside-dense-42.webp?v=834f3af971284de9\")",
+    "fallback": false,
+    "blocks": true
+  },
+  {
+    "cloudPaint": "inside",
+    "center": [
+      {
+        "visibility": "hidden",
+        "x": "800px",
+        "y": "456.316px",
+        "opacity": "0.85"
+      },
+      {
+        "visibility": "hidden",
+        "x": "800px",
+        "y": "456.316px",
+        "opacity": "1"
+      },
+      {
+        "visibility": "hidden",
+        "x": "800px",
+        "y": "456.316px",
+        "opacity": "0"
+      }
+    ],
+    "overlayPaint": "1"
+  },
+  {
+    "lifecycleFrame": 0,
+    "density": 0.14814814814814814,
+    "position": "0% 0%"
+  },
+  {
+    "lifecycleFrame": 1,
+    "density": 0.5925925925925926,
+    "position": "50% 0%"
+  },
+  {
+    "lifecycleFrame": 2,
+    "density": 1,
+    "position": "100% 0%"
+  },
+  {
+    "lifecycleFrame": 3,
+    "density": 1,
+    "position": "0% 100%"
+  },
+  {
+    "lifecycleFrame": 4,
+    "density": 1,
+    "position": "50% 100%"
+  },
+  {
+    "lifecycleFrame": 5,
+    "density": 0.5,
+    "position": "100% 100%"
+  },
+  {
+    "isolated": "pack42SmokeCloud",
+    "frame": 0,
+    "visible": "visible",
+    "position": "0% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-cloud-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeCloud",
+    "frame": 1,
+    "visible": "visible",
+    "position": "50% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-cloud-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeCloud",
+    "frame": 2,
+    "visible": "visible",
+    "position": "100% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-cloud-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeCloud",
+    "frame": 3,
+    "visible": "visible",
+    "position": "0% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-cloud-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeCloud",
+    "frame": 4,
+    "visible": "visible",
+    "position": "50% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-cloud-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeCloud",
+    "frame": 5,
+    "visible": "visible",
+    "position": "100% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-cloud-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeNear",
+    "frame": 0,
+    "visible": "visible",
+    "position": "0% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-near-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeNear",
+    "frame": 1,
+    "visible": "visible",
+    "position": "100% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-near-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeNear",
+    "frame": 2,
+    "visible": "visible",
+    "position": "0% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-near-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeNear",
+    "frame": 3,
+    "visible": "visible",
+    "position": "100% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-near-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeFar",
+    "frame": 0,
+    "visible": "visible",
+    "position": "0% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-far-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeFar",
+    "frame": 1,
+    "visible": "visible",
+    "position": "50% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-far-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeFar",
+    "frame": 2,
+    "visible": "visible",
+    "position": "100% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-far-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeFar",
+    "frame": 3,
+    "visible": "visible",
+    "position": "0% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-far-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeFar",
+    "frame": 4,
+    "visible": "visible",
+    "position": "50% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-far-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeFar",
+    "frame": 5,
+    "visible": "visible",
+    "position": "100% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-far-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 0,
+    "visible": "visible",
+    "position": "0% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 1,
+    "visible": "visible",
+    "position": "33.3333% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 2,
+    "visible": "visible",
+    "position": "66.6667% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 3,
+    "visible": "visible",
+    "position": "100% 0%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 4,
+    "visible": "visible",
+    "position": "0% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 5,
+    "visible": "visible",
+    "position": "33.3333% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 6,
+    "visible": "visible",
+    "position": "66.6667% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "isolated": "pack42SmokeWisps",
+    "frame": 7,
+    "visible": "visible",
+    "position": "100% 100%",
+    "source": "url(\"http://127.0.0.1:9025/assets/ui/fx/smoke-wisps-atlas-42.webp?v=834f3af971284de9\")"
+  },
+  {
+    "cleanup": {
+      "cap": 3,
+      "nodes": 30,
+      "remaining": 0,
+      "dom": 0
+    }
+  },
+  {
+    "errors": [],
+    "build": "834f3af971284de9"
+  }
+]

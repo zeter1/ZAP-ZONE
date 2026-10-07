@@ -1,0 +1,127 @@
+{
+  "pack": 36,
+  "generator": "built-in image_gen",
+  "activeReloadSource": "reload-source-v2.png",
+  "readyFrame": 5,
+  "grid": [
+    3,
+    2
+  ],
+  "sourceRows": [
+    [
+      25,
+      469
+    ],
+    [
+      443,
+      887
+    ]
+  ],
+  "sourceCells": "floor(col*w/3); exact sourceRows; clear top32 and left16; crop common bottom7 pixels",
+  "muzzle": [
+    0.203,
+    0.225
+  ],
+  "boreAngleDegrees": -157,
+  "tacticalSequence": [
+    5,
+    1,
+    2,
+    3,
+    5
+  ],
+  "emptySequence": [
+    5,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "files": [
+    {
+      "path": "assets/ui/weapons/fp/player-rifle-fps-36.webp",
+      "dimensions": [
+        960,
+        720
+      ],
+      "alpha": true,
+      "bytes": 81896,
+      "budgetKiB": 250,
+      "sha256": "897428186a0971b3601ca68eb5c1f2959f4f3aa65e55761510b4c8da888cda7b"
+    },
+    {
+      "path": "assets/ui/fx/rifle-reload-vfx-atlas-36.webp",
+      "dimensions": [
+        2304,
+        1152
+      ],
+      "alpha": true,
+      "bytes": 358320,
+      "budgetKiB": 512,
+      "sha256": "5a29efa6bc08ce008f2adade67aa432128d9301402788537db7777ba06590ee8"
+    },
+    {
+      "path": "assets/ui/fx/rifle-effects-vfx-atlas-36.webp",
+      "dimensions": [
+        768,
+        768
+      ],
+      "alpha": true,
+      "bytes": 149014,
+      "budgetKiB": 192,
+      "sha256": "edf71575e51dd03221f6af8e3db43f8c7f2c1483bfbaae0629524c7ee2ca3d0a"
+    },
+    {
+      "path": "assets/ui/pickups/weapons/world-rifle-pickup-36.webp",
+      "dimensions": [
+        512,
+        342
+      ],
+      "alpha": true,
+      "bytes": 33106,
+      "budgetKiB": 120,
+      "sha256": "3ec9bd3ffc8e99707ec12c240efe714454ebc6dfffa40de3074ca5a57969813e"
+    },
+    {
+      "path": "assets/ui/weapons/rifle-icon-36.webp",
+      "dimensions": [
+        192,
+        128
+      ],
+      "alpha": true,
+      "bytes": 8658,
+      "budgetKiB": 40,
+      "sha256": "17314f876ac96bcac594ce4d36deb5d71e0db321311f4c69c3f38271d91b400f"
+    }
+  ],
+  "sources": [
+    {
+      "path": "reload-source-v2.png",
+      "dimensions": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "sha256": "12f337c5aa14e41cb8a76f6f1b53e3f53e95c1133b205309fd9f124bc73ff543"
+    },
+    {
+      "path": "effects-source.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "81848a2d1204aca2e20e15d69a74e83c1fead26f33681632b9de849987090956"
+    },
+    {
+      "path": "pickup-source.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "a163ad1938321cdccf27c219af6c5fcca74fadbd41af803603d9d422062a3004"
+    }
+  ]
+}

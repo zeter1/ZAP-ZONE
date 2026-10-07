@@ -12,6 +12,7 @@ function addXP(amt){
   saveTick=Math.min(saveTick,1.5);
 }
 function openLvlAnn(lvl){
+  cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   zooming=false;
   G('sniper-scope')?.classList.remove('on','kick');
   lvlAnnOpen=true;refreshMobileHUD();playSfx('level');
@@ -36,11 +37,12 @@ function renderPerkChoices(lvl){
     const taken=perkTimesTaken(p.id);
     const nextRank=taken+1;
     const rarity=PERK_RARITIES[p.rarity]||PERK_RARITIES.common;
-    const d=document.createElement('div');
+    const d=document.createElement('button');
+    d.type='button';
+    d.setAttribute('aria-label',p.nm+'. '+p.ds+'. Ранг '+nextRank+' из '+(p.maxRank||1));
     d.className='pcard rarity-'+p.rarity;
-    if(typeof applyPresentationAtlasVariables==='function')applyPresentationAtlasVariables(d,'perk-frame',perkRarityPresentationFrame(p.rarity));
     const perkIcon=perkAsset(p.id,p.path),perkIconFallback=perkFallbackAsset(p.id,p.path);
-    d.innerHTML=`<img class="pcard-ic" src="${perkIcon}" data-fallback-src="${perkIconFallback}" alt="" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc"><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm"><span class="perk-emoji">${p.ic}</span> ${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span> · <span class="pcard-rank">ранг ${nextRank}/${p.maxRank||1}</span> · клавиша ${index+1}</div>`;
+    d.innerHTML=`<img class="pcard-ic" src="${perkIcon}" data-fallback-src="${perkIconFallback}" alt="" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc"><div class="pcard-rarity">${rarity.name}</div><div class="pcard-nm">${p.nm}</div><div class="pcard-ds">${p.ds}</div><div class="pcard-meta"><span class="pcard-path">${PATH_NAMES[p.path]}</span><span class="pcard-rank">${nextRank} / ${p.maxRank||1}</span><kbd class="pcard-key" aria-hidden="true">${index+1}</kbd></div>`;
     d.addEventListener('click',()=>pickPerk(p));
     cards.appendChild(d);
   });
@@ -62,6 +64,7 @@ function rerollPerks(){
   renderPerkChoices(level);
 }
 function openPerkPick(lvl){
+  cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   perkPickOpen=true;refreshMobileHUD();
   setGameCursorHidden(false);
   if(document.pointerLockElement===canvas)document.exitPointerLock();
@@ -70,6 +73,7 @@ function openPerkPick(lvl){
   currentPerkChoices=rollPerkChoices(5);
   renderPerkChoices(lvl);
   G('perk-menu').classList.add('on');
+  G('perk-cards').querySelector('button')?.focus({preventScroll:true});
 }
 function pickPerk(p){
   if(!canTakePerk(p)){showMsg('Это улучшение уже достигло максимального ранга');return;}
@@ -133,11 +137,18 @@ function updateStats(){
 function damageLabel(kind){
   return kind==='rocket'?'ракета':kind==='mine'?'мина':kind==='bomb'?'бомба':kind==='grenade'?'осколочная граната':kind==='melee'?'контактный удар':'попадание';
 }
-function applyDamageToPlayer(amount,kind='bullet',attacker=null){
+function applyDamageToPlayer(amount,kind='bullet',attacker=null,directRocketHit=false,directMineContact=false){
+  const forcedMineDeath=kind==='mine'&&directMineContact;
   if(dying||amount<=0)return 0;
-  if(respawnShieldT>0)return 0;
+  if(gameSettings.invincible)return 0;
+  if(respawnShieldT>0&&!forcedMineDeath)return 0;
+  if(forcedMineDeath){
+    // Own/friendly traps must not credit an earlier attacker or a friendly placer.
+    attacker=attacker?.alive&&attacker.team==='enemy'?attacker:null;
+    lastPlayerAttacker=attacker;
+  }
   if(kind==='bullet'&&plr.dodgeChance>0&&Math.random()<plr.dodgeChance){
-    showDodgePhaseFx();showMsg('🫥 Уклонение от пули!');return 0;
+    showMsg('🫥 Уклонение от пули!');return 0;
   }
   let dmg=amount;
   if(kind==='bullet'&&plr.smokeResist>0&&smokeStrengthAt(camera.position)>.12)dmg*=Math.max(.45,1-plr.smokeResist);
@@ -145,15 +156,17 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
   else if(kind==='mine')dmg*=PLAYER_MINE_DAMAGE_SCALE;
   else if(kind==='bomb')dmg*=PLAYER_BOMB_DAMAGE_SCALE;
   else if(kind==='melee')dmg*=PLAYER_MELEE_DAMAGE_SCALE;
-  else dmg*=PLAYER_BULLET_DAMAGE_SCALE;
+  else if(kind!=='grenade')dmg*=PLAYER_BULLET_DAMAGE_SCALE;
   if(kind==='rocket'||kind==='mine'||kind==='bomb')dmg*=Math.max(.35,1-plr.blastResist);
   else if(kind==='bullet')dmg*=Math.max(.45,1-plr.bulletResist);
   const armorBefore=armor;
   if(armor>0){
-    const absorb=Math.min(armor,dmg*(kind==='rocket'||kind==='mine'?0.45:0.35));
+    const absorb=Math.min(armor,dmg*(kind==='grenade'?FRAG_GRENADE_BLAST.armorReduction:kind==='rocket'||kind==='mine'?0.45:0.35));
     armor-=absorb;
     dmg-=absorb;
   }
+  // A direct rocket contact is lethal despite armor/resistance; spawn shield and second wind retain their rules.
+  if((kind==='rocket'&&directRocketHit)||forcedMineDeath)dmg=Math.max(dmg,hp);
   const armorImpact=armorBefore>armor;
   if(armorImpact&&typeof showArmorHitFx==='function')showArmorHitFx(armorBefore-armor);
   if(armorBefore>0&&armor<=0)showArmorBreakFx();
@@ -174,9 +187,9 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null){
     attacker.hurt(dmg*0.15,new THREE.Vector3(attacker.group.position.x-camera.position.x,0,attacker.group.position.z-camera.position.z).normalize(),'ally');
   }
   if(kind==='mine')showMsg('💣 Подрыв рядом!');
-  if(hp<=0&&plr.secondWind&&plr.secondWindReady){
+  if(hp<=0&&!forcedMineDeath&&plr.secondWind&&plr.secondWindReady){
     plr.secondWindReady=false;hp=Math.max(1,Math.ceil(plr.maxHp*.35));respawnShieldT=2;deathReason='';
-    showSecondWindFx();showAnn('💓 ВТОРОЕ ДЫХАНИЕ');showMsg('Смертельный урон отменён · щит 2 секунды');markHUD();updateStats();
+    showAnn('💓 ВТОРОЕ ДЫХАНИЕ');showMsg('Смертельный урон отменён · щит 2 секунды');markHUD();updateStats();
   }
   checkDeath();
   return dmg;
@@ -232,7 +245,8 @@ function updateWeaponStateHUD(){
   }else if(wasWeaponSprinting||sprintBlend>.22){text='СПРИНТ · ОРУЖИЕ ОПУЩЕНО';state='blocked';
   }else if(sprintExitT>0){text='ГОТОВНОСТЬ ПОСЛЕ СПРИНТА';state='busy';
   }else if(cycleT>0){text=cycleKind==='bolt'?'ПЕРЕДЁРГИВАНИЕ ЗАТВОРА':'PUMP ACTION';state='busy';
-  }else if(weaponReadyT>0){text='ГОТОВНОСТЬ';state='busy';}
+  }else if(weaponReadyT>0){text='ГОТОВНОСТЬ';state='busy';
+  }else if(getW().isRocket&&playerRocketShotCD>0){text='ВЫСТРЕЛ ЧЕРЕЗ '+Math.ceil(playerRocketShotCD)+' с';state='busy';}
   if(el.textContent!==text)el.textContent=text;
   if(el.dataset.state!==state)el.dataset.state=state;
 }
@@ -241,7 +255,7 @@ function wHUD(){
   const mode=G('wmode');
   if(mode){
     const velocity=w.hitscan?'МГНОВЕННО':w.muzzleVelocity?Math.round(w.muzzleVelocity)+' м/с':w.isRocket?Math.round(PLAYER_ROCKET_SPEED)+' м/с':'';
-    mode.textContent=weaponModeLabel(w)+(velocity?' · '+velocity:'');
+    mode.textContent=w.isGrenade?'ЛКМ: УДЕРЖАТЬ И ОТПУСТИТЬ':weaponModeLabel(w)+(velocity?' · '+velocity:'');
   }
   const infiniteAmmo=testingInfiniteAmmoEnabled();
   G('wammo').textContent=infiniteAmmo?'∞ / '+w.clip:ammo+' / '+w.clip;
@@ -265,7 +279,7 @@ function wHUD(){
   updateMineHUD();
 }
 function xpHUD(){
-  if(level>=30){G('xp-fill').style.width='100%';G('xp-lbl').textContent='ЛВЛ 30 · МАКСИМАЛЬНЫЙ УРОВЕНЬ';return;}
+  if(level>=30){G('xp-fill').style.width='100%';G('xp-lbl').textContent='ЛВЛ 30 · МАКС. УРОВЕНЬ';return;}
   const cur=xpFor(level),nxt=xpFor(level+1),pct=Math.max(0,Math.min(100,(xp-cur)/(nxt-cur)*100)).toFixed(1);
   G('xp-fill').style.width=pct+'%';G('xp-lbl').textContent='ЛВЛ '+level+' · '+xp+'/'+nxt+' XP';
 }
@@ -314,28 +328,14 @@ function showKillMedal(ctx={}){
 }
 let _armorBreakT=0;
 function showArmorBreakFx(){
-  if(typeof showGeneratedPlayerArmorBreakVfx==='function')showGeneratedPlayerArmorBreakVfx();
   const root=G('armor-break-fx');if(!root)return;
   root.classList.remove('on');void root.offsetWidth;root.classList.add('on');
   clearTimeout(_armorBreakT);_armorBreakT=setTimeout(()=>root.classList.remove('on'),650);
 }
 
-let _secondWindFxT=0,_dodgePhaseFxT=0;
-function showSecondWindFx(){
-  const el=G('second-wind-fx');if(!el)return;
-  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.secondWindRescue));
-  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
-  clearTimeout(_secondWindFxT);_secondWindFxT=setTimeout(()=>el.classList.remove('on'),900);
-}
-function showDodgePhaseFx(){
-  const el=G('dodge-phase-fx');if(!el)return;
-  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.dodgePhase));
-  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
-  clearTimeout(_dodgePhaseFxT);_dodgePhaseFxT=setTimeout(()=>el.classList.remove('on'),420);
-}
 let _spT=0,_spEl=null;
 function scorePop(t){if(!_spEl)_spEl=G('score-pop');_spEl.textContent=t;_spEl.style.opacity='1';_spEl.style.top='40%';clearTimeout(_spT);_spT=setTimeout(()=>{_spEl.style.opacity='0';_spEl.style.top='36%';},800);}
-let _msgT=0;function showMsg(t){G('pmsg').textContent=t;G('pmsg').style.opacity='1';clearTimeout(_msgT);_msgT=setTimeout(()=>G('pmsg').style.opacity='0',2200);}
+let _msgT=0;function showMsg(t,center=false){const el=G('pmsg');el.textContent=t;el.classList.toggle('rocket-cooling-message',center);el.style.opacity='1';clearTimeout(_msgT);_msgT=setTimeout(()=>el.style.opacity='0',2200);}
 let _cbT=0;function showCombo(){
   const c=combo,e=G('combo');
   e.textContent='🔥 x'+c+' COMBO!';
@@ -348,11 +348,10 @@ function updateRespawnCountdownPresentation(){
   const el=G('respawn-countdown');if(!el)return;
   if(!dying){el.classList.remove('on');return;}
   const sec=Math.max(1,Math.min(PLAYER_RESPAWN_DELAY,Math.ceil(dyingT)));
-  const frame=respawnCountdownPresentationFrame(sec);
-  if(frame&&el.dataset.seconds!==String(sec)){
-    applyPresentationAtlasFrame(el,frame);el.dataset.seconds=String(sec);
-  }
-  el.textContent=String(sec);el.classList.add('on');
+  // The generated blue countdown atlas was visually noisy over the death frame.
+  // Keep only the useful numeric timer and explicitly clear any stale inline atlas.
+  el.style.backgroundImage='none';el.style.backgroundSize='';el.style.backgroundPosition='';el.style.backgroundRepeat='';
+  el.dataset.seconds=String(sec);el.textContent=String(sec);el.classList.add('on');
 }
 let _damageOverlayKey='';
 function setDamageOverlay(alpha=0,color='red'){
@@ -445,6 +444,7 @@ function tickDeathCamera(dt){
   G('death-flash').style.opacity=String(Math.max(.24,1-p*.76));
 }
 function tickDeathWorld(dt){
+  tickRocketFireCooldowns(dt);
   // The battlefield keeps simulating during the killcam, except when bot freeze is explicitly enabled for testing.
   if(!gameSettings.stopBots)for(const en of enemies)if(en.alive)en.update(dt);
   tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);
@@ -456,6 +456,7 @@ function tickDeathWorld(dt){
 // ─── DEATH & RESPAWN ────────────────────
 function checkDeath(){
   if(dying||hp>0)return;
+  cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   const killer=lastPlayerAttacker&&lastPlayerAttacker.alive?lastPlayerAttacker:null;
   if(killer){
     killer.kills=(killer.kills||0)+1;enemyKills++;updateTeamScore();
@@ -465,6 +466,7 @@ function checkDeath(){
   if(typeof setLowHealthCombatOverlay==='function')setLowHealthCombatOverlay(0);
   if(typeof setSprintSpeedOverlay==='function')setSprintSpeedOverlay(0);
   G('sniper-scope')?.classList.remove('on','kick');
+  cancelFragGrenadeThrow();
   dying=true;running=false;paused=false;lvlAnnOpen=false;perkPickOpen=false;refreshMobileHUD();playSfx('death');
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');G('pause').classList.remove('on');
   // Захват мыши во время киллкамеры не отпускаем: иначе браузер часто не даёт
@@ -480,6 +482,7 @@ function checkDeath(){
   updateRespawnCountdownPresentation();
 }
 function doRespawn(){
+  cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   cleanupDeathCamera();
   G('death-flash').style.background='rgba(255,0,0,0)';
   G('death-flash').style.opacity='1';
@@ -537,10 +540,14 @@ function doRespawn(){
 }
 
 function clearWorldForFreshGame(){
+  cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   enemies.forEach(e=>e.destroy());enemies.length=0;
   pickups.forEach(p=>destroySceneObject(p.m));pickups.length=0;
   if(typeof clearWorldPickupPresentation==='function')clearWorldPickupPresentation();
+  clearMineWorldArt39();
   for(const mn of mines)destroySceneObject(mn.m);mines.length=0;
+  for(const g of botGrenades)destroySceneObject(g.m);botGrenades.length=0;
+  clearGrenadeFlightArt();cancelFragGrenadeThrow();clearSmokePresentation42();
   [...eRkts,...pRkts,...pTrs,...smokeGrenades].forEach(r=>destroySceneObject(r.m));
   eRkts.length=0;pRkts.length=0;pTrs.length=0;smokeGrenades.length=0;
   smokeClouds.forEach(removeSmokeCloud);smokeClouds.length=0;
@@ -554,6 +561,7 @@ function clearWorldForFreshGame(){
   for(const l of _mzLights){l._act=false;l.visible=false;}
 }
 function restartGameFromScratch(){
+  if(typeof clearBombPresentation41==='function')clearBombPresentation41();
   if(!confirm('Начать игру заново? Текущий уровень, улучшения, счёт и автосохранение будут удалены.'))return;
   cleanupDeathCamera();
   clearKillFeed();
@@ -571,7 +579,7 @@ function restartGameFromScratch(){
   respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';lastPlayerAttacker=null;
   currentPerkChoices=[];perkRerollsLeft=0;saveTick=8;
   pendingResumeSave=null;preparedSaveLoaded=false;gameSessionActivated=true;inited=true;
-  camera.position.set(0,1.75,0);camera.fov=BASE_FOV;camera.updateProjectionMatrix();
+  camera.position.set(0,PLAYER_STAND_EYE_HEIGHT,0);camera.fov=BASE_FOV;camera.updateProjectionMatrix();
   yaw=0;pitch=0;onGnd=true;jumpV=0;prevPX=0;prevPZ=0;
   G('pause').classList.remove('on');G('menu').style.display='none';
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');

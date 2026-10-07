@@ -1,0 +1,778 @@
+{
+  "pack": "bomb-41",
+  "status": "INTEGRATED_AND_VERIFIED_LOCAL",
+  "generator": "built-in image_gen",
+  "approval": "User saw ready/action design and requested continue; lower pose corrected after explicit identity feedback. Other previews shown in chat.",
+  "files": [
+    {
+      "path": "assets/ui/weapons/fp/player-bomb-ready-41.webp",
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 144730,
+      "sha256": "fd4accfa0fe5ee058b4718c839dfec747fb5171c7afba8ed969fdadc8a8e2b78",
+      "consumer": "system.js",
+      "event": "ready",
+      "fallback": "updated native rig; legacy ready removed",
+      "source": "ready.png"
+    },
+    {
+      "path": "assets/ui/fx/bomb-plant-atlas-41.webp",
+      "size": [
+        3200,
+        1800
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 544450,
+      "sha256": "424c2070093318ba95723372951ff1eff679443b1d659ae30b21f47c39da5fc3",
+      "consumer": "system.js",
+      "event": "plant/recovery/reload",
+      "fallback": "decoded ready hold or procedural",
+      "grid": [
+        2,
+        2
+      ],
+      "sources": [
+        "ready.png",
+        "arm.png",
+        "lower.png",
+        "release.png"
+      ],
+      "plant_sequence": [
+        0,
+        1,
+        2,
+        3,
+        3,
+        0
+      ],
+      "release_seconds": 0.48,
+      "plant_seconds": 0.96,
+      "reload_sequence": [
+        3,
+        0
+      ]
+    },
+    {
+      "path": "assets/ui/fx/bomb-smoke-41.webp",
+      "size": [
+        768,
+        768
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 133248,
+      "sha256": "412d332879655abf2e619bc896abce92049c680043ebd992ef0e7efe1acb527a",
+      "consumer": "settings.js",
+      "event": "detonation residual smoke",
+      "fallback": "legacy explosion smoke",
+      "grid": [
+        1,
+        1
+      ],
+      "source": "smoke.png"
+    },
+    {
+      "path": "assets/ui/pickups/weapons/world-bomb-pickup-41.webp",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 67686,
+      "sha256": "055db81855b4a5f26646c15d53dfa284d56120027bcdaddeba163799bb9bfc95",
+      "consumer": "pickups.js",
+      "event": "real pickup projection",
+      "fallback": "procedural rectangular bomb",
+      "source": "world.png"
+    },
+    {
+      "path": "assets/ui/weapons/bomb-icon-41.webp",
+      "size": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 7894,
+      "sha256": "485fc0607e766ee57643ef8b318e9fdc80abc3ff32c2327df9686b6cbf8965df",
+      "consumer": "system.js",
+      "event": "weapon bar/inventory",
+      "fallback": "bomb.svg",
+      "source": "world.png"
+    },
+    {
+      "path": "assets/ui/weapons/bomb-world-top-41.webp",
+      "size": [
+        512,
+        768
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 187192,
+      "sha256": "d56bcba1afae97f103ad9de0e53aeb82cd1a0755ffe54679d9f521c53f289d8f",
+      "consumer": "combat.js",
+      "event": "real horizontal grounded device skin",
+      "fallback": "coherent native3D body",
+      "source": "world-top.png",
+      "source_crop": [
+        188,
+        26,
+        942,
+        1362
+      ]
+    },
+    {
+      "path": "assets/ui/fx/bomb-explosion-sequence-41.webp",
+      "size": [
+        3840,
+        3072
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 3606016,
+      "sha256": "22bbdcec26b12c8425c28322d5177ce109bde509206145ecd104ff5613ff28fb",
+      "consumer": "settings.js",
+      "event": "single chronological blast",
+      "fallback": "omit old pictures/rays; preserve gameplay, light, sound, shake",
+      "grid": [
+        5,
+        4
+      ],
+      "frames": 17,
+      "duration": 2.1,
+      "source_windows": [
+        {
+          "source": "old",
+          "index": 0,
+          "crop": [
+            2,
+            2,
+            441,
+            441
+          ]
+        },
+        {
+          "source": "new",
+          "index": 0,
+          "crop": [
+            8,
+            8,
+            310,
+            301
+          ]
+        },
+        {
+          "source": "old",
+          "index": 1,
+          "crop": [
+            445,
+            2,
+            885,
+            441
+          ]
+        },
+        {
+          "source": "new",
+          "index": 2,
+          "crop": [
+            644,
+            8,
+            946,
+            301
+          ]
+        },
+        {
+          "source": "new",
+          "index": 3,
+          "crop": [
+            962,
+            8,
+            1265,
+            301
+          ]
+        },
+        {
+          "source": "peak-hd-5.png",
+          "derived_from": {
+            "source": "new",
+            "index": 5,
+            "crop": [
+              326,
+              317,
+              628,
+              610
+            ]
+          },
+          "crop": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "source_size": [
+            1254,
+            1254
+          ]
+        },
+        {
+          "source": "peak-hd-6.png",
+          "derived_from": {
+            "source": "new",
+            "index": 6,
+            "crop": [
+              644,
+              317,
+              946,
+              610
+            ]
+          },
+          "crop": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "source_size": [
+            1254,
+            1254
+          ]
+        },
+        {
+          "source": "peak-hd-7.png",
+          "derived_from": {
+            "source": "old",
+            "index": 2,
+            "crop": [
+              2,
+              445,
+              441,
+              885
+            ]
+          },
+          "crop": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "source_size": [
+            1254,
+            1254
+          ]
+        },
+        {
+          "source": "new",
+          "index": 10,
+          "crop": [
+            644,
+            626,
+            946,
+            919
+          ]
+        },
+        {
+          "source": "old",
+          "index": 3,
+          "crop": [
+            445,
+            445,
+            885,
+            885
+          ]
+        },
+        {
+          "source": "new",
+          "index": 11,
+          "crop": [
+            962,
+            626,
+            1265,
+            919
+          ]
+        },
+        {
+          "source": "old",
+          "index": 4,
+          "crop": [
+            889,
+            445,
+            1328,
+            885
+          ]
+        },
+        {
+          "source": "new",
+          "index": 12,
+          "crop": [
+            8,
+            935,
+            310,
+            1228
+          ]
+        },
+        {
+          "source": "new",
+          "index": 13,
+          "crop": [
+            326,
+            935,
+            628,
+            1228
+          ]
+        },
+        {
+          "source": "old",
+          "index": 5,
+          "crop": [
+            1332,
+            445,
+            1772,
+            885
+          ]
+        },
+        {
+          "source": "new",
+          "index": 14,
+          "crop": [
+            644,
+            935,
+            946,
+            1228
+          ]
+        },
+        {
+          "source": "new",
+          "index": 15,
+          "crop": [
+            962,
+            935,
+            1265,
+            1228
+          ]
+        }
+      ],
+      "transparent_padding": 36,
+      "sources": [
+        "explosion-a.png",
+        "explosion-sequence.png"
+      ],
+      "tile_size": 768,
+      "quality": 95,
+      "encoded_budget_bytes": 5242880,
+      "uncompressed_rgba_bytes": 47185920
+    },
+    {
+      "path": "assets/ui/fx/bomb-smoke-sequence-41.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 539384,
+      "sha256": "fe08a989bf99a2b090fa7ea7a06ec5813a4fec999d52b098306cd411dbdcdece",
+      "consumer": "settings.js",
+      "event": "six retained smoke stages",
+      "fallback": "single retained smoke plume",
+      "grid": [
+        3,
+        2
+      ],
+      "frames": 6,
+      "duration": 3,
+      "source_windows": [
+        [
+          0,
+          0,
+          512,
+          512
+        ],
+        [
+          512,
+          0,
+          1024,
+          512
+        ],
+        [
+          1024,
+          0,
+          1536,
+          512
+        ],
+        [
+          0,
+          512,
+          512,
+          1024
+        ],
+        [
+          512,
+          512,
+          1024,
+          1024
+        ],
+        [
+          1024,
+          512,
+          1536,
+          1024
+        ]
+      ],
+      "transparent_padding": 24,
+      "source": "smoke-sequence.png"
+    },
+    {
+      "path": "assets/ui/fx/bomb-shockwave-atlas-41.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 809644,
+      "sha256": "cea3259bdd0eda1c05f13e7213711c5a13213afeea32453f243ada4f643619b2",
+      "consumer": "catalog.js/settings.js",
+      "event": "ground shockwave at detonation",
+      "source": "shockwave-six-stage.png",
+      "grid": [
+        3,
+        2
+      ],
+      "frames": 6,
+      "packaging": "Fixed 512-square crops; uniform 480-square resize; 16px transparent gutter; no pixel/background edits",
+      "fallback": "omit cosmetic wave, retain full explosion/damage"
+    }
+  ],
+  "sources": [
+    {
+      "key": "ready",
+      "path": "sources/ready.png",
+      "sha256": "e968e505671530b130817587d07b6cdee63eee61e9f6acfbdd32f4fab20f1b83"
+    },
+    {
+      "key": "arm",
+      "path": "sources/arm.png",
+      "sha256": "58c137ede45e0d9f659d52d9728f0cd790d1d167904997bae910dc89776075a0"
+    },
+    {
+      "key": "lower",
+      "path": "sources/lower.png",
+      "sha256": "6dc744525c9411dfdc2ee4bfdd004203c3cb67e29932f6d14bd2c51be107b425"
+    },
+    {
+      "key": "release",
+      "path": "sources/release.png",
+      "sha256": "8aaaa488730cd782c5c9e35f4fcbc5342c6f6ef174ccad9a3fc8532fd038fc02"
+    },
+    {
+      "key": "explosion-a",
+      "path": "sources/explosion-a.png",
+      "sha256": "7424311c7a6e65bcc0849710e30c9fc75bbe4a53f2e310205612ec87045356dc"
+    },
+    {
+      "key": "explosion-b",
+      "path": "sources/explosion-b.png",
+      "sha256": "493429a6011358fbeacfb3c5301eb80d7516218717131b0e5cc471c28e224443"
+    },
+    {
+      "key": "explosion-c",
+      "path": "sources/explosion-c.png",
+      "sha256": "90df5b853388b0601a957314aded5c75ff36a915c5dc40dbc825c372453f68c0"
+    },
+    {
+      "key": "smoke",
+      "path": "sources/smoke.png",
+      "sha256": "7aad16d9291f6537e836c57726654c3ac4731a9bee3515a85f056317fe020194"
+    },
+    {
+      "key": "world",
+      "path": "sources/world.png",
+      "sha256": "3085e364a2d8a07fe3dc7a5df426caaeaf19c023f9188f7540f4fbf0c6c10ab7"
+    },
+    {
+      "key": "world-top",
+      "path": "sources/world-top.png",
+      "sha256": "72f22df3ade0d6ec3536bdd7d37d04dab9e49d3a63c1526c8af413eb7b404849"
+    },
+    {
+      "key": "explosion-sequence",
+      "path": "sources/explosion-sequence.png",
+      "sha256": "46232403c443e8c5331efc341e6d35c5b32e5bcff2f91a79a8686350ddcdac96"
+    },
+    {
+      "key": "smoke-sequence",
+      "path": "sources/smoke-sequence.png",
+      "sha256": "1bc81505442b5fd508ed8268ab0b5863ca10ae0e06dd2f559accfabc4b71d502"
+    },
+    {
+      "key": "peak-hd-5",
+      "path": "sources/peak-hd-5.png",
+      "sha256": "a615b022378c1fa220eef62351bc118280014576dff0192e9c07d36b51cefd5b"
+    },
+    {
+      "key": "peak-hd-6",
+      "path": "sources/peak-hd-6.png",
+      "sha256": "64d45c5708322539800d6def932b47ecd5416e835a485042a2cdecca187d431a"
+    },
+    {
+      "key": "peak-hd-7",
+      "path": "sources/peak-hd-7.png",
+      "sha256": "0b5acbc47127772b8fae4d06ac9ed0383bec9f6ed5af9dfb72375213912a8668"
+    }
+  ],
+  "rejected": {
+    "combined_plant_sheet": "Unequal cell boundaries",
+    "lower-v1": "Changed device component orientation",
+    "smoke_sheets": "Earlier backdrop hypothesis withdrawn after alpha sampling: backdrop RGB is transparent. Original six-frame15ad sheet retained; unneeded regeneration not integrated.",
+    "explosion_cells": "Clipped peak silhouettes, exact accepted cells/windows recorded"
+  },
+  "superseded_runtime_candidates": [
+    {
+      "path": "assets/ui/fx/bomb-explosion-a-41.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 698562,
+      "sha256": "5575f89211577988e6c3ba4dd2b5651e2ff7d078e48aaed3a8427f56dedd3866",
+      "consumer": "settings.js",
+      "event": "real detonation only",
+      "fallback": "shared Pack12+heavy26/procedural",
+      "grid": [
+        3,
+        2
+      ],
+      "accepted_source_cells": [
+        0,
+        1,
+        4,
+        5,
+        6,
+        7
+      ],
+      "source_windows": [
+        [
+          2,
+          2,
+          441,
+          441
+        ],
+        [
+          445,
+          2,
+          885,
+          441
+        ],
+        [
+          2,
+          445,
+          441,
+          885
+        ],
+        [
+          445,
+          445,
+          885,
+          885
+        ],
+        [
+          889,
+          445,
+          1328,
+          885
+        ],
+        [
+          1332,
+          445,
+          1772,
+          885
+        ]
+      ],
+      "transparent_padding": 24
+    },
+    {
+      "path": "assets/ui/fx/bomb-explosion-b-41.webp",
+      "size": [
+        2048,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 830904,
+      "sha256": "7c24229da944af9aea843a61e0f6f48c866c6b3d255566a2b4c53d31e7e3d1c4",
+      "consumer": "settings.js",
+      "event": "real detonation only",
+      "fallback": "shared Pack12+heavy26/procedural",
+      "grid": [
+        4,
+        2
+      ],
+      "accepted_source_cells": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7
+      ],
+      "source_windows": [
+        [
+          2,
+          2,
+          441,
+          441
+        ],
+        [
+          445,
+          2,
+          884,
+          441
+        ],
+        [
+          888,
+          2,
+          1327,
+          441
+        ],
+        [
+          1331,
+          2,
+          1771,
+          441
+        ],
+        [
+          445,
+          445,
+          884,
+          885
+        ],
+        [
+          888,
+          445,
+          1327,
+          885
+        ],
+        [
+          1331,
+          445,
+          1771,
+          885
+        ]
+      ],
+      "transparent_padding": 24
+    },
+    {
+      "path": "assets/ui/fx/bomb-explosion-c-41.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "bytes": 523262,
+      "sha256": "cfc38285625057c7704b3a0919eac26781378aa6e3488a4f6d4f8dac76304bda",
+      "consumer": "settings.js",
+      "event": "real detonation only",
+      "fallback": "shared Pack12+heavy26/procedural",
+      "grid": [
+        3,
+        2
+      ],
+      "accepted_source_cells": [
+        0,
+        4,
+        5,
+        6,
+        7
+      ],
+      "source_windows": [
+        [
+          10,
+          10,
+          433,
+          433
+        ],
+        [
+          10,
+          453,
+          433,
+          877
+        ],
+        [
+          453,
+          453,
+          877,
+          877
+        ],
+        [
+          897,
+          453,
+          1320,
+          877
+        ],
+        [
+          1340,
+          453,
+          1764,
+          877
+        ]
+      ],
+      "transparent_padding": 24
+    }
+  ],
+  "clarification": "One17-frame chronological blast retaining all6 accepted original A frames; no runtime variant selection. Original sources B/C preserved in staging.",
+  "verification": {
+    "build": "6e39248d342cf16a",
+    "node": "independent239/239 plus destination239/239",
+    "browser": "destination27checks plus direct unmocked file planting",
+    "report": "VERIFICATION.md",
+    "currentResult": "bomb-final-verification.json",
+    "fuse": "no old bomb badge,spark or smoke emitters",
+    "visual": "fire40%wider,wave28m; damage34/32unchanged"
+  }
+}

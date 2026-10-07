@@ -1,0 +1,1 @@
+Исторические кадры до independent cloud/far replacement и до rev6 muzzle suppression. Они сохраняют evidence первого сбоя и не описывают текущую сборку. Итоговые кадры находятся на уровень выше, browser-final-visual-42.json и browser-target-file-42.json имеют build834f3af971284de9.

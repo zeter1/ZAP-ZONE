@@ -1,0 +1,29 @@
+{
+  "source": "terminal read-only test_verifier and code_reviewer handoffs",
+  "build": "834f3af971284de9",
+  "tests": {
+    "passed": 255,
+    "failed": 0,
+    "skipped": 0,
+    "smoke_passed": 16
+  },
+  "checks": [
+    "full node tests",
+    "syntax",
+    "stamp",
+    "structure",
+    "runtime17 SHA256",
+    "original rev5 source/image/alpha/PCM oracle reused only after runtime equality verified",
+    "ready/missing art and available/fallback audio pitch RNG",
+    "real engine muzzle emitter RNG for both smokeRoll outcomes"
+  ],
+  "combat_sha256": "f704ae395e6315b20dcd426da7cfcea98c3d40021378c1999421e4c4b8a6d16a",
+  "smoke_test_sha256": "b6570497946ce1b776b2671aba91b063c4e31ce7b0fc96fce3f350fefcbe3804",
+  "runtime_bytes": 3499108,
+  "review_findings_open": 0,
+  "not_verified": [
+    "long live match performance",
+    "human-perceived audio",
+    "separate WebAudio/noise-buffer initialization"
+  ]
+}

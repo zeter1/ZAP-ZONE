@@ -1,0 +1,176 @@
+{
+  "status": "VERIFIED_LOCAL_BROWSER",
+  "derivation": "alpha bounds and LANCZOS contain; smoke crops only Pack42 cell6 before resizing. Full animation atlas is never a pickup image.",
+  "assets": [
+    {
+      "key": "rifle",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-03-rifle-pack-36\\pickup-source.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceSHA256": "a163ad1938321cdccf27c219af6c5fcca74fadbd41af803603d9d422062a3004",
+      "runtime": "assets/ui/pickups/weapons/world-rifle-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 120240,
+      "sha256": "9b9b666a16223b56edb9629d90887d98cbc3fb1f199199bae8730aa86297b613"
+    },
+    {
+      "key": "rocket",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-03-rocket-pack-35\\pickup-source.png",
+      "sourceSize": [
+        1448,
+        1086
+      ],
+      "sourceSHA256": "83818b3d5f7381a77c605de3ac1b243c1eb3b92ab90e9de0aaaa765c5cedbfdb",
+      "runtime": "assets/ui/pickups/weapons/world-rocket-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 167696,
+      "sha256": "02d66daac91f359a3ab31b858e4a52be7316576462ad85193bf9ed11b7a00890"
+    },
+    {
+      "key": "shotgun",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-03-shotgun-pack-37\\pickup-source.png",
+      "sourceSize": [
+        1774,
+        887
+      ],
+      "sourceSHA256": "a8c3dcea61bb6091a3742a89d92e96554f69593decf3ba32bd2b0d3daf9549e1",
+      "runtime": "assets/ui/pickups/weapons/world-shotgun-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 97160,
+      "sha256": "d941ac3ff81605f0fa65770cb3c9e249dbe3bfef8dd293374cce86b30072c53a"
+    },
+    {
+      "key": "pistol",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-04-pistol-pack-40\\pickup-source.png",
+      "sourceSize": [
+        1448,
+        1086
+      ],
+      "sourceSHA256": "5b30abdbe6c990167f1bbfbd988d22a9424d06ec135053e5bb994e8ac0a3ad56",
+      "runtime": "assets/ui/pickups/weapons/world-pistol-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 223446,
+      "sha256": "ff38a7006e41290d5e919ad14206d75a562020a4d4ba755c679cea25822796ff"
+    },
+    {
+      "key": "bomb",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-04-bomb-pack-41\\sources\\world.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceSHA256": "3085e364a2d8a07fe3dc7a5df426caaeaf19c023f9188f7540f4fbf0c6c10ab7",
+      "runtime": "assets/ui/pickups/weapons/world-bomb-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 123866,
+      "sha256": "a4e85a31b77fc7ae9f3328de3bfff62475072fec87ce92bf04726ed953b18b68"
+    },
+    {
+      "key": "smoke",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-04-smoke-pack-42\\sources\\smoke-world-padded-42.png",
+      "sourceSize": [
+        1774,
+        887
+      ],
+      "sourceCell": 6,
+      "sourceGrid": [
+        4,
+        2
+      ],
+      "sourceWindow": [
+        887,
+        443,
+        1330,
+        887
+      ],
+      "cellAlphaBounds": [
+        3,
+        25,
+        442,
+        406
+      ],
+      "sourceSHA256": "16026d21d31e27710b62ae2694284b8880550442d6ddd8f803a757be5107c039",
+      "derivation": "crop cell6 first, tight alpha bounds, contain984x728, center1024x768, WebP93",
+      "runtime": "assets/ui/pickups/weapons/world-smoke-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 92522,
+      "sha256": "23273121865aff63a4f545500cb72effa1b5d3ac9b14c9fa88eb57f959c65254"
+    },
+    {
+      "key": "plasma",
+      "source": "G:\\МОЯ Веб-разработка\\ZAP_ZONE\\asset-staging\\2026-10-06-floating-pickups-43\\plasma-pickup-source.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceSHA256": "bd6bfd08144e838db52a7a1d6d0c968a7d04213d4548cb7547139de565c989a7",
+      "runtime": "assets/ui/pickups/weapons/world-plasma-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 148410,
+      "sha256": "34866c90bfcbe2d3a4d119c308c3cd11f136828621df3daab6339435bcfa8ba3"
+    },
+    {
+      "key": "sniper",
+      "source": "sniper-source.png",
+      "sourceSize": [
+        1774,
+        887
+      ],
+      "sourceSHA256": "7921348355420ff1181938eaf463b64681cf016f15de6830c32f4e1a60818643",
+      "runtime": "assets/ui/pickups/weapons/world-sniper-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 108080,
+      "sha256": "dee1cb42ae6c8f2ab673d4a75b6538ce95bec59e394d8705e1c2e3ba82e9abb2"
+    },
+    {
+      "key": "medkit",
+      "source": "medkit-source.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceSHA256": "24e6fe839bc74ba034515be3f9cd2813b9213ccfb7952e80b5da1b96dcf4c380",
+      "runtime": "assets/ui/pickups/world-medkit-pickup-44.webp",
+      "runtimeSize": [
+        1024,
+        768
+      ],
+      "bytes": 216020,
+      "sha256": "3ecb13bacc257f42051e624cf29ee51f0256b1cd1c27b2f507c4bbb79606d056"
+    }
+  ],
+  "build": "9f28dfde2de4977a",
+  "verifiedAt": "2026-10-06T13:21:33+03:00",
+  "smokeCorrection": {
+    "status": "VERIFIED_LOCAL_BROWSER",
+    "silhouettesBefore": 8,
+    "silhouettesAfter": 1,
+    "builder": "build_smoke_pickup.py"
+  }
+}

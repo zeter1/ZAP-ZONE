@@ -1,5 +1,9 @@
 # Bot outcome-aware fire-cadence contract
 
+## Rocket interval
+
+После реально выпущенной ракеты действует минимум `ROCKET_FIRE_INTERVAL` (10 active seconds), независимо от fire-rate scaling и смены оружия. Fire-control возвращает `ROCKET_COOLDOWN` до aim/effects/ammo, если собственный timer ещё положителен. Cadence ждёт остаток timer без расхода burst/ammo и без RNG. Countdown принадлежит `combat::tickRocketFireCooldowns`, вызывается до bot firing и в обычном runtime, и в killcam; pause его останавливает. Oracle: `scripts/rocket-cadence-owner.test.mjs`.
+
 **Canonical owner:** `src/ai/bot-fire-cadence.js`
 
 Читайте этот spec перед изменениями длины bot burst, пауз между очередями, next-attempt `sT`, blocked-shot retry или RNG-порядка после firearm execution. Fire-control сообщает **что произошло**, cadence отвечает **когда разрешена следующая попытка и считается ли текущий outcome реальным burst shot**.

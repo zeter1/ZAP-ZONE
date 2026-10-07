@@ -28,14 +28,16 @@ function tryPlantBotBomb(bot,dist,targetPos){
   else if(bot.commandDoctrine==='hold')chance*=.70;
   if(Math.random()>chance)return false;
   const dir=new THREE.Vector3(Math.sin(bot.group.rotation.y),0,Math.cos(bot.group.rotation.y));
+  const bombPos=safeBombPlacement(bot.group.position,dir,1.05);
+  if(!bombPos)return false;
   const bomb=mkBomb();
-  const bombPos=bot.group.position.clone().addScaledVector(dir,1.05);
-  const coll=collideWalls(bombPos.x,bombPos.z,.42);bomb.position.set(coll.x,.34,coll.z);scene.add(bomb);
+  bomb.position.copy(bombPos);scene.add(bomb);
   mines.push({
     m:bomb,vx:0,vy:0,vz:0,fall:false,life:Infinity,armed:true,aT:0,checkT:0,ph:0,
     team:bot.team,owner:'bot',src:bot,kind:'bomb',fuseT:BOMB_FUSE_SECONDS,fuseTotal:BOMB_FUSE_SECONDS,
     dmg:BOT_BOMB_CFG.dmg*(1+level*.018),radius:BOT_BOMB_CFG.radius
   });
-  bot.bombCD=BOT_BOMB_CFG.cooldown+Math.random()*24;
+  Math.random(); // Preserve the historical cooldown decoration draw.
+  bot.bombCD=BOT_BOMB_CFG.cooldown;
   return true;
 }

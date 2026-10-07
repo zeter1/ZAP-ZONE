@@ -1,0 +1,842 @@
+{
+  "sourceSize": [
+    1341,
+    1173
+  ],
+  "columns": 8,
+  "rows": 7,
+  "icons": [
+    {
+      "id": "damage",
+      "cell": 0,
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23636,
+      "sha256": "4e290aaa6a34e0b5e0f5d04d58447b880088482a9d57f1cec5d76adc720ba4fb"
+    },
+    {
+      "id": "overclock",
+      "cell": 1,
+      "sourceRect": {
+        "left": 168,
+        "top": 0,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23488,
+      "sha256": "38f5f8ffcb5335ad6e01db38ab527b5b7bc79c05b4bcd4fc564bdf36bb17df9e"
+    },
+    {
+      "id": "magazine",
+      "cell": 2,
+      "sourceRect": {
+        "left": 335,
+        "top": 0,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 17794,
+      "sha256": "8ce2a96f7826c7a59a548b25567122e50af91472743eb4272360e941dfe9285b"
+    },
+    {
+      "id": "reload",
+      "cell": 3,
+      "sourceRect": {
+        "left": 503,
+        "top": 0,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 24534,
+      "sha256": "954265eba4575b39ecbf18580c1d7b9f8139139bb1093591d605b5d8af03d6f4"
+    },
+    {
+      "id": "doubletap",
+      "cell": 4,
+      "sourceRect": {
+        "left": 671,
+        "top": 0,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 19616,
+      "sha256": "23523b31d4c67255b28d06d6cbda58c127de9bf758c9ec66faa9de89b8fb5179"
+    },
+    {
+      "id": "bulletstorm",
+      "cell": 5,
+      "sourceRect": {
+        "left": 838,
+        "top": 0,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 24558,
+      "sha256": "628074bec3e5fb06a775f618a1bbf7aef957f4f7954c3b176819e635a752c491"
+    },
+    {
+      "id": "crit",
+      "cell": 6,
+      "sourceRect": {
+        "left": 1006,
+        "top": 0,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 24966,
+      "sha256": "a5e231c92f4eed98f23c94b9a9cd72ae471e92132aa1df248a3ec505dffc4bbe"
+    },
+    {
+      "id": "critpower",
+      "cell": 7,
+      "sourceRect": {
+        "left": 1173,
+        "top": 0,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23636,
+      "sha256": "5236790d7baeb669ff9913850f4ff0e34ae4a3e1488a2174a4cafe33db4f90c1"
+    },
+    {
+      "id": "headshot",
+      "cell": 8,
+      "sourceRect": {
+        "left": 0,
+        "top": 168,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 17480,
+      "sha256": "c349848269aabbca3f333818e65302ba32ff67b517ad6b398f46b0ca0abab296"
+    },
+    {
+      "id": "executioner",
+      "cell": 9,
+      "sourceRect": {
+        "left": 168,
+        "top": 168,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 20780,
+      "sha256": "27dc0c23b4b7e6975206f3cd06c785d8712a42f1a0fbc1fa7dc278bd9186562b"
+    },
+    {
+      "id": "piercing",
+      "cell": 10,
+      "sourceRect": {
+        "left": 335,
+        "top": 168,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 16766,
+      "sha256": "8bdd759a702557053ecb876b131b0d9aee84d654263db80b44792a28da27646c"
+    },
+    {
+      "id": "predator",
+      "cell": 11,
+      "sourceRect": {
+        "left": 503,
+        "top": 168,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23240,
+      "sha256": "c3195a3a40b7ad0d7b78ec2f5c6fbe14afa7fcb4ad920105b71b08b5840cbe68"
+    },
+    {
+      "id": "vitality",
+      "cell": 12,
+      "sourceRect": {
+        "left": 671,
+        "top": 168,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 25302,
+      "sha256": "178ecb958a3374f3b46418413e77c6d62c54ff846d28e17524ec398112e06ec1"
+    },
+    {
+      "id": "armor",
+      "cell": 13,
+      "sourceRect": {
+        "left": 838,
+        "top": 168,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 20184,
+      "sha256": "1413f0222124494b7365564cd59b0b48eaef2e3ea355eb072e675f4329e715f6"
+    },
+    {
+      "id": "nanorepair",
+      "cell": 14,
+      "sourceRect": {
+        "left": 1006,
+        "top": 168,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 19268,
+      "sha256": "8b0e36209d93ab0f291fba08366f4e11ebeee0cf06cf4c641d4df4e219252099"
+    },
+    {
+      "id": "armorregen",
+      "cell": 15,
+      "sourceRect": {
+        "left": 1173,
+        "top": 168,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 27980,
+      "sha256": "328a05306d0723803fe13f84a5c9347dc729766c6bee2959382d26443d203c99"
+    },
+    {
+      "id": "lifesteal",
+      "cell": 16,
+      "sourceRect": {
+        "left": 0,
+        "top": 335,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 26300,
+      "sha256": "01553e46efe0a5ab080a9815af7c1d5595743aa9f807143e790304cf8c351ede"
+    },
+    {
+      "id": "hunter",
+      "cell": 17,
+      "sourceRect": {
+        "left": 168,
+        "top": 335,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 21378,
+      "sha256": "dcb305ed60d5fcb8f3bc048b480ae0a422a54080c8aad96b906569b19049cb36"
+    },
+    {
+      "id": "blastshield",
+      "cell": 18,
+      "sourceRect": {
+        "left": 335,
+        "top": 335,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 30026,
+      "sha256": "ef9a3b23197f270f163e1dff1853a5ad284f8561c474e95de446c2a9d52264c3"
+    },
+    {
+      "id": "secondwind",
+      "cell": 19,
+      "sourceRect": {
+        "left": 503,
+        "top": 335,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 25954,
+      "sha256": "6c2955f7d8bdc59054e104ff6dca6ef56941f4659199299a2c5c0b6baf03c49b"
+    },
+    {
+      "id": "immortal",
+      "cell": 20,
+      "sourceRect": {
+        "left": 671,
+        "top": 335,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 24792,
+      "sha256": "0c97242f77ca6def0633ac41783a27b07a960e194bcfd6b2b65b14f93938f95c"
+    },
+    {
+      "id": "mobility",
+      "cell": 21,
+      "sourceRect": {
+        "left": 838,
+        "top": 335,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 26404,
+      "sha256": "c1b80091d1d09fdd6165d8fd8ca24ba7324b2f7fd44b11e1616607a1c512881b"
+    },
+    {
+      "id": "laststand",
+      "cell": 22,
+      "sourceRect": {
+        "left": 1006,
+        "top": 335,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23388,
+      "sha256": "56b99e568ad6155f4c2a1cd76f5c120769f2dc520820354cdcff87ba95d2f14a"
+    },
+    {
+      "id": "reflex",
+      "cell": 23,
+      "sourceRect": {
+        "left": 1173,
+        "top": 335,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23040,
+      "sha256": "db9be4eb056b64b0fc00f1bcc34489cfce6e5cf600dfef0c280bd8f95085949f"
+    },
+    {
+      "id": "thorns",
+      "cell": 24,
+      "sourceRect": {
+        "left": 0,
+        "top": 503,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 35772,
+      "sha256": "d5a935f1a6fb84fd61f2c6f670554e8c965bdbb78f3d05bbc08da6d7bdb6e53e"
+    },
+    {
+      "id": "explosive_payload",
+      "cell": 25,
+      "sourceRect": {
+        "left": 168,
+        "top": 503,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 22958,
+      "sha256": "28013a4b0cfa6bc35fdbc6045176e4cffcccdd96bfd9950d2177082db799814d"
+    },
+    {
+      "id": "rockettech",
+      "cell": 26,
+      "sourceRect": {
+        "left": 335,
+        "top": 503,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 21492,
+      "sha256": "5fa8bfd65336b91992b037c54a9ea7436f940802a4158c5ea696a51ea8a9c575"
+    },
+    {
+      "id": "minetech",
+      "cell": 27,
+      "sourceRect": {
+        "left": 503,
+        "top": 503,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 22944,
+      "sha256": "9b92d1ced19c53da8298e4fb3770eed4ff00ff6982c7cb7302f338dde6fece67"
+    },
+    {
+      "id": "bombtech",
+      "cell": 28,
+      "sourceRect": {
+        "left": 671,
+        "top": 503,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 18234,
+      "sha256": "aff516a002a364cb2ba2449376ef67a433670faf2b3caf65fffcc471bc502f7f"
+    },
+    {
+      "id": "explosive_rounds",
+      "cell": 29,
+      "sourceRect": {
+        "left": 838,
+        "top": 503,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 30518,
+      "sha256": "96313b015145075107b8439163e911b946ad87814522f48305880cebbeeec884"
+    },
+    {
+      "id": "warmachine",
+      "cell": 30,
+      "sourceRect": {
+        "left": 1006,
+        "top": 503,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 22900,
+      "sha256": "953bc591a91ba97d2836e04c94dbbe89eac09d87045aa0d884a142f5499b44e2"
+    },
+    {
+      "id": "ammo_saver",
+      "cell": 31,
+      "sourceRect": {
+        "left": 1173,
+        "top": 503,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 29140,
+      "sha256": "25a4140f2d32ed3019214d0d5ca167ff92cf15316bcc762d23a90f6c292460e7"
+    },
+    {
+      "id": "close_quarters",
+      "cell": 32,
+      "sourceRect": {
+        "left": 0,
+        "top": 670,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 32078,
+      "sha256": "111d7966d474a0714f4ac3fd0f3fe3ddf432187b0a9295befc2a83626e029788"
+    },
+    {
+      "id": "full_charge",
+      "cell": 33,
+      "sourceRect": {
+        "left": 168,
+        "top": 670,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 23090,
+      "sha256": "7eca335b3cecfa4a957c48a47de5f068bcb178090994cc284664dc6a98e628b4"
+    },
+    {
+      "id": "steady_grip",
+      "cell": 34,
+      "sourceRect": {
+        "left": 335,
+        "top": 670,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 22886,
+      "sha256": "4818746365b2a6fe46504943d88c9dc8d15172e071d53f006aacebbc3d1559b0"
+    },
+    {
+      "id": "longshot",
+      "cell": 35,
+      "sourceRect": {
+        "left": 503,
+        "top": 670,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 18358,
+      "sha256": "70b62f98492e4c5ae4ee443594bec0f98817052e15e67a2933384826ddebd9fe"
+    },
+    {
+      "id": "crit_repair",
+      "cell": 36,
+      "sourceRect": {
+        "left": 671,
+        "top": 670,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 18290,
+      "sha256": "cb1efbe11aebb62f88e077b0465db9431a2e6caf14552b782b56f020c16f7175"
+    },
+    {
+      "id": "headshot_armor",
+      "cell": 37,
+      "sourceRect": {
+        "left": 838,
+        "top": 670,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 22364,
+      "sha256": "fb52f28b5b57f823ea8c5065c0ca2fb882e7c3615d92fe3c339b14d6044df85c"
+    },
+    {
+      "id": "ballistic_lining",
+      "cell": 38,
+      "sourceRect": {
+        "left": 1006,
+        "top": 670,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 19030,
+      "sha256": "ac7cd03e54b90a9887d452d3e8ed7d992015bd262dd71ed6e01bfb43ed15e977"
+    },
+    {
+      "id": "field_medic",
+      "cell": 39,
+      "sourceRect": {
+        "left": 1173,
+        "top": 670,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 20144,
+      "sha256": "036c52988a40fd2f85459d0ca968f28c7d0145ce4da88d630f2a77ae2bff5180"
+    },
+    {
+      "id": "surplus_armor",
+      "cell": 40,
+      "sourceRect": {
+        "left": 0,
+        "top": 838,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 26664,
+      "sha256": "3f127309ab4c8f40c6a278c10fc9bd06d42d2d3b4a9bca4ae9aefc0db6fa790a"
+    },
+    {
+      "id": "smoke_guard",
+      "cell": 41,
+      "sourceRect": {
+        "left": 168,
+        "top": 838,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 25406,
+      "sha256": "cc915fc52e1c779355449442e13d25b04d04a641bf8f0a720288a4f70b968fc3"
+    },
+    {
+      "id": "sprint_drive",
+      "cell": 42,
+      "sourceRect": {
+        "left": 335,
+        "top": 838,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 27266,
+      "sha256": "e2337cfc0dfd0cc5d28b8f44d2efde401aa5933c2c2aecefddfb8b7b85a2775e"
+    },
+    {
+      "id": "jump_servos",
+      "cell": 43,
+      "sourceRect": {
+        "left": 503,
+        "top": 838,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 21632,
+      "sha256": "657f4712d7ab940d647488af77f3410103202e5fef15a25ae8f06dc2de8665b2"
+    },
+    {
+      "id": "combat_momentum",
+      "cell": 44,
+      "sourceRect": {
+        "left": 671,
+        "top": 838,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 25024,
+      "sha256": "44624e216299b7fddef7452554b05f1d24e88e2ccfd6d8b90deaeff8fc06369d"
+    },
+    {
+      "id": "evasive_matrix",
+      "cell": 45,
+      "sourceRect": {
+        "left": 838,
+        "top": 838,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        253
+      ],
+      "bytes": 29642,
+      "sha256": "28ada25ca5a468e64a611dd7fbc8ef5261b5a85da8efdebc62bba636f36f1f86"
+    },
+    {
+      "id": "smoke_radius",
+      "cell": 46,
+      "sourceRect": {
+        "left": 1006,
+        "top": 838,
+        "width": 167,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 18254,
+      "sha256": "d32c2f9fc4333b1e18f7c8b65cf1b2a5f4b934a3a4c40216ad7f7e1c62b07edc"
+    },
+    {
+      "id": "smoke_duration",
+      "cell": 47,
+      "sourceRect": {
+        "left": 1173,
+        "top": 838,
+        "width": 168,
+        "height": 167
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 19468,
+      "sha256": "f2ed5c8c34074345831c7ce9c4a38d57f3a18c33a8a177895e51d8d8bd87d00e"
+    },
+    {
+      "id": "smoke_reload",
+      "cell": 48,
+      "sourceRect": {
+        "left": 0,
+        "top": 1005,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 19826,
+      "sha256": "effef776b4b806d9310374ed7ec1ed1b94d573fb1759c78d785ccff48318ba4e"
+    },
+    {
+      "id": "short_fuse",
+      "cell": 49,
+      "sourceRect": {
+        "left": 168,
+        "top": 1005,
+        "width": 167,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 22988,
+      "sha256": "8d8d316bf332a21878d6e605c8b30077cd41344c8f268233e89feeee83f93c66"
+    },
+    {
+      "id": "rocket_radius",
+      "cell": 50,
+      "sourceRect": {
+        "left": 335,
+        "top": 1005,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 24288,
+      "sha256": "2e424d5f1b32b5e9d17b68d8ed9ae6a70378e4b6a42a29798fd194df93d2d952"
+    },
+    {
+      "id": "mine_radius",
+      "cell": 51,
+      "sourceRect": {
+        "left": 503,
+        "top": 1005,
+        "width": 168,
+        "height": 168
+      },
+      "alphaRange": [
+        0,
+        255
+      ],
+      "bytes": 28952,
+      "sha256": "28f14696c3ae193b5e4751133b4f91afab5fe03876bfda928eafe128c47d5774"
+    }
+  ]
+}

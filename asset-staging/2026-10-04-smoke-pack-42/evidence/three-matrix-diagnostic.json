@@ -1,0 +1,38 @@
+{
+  "revision": "128",
+  "initial": [
+    0,
+    0,
+    0.9801980198019804
+  ],
+  "world": [
+    -0.3213333015169758,
+    0,
+    0.9801980198019804
+  ],
+  "matrix": [
+    -0.3213333015169758,
+    0,
+    0.9801980198019804
+  ],
+  "stale": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    -4,
+    0,
+    0,
+    1
+  ],
+  "worldMethod": "updateWorldMatrix(t,e){super.updateWorldMatrix(t,e),this.matrixWorldInverse.copy(this.matrixWorld).invert()}",
+  "matrixMethod": "updateMatrixWorld(t){super.updateMatrixWorld(t),this.matrixWorldInverse.copy(this.matrixWorld).invert()}"
+}

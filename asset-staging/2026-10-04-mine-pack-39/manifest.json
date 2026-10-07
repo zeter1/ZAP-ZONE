@@ -1,0 +1,3233 @@
+{
+  "pack": "mine-39",
+  "status": "INTEGRATED_PENDING_BROWSER_QA",
+  "generator": "built-in image_gen",
+  "sources": [
+    {
+      "key": "ready",
+      "path": "sources/ready.png",
+      "sha256": "eed7450ed7c394a0b112b0da78325259e8bb3849f837c7e01853593db52dc26b"
+    },
+    {
+      "key": "windup",
+      "path": "sources/windup.png",
+      "sha256": "e6e5cd5fed81a26440f16bb3103114755b7155ecf82cdb3f3192fe6d0cbdf781"
+    },
+    {
+      "key": "extend",
+      "path": "sources/extend.png",
+      "sha256": "dd2432fd90d45b79bc79ffb1b589c2c2e9fe94cdc1da38b025eebe4508e40e4b"
+    },
+    {
+      "key": "release",
+      "path": "sources/release.png",
+      "sha256": "09b171f9631dc29bc86a9bd6df83b6926b394f153b92865803cf0a1e34e853c0"
+    },
+    {
+      "key": "reload",
+      "path": "sources/reload.png",
+      "sha256": "f8b52028a3b91531e95bd1c0802f9a2036cede7eb5a3f26ae3d4c7b1f094cc53"
+    },
+    {
+      "key": "world",
+      "path": "sources/world.png",
+      "sha256": "79b6661c75b8204c0469ec8167d3636708df7b29112e028579ece148a0fbd5ec"
+    },
+    {
+      "key": "inactive",
+      "path": "sources/inactive.png",
+      "sha256": "470719a746c80340a7a67d96d57c8a91cc08b34c9a9955674d38f5d927ffb575"
+    },
+    {
+      "key": "explosion_v2",
+      "path": "sources/explosion_v2.png",
+      "sha256": "337336bb2e556fdc0b4de9f97bc724d8bb86fe27dffb1bfbb5375a73678c5c04"
+    },
+    {
+      "key": "smoke",
+      "path": "sources/smoke.png",
+      "sha256": "92e02ca43684924485b20a03cd9d1f45358f2861d6251e34896482970fe596f2"
+    },
+    {
+      "key": "utilities",
+      "path": "sources/utilities.png",
+      "sha256": "699ae576d83f15c9d7febed7b2b6a6169a2fcc8408c8a25f1e2c84eebe3c8672"
+    }
+  ],
+  "files": [
+    {
+      "path": "sources/ready.png",
+      "kind": "generated_source",
+      "bytes": 927653,
+      "sha256": "eed7450ed7c394a0b112b0da78325259e8bb3849f837c7e01853593db52dc26b",
+      "generator": "built-in image_gen",
+      "prompt_key": "ready",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        282,
+        21,
+        1672,
+        941
+      ]
+    },
+    {
+      "path": "sources/windup.png",
+      "kind": "generated_source",
+      "bytes": 891613,
+      "sha256": "e6e5cd5fed81a26440f16bb3103114755b7155ecf82cdb3f3192fe6d0cbdf781",
+      "generator": "built-in image_gen",
+      "prompt_key": "windup",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        21,
+        1672,
+        941
+      ]
+    },
+    {
+      "path": "sources/extend.png",
+      "kind": "generated_source",
+      "bytes": 951699,
+      "sha256": "dd2432fd90d45b79bc79ffb1b589c2c2e9fe94cdc1da38b025eebe4508e40e4b",
+      "generator": "built-in image_gen",
+      "prompt_key": "extend",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        564,
+        21,
+        1672,
+        941
+      ]
+    },
+    {
+      "path": "sources/release.png",
+      "kind": "generated_source",
+      "bytes": 666670,
+      "sha256": "09b171f9631dc29bc86a9bd6df83b6926b394f153b92865803cf0a1e34e853c0",
+      "generator": "built-in image_gen",
+      "prompt_key": "release",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        564,
+        21,
+        1672,
+        941
+      ]
+    },
+    {
+      "path": "sources/reload.png",
+      "kind": "generated_source",
+      "bytes": 1298637,
+      "sha256": "f8b52028a3b91531e95bd1c0802f9a2036cede7eb5a3f26ae3d4c7b1f094cc53",
+      "generator": "built-in image_gen",
+      "prompt_key": "reload",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        153,
+        1672,
+        941
+      ]
+    },
+    {
+      "path": "sources/world.png",
+      "kind": "generated_source",
+      "bytes": 2247971,
+      "sha256": "79b6661c75b8204c0469ec8167d3636708df7b29112e028579ece148a0fbd5ec",
+      "generator": "built-in image_gen",
+      "prompt_key": "world",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        58,
+        1238,
+        1254
+      ]
+    },
+    {
+      "path": "sources/inactive.png",
+      "kind": "generated_source",
+      "bytes": 2157332,
+      "sha256": "470719a746c80340a7a67d96d57c8a91cc08b34c9a9955674d38f5d927ffb575",
+      "generator": "built-in image_gen",
+      "prompt_key": "inactive",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        38,
+        9,
+        1228,
+        1254
+      ]
+    },
+    {
+      "path": "sources/explosion_v2.png",
+      "kind": "generated_source",
+      "bytes": 1202247,
+      "sha256": "337336bb2e556fdc0b4de9f97bc724d8bb86fe27dffb1bfbb5375a73678c5c04",
+      "generator": "built-in image_gen",
+      "prompt_key": "explosion_v2",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        21,
+        0,
+        1774,
+        887
+      ]
+    },
+    {
+      "path": "sources/smoke.png",
+      "kind": "generated_source",
+      "bytes": 1864690,
+      "sha256": "92e02ca43684924485b20a03cd9d1f45358f2861d6251e34896482970fe596f2",
+      "generator": "built-in image_gen",
+      "prompt_key": "smoke",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        0,
+        0,
+        1536,
+        1024
+      ]
+    },
+    {
+      "path": "sources/utilities.png",
+      "kind": "generated_source",
+      "bytes": 2406109,
+      "sha256": "699ae576d83f15c9d7febed7b2b6a6169a2fcc8408c8a25f1e2c84eebe3c8672",
+      "generator": "built-in image_gen",
+      "prompt_key": "utilities",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        0,
+        9,
+        1536,
+        1024
+      ]
+    },
+    {
+      "path": "frames/player-mine-ready-39.png",
+      "kind": "frame",
+      "bytes": 867822,
+      "sha256": "2844a2baf85bb1ae6c9ded3adbcb6bdb22b437f3ff9ce13115c85d695afbe380",
+      "source": "sources/ready.png",
+      "source_window": null,
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        270,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "candidates/player-mine-ready-39.webp",
+      "kind": "sprite",
+      "bytes": 178310,
+      "sha256": "1a619f4de9b137212331627bab7d239da388722db449a1301162c93f4b531725",
+      "source": "frames/player-mine-ready-39.png",
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        270,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "frames/player-mine-windup-39.png",
+      "kind": "frame",
+      "bytes": 839280,
+      "sha256": "5d4d70454c19f905d7c10c1d57e89a8b71239243428aa067392eec1848a8ea06",
+      "source": "sources/windup.png",
+      "source_window": null,
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "candidates/player-mine-windup-39.webp",
+      "kind": "sprite",
+      "bytes": 168748,
+      "sha256": "fbcd292316b8c2e8081327ca9c5839f02de6193685f172c370c315304e01f74c",
+      "source": "frames/player-mine-windup-39.png",
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "frames/player-mine-extend-39.png",
+      "kind": "frame",
+      "bytes": 892577,
+      "sha256": "8732c4e65c7422d48ec5278857d91a11fd0aa10ab32f5cf4f54d33727dc2ccf5",
+      "source": "sources/extend.png",
+      "source_window": null,
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        540,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "candidates/player-mine-extend-39.webp",
+      "kind": "sprite",
+      "bytes": 182624,
+      "sha256": "b55e6e3702ab160ed5c3d98c1799e5a0c21426cda64c5a540a5ee5ce4138399f",
+      "source": "frames/player-mine-extend-39.png",
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        540,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "frames/player-mine-release-39.png",
+      "kind": "frame",
+      "bytes": 610938,
+      "sha256": "6765ea1a596ede7eba3ceadcea5c747977b324025c5e57a58041250c59cd75e3",
+      "source": "sources/release.png",
+      "source_window": null,
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        540,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "candidates/player-mine-release-39.webp",
+      "kind": "sprite",
+      "bytes": 131852,
+      "sha256": "606c978322814fc6a745abbd2090d997c8fdca36cbe322badfb06503455aa869",
+      "source": "frames/player-mine-release-39.png",
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        540,
+        20,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "frames/player-mine-reload-39.png",
+      "kind": "frame",
+      "bytes": 1216967,
+      "sha256": "87a6158b807f9f2903294517825da1100886dabc3ec59da99928813ad30cb614",
+      "source": "sources/reload.png",
+      "source_window": null,
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        146,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "candidates/player-mine-reload-39.webp",
+      "kind": "sprite",
+      "bytes": 247606,
+      "sha256": "f8b8094372e9f46783a9c15d124af14772263ce6630b822c9fbe294d438eaa59",
+      "source": "frames/player-mine-reload-39.png",
+      "size": [
+        1600,
+        900
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        0,
+        146,
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "candidates/player-mine-throw-atlas-39.webp",
+      "kind": "atlas",
+      "bytes": 687492,
+      "sha256": "fb1a699d746bee0cf9f33dc2945eea4ff4a32f83267c69571839ad84b5a25b96",
+      "columns": 3,
+      "rows": 2,
+      "frames": 6,
+      "cell_size": [
+        1280,
+        720
+      ],
+      "sequence": [
+        "ready",
+        "windup",
+        "extend",
+        "release",
+        "recovery-release",
+        "ready"
+      ],
+      "size": [
+        3840,
+        1440
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        216,
+        16,
+        3840,
+        1440
+      ]
+    },
+    {
+      "path": "candidates/player-mine-reload-atlas-39.webp",
+      "kind": "atlas",
+      "bytes": 421974,
+      "sha256": "6887131c65118f86374a3eeec1e14afd1843ed21a7f2dad8caf9cf3ae24b12c1",
+      "columns": 3,
+      "rows": 1,
+      "frames": 3,
+      "cell_size": [
+        1280,
+        720
+      ],
+      "sequence": [
+        "ready",
+        "activation-check",
+        "ready"
+      ],
+      "size": [
+        3840,
+        720
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        216,
+        16,
+        3840,
+        720
+      ]
+    },
+    {
+      "path": "frames/mine-arming-39.png",
+      "kind": "frame",
+      "bytes": 263832,
+      "sha256": "7a5151cb6639f4681e454dce9f4fba4342e39fb411635091b98ff054092f8f28",
+      "source": "sources/world.png",
+      "source_window": [
+        427,
+        0,
+        832,
+        428
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        61,
+        86,
+        450,
+        426
+      ]
+    },
+    {
+      "path": "candidates/mine-arming-39.webp",
+      "kind": "sprite",
+      "bytes": 63336,
+      "sha256": "2a925083a930fbb0a5866a7b1d31f2ccee411935bdf9e477373952a07a5a7351",
+      "source": "frames/mine-arming-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        61,
+        86,
+        450,
+        426
+      ]
+    },
+    {
+      "path": "frames/mine-armed-39.png",
+      "kind": "frame",
+      "bytes": 269692,
+      "sha256": "b03689af6754de126f3962f251e44702bcd1838ab430ebcfe06f965f9cc601f9",
+      "source": "sources/world.png",
+      "source_window": [
+        832,
+        0,
+        1254,
+        428
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        55,
+        83,
+        457,
+        428
+      ]
+    },
+    {
+      "path": "candidates/mine-armed-39.webp",
+      "kind": "sprite",
+      "bytes": 63882,
+      "sha256": "38f47f2680facb7baa30697023c650eb917e04779bf6a0c4a5568ad823c1a2d6",
+      "source": "frames/mine-armed-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        55,
+        83,
+        457,
+        428
+      ]
+    },
+    {
+      "path": "frames/mine-armed-blink-39.png",
+      "kind": "frame",
+      "bytes": 270185,
+      "sha256": "5ac3f47f09bb7b008f4258d17372fb3ebcf89fe561e437e2db5f6120a61e6b87",
+      "source": "sources/world.png",
+      "source_window": [
+        0,
+        428,
+        430,
+        812
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        56,
+        81,
+        456,
+        431
+      ]
+    },
+    {
+      "path": "candidates/mine-armed-blink-39.webp",
+      "kind": "sprite",
+      "bytes": 65984,
+      "sha256": "9f20d89ab41d516cfa1e1c6cafac4358ff6defc873b83d664ed3bc5fce48227e",
+      "source": "frames/mine-armed-blink-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        56,
+        81,
+        456,
+        431
+      ]
+    },
+    {
+      "path": "frames/mine-triggered-39.png",
+      "kind": "frame",
+      "bytes": 269922,
+      "sha256": "3c270a31a1f5f9f6d7ee144d470a6a4bc1e19df31ee2f72a496a7ca2f192d2ae",
+      "source": "sources/world.png",
+      "source_window": [
+        430,
+        428,
+        841,
+        812
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        53,
+        79,
+        458,
+        432
+      ]
+    },
+    {
+      "path": "candidates/mine-triggered-39.webp",
+      "kind": "sprite",
+      "bytes": 68556,
+      "sha256": "b286608ad95b7eea0c490acbc4975dea86ee3d6691d137a064a2115bbea85c21",
+      "source": "frames/mine-triggered-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        53,
+        79,
+        458,
+        432
+      ]
+    },
+    {
+      "path": "frames/mine-flight-top-39.png",
+      "kind": "frame",
+      "bytes": 226623,
+      "sha256": "d9749614d123237a8417b22579b78b36b5d49e1cf38f46f3608a6f51540250f1",
+      "source": "sources/world.png",
+      "source_window": [
+        841,
+        428,
+        1254,
+        812
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        63,
+        95,
+        449,
+        417
+      ]
+    },
+    {
+      "path": "candidates/mine-flight-top-39.webp",
+      "kind": "sprite",
+      "bytes": 55580,
+      "sha256": "b7e32e838a3c37a02839e33c806f24780be3f2c05761ba62e0e3b634a17654b1",
+      "source": "frames/mine-flight-top-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        63,
+        95,
+        449,
+        417
+      ]
+    },
+    {
+      "path": "frames/mine-flight-side-39.png",
+      "kind": "frame",
+      "bytes": 193491,
+      "sha256": "a9247f418a8a5ed241e9721dea2cd0d246bb99f7a846b8da48a6d49dc7d6636a",
+      "source": "sources/world.png",
+      "source_window": [
+        0,
+        812,
+        404,
+        1254
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        62,
+        40,
+        449,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-flight-side-39.webp",
+      "kind": "sprite",
+      "bytes": 50430,
+      "sha256": "f22842dcab57770438d85818f8dd04822392440fcae306fed5e448ea460da4fa",
+      "source": "frames/mine-flight-side-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        62,
+        40,
+        449,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-flight-under-39.png",
+      "kind": "frame",
+      "bytes": 262328,
+      "sha256": "23cd685bc88d818bf3fc401981d8666e927d71c54653a1181d83025907c91b2f",
+      "source": "sources/world.png",
+      "source_window": [
+        404,
+        812,
+        833,
+        1254
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        56,
+        55,
+        455,
+        457
+      ]
+    },
+    {
+      "path": "candidates/mine-flight-under-39.webp",
+      "kind": "sprite",
+      "bytes": 65954,
+      "sha256": "9e005460b32c03f867b3efe9f66c88c81638b9963046fa2851909256ea2ff267",
+      "source": "frames/mine-flight-under-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        56,
+        55,
+        455,
+        457
+      ]
+    },
+    {
+      "path": "frames/mine-top-icon-39.png",
+      "kind": "frame",
+      "bytes": 287229,
+      "sha256": "f06ca0077973b67f48b70df06e09ea7f5b8c42ecb1a4e955be781a326b67ee5f",
+      "source": "sources/world.png",
+      "source_window": [
+        833,
+        812,
+        1254,
+        1254
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        70,
+        64,
+        442,
+        448
+      ]
+    },
+    {
+      "path": "candidates/mine-top-icon-39.webp",
+      "kind": "sprite",
+      "bytes": 71860,
+      "sha256": "e7f8813602bdeb6fd63c08e31774ab3162819cf7d2a788e975959638bb80ab9f",
+      "source": "frames/mine-top-icon-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        70,
+        64,
+        442,
+        448
+      ]
+    },
+    {
+      "path": "frames/mine-disarmed-39.png",
+      "kind": "frame",
+      "bytes": 304999,
+      "sha256": "2dc123291b9f2173b922051cc30aa5a3234e6bd828312fae70f1a42530c3bd4b",
+      "source": "sources/inactive.png",
+      "source_window": null,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        49,
+        40,
+        461,
+        431
+      ]
+    },
+    {
+      "path": "candidates/mine-disarmed-39.webp",
+      "kind": "sprite",
+      "bytes": 79582,
+      "sha256": "8d79fcb8c4b7348b9d6a6425b12ab707dedee803bcfd407ebe9567910a02e859",
+      "source": "frames/mine-disarmed-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        49,
+        40,
+        461,
+        431
+      ]
+    },
+    {
+      "path": "candidates/mine-world-states-atlas-39.webp",
+      "kind": "atlas",
+      "bytes": 584034,
+      "sha256": "f47891bb8c338bfc01751482ca199a6353cc6672262bba491aae507fd4eba553",
+      "columns": 3,
+      "rows": 3,
+      "frames": 9,
+      "cell_size": [
+        512,
+        512
+      ],
+      "sequence": [
+        "mine-disarmed-39",
+        "mine-arming-39",
+        "mine-armed-39",
+        "mine-armed-blink-39",
+        "mine-triggered-39",
+        "mine-flight-top-39",
+        "mine-flight-side-39",
+        "mine-flight-under-39",
+        "mine-top-icon-39"
+      ],
+      "size": [
+        1536,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        49,
+        40,
+        1481,
+        1496
+      ]
+    },
+    {
+      "path": "frames/world-mine-pickup-39.png",
+      "kind": "frame",
+      "bytes": 263832,
+      "sha256": "7a5151cb6639f4681e454dce9f4fba4342e39fb411635091b98ff054092f8f28",
+      "source": "frames/mine-arming-39.png",
+      "source_window": null,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        61,
+        86,
+        450,
+        426
+      ]
+    },
+    {
+      "path": "candidates/world-mine-pickup-39.webp",
+      "kind": "sprite",
+      "bytes": 63336,
+      "sha256": "2a925083a930fbb0a5866a7b1d31f2ccee411935bdf9e477373952a07a5a7351",
+      "source": "frames/world-mine-pickup-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        61,
+        86,
+        450,
+        426
+      ]
+    },
+    {
+      "path": "frames/mine-weapon-icon-39.png",
+      "kind": "frame",
+      "bytes": 287229,
+      "sha256": "f06ca0077973b67f48b70df06e09ea7f5b8c42ecb1a4e955be781a326b67ee5f",
+      "source": "frames/mine-top-icon-39.png",
+      "source_window": null,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        70,
+        64,
+        442,
+        448
+      ]
+    },
+    {
+      "path": "candidates/mine-weapon-icon-39.webp",
+      "kind": "sprite",
+      "bytes": 71860,
+      "sha256": "e7f8813602bdeb6fd63c08e31774ab3162819cf7d2a788e975959638bb80ab9f",
+      "source": "frames/mine-weapon-icon-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        70,
+        64,
+        442,
+        448
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-00-39.png",
+      "kind": "frame",
+      "bytes": 32064,
+      "sha256": "aa04c28b7326b00c7ee627abbf8096dd3c73cd23463b1d4c8adfda8cc8c65ad9",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        0,
+        0,
+        443,
+        478
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        65,
+        65,
+        446,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-00-39.webp",
+      "kind": "sprite",
+      "bytes": 15174,
+      "sha256": "d621eba505c2ac9e0f9267046e37b1851bd9608e9e9cf935a442f913e95e9a32",
+      "source": "frames/mine-explosion-00-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        65,
+        65,
+        446,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-01-39.png",
+      "kind": "frame",
+      "bytes": 58968,
+      "sha256": "014ea54bb4535b9bc721c196b801f2039a682b80c88aaddbb06d86e169fb3086",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        443,
+        0,
+        857,
+        478
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        67,
+        55,
+        444,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-01-39.webp",
+      "kind": "sprite",
+      "bytes": 26280,
+      "sha256": "c45b18d20457637a600b9260c40ae22ac668bd27d5ece8c0ac7abf76c7cd48c4",
+      "source": "frames/mine-explosion-01-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        67,
+        55,
+        444,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-02-39.png",
+      "kind": "frame",
+      "bytes": 136719,
+      "sha256": "a30642b3de6239595821954b29ad39d2d3941193732983b5e0be55231ff07e68",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        857,
+        0,
+        1285,
+        478
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        63,
+        40,
+        448,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-02-39.webp",
+      "kind": "sprite",
+      "bytes": 53036,
+      "sha256": "1b263cc96f619ca8398cd7f87e919de227a1781b4efb7878781c8610e4a7f050",
+      "source": "frames/mine-explosion-02-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        63,
+        40,
+        448,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-03-39.png",
+      "kind": "frame",
+      "bytes": 275233,
+      "sha256": "4a095bee673fcd7fa901902462e4d3746fad613d9d3bc42fe6b10497c076b88c",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        1285,
+        0,
+        1774,
+        478
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        50,
+        57,
+        461,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-03-39.webp",
+      "kind": "sprite",
+      "bytes": 95910,
+      "sha256": "7bb3e71f6100b5c41770e6b443c6d49deb8638f70d4a797c51f54124c4f549b2",
+      "source": "frames/mine-explosion-03-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        50,
+        57,
+        461,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-04-39.png",
+      "kind": "frame",
+      "bytes": 208532,
+      "sha256": "1c937305f5f67e6eb24a8e990297b972086901e9d123669b57f2168f498c1841",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        0,
+        478,
+        425,
+        887
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        72,
+        136,
+        440,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-04-39.webp",
+      "kind": "sprite",
+      "bytes": 72304,
+      "sha256": "b7546bee2d44fb3cd081105ab43f8a325a5b4873e038ca4c3719edeb0480880c",
+      "source": "frames/mine-explosion-04-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        72,
+        136,
+        440,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-05-39.png",
+      "kind": "frame",
+      "bytes": 162864,
+      "sha256": "dfd2d69422958bd2138f132008f2354640ac10ba5feddde57251e5cae26528c7",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        425,
+        478,
+        899,
+        887
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        43,
+        134,
+        468,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-05-39.webp",
+      "kind": "sprite",
+      "bytes": 58624,
+      "sha256": "72eca21f0dcd64c203e115573cc409e26dff417643c2db2bdfdd5225500b90e3",
+      "source": "frames/mine-explosion-05-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        43,
+        134,
+        468,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-06-39.png",
+      "kind": "frame",
+      "bytes": 118342,
+      "sha256": "2b9db164be80dbeb9c0f46446e597a82e1ca90ab5bd2d415b1f82d944ea342eb",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        899,
+        478,
+        1356,
+        887
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        52,
+        155,
+        460,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-06-39.webp",
+      "kind": "sprite",
+      "bytes": 43866,
+      "sha256": "46340df0a71b3596b36f22f39fe6650c7234220bd84bea48473ea88a0a86eca7",
+      "source": "frames/mine-explosion-06-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        52,
+        155,
+        460,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-explosion-07-39.png",
+      "kind": "frame",
+      "bytes": 59460,
+      "sha256": "0f8ac1a60f70e7710bd2e73bb267fa881a9dbb3c965c1cdde55c595bea49cd29",
+      "source": "sources/explosion_v2.png",
+      "source_window": [
+        1356,
+        478,
+        1774,
+        887
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        250
+      ],
+      "alpha_bbox": [
+        65,
+        100,
+        446,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-07-39.webp",
+      "kind": "sprite",
+      "bytes": 23690,
+      "sha256": "e7e13b6b9704b8760a61d1e463167be2555b85fdb7441c8ad026bcb6cf4330ef",
+      "source": "frames/mine-explosion-07-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        250
+      ],
+      "alpha_bbox": [
+        65,
+        100,
+        446,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-explosion-atlas-39.webp",
+      "kind": "atlas",
+      "bytes": 395400,
+      "sha256": "aebbec1bd22d74037ced3ac3cde8d14ebe225e58cc581910c2f57c9df1cc66f9",
+      "columns": 4,
+      "rows": 2,
+      "frames": 8,
+      "cell_size": [
+        512,
+        512
+      ],
+      "sequence": [
+        "mine-explosion-00-39",
+        "mine-explosion-01-39",
+        "mine-explosion-02-39",
+        "mine-explosion-03-39",
+        "mine-explosion-04-39",
+        "mine-explosion-05-39",
+        "mine-explosion-06-39",
+        "mine-explosion-07-39"
+      ],
+      "size": [
+        2048,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        65,
+        40,
+        1997,
+        984
+      ]
+    },
+    {
+      "path": "frames/mine-smoke-00-39.png",
+      "kind": "frame",
+      "bytes": 78138,
+      "sha256": "68d25889e872803ae41774d7eba976d7ae1c3f32e0c4e71db69f6659e5d5701f",
+      "source": "sources/smoke.png",
+      "source_window": [
+        0,
+        0,
+        501,
+        518
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        68,
+        120,
+        444,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-00-39.webp",
+      "kind": "sprite",
+      "bytes": 27490,
+      "sha256": "a3dc9425a8dff52c733c20005f4421b22beb8ef68e58f3c7111bb2ced4e05ac3",
+      "source": "frames/mine-smoke-00-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        68,
+        120,
+        444,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-smoke-01-39.png",
+      "kind": "frame",
+      "bytes": 145774,
+      "sha256": "25a84c17f4e37fc475499fbbb38daa9645998cab8c6d20b5ef59312491fbfb5a",
+      "source": "sources/smoke.png",
+      "source_window": [
+        501,
+        0,
+        1047,
+        518
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        51,
+        90,
+        461,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-01-39.webp",
+      "kind": "sprite",
+      "bytes": 44836,
+      "sha256": "71e528f73cc80341d8c6dfe4d544c08384097d7f0c1b448f6465b8e60e0aab67",
+      "source": "frames/mine-smoke-01-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        51,
+        90,
+        461,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-smoke-02-39.png",
+      "kind": "frame",
+      "bytes": 169357,
+      "sha256": "3de9381978ba5ac8ebf0a0be1ab9c94765683e2cd78f134bae242c5dfa936c56",
+      "source": "sources/smoke.png",
+      "source_window": [
+        1047,
+        0,
+        1536,
+        518
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        72,
+        84,
+        439,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-02-39.webp",
+      "kind": "sprite",
+      "bytes": 52958,
+      "sha256": "c3e9f87b38ef2f9b62ea1ce702e089adee0a649c0674591b54d026e0a553846e",
+      "source": "frames/mine-smoke-02-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        72,
+        84,
+        439,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-smoke-03-39.png",
+      "kind": "frame",
+      "bytes": 160171,
+      "sha256": "b0605c5262bd6a4224b70cf8b4de3a8adc213770f3a2a4f5317dbc65a69b11e3",
+      "source": "sources/smoke.png",
+      "source_window": [
+        0,
+        518,
+        576,
+        1024
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        40,
+        93,
+        472,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-03-39.webp",
+      "kind": "sprite",
+      "bytes": 56404,
+      "sha256": "55262316f43df52056b0a7f8d2893cb478ab82e5f7ca7aa538df7d6baf4869f6",
+      "source": "frames/mine-smoke-03-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "alpha_bbox": [
+        40,
+        93,
+        472,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-smoke-04-39.png",
+      "kind": "frame",
+      "bytes": 109024,
+      "sha256": "d79ea1f1ce27a0b4c0f80c50bdbb406ea031d0d7b0e1bbd9483d2443c02a679d",
+      "source": "sources/smoke.png",
+      "source_window": [
+        576,
+        518,
+        1045,
+        1024
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        81,
+        92,
+        431,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-04-39.webp",
+      "kind": "sprite",
+      "bytes": 38758,
+      "sha256": "f527303a2d3f0824c25f82c6d6b5618d1423bc375b52e2f5518da9d01e447ec1",
+      "source": "frames/mine-smoke-04-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "alpha_bbox": [
+        81,
+        92,
+        431,
+        472
+      ]
+    },
+    {
+      "path": "frames/mine-smoke-05-39.png",
+      "kind": "frame",
+      "bytes": 69719,
+      "sha256": "fb5cc67e5e6a3004727d46c0490bfdea380513c6ff2d2d54caad736adb42c851",
+      "source": "sources/smoke.png",
+      "source_window": [
+        1045,
+        518,
+        1536,
+        1024
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        224
+      ],
+      "alpha_bbox": [
+        75,
+        92,
+        437,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-05-39.webp",
+      "kind": "sprite",
+      "bytes": 27776,
+      "sha256": "b1086a8425b4a5138930fcb92fae093496e015df687d9065ac178a5ebe587f94",
+      "source": "frames/mine-smoke-05-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        224
+      ],
+      "alpha_bbox": [
+        75,
+        92,
+        437,
+        472
+      ]
+    },
+    {
+      "path": "candidates/mine-smoke-atlas-39.webp",
+      "kind": "atlas",
+      "bytes": 250606,
+      "sha256": "e7cb48f2ac12632895d3b0ec953948f29c487cab0af5165bf4ae8f328712b476",
+      "columns": 3,
+      "rows": 2,
+      "frames": 6,
+      "cell_size": [
+        512,
+        512
+      ],
+      "sequence": [
+        "mine-smoke-00-39",
+        "mine-smoke-01-39",
+        "mine-smoke-02-39",
+        "mine-smoke-03-39",
+        "mine-smoke-04-39",
+        "mine-smoke-05-39"
+      ],
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        40,
+        84,
+        1463,
+        984
+      ]
+    },
+    {
+      "path": "frames/mine-utility-00-39.png",
+      "kind": "frame",
+      "bytes": 167517,
+      "sha256": "5dbe3e836ace8e4cb25426ffa244ed7ad4b316ae6141606129a8ca1c502e3bb1",
+      "source": "sources/utilities.png",
+      "source_window": [
+        0,
+        0,
+        513,
+        501
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        82,
+        69,
+        429,
+        442
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-00-39.webp",
+      "kind": "sprite",
+      "bytes": 65094,
+      "sha256": "005546d2e025fe4360d2cedd684220ca3e81165079027121d91cf3a2deddc06f",
+      "source": "frames/mine-utility-00-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        82,
+        69,
+        429,
+        442
+      ]
+    },
+    {
+      "path": "frames/mine-utility-01-39.png",
+      "kind": "frame",
+      "bytes": 197575,
+      "sha256": "0806e6ab66b516cc2b56342698fc3d5bf1feb202d850a04d8e70f43e0905c0cc",
+      "source": "sources/utilities.png",
+      "source_window": [
+        513,
+        0,
+        1004,
+        501
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        64,
+        67,
+        448,
+        445
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-01-39.webp",
+      "kind": "sprite",
+      "bytes": 76110,
+      "sha256": "7da0bd27d4a50c47613b37a808ceeba7c0be0cfd7090d77ce8fd4612ea2262bd",
+      "source": "frames/mine-utility-01-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        64,
+        67,
+        448,
+        445
+      ]
+    },
+    {
+      "path": "frames/mine-utility-02-39.png",
+      "kind": "frame",
+      "bytes": 123190,
+      "sha256": "050ac84cd2e4560cf6e4a2addc9abc15a6cf5c1d596b40695399714bc79a331d",
+      "source": "sources/utilities.png",
+      "source_window": [
+        1004,
+        0,
+        1536,
+        501
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        49,
+        61,
+        462,
+        450
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-02-39.webp",
+      "kind": "sprite",
+      "bytes": 56410,
+      "sha256": "fefcc5f404a5ab85262e01f7a7d8852f816ad9755b0111ed61fb1a3ca9ca636c",
+      "source": "frames/mine-utility-02-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        49,
+        61,
+        462,
+        450
+      ]
+    },
+    {
+      "path": "frames/mine-utility-03-39.png",
+      "kind": "frame",
+      "bytes": 279156,
+      "sha256": "2b0e5e3f020ad6b5bf9969b41e58936d730c0f2668bf4d2ff37e21b73b1e8bbe",
+      "source": "sources/utilities.png",
+      "source_window": [
+        0,
+        501,
+        541,
+        1024
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        40,
+        53,
+        472,
+        458
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-03-39.webp",
+      "kind": "sprite",
+      "bytes": 99830,
+      "sha256": "bf6b2572e06c3e9e387cf95d0c10e73b07a025f00fc4cec40d261ef39c5518b4",
+      "source": "frames/mine-utility-03-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        40,
+        53,
+        472,
+        458
+      ]
+    },
+    {
+      "path": "frames/mine-utility-04-39.png",
+      "kind": "frame",
+      "bytes": 234425,
+      "sha256": "b52c9bc0a12772e03f5b411563c571521147dfb25eb25d9e2bb625c6765563bc",
+      "source": "sources/utilities.png",
+      "source_window": [
+        541,
+        501,
+        1021,
+        1024
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        65,
+        47,
+        447,
+        465
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-04-39.webp",
+      "kind": "sprite",
+      "bytes": 77418,
+      "sha256": "bb711acb0597075ece7b025b5aa4da1b9caa9879ce681af7973a4a756c3216eb",
+      "source": "frames/mine-utility-04-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        65,
+        47,
+        447,
+        465
+      ]
+    },
+    {
+      "path": "frames/mine-utility-05-39.png",
+      "kind": "frame",
+      "bytes": 167314,
+      "sha256": "b1085cf9ac0925c2069530ba8371c6e0b7b108acdaa378aa5f22410889381e9a",
+      "source": "sources/utilities.png",
+      "source_window": [
+        1021,
+        501,
+        1536,
+        1024
+      ],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        50,
+        49,
+        461,
+        463
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-05-39.webp",
+      "kind": "sprite",
+      "bytes": 67542,
+      "sha256": "366948b166156c4e501412246436a452546a582c1c552d2af59ac80916825dd1",
+      "source": "frames/mine-utility-05-39.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        50,
+        49,
+        461,
+        463
+      ]
+    },
+    {
+      "path": "candidates/mine-utility-atlas-39.webp",
+      "kind": "atlas",
+      "bytes": 448448,
+      "sha256": "14dab0a70597fb392d15f4cced512d5f20b0b559ab9e4859d50cfea2ba4ab51d",
+      "columns": 3,
+      "rows": 2,
+      "frames": 6,
+      "cell_size": [
+        512,
+        512
+      ],
+      "sequence": [
+        "mine-utility-00-39",
+        "mine-utility-01-39",
+        "mine-utility-02-39",
+        "mine-utility-03-39",
+        "mine-utility-04-39",
+        "mine-utility-05-39"
+      ],
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "alpha_bbox": [
+        40,
+        61,
+        1486,
+        977
+      ]
+    },
+    {
+      "path": "audio/mine-throw-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 15038,
+      "sha256": "0c298312490efbe579102fd1f6152db6fcf3b7ea38d8f139ecf9f76dd0d63e44",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.34,
+      "peak": 5664,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "path": "audio/mine-land-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 11068,
+      "sha256": "97f62d1d49d10edc14422805cf09728a2080f73dc391fb40a9cd563f3ff337c4",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.24997732426303854,
+      "peak": 17853,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "path": "audio/mine-arm-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 18566,
+      "sha256": "ac1d7c87cd39229ba4303b727a1804466aa439091bf27950139c80855a57eca8",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.42,
+      "peak": 8475,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "path": "audio/mine-trigger-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 11510,
+      "sha256": "7519ccb7022202dd4bbcac621387a70ba4ac697fecb5241d6c4868b80b3db0d0",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.26,
+      "peak": 6553,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "path": "audio/mine-detonate-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 70604,
+      "sha256": "24438d78f6089f2707e82b5ada500560db76b5441631afec7a7598b371f5ab8a",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 1.6,
+      "peak": 15921,
+      "generator": "stdlib deterministic synthesis seed39"
+    }
+  ],
+  "slicing": [
+    {
+      "name": "mine-disarmed-39",
+      "sheet": "world",
+      "source_window": [
+        0,
+        0,
+        427,
+        428
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        62,
+        420,
+        402
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        46,
+        86
+      ]
+    },
+    {
+      "name": "mine-arming-39",
+      "sheet": "world",
+      "source_window": [
+        427,
+        0,
+        832,
+        428
+      ],
+      "alpha_bbox_in_window": [
+        5,
+        61,
+        395,
+        402
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        61,
+        86
+      ]
+    },
+    {
+      "name": "mine-armed-39",
+      "sheet": "world",
+      "source_window": [
+        832,
+        0,
+        1254,
+        428
+      ],
+      "alpha_bbox_in_window": [
+        3,
+        58,
+        406,
+        404
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        55,
+        83
+      ]
+    },
+    {
+      "name": "mine-armed-blink-39",
+      "sheet": "world",
+      "source_window": [
+        0,
+        428,
+        430,
+        812
+      ],
+      "alpha_bbox_in_window": [
+        29,
+        23,
+        430,
+        374
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        56,
+        81
+      ]
+    },
+    {
+      "name": "mine-triggered-39",
+      "sheet": "world",
+      "source_window": [
+        430,
+        428,
+        841,
+        812
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        20,
+        406,
+        374
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        53,
+        79
+      ]
+    },
+    {
+      "name": "mine-flight-top-39",
+      "sheet": "world",
+      "source_window": [
+        841,
+        428,
+        1254,
+        812
+      ],
+      "alpha_bbox_in_window": [
+        10,
+        35,
+        397,
+        358
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        63,
+        95
+      ]
+    },
+    {
+      "name": "mine-flight-side-39",
+      "sheet": "world",
+      "source_window": [
+        0,
+        812,
+        404,
+        1254
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        9,
+        388,
+        442
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        62,
+        40
+      ]
+    },
+    {
+      "name": "mine-flight-under-39",
+      "sheet": "world",
+      "source_window": [
+        404,
+        812,
+        833,
+        1254
+      ],
+      "alpha_bbox_in_window": [
+        18,
+        39,
+        418,
+        442
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        56,
+        55
+      ]
+    },
+    {
+      "name": "mine-top-icon-39",
+      "sheet": "world",
+      "source_window": [
+        833,
+        812,
+        1254,
+        1254
+      ],
+      "alpha_bbox_in_window": [
+        8,
+        9,
+        381,
+        394
+      ],
+      "scale": 0.9976905311778291,
+      "placement": [
+        70,
+        64
+      ]
+    },
+    {
+      "name": "mine-explosion-00-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        0,
+        0,
+        443,
+        478
+      ],
+      "alpha_bbox_in_window": [
+        25,
+        31,
+        443,
+        478
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        65,
+        65
+      ]
+    },
+    {
+      "name": "mine-explosion-01-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        443,
+        0,
+        857,
+        478
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        19,
+        414,
+        477
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        67,
+        55
+      ]
+    },
+    {
+      "name": "mine-explosion-02-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        857,
+        0,
+        1285,
+        478
+      ],
+      "alpha_bbox_in_window": [
+        1,
+        0,
+        423,
+        474
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        63,
+        40
+      ]
+    },
+    {
+      "name": "mine-explosion-03-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        1285,
+        0,
+        1774,
+        478
+      ],
+      "alpha_bbox_in_window": [
+        14,
+        23,
+        465,
+        478
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        50,
+        57
+      ]
+    },
+    {
+      "name": "mine-explosion-04-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        0,
+        478,
+        425,
+        887
+      ],
+      "alpha_bbox_in_window": [
+        21,
+        0,
+        425,
+        369
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        72,
+        136
+      ]
+    },
+    {
+      "name": "mine-explosion-05-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        425,
+        478,
+        899,
+        887
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        14,
+        466,
+        385
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        43,
+        134
+      ]
+    },
+    {
+      "name": "mine-explosion-06-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        899,
+        478,
+        1356,
+        887
+      ],
+      "alpha_bbox_in_window": [
+        9,
+        13,
+        457,
+        361
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        52,
+        155
+      ]
+    },
+    {
+      "name": "mine-explosion-07-39",
+      "sheet": "explosion_v2",
+      "source_window": [
+        1356,
+        478,
+        1774,
+        887
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        1,
+        418,
+        409
+      ],
+      "scale": 0.9113924050632911,
+      "placement": [
+        65,
+        100
+      ]
+    },
+    {
+      "name": "mine-smoke-00-39",
+      "sheet": "smoke",
+      "source_window": [
+        0,
+        0,
+        501,
+        518
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        31,
+        501,
+        500
+      ],
+      "scale": 0.75,
+      "placement": [
+        68,
+        120
+      ]
+    },
+    {
+      "name": "mine-smoke-01-39",
+      "sheet": "smoke",
+      "source_window": [
+        501,
+        0,
+        1047,
+        518
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        9,
+        546,
+        518
+      ],
+      "scale": 0.75,
+      "placement": [
+        51,
+        90
+      ]
+    },
+    {
+      "name": "mine-smoke-02-39",
+      "sheet": "smoke",
+      "source_window": [
+        1047,
+        0,
+        1536,
+        518
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        0,
+        489,
+        518
+      ],
+      "scale": 0.75,
+      "placement": [
+        72,
+        84
+      ]
+    },
+    {
+      "name": "mine-smoke-03-39",
+      "sheet": "smoke",
+      "source_window": [
+        0,
+        518,
+        576,
+        1024
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        1,
+        576,
+        506
+      ],
+      "scale": 0.75,
+      "placement": [
+        40,
+        93
+      ]
+    },
+    {
+      "name": "mine-smoke-04-39",
+      "sheet": "smoke",
+      "source_window": [
+        576,
+        518,
+        1045,
+        1024
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        0,
+        466,
+        506
+      ],
+      "scale": 0.75,
+      "placement": [
+        81,
+        92
+      ]
+    },
+    {
+      "name": "mine-smoke-05-39",
+      "sheet": "smoke",
+      "source_window": [
+        1045,
+        518,
+        1536,
+        1024
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        0,
+        482,
+        506
+      ],
+      "scale": 0.75,
+      "placement": [
+        75,
+        92
+      ]
+    },
+    {
+      "name": "mine-utility-00-39",
+      "sheet": "utilities",
+      "source_window": [
+        0,
+        0,
+        513,
+        501
+      ],
+      "alpha_bbox_in_window": [
+        63,
+        23,
+        498,
+        490
+      ],
+      "scale": 0.7985212569316081,
+      "placement": [
+        82,
+        69
+      ]
+    },
+    {
+      "name": "mine-utility-01-39",
+      "sheet": "utilities",
+      "source_window": [
+        513,
+        0,
+        1004,
+        501
+      ],
+      "alpha_bbox_in_window": [
+        8,
+        28,
+        489,
+        501
+      ],
+      "scale": 0.7985212569316081,
+      "placement": [
+        64,
+        67
+      ]
+    },
+    {
+      "name": "mine-utility-02-39",
+      "sheet": "utilities",
+      "source_window": [
+        1004,
+        0,
+        1536,
+        501
+      ],
+      "alpha_bbox_in_window": [
+        1,
+        9,
+        518,
+        496
+      ],
+      "scale": 0.7985212569316081,
+      "placement": [
+        49,
+        61
+      ]
+    },
+    {
+      "name": "mine-utility-03-39",
+      "sheet": "utilities",
+      "source_window": [
+        0,
+        501,
+        541,
+        1024
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        16,
+        541,
+        523
+      ],
+      "scale": 0.7985212569316081,
+      "placement": [
+        40,
+        53
+      ]
+    },
+    {
+      "name": "mine-utility-04-39",
+      "sheet": "utilities",
+      "source_window": [
+        541,
+        501,
+        1021,
+        1024
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        0,
+        479,
+        523
+      ],
+      "scale": 0.7985212569316081,
+      "placement": [
+        65,
+        47
+      ]
+    },
+    {
+      "name": "mine-utility-05-39",
+      "sheet": "utilities",
+      "source_window": [
+        1021,
+        501,
+        1536,
+        1024
+      ],
+      "alpha_bbox_in_window": [
+        0,
+        4,
+        515,
+        523
+      ],
+      "scale": 0.7985212569316081,
+      "placement": [
+        50,
+        49
+      ]
+    }
+  ],
+  "frame_sets": {
+    "fps": [
+      "player-mine-ready-39",
+      "player-mine-windup-39",
+      "player-mine-extend-39",
+      "player-mine-release-39",
+      "player-mine-reload-39"
+    ],
+    "world": [
+      "mine-disarmed-39",
+      "mine-arming-39",
+      "mine-armed-39",
+      "mine-armed-blink-39",
+      "mine-triggered-39",
+      "mine-flight-top-39",
+      "mine-flight-side-39",
+      "mine-flight-under-39",
+      "mine-top-icon-39"
+    ],
+    "explosion": [
+      "mine-explosion-00-39",
+      "mine-explosion-01-39",
+      "mine-explosion-02-39",
+      "mine-explosion-03-39",
+      "mine-explosion-04-39",
+      "mine-explosion-05-39",
+      "mine-explosion-06-39",
+      "mine-explosion-07-39"
+    ],
+    "smoke": [
+      "mine-smoke-00-39",
+      "mine-smoke-01-39",
+      "mine-smoke-02-39",
+      "mine-smoke-03-39",
+      "mine-smoke-04-39",
+      "mine-smoke-05-39"
+    ],
+    "utility": [
+      "mine-utility-00-39",
+      "mine-utility-01-39",
+      "mine-utility-02-39",
+      "mine-utility-03-39",
+      "mine-utility-04-39",
+      "mine-utility-05-39"
+    ]
+  },
+  "fx_anchor": "bottom center, x=.5, y=472/512",
+  "fps_canvas": [
+    1600,
+    900
+  ],
+  "runtime_changed": true,
+  "audio_note": "Synthetic effects; listening on user device NOT_VERIFIED",
+  "integration_review": "docs/ASSETS.md section0.0",
+  "preview_note": "Standalone preview; not an in-game rendering proof",
+  "runtime_mapping": [
+    {
+      "source": "candidates/player-mine-ready-39.webp",
+      "runtime": "assets/ui/weapons/fp/player-mine-ready-39.webp",
+      "bytes": 178310,
+      "sha256": "1a619f4de9b137212331627bab7d239da388722db449a1301162c93f4b531725",
+      "size": [
+        1600,
+        900
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/player-mine-throw-atlas-39.webp",
+      "runtime": "assets/ui/fx/player-mine-throw-atlas-39.webp",
+      "bytes": 687492,
+      "sha256": "fb1a699d746bee0cf9f33dc2945eea4ff4a32f83267c69571839ad84b5a25b96",
+      "size": [
+        3840,
+        1440
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/player-mine-reload-atlas-39.webp",
+      "runtime": "assets/ui/fx/player-mine-reload-atlas-39.webp",
+      "bytes": 421974,
+      "sha256": "6887131c65118f86374a3eeec1e14afd1843ed21a7f2dad8caf9cf3ae24b12c1",
+      "size": [
+        3840,
+        720
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/mine-world-states-atlas-39.webp",
+      "runtime": "assets/ui/fx/mine-world-states-atlas-39.webp",
+      "bytes": 584034,
+      "sha256": "f47891bb8c338bfc01751482ca199a6353cc6672262bba491aae507fd4eba553",
+      "size": [
+        1536,
+        1536
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/mine-explosion-atlas-39.webp",
+      "runtime": "assets/ui/fx/mine-explosion-atlas-39.webp",
+      "bytes": 395400,
+      "sha256": "aebbec1bd22d74037ced3ac3cde8d14ebe225e58cc581910c2f57c9df1cc66f9",
+      "size": [
+        2048,
+        1024
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/mine-smoke-atlas-39.webp",
+      "runtime": "assets/ui/fx/mine-smoke-atlas-39.webp",
+      "bytes": 250606,
+      "sha256": "e7cb48f2ac12632895d3b0ec953948f29c487cab0af5165bf4ae8f328712b476",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/mine-utility-atlas-39.webp",
+      "runtime": "assets/ui/fx/mine-utility-atlas-39.webp",
+      "bytes": 448448,
+      "sha256": "14dab0a70597fb392d15f4cced512d5f20b0b559ab9e4859d50cfea2ba4ab51d",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/world-mine-pickup-39.webp",
+      "runtime": "assets/ui/pickups/weapons/world-mine-pickup-39.webp",
+      "bytes": 63336,
+      "sha256": "2a925083a930fbb0a5866a7b1d31f2ccee411935bdf9e477373952a07a5a7351",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "candidates/mine-weapon-icon-39.webp",
+      "runtime": "assets/ui/weapons/mine-weapon-icon-39.webp",
+      "bytes": 71860,
+      "sha256": "e7f8813602bdeb6fd63c08e31774ab3162819cf7d2a788e975959638bb80ab9f",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "source": "audio/mine-arm-39.wav",
+      "runtime": "assets/audio/mine-arm-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 18566,
+      "sha256": "ac1d7c87cd39229ba4303b727a1804466aa439091bf27950139c80855a57eca8",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.42,
+      "peak": 8475,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "source": "audio/mine-detonate-39.wav",
+      "runtime": "assets/audio/mine-detonate-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 70604,
+      "sha256": "24438d78f6089f2707e82b5ada500560db76b5441631afec7a7598b371f5ab8a",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 1.6,
+      "peak": 15921,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "source": "audio/mine-land-39.wav",
+      "runtime": "assets/audio/mine-land-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 11068,
+      "sha256": "97f62d1d49d10edc14422805cf09728a2080f73dc391fb40a9cd563f3ff337c4",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.24997732426303854,
+      "peak": 17853,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "source": "audio/mine-throw-39.wav",
+      "runtime": "assets/audio/mine-throw-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 15038,
+      "sha256": "0c298312490efbe579102fd1f6152db6fcf3b7ea38d8f139ecf9f76dd0d63e44",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.34,
+      "peak": 5664,
+      "generator": "stdlib deterministic synthesis seed39"
+    },
+    {
+      "source": "audio/mine-trigger-39.wav",
+      "runtime": "assets/audio/mine-trigger-39.wav",
+      "kind": "synthesized_audio",
+      "bytes": 11510,
+      "sha256": "7519ccb7022202dd4bbcac621387a70ba4ac697fecb5241d6c4868b80b3db0d0",
+      "sample_rate": 22050,
+      "channels": 1,
+      "sample_width": 2,
+      "duration": 0.26,
+      "peak": 6553,
+      "generator": "stdlib deterministic synthesis seed39"
+    }
+  ],
+  "integration": {
+    "approval": "User expressly approved the reviewed Pack39 in current task",
+    "throw_duration_s": 0.58,
+    "release_frame": 3,
+    "release_seconds": 0.29,
+    "release_owner": "src/combat/combat.js::tickPendingMineThrow",
+    "world_owner": "src/combat/combat.js::syncMineWorldArt39",
+    "vfx_owner": "src/settings/settings.js::playGeneratedCombatVfx",
+    "decal_duration_s": 15,
+    "node_cap": "MAX_MINES",
+    "fallbacks": {
+      "ready": "assets/ui/weapons/fp/player-mine-fps-01.webp, then procedural rig",
+      "action": "working ready stays; mineThrow24 only alongside legacy ready",
+      "world": "procedural mkMine remains until exact atlas decode",
+      "vfx": "legacy mineDetonation sprite while Pack39 FX unavailable; lights/RNG retained, no procedural ring/particles",
+      "audio": "existing WebAudio synthesis on file:// or WAV load failure"
+    },
+    "rollback": "Retained old assets; restore reviewed pre-integration source files and regenerate stamp. No user state changed by integration.",
+    "fps_viewport_scale": 0.44,
+    "fps_anchor": "right0,bottom0; preserve16:9",
+    "ground_top": {
+      "owner": "src/combat/combat.js::makeMineBody39",
+      "source_frame": 8,
+      "mode": "horizontal THREE.PlaneGeometry on complete low-profile six-lug/vent metallic body",
+      "size_m": 0.64,
+      "local_top_y": -0.021,
+      "local_bottom_y": -0.08,
+      "total_height_m": 0.063,
+      "physics_center_y": 0.08,
+      "contact_radius_m": 0.32,
+      "projection": "native camera/FOV/depth-tested; fixed real mine orientation",
+      "texture": "HTTP shared immutable cropped GPUatlas/refcounted disposal; file:// approved top8 cropped horizontal DOMsurface via existing positionGroundGrenadeDecal, no WebGL image upload",
+      "cleanup": "detach shared material map before generic dispose; own instanced buffers/geometry/material disposal; shared GPU atlas freed at last release",
+      "surface_contract": "existing flat floor landing y=.08 only; raised surface collision unchanged",
+      "batching": "6lugs/6vents in2 InstancedMesh; HTTP/file7 body drawobjects",
+      "file_total_height_m": 0.063,
+      "file_dom_crop": {
+        "background_size": "400% 400%",
+        "background_position": "94.444444% 94.444444%",
+        "size_m": 0.64,
+        "height_m": 0.059,
+        "yaw": "real mine group rotation",
+        "occlusion": "shared world-corner helper wall/nearclip gates"
+      }
+    },
+    "contact": "Any grounded actor contacting armed mine is immediately lethal regardless owner/team/HP/armor/shield/secondWind; canonical death/legitimate enemy rewards once; 1.5s arming and nearby AoE unchanged"
+  }
+}

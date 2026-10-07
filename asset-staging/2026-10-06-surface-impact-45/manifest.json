@@ -1,0 +1,355 @@
+{
+  "source": "source.png",
+  "source_sha256": "3df052f6c66181ba1468f1d0567772f4d1bdf81203a2b6807a81d445c2c45769",
+  "runtime": "assets/ui/fx/surface-impact-atlas-45.webp",
+  "runtime_sha256": "e9a4b76410eaeb465bfb4305b8b469b9bfb02b959deccf2c18375a24dbd25f37",
+  "dimensions": [
+    768,
+    512
+  ],
+  "cols": 6,
+  "rows": 4,
+  "tile": 128,
+  "padding": 8,
+  "cells": [
+    {
+      "row": 0,
+      "col": 0,
+      "source_window": [
+        0,
+        0,
+        256,
+        256
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "source_window": [
+        256,
+        0,
+        512,
+        256
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "source_window": [
+        512,
+        0,
+        768,
+        256
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "source_window": [
+        768,
+        0,
+        1024,
+        256
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "source_window": [
+        1024,
+        0,
+        1280,
+        256
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "source_window": [
+        1280,
+        0,
+        1536,
+        256
+      ],
+      "alpha_range": [
+        0,
+        177
+      ]
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "source_window": [
+        0,
+        256,
+        256,
+        512
+      ],
+      "alpha_range": [
+        0,
+        250
+      ]
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "source_window": [
+        256,
+        256,
+        512,
+        512
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "source_window": [
+        512,
+        256,
+        768,
+        512
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "source_window": [
+        768,
+        256,
+        1024,
+        512
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "source_window": [
+        1024,
+        256,
+        1280,
+        512
+      ],
+      "alpha_range": [
+        0,
+        254
+      ]
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "source_window": [
+        1280,
+        256,
+        1536,
+        512
+      ],
+      "alpha_range": [
+        0,
+        201
+      ]
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "source_window": [
+        0,
+        512,
+        256,
+        768
+      ],
+      "alpha_range": [
+        0,
+        252
+      ]
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "source_window": [
+        256,
+        512,
+        512,
+        768
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "source_window": [
+        512,
+        512,
+        768,
+        768
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "source_window": [
+        768,
+        512,
+        1024,
+        768
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "source_window": [
+        1024,
+        512,
+        1280,
+        768
+      ],
+      "alpha_range": [
+        0,
+        252
+      ]
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "source_window": [
+        1280,
+        512,
+        1536,
+        768
+      ],
+      "alpha_range": [
+        0,
+        233
+      ]
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "source_window": [
+        0,
+        768,
+        256,
+        1024
+      ],
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "source_window": [
+        256,
+        768,
+        512,
+        1024
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "source_window": [
+        512,
+        768,
+        768,
+        1024
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "source_window": [
+        768,
+        768,
+        1024,
+        1024
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "source_window": [
+        1024,
+        768,
+        1280,
+        1024
+      ],
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "source_window": [
+        1280,
+        768,
+        1536,
+        1024
+      ],
+      "alpha_range": [
+        0,
+        235
+      ]
+    }
+  ],
+  "consumer": "settings.js::showGeneratedSurfaceImpactVfx",
+  "fallback": "engine.js::wallImpact procedural particles and surface mark",
+  "authorization": "User requested replacement of unrealistic distant bullet impact assets."
+}

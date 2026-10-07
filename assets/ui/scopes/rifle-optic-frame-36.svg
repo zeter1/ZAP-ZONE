@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+<!-- Shared central aiming mark is rendered by #xhair in hip and ADS. -->
+<defs><radialGradient id="v"><stop offset=".60" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/></radialGradient></defs>
+<path d="M0 0h1920v1080H0z" fill="url(#v)"/>
+<rect x="370" y="82" width="1180" height="916" rx="115" fill="none" stroke="#111820" stroke-width="38"/>
+<rect x="370" y="82" width="1180" height="916" rx="115" fill="none" stroke="#788791" stroke-width="8"/>
+<rect x="397" y="108" width="1126" height="864" rx="95" fill="none" stroke="#42dffc" stroke-opacity=".65" stroke-width="3"/>
+<g stroke="#ffc955" stroke-width="4" fill="none"><path d="M455 305v-106h108m902 106v-106h-108M455 775v106h108m902-106v106h-108"/></g>
+<g fill="#62deff" font-family="monospace" font-size="22" opacity=".75"><text x="455" y="255">AR // OPTIC</text><text x="1300" y="840">AUTO</text></g>
+</svg>

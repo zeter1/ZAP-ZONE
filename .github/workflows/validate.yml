@@ -66,14 +66,42 @@ jobs:
           node --check scripts/browser-diagnostic-policy.test.mjs
           node --check scripts/browser-boot-smoke.mjs
           node --check scripts/browser-menu-smoke.mjs
+          node --check scripts/pistol-presentation-owner.test.mjs
+          node --check scripts/rifle-presentation-owner.test.mjs
+          node --check scripts/sniper-presentation-owner.test.mjs
+          node --check scripts/grenade-flight-presentation-owner.test.mjs
+          node --check scripts/rocket-presentation-owner.test.mjs
+          node --check scripts/rocket-damage-owner.test.mjs
+          node --check scripts/rocket-contact-owner.test.mjs
+          node --check scripts/rocket-cadence-owner.test.mjs
       - name: Web build stamp
         run: node scripts/stamp-web-build.mjs --check
       - name: Project structure
         run: node scripts/validate-structure.mjs
+      - name: Floating pickup presentation regressions
+        run: node --test scripts/pickup-presentation-owner.test.mjs
+      - name: Sniper presentation owner regressions
+        run: node --test scripts/sniper-presentation-owner.test.mjs
+      - name: Shotgun presentation and gameplay regressions
+        run: node --test scripts/shotgun-presentation-owner.test.mjs
+      - name: Pistol presentation and handling regressions
+        run: node --test scripts/pistol-presentation-owner.test.mjs
+      - name: Rifle presentation and handling regressions
+        run: node --test scripts/rifle-presentation-owner.test.mjs
+      - name: Mine presentation and release regressions
+        run: node --test scripts/mine-presentation-owner.test.mjs
+      - name: Smoke volume, density and lifecycle regressions
+        run: node --test scripts/smoke-presentation-owner.test.mjs scripts/smoke-volume-owner.test.mjs scripts/smoke-density-owner.test.mjs
+      - name: Grenade presentation and damage regressions
+        run: node --test scripts/grenade-flight-presentation-owner.test.mjs
+      - name: Rocket presentation regressions
+        run: node --test scripts/rocket-presentation-owner.test.mjs scripts/rocket-damage-owner.test.mjs scripts/rocket-contact-owner.test.mjs scripts/rocket-cadence-owner.test.mjs
+      - name: Bullet surface presentation regressions
+        run: node --test scripts/surface-impact-presentation-owner.test.mjs
       - name: Wall geometry owner regressions
         run: node --test scripts/engine-wall-geometry-owner.test.mjs
       - name: Projectile ricochet regressions
-        run: node --test scripts/projectile-ricochet.test.mjs
+        run: node --test scripts/projectile-ricochet.test.mjs scripts/ground-projectile-owner.test.mjs
       - name: Frontline owner regressions
         run: node --test scripts/frontline-owner.test.mjs
       - name: Bot presentation regressions

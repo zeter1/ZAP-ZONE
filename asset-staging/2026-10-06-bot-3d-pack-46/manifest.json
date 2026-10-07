@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "packVersion": 46,
+  "generator": "asset-staging/2026-10-06-bot-3d-pack-46/build_bot_3d.py",
+  "blenderVersion": "5.2.2 LTS",
+  "coordinateBridge": "Blender (x,y,z) -> runtime (x,z,-y); component-local q16 range [-1,1]",
+  "components": {
+    "ZAP_Head": {
+      "triangles": 9008,
+      "runtimeVertices": 27024,
+      "materialGroups": 7,
+      "maxAbsLocalCoordinate": 0.45
+    },
+    "ZAP_Torso": {
+      "triangles": 8604,
+      "runtimeVertices": 25812,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.407
+    },
+    "ZAP_Pelvis": {
+      "triangles": 3500,
+      "runtimeVertices": 10500,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.344
+    },
+    "ZAP_Shoulder": {
+      "triangles": 2380,
+      "runtimeVertices": 7140,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.222
+    },
+    "ZAP_UpperArm": {
+      "triangles": 2780,
+      "runtimeVertices": 8340,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.283
+    },
+    "ZAP_Forearm": {
+      "triangles": 3604,
+      "runtimeVertices": 10812,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.242
+    },
+    "ZAP_Hand": {
+      "triangles": 1148,
+      "runtimeVertices": 3444,
+      "materialGroups": 5,
+      "maxAbsLocalCoordinate": 0.1365
+    },
+    "ZAP_Thigh": {
+      "triangles": 3180,
+      "runtimeVertices": 9540,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.299
+    },
+    "ZAP_Shin": {
+      "triangles": 3496,
+      "runtimeVertices": 10488,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.262
+    },
+    "ZAP_Foot": {
+      "triangles": 2524,
+      "runtimeVertices": 7572,
+      "materialGroups": 6,
+      "maxAbsLocalCoordinate": 0.2394
+    },
+    "ZAP_Role_Assault": {
+      "triangles": 68,
+      "runtimeVertices": 204,
+      "materialGroups": 4,
+      "maxAbsLocalCoordinate": 0.43999
+    },
+    "ZAP_Role_Sniper": {
+      "triangles": 148,
+      "runtimeVertices": 444,
+      "materialGroups": 5,
+      "maxAbsLocalCoordinate": 0.406
+    },
+    "ZAP_Role_Engineer": {
+      "triangles": 136,
+      "runtimeVertices": 408,
+      "materialGroups": 5,
+      "maxAbsLocalCoordinate": 0.452
+    },
+    "ZAP_Role_Anchor": {
+      "triangles": 80,
+      "runtimeVertices": 240,
+      "materialGroups": 4,
+      "maxAbsLocalCoordinate": 0.4225
+    },
+    "ZAP_Role_Flanker": {
+      "triangles": 56,
+      "runtimeVertices": 168,
+      "materialGroups": 3,
+      "maxAbsLocalCoordinate": 0.35802
+    }
+  },
+  "artifacts": {
+    "glb": {
+      "bytes": 2111808,
+      "sha256": "f1427e7f31fcc5bda2bc678929dcdd46d2f411341fda0925e38cf1589b0d1775"
+    },
+    "runtimeJs": {
+      "bytes": 1958998,
+      "sha256": "4a7977896ac1c64304eb873ad53aad84fd41dfc2c0f5e43104ccaa3eb5e1a093"
+    },
+    "blend": {
+      "bytes": 839701,
+      "sha256": "1417ec788b8c0890f28ebe9af2e293a0d6ec2378bcbc6ad4b7108e939fa7838d"
+    },
+    "preview": {
+      "bytes": 938049,
+      "sha256": "52d97321271f7fcb6a154a7aa8ca0f82a73bb28a28221f2c35a8bfc5920cdd0a"
+    },
+    "builder": {
+      "bytes": 40219,
+      "sha256": "a7d71ff6d1663c02a5d1a4ca7a6dfefaa881f1e519161600ced439c7b3bd5fa9"
+    }
+  }
+}

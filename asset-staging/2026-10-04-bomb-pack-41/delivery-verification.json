@@ -1,0 +1,464 @@
+{
+  "target": "G:\\МОЯ Веб-разработка\\ZAP_ZONE",
+  "checks": [
+    {
+      "operation": "COPY",
+      "sha256": "f4708911cad02dbb834526b7ad0bfe932628b4f37f7f3288c0359be250258a5b",
+      "path": "index.html",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "35ac9fd81882acba062a5b192a7460f560b62caa81547c469c3470611e7dca0d",
+      "path": "version.json",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "dabf9060da12824cb1b46a4d80e35e8c0f98558cbcdf9a2e75cca60ced2ae414",
+      "path": "src/ai/bot-deployables.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "1c9b9441f734512b5647e504c67be5edd5ab39a5aeba3d7d740efa7e74b3c62b",
+      "path": "src/assets/catalog.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "9ada004aa372356e51ce985ad9a1d532f8c862af20e10dab3ba4cecc1effbf90",
+      "path": "src/combat/combat.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "267341807fdd5e53b4180ba733f3d72b6b2f1de5602ab9bc484d79f310e6cf9e",
+      "path": "src/core/engine.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "4cf2821cec14d615c5e90e7d4f99e1043542cd97f901ae7ccc1c79af7cf88c90",
+      "path": "src/game/runtime.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "e1737ecb0a39782e7326926c5e28efba263da6c32b789aad77192cabe66db534",
+      "path": "src/game/session.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "dbe8f92f1611aaeba1f96d4836c68c24e1459eeb8f96d9b62f0e9a01a5cb3ffc",
+      "path": "src/progression/progression.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "ff9fe53b721f38eb5ecb43741b0659cc16cdf1e692e6e1afbb964ea32bbd71cd",
+      "path": "src/settings/settings.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d4aa51eeaf1610fd40950435cf3b34eb90891ccc59d4ae266205a1bc313db3fc",
+      "path": "src/styles/game.css",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "ec47ae43915fac4a8bfcdbb8205e0c464b305a02af12d398a52f6c9bfaec3415",
+      "path": "src/weapons/system.js",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "22bbdcec26b12c8425c28322d5177ce109bde509206145ecd104ff5613ff28fb",
+      "path": "assets/ui/fx/bomb-explosion-sequence-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "424c2070093318ba95723372951ff1eff679443b1d659ae30b21f47c39da5fc3",
+      "path": "assets/ui/fx/bomb-plant-atlas-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "cea3259bdd0eda1c05f13e7213711c5a13213afeea32453f243ada4f643619b2",
+      "path": "assets/ui/fx/bomb-shockwave-atlas-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "412d332879655abf2e619bc896abce92049c680043ebd992ef0e7efe1acb527a",
+      "path": "assets/ui/fx/bomb-smoke-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "fe08a989bf99a2b090fa7ea7a06ec5813a4fec999d52b098306cd411dbdcdece",
+      "path": "assets/ui/fx/bomb-smoke-sequence-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "055db81855b4a5f26646c15d53dfa284d56120027bcdaddeba163799bb9bfc95",
+      "path": "assets/ui/pickups/weapons/world-bomb-pickup-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "485fc0607e766ee57643ef8b318e9fdc80abc3ff32c2327df9686b6cbf8965df",
+      "path": "assets/ui/weapons/bomb-icon-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d56bcba1afae97f103ad9de0e53aeb82cd1a0755ffe54679d9f521c53f289d8f",
+      "path": "assets/ui/weapons/bomb-world-top-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "fd4accfa0fe5ee058b4718c839dfec747fb5171c7afba8ed969fdadc8a8e2b78",
+      "path": "assets/ui/weapons/fp/player-bomb-ready-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "DELETE",
+      "sha256": null,
+      "path": "assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg",
+      "verified": true
+    },
+    {
+      "operation": "DELETE",
+      "sha256": null,
+      "path": "assets/ui/pickups/weapons/world-bomb-pickup-01.webp",
+      "verified": true
+    },
+    {
+      "operation": "DELETE",
+      "sha256": null,
+      "path": "assets/weapons/fp/bomb-skin.svg",
+      "verified": true
+    },
+    {
+      "operation": "DELETE",
+      "sha256": null,
+      "path": "assets/weapons/fp/bomb-tech.svg",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "4e596bd848ef6679d079c66d0e124ebc42bb2f6452839e17146ee3cbab06378e",
+      "path": "scripts/bomb-presentation-owner.test.mjs",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "e2c8da19e51339bcaeb57d5a4376f7f40b39f02b9ea9b71266570c7c93b8b442",
+      "path": "scripts/bomb-asset-contract.test.mjs",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "b64e37bc99f43159aa14702b2fb6bdc89891b6cc07ab4640a779dc9ef6e679df",
+      "path": "scripts/bot-deployables-owner.test.mjs",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "dfb530b93f3abb545a78760e12971bcd0c8dd357eb93c0165b25729bca018dd3",
+      "path": "scripts/mine-presentation-owner.test.mjs",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d7c4aa66c4a7e8f3dd9117f0f181502fd1daf5698852685f4d2247452988bfff",
+      "path": "scripts/validate-structure.mjs",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "7f19ad3ecfdae848d95343b696c14a7149e3604452b3db237ea1b25a3e4a24e5",
+      "path": "docs/ASSETS.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "0be458b03bdad5992eb58685d7b4f94ea90196101adf35e5ad1ae8b79e777202",
+      "path": "docs/ARCHITECTURE.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "98db198d45687e555e0265e017815d67be526b2ceff75ee49d5e28d2c42cb715",
+      "path": "docs/specs/BOT_DEPLOYABLES.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "2abb8c2d3ca8ea2dfbc6c6bbd42d2454c7bd05509f378008d8998f98332633ea",
+      "path": "AGENTS.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "e2a7fc5a85574fcca7b22d9553ce250363f0078083a701975ef078311c0ac930",
+      "path": "README.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "a1a5b88873bcb6fbefd7a738f4938d55d5b554b77fb88e0826686691b4fc95af",
+      "path": "CHANGELOG.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "8343ea798fb26d57a8ed603d930fd58cf6697a6c3cb77caa1575794aaf924965",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/additional-prompts.json",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "95c4dc27dc94d808789942f5598b840cb60529279e70909e5f8d5c8fc70e531d",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/builders/add_bomb_smoke.py",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d22232823285679e153b67399d38f9bc749e906c7bf37086737b3c6bb24e38dc",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/builders/add_bomb_wave.py",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "0ff5bccc48f8d34cc54c40ee3eae86aaa5a3326dbcbc9431fd2d3914c32750da",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/builders/build_bomb_pack.py",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "96ff4c8d694365f0c07acefc290a18e622b4c81e9f577bb0bb14117b34e8e42c",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/builders/finish_bomb_assets.py",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "f149af7fa027be903593e49a212f23ef1adc0fce6bea4fd179ea8885186e1fd8",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/builders/quality_bomb_atlas.py",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "ef38da5097a36795bf8d1015fd0b3e399084c3a94d0c53d0dfb422c44de835e0",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/builders/retain_bomb_frames.py",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "5575f89211577988e6c3ba4dd2b5651e2ff7d078e48aaed3a8427f56dedd3866",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-a-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "7c24229da944af9aea843a61e0f6f48c866c6b3d255566a2b4c53d31e7e3d1c4",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-b-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "cfc38285625057c7704b3a0919eac26781378aa6e3488a4f6d4f8dac76304bda",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-c-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "22bbdcec26b12c8425c28322d5177ce109bde509206145ecd104ff5613ff28fb",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-sequence-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "485fc0607e766ee57643ef8b318e9fdc80abc3ff32c2327df9686b6cbf8965df",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-icon-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "424c2070093318ba95723372951ff1eff679443b1d659ae30b21f47c39da5fc3",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-plant-atlas-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "cea3259bdd0eda1c05f13e7213711c5a13213afeea32453f243ada4f643619b2",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-shockwave-atlas-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "412d332879655abf2e619bc896abce92049c680043ebd992ef0e7efe1acb527a",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-smoke-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "fe08a989bf99a2b090fa7ea7a06ec5813a4fec999d52b098306cd411dbdcdece",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-smoke-sequence-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d56bcba1afae97f103ad9de0e53aeb82cd1a0755ffe54679d9f521c53f289d8f",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-world-top-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "fd4accfa0fe5ee058b4718c839dfec747fb5171c7afba8ed969fdadc8a8e2b78",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/player-bomb-ready-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "055db81855b4a5f26646c15d53dfa284d56120027bcdaddeba163799bb9bfc95",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/world-bomb-pickup-41.webp",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d3181c1bed1139bbaeb08ebbed25c98226c2917a3bb977e441788c3131de7a87",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/manifest.json",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "449489b5c96f57ba0442a56c354c021630c77d16d749380b234d6a6d2954cb87",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/prompts.json",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "d529c2a5a1c84f3098183ee90fed357087ede0d5370573ff251138266545e307",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/README.md",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "67fece455bb2515bf11ce94159649669158c2513caacb1076fba5859dc2a27b2",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/shockwave-prompt.json",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "58c137ede45e0d9f659d52d9728f0cd790d1d167904997bae910dc89776075a0",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/arm.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "7424311c7a6e65bcc0849710e30c9fc75bbe4a53f2e310205612ec87045356dc",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/explosion-a.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "493429a6011358fbeacfb3c5301eb80d7516218717131b0e5cc471c28e224443",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/explosion-b.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "90df5b853388b0601a957314aded5c75ff36a915c5dc40dbc825c372453f68c0",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/explosion-c.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "46232403c443e8c5331efc341e6d35c5b32e5bcff2f91a79a8686350ddcdac96",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/explosion-sequence.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "6dc744525c9411dfdc2ee4bfdd004203c3cb67e29932f6d14bd2c51be107b425",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/lower.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "a615b022378c1fa220eef62351bc118280014576dff0192e9c07d36b51cefd5b",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/peak-hd-5.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "64d45c5708322539800d6def932b47ecd5416e835a485042a2cdecca187d431a",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/peak-hd-6.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "0b5acbc47127772b8fae4d06ac9ed0383bec9f6ed5af9dfb72375213912a8668",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/peak-hd-7.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "e968e505671530b130817587d07b6cdee63eee61e9f6acfbdd32f4fab20f1b83",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/ready.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "8aaaa488730cd782c5c9e35f4fcbc5342c6f6ef174ccad9a3fc8532fd038fc02",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/release.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "45f5b0d12e50fed89cc2f9609860ff99ca097ac61a1cbe9227be3f8782927c2d",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/shockwave-six-stage.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "1bc81505442b5fd508ed8268ab0b5863ca10ae0e06dd2f559accfabc4b71d502",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/smoke-sequence.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "7aad16d9291f6537e836c57726654c3ac4731a9bee3515a85f056317fe020194",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/smoke.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "72f22df3ade0d6ec3536bdd7d37d04dab9e49d3a63c1526c8af413eb7b404849",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/world-top.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "3085e364a2d8a07fe3dc7a5df426caaeaf19c023f9188f7540f4fbf0c6c10ab7",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/sources/world.png",
+      "verified": true
+    },
+    {
+      "operation": "COPY",
+      "sha256": "a05fae1b49620a6b2b9e4639b8d21536a974f5874a30f6118d89768fcc8a882a",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/VERIFICATION.md",
+      "verified": true
+    }
+  ],
+  "backup": "C:\\Users\\Zeter\\Documents\\Codex\\2026-10-04\\g-zap-zone-x20\\outputs\\bomb-before-update.zip",
+  "build": "64ec46671a1ff697",
+  "backupVerified": true
+}

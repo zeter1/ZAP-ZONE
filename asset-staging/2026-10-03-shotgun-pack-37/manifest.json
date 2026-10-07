@@ -1,0 +1,139 @@
+{
+  "pack": 37,
+  "generator": "built-in image_gen; deterministic audio synthesis",
+  "readyFrame": 0,
+  "grid": [
+    3,
+    2
+  ],
+  "sourceDimensions": [
+    1536,
+    1024
+  ],
+  "isolatedGutters": {
+    "bottomRowTop": 8,
+    "frame4Left": 16
+  },
+  "cellFit": {
+    "size": [
+      576,
+      576
+    ],
+    "position": [
+      140,
+      50
+    ],
+    "outputCell": [
+      768,
+      576
+    ]
+  },
+  "pumpSequence": [
+    0,
+    1,
+    1,
+    2,
+    0
+  ],
+  "shellSequence": [
+    0,
+    3,
+    4,
+    5,
+    0
+  ],
+  "muzzle": [
+    0.343,
+    0.201
+  ],
+  "boreAngleDegrees": -145,
+  "files": [
+    {
+      "path": "assets/ui/weapons/fp/player-shotgun-fps-37.webp",
+      "dimensions": [
+        960,
+        720
+      ],
+      "alpha": true,
+      "bytes": 80590,
+      "budgetKiB": 250,
+      "sha256": "f226dc89442b539cb1f4331563c58848bb0bb2d6c5d1e13fdbf72fe34c84961c"
+    },
+    {
+      "path": "assets/ui/fx/shotgun-action-atlas-37.webp",
+      "dimensions": [
+        2304,
+        1152
+      ],
+      "alpha": true,
+      "bytes": 360788,
+      "budgetKiB": 850,
+      "sha256": "bfba7bb806c4b22e76086de71cb1849e2e910d35430b41139c59d1d3d84e7485"
+    },
+    {
+      "path": "assets/ui/fx/shotgun-effects-atlas-37.webp",
+      "dimensions": [
+        768,
+        768
+      ],
+      "alpha": true,
+      "bytes": 155680,
+      "budgetKiB": 250,
+      "sha256": "b4f019495e0f14a387dd2f121d537afb9516efa9d2557ce8fd88a596d0bc64ec"
+    },
+    {
+      "path": "assets/ui/pickups/weapons/world-shotgun-pickup-37.webp",
+      "dimensions": [
+        512,
+        342
+      ],
+      "alpha": true,
+      "bytes": 26512,
+      "budgetKiB": 100,
+      "sha256": "adc4eae7632a09ed8eae2d9fb5874a9905c2e968f2598e68433a7a800aa04352"
+    },
+    {
+      "path": "assets/ui/weapons/shotgun-icon-37.webp",
+      "dimensions": [
+        192,
+        128
+      ],
+      "alpha": true,
+      "bytes": 6344,
+      "budgetKiB": 35,
+      "sha256": "e8ca90fe568fc5887fc43f8ee89f7ccf5a8cfb0d215a7caf7c6e4111d52ebadd"
+    },
+    {
+      "path": "assets/audio/shotgun-shot-37.wav",
+      "bytes": 24298,
+      "sha256": "db5de60edb1ff375ac45680466cfee33f274441df393439d8b4a842bdd1e624e",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.55
+    },
+    {
+      "path": "assets/audio/shotgun-pump-37.wav",
+      "bytes": 18566,
+      "sha256": "0895b1526ce0cef81688d14580db2bef7be7b8634e71686df75ae3cd493a3428",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.42
+    },
+    {
+      "path": "assets/audio/shotgun-shell-37.wav",
+      "bytes": 10628,
+      "sha256": "55b3dc569b6279667ed212c935ffa9365431403a4095235937a759c63057138d",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.24
+    },
+    {
+      "path": "assets/audio/shotgun-load-37.wav",
+      "bytes": 12832,
+      "sha256": "2a95526c594911602bf7c8b93956390d68bb781e53966df0ca476a8c4368d4ff",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.29
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "packVersion": 50,
+  "weaponKey": "rifle",
+  "blenderVersion": "5.2.2 LTS",
+  "coordinateBridge": "Blender (x,y,z) -> runtime (x,z,-y); dynamic components preserve Blender-authored pivots",
+  "fallback": "Pack36 generated rifle art and existing procedural first-person rifle remain intact",
+  "components": {
+    "FP50_RifleBody": {
+      "triangles": 7492,
+      "runtimeVertices": 22476,
+      "materialGroups": 7,
+      "qScale": 1.724526,
+      "kind": "body"
+    },
+    "FP50_Magazine": {
+      "triangles": 348,
+      "runtimeVertices": 1044,
+      "materialGroups": 3,
+      "qScale": 1.0,
+      "kind": "magazine"
+    },
+    "FP50_Bolt": {
+      "triangles": 492,
+      "runtimeVertices": 1476,
+      "materialGroups": 3,
+      "qScale": 1.0,
+      "kind": "bolt"
+    },
+    "FP50_LeftArm": {
+      "triangles": 1220,
+      "runtimeVertices": 3660,
+      "materialGroups": 6,
+      "qScale": 1.1,
+      "kind": "leftArm"
+    },
+    "FP50_RightArm": {
+      "triangles": 1284,
+      "runtimeVertices": 3852,
+      "materialGroups": 6,
+      "qScale": 1.0,
+      "kind": "rightArm"
+    }
+  },
+  "animation": {
+    "blenderFrames": [
+      1,
+      5,
+      10,
+      20,
+      36,
+      54,
+      72
+    ],
+    "runtimeOwner": "src/weapons/first-person-rifle-model3d.js"
+  },
+  "artifacts": {
+    "glb": {
+      "bytes": 597556,
+      "sha256": "30c40c2206e223a2e6506f5f911d20eb3f94dc4ed7d14362479f0d96ef9a7b46"
+    },
+    "runtimeJs": {
+      "bytes": 522167,
+      "sha256": "61daac725ee824e1a741ff562f9a564cff29da8c65e5e0ab39924e6aaa7da7c3"
+    },
+    "blend": {
+      "bytes": 259056,
+      "sha256": "846dbab6572e4ebc4dab24f21e7489f41446e8d080977250b2b955758e173764"
+    },
+    "preview": {
+      "bytes": 1313704,
+      "sha256": "cc8fb4b19337e8568d3f57852ca3189d1f484dac0fa053b3bf0bd840418851f3"
+    },
+    "builder": {
+      "bytes": 17077,
+      "sha256": "2cf1504269273f8e5ba4767efe3286b3f1f2077b90f607ef8832efb06aa03b8b"
+    }
+  }
+}

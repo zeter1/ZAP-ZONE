@@ -1,0 +1,110 @@
+{
+  "tool": "built-in image_gen",
+  "assets": [
+    {
+      "consumer": "#xp-wrap",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "xp",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "8EC022D70CB2AC5C0651E2288FC0F20E29BB304278E84C046E5934FB1A4D251B",
+      "path": "assets/ui/hud/xp-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#tb-ally",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "teamBlue",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "B20CC00E79C4FE01598071299C63732F95B5C08556A53B39F5FAD641A53BA169",
+      "path": "assets/ui/hud/team-blue-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#tb-enemy",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "teamRed",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "34D1257FFE0F57DAF7D82C5CC67DC5C2F4527C87D175A277F6B213BF1B5B85EE",
+      "path": "assets/ui/hud/team-red-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#frontline-map",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "map",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "FB2841C6773C23C8CE89B1AFC8EB587EAF6A11D98EBE7DEBC2C2F42D00F2199D",
+      "path": "assets/ui/hud/map-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#stats-panel",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "stats",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "92F4D934A4CD94A25BFB1050551784D52D6F0690B0C20A11BC1FF1A3223FD4DA",
+      "path": "assets/ui/hud/stats-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#hp-wrap / inside objective",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "health",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "4D52F85E857DB80FE120D99CE0617CF86DB1B079FB2226288E34353AD8EB3BCE",
+      "path": "assets/ui/hud/health-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#whud / active weapon slot",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "ammo",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "5EDBEB4714B1DAFAB7BB5C95EA215F19603F0EE1D4C642CA807A442ACD740EE4",
+      "path": "assets/ui/hud/ammo-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#hud .hb",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "score",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "3853E54C2599F8370D107E9EF26593E53AE2DBB73DBC195EDF636A07E5AB1814",
+      "path": "assets/ui/hud/score-shell-tech-43.svg"
+    },
+    {
+      "consumer": "#ally-panel .ally-icon / weapon slots",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "squad",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "E4BB324E07A8C9CEABA67A344C7CCF5BF7D7BA4AC23FFAB19A576054ABA33069",
+      "path": "assets/ui/hud/squad-shell-tech-43.svg"
+    },
+    {
+      "consumer": ".ally-order / #frontline-objective",
+      "size": "512x256; nine-slice56",
+      "bytes": 1930,
+      "state": "persistent HUD / live text and canvas",
+      "key": "order",
+      "fallback": "existing DOM text/canvas and CSS background/border",
+      "sha256": "538CE8DC9EEDDFAA0A829AC1D6AE74C24D795BC49105F48BA92C2AF72996C17D",
+      "path": "assets/ui/hud/order-shell-tech-43.svg"
+    }
+  ],
+  "pack": "HUD43",
+  "source_runtime_policy": "reference-only; compact geometric SVG derivatives",
+  "build": "279396b5402909c6",
+  "source": "hud-shells-source-43.png",
+  "source_sha256": "E5C445B5A5C0C9321EF333A54A692A5D340AF8F851B07366D09D4304C6158B55"
+}

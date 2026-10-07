@@ -80,7 +80,9 @@ function clearGroupChildren(group){
 
 scene.background=SKY_COLOR.clone();
 scene.fog=new THREE.Fog(FOG_COLOR.clone(),22,112);
-const camera=new THREE.PerspectiveCamera(75,W/H,.05,220);camera.position.set(0,1.75,0);scene.add(camera);
+// Keep the near plane far enough from zero to preserve depth precision on distant
+// Pack47 facade layers; FP weapon geometry starts around z=-0.48, so .12 stays safe.
+const camera=new THREE.PerspectiveCamera(75,W/H,.12,220);camera.position.set(0,1.75,0);scene.add(camera);
 function restoreVisualState(){
   if(!scene.background||!scene.background.isColor)scene.background=SKY_COLOR.clone();
   else scene.background.copy(SKY_COLOR);
@@ -88,10 +90,106 @@ function restoreVisualState(){
   renderer.setClearColor(SKY_COLOR,1);
   renderer.toneMappingExposure=.78;
 }
+let smokeDepthTarget42=null,smokeVolumeTarget42=null,smokeComposeScene42=null,smokeComposeCamera42=null;
+const smokeBufferSize42=new THREE.Vector2();
+function disposeSmokeRender42(){
+  if(smokeDepthTarget42)smokeDepthTarget42.dispose();
+  if(smokeVolumeTarget42)smokeVolumeTarget42.dispose();
+  if(smokeComposeScene42)disposeObject3D(smokeComposeScene42);
+  smokeDepthTarget42=null;smokeVolumeTarget42=null;smokeComposeScene42=null;smokeComposeCamera42=null;
+}
+function renderSmokeDepth42(){
+  const volumes=typeof smokeClouds==='undefined'?[]:smokeClouds.map(c=>c.volume42).filter(Boolean);
+  if(!volumes.length){if(smokeDepthTarget42)disposeSmokeRender42();return false;}
+  const size=renderer.getDrawingBufferSize(smokeBufferSize42);
+  const ratio=Math.min(.5,(PERF_MODE?640:960)/size.x),lw=Math.max(1,Math.ceil(size.x*ratio)),lh=Math.max(1,Math.ceil(size.y*ratio));
+  if(!smokeDepthTarget42){
+    smokeDepthTarget42=new THREE.WebGLRenderTarget(size.x,size.y,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,stencilBuffer:false});
+    smokeDepthTarget42.depthTexture=new THREE.DepthTexture(size.x,size.y,THREE.UnsignedShortType);
+    smokeVolumeTarget42=new THREE.WebGLRenderTarget(lw,lh,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthBuffer:false,stencilBuffer:false});
+    smokeComposeScene42=new THREE.Scene();smokeComposeCamera42=new THREE.Camera();
+    const material=new THREE.ShaderMaterial({precision:'highp',depthTest:false,depthWrite:false,
+      defines:{SMOKE_STEPS:PERF_MODE?24:40},
+      uniforms:{uWorld:{value:null},uSmoke:{value:null},uDepth:{value:null},uLowSize:{value:new THREE.Vector2()},uNear:{value:camera.near},uFar:{value:camera.far},
+        uInverseProjection:{value:new THREE.Matrix4()},uCameraWorld:{value:new THREE.Matrix4()},uCameraPosition:{value:new THREE.Vector3()},
+        uCloudCount:{value:0},uCloudMin:{value:Array.from({length:3},()=>new THREE.Vector3())},uCloudMax:{value:Array.from({length:3},()=>new THREE.Vector3())},
+        uCloudState:{value:Array.from({length:3},()=>new THREE.Vector3())}},
+      vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}`,
+      fragmentShader:`uniform sampler2D uWorld,uSmoke,uDepth;uniform vec2 uLowSize;uniform float uNear,uFar;varying vec2 vUv;
+        uniform mat4 uInverseProjection,uCameraWorld;uniform vec3 uCameraPosition;uniform int uCloudCount;
+        uniform vec3 uCloudMin[3],uCloudMax[3],uCloudState[3];
+        ${smokeVolumeGlsl42()}
+        float viewDepth(vec2 uv){float d=texture2D(uDepth,uv).x;return uNear*uFar/(uFar+(uNear-uFar)*d);}
+        void main(){
+          vec2 p=vUv*uLowSize-0.5,base=floor(p),f=fract(p);float depth=viewDepth(vUv),total=0.0;vec4 fog=vec4(0.0);
+          vec2 dx=vec2(1.0/uLowSize.x,0.0),dy=vec2(0.0,1.0/uLowSize.y);
+          // Continuous sloped floors need their local depth slope, not silhouette rejection.
+          float slopeX=min(abs(viewDepth(vUv+dx)-depth),abs(viewDepth(vUv-dx)-depth));
+          float slopeY=min(abs(viewDepth(vUv+dy)-depth),abs(viewDepth(vUv-dy)-depth));
+          float tolerance=max(0.12,depth*0.015)+min(depth*0.05,1.2*(slopeX+slopeY));
+          for(int y=0;y<2;y++)for(int x=0;x<2;x++){
+            vec2 offset=vec2(float(x),float(y)),uv=clamp((base+offset+0.5)/uLowSize,0.5/uLowSize,1.0-0.5/uLowSize);
+            float weight=(x==0?1.0-f.x:f.x)*(y==0?1.0-f.y:f.y);
+            // Reject samples from the opposite side of an opaque silhouette.
+            if(abs(viewDepth(uv)-depth)>tolerance)weight=0.0;
+            fog+=texture2D(uSmoke,uv)*weight;total+=weight;
+          }
+          if(total>0.00001)fog/=total;
+          else{
+            // Thin geometry may fall between every low-res sample. Integrate this ray at its exact depth.
+            vec4 view=uInverseProjection*vec4(vUv*2.0-1.0,1.0,1.0);
+            vec3 viewRay=normalize(view.xyz/view.w),rd=normalize((uCameraWorld*vec4(viewRay,0.0)).xyz);
+            float limit=depth/max(0.0001,-viewRay.z);fog=vec4(0.0);
+            for(int i=0;i<3;i++){
+              if(i>=uCloudCount)break;
+              smokeMin42=uCloudMin[i];smokeMax42=uCloudMax[i];
+              smokeAge42=uCloudState[i].x;smokeDensity42=uCloudState[i].y;smokeSeed42=uCloudState[i].z;
+              vec4 part=smokeRaymarch42(uCameraPosition,rd,limit);
+              #ifdef TONE_MAPPING
+                if(part.a>0.001)part.rgb=toneMapping(part.rgb/part.a)*part.a;
+              #endif
+              fog=vec4(part.rgb+fog.rgb*(1.0-part.a),part.a+fog.a*(1.0-part.a));
+            }
+          }
+          gl_FragColor=vec4(texture2D(uWorld,vUv).rgb*(1.0-fog.a)+fog.rgb,1.0);
+          #include <encodings_fragment>
+        }`
+    });
+    const quad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),material);quad.frustumCulled=false;smokeComposeScene42.add(quad);
+  }
+  if(smokeDepthTarget42.width!==size.x||smokeDepthTarget42.height!==size.y)smokeDepthTarget42.setSize(size.x,size.y);
+  if(smokeVolumeTarget42.width!==lw||smokeVolumeTarget42.height!==lh)smokeVolumeTarget42.setSize(lw,lh);
+  const target=renderer.getRenderTarget(),mask=camera.layers.mask,background=scene.background,shadowUpdate=renderer.shadowMap.autoUpdate;
+  const clearColor=renderer.getClearColor(new THREE.Color()).clone(),clearAlpha=renderer.getClearAlpha();
+  try{
+    camera.layers.mask=mask&~2;
+    // r128 clears a Color background directly; preserve its screen colour after linear compositing.
+    if(background?.isColor)scene.background=background.clone().convertSRGBToLinear();
+    renderer.setRenderTarget(smokeDepthTarget42);renderer.render(scene,camera);
+    for(const m of volumes){const u=m.material.uniforms;
+      u.uDepth.value=smokeDepthTarget42.depthTexture;u.uResolution.value.set(lw,lh);u.uNear.value=camera.near;u.uFar.value=camera.far;
+    }
+    camera.layers.mask=2;scene.background=null;renderer.shadowMap.autoUpdate=false;
+    renderer.setClearColor(0x000000,0);renderer.setRenderTarget(smokeVolumeTarget42);renderer.render(scene,camera);
+    const u=smokeComposeScene42.children[0].material.uniforms;
+    u.uWorld.value=smokeDepthTarget42.texture;u.uSmoke.value=smokeVolumeTarget42.texture;u.uDepth.value=smokeDepthTarget42.depthTexture;
+    u.uLowSize.value.set(lw,lh);u.uNear.value=camera.near;u.uFar.value=camera.far;
+    u.uInverseProjection.value.copy(camera.projectionMatrixInverse);u.uCameraWorld.value.copy(camera.matrixWorld);u.uCameraPosition.value.copy(camera.position);
+    u.uCloudCount.value=volumes.length;
+    for(let i=0;i<volumes.length;i++){const v=volumes[i].material.uniforms;
+      u.uCloudMin.value[i].copy(v.uMin.value);u.uCloudMax.value[i].copy(v.uMax.value);u.uCloudState.value[i].set(v.uAge.value,v.uDensity.value,v.uSeed.value);
+    }
+    renderer.setRenderTarget(target);renderer.render(smokeComposeScene42,smokeComposeCamera42);
+  }finally{
+    camera.layers.mask=mask;scene.background=background;renderer.shadowMap.autoUpdate=shadowUpdate;
+    renderer.setClearColor(clearColor,clearAlpha);renderer.setRenderTarget(target);
+  }
+  return true;
+}
 function renderFrame(){
   restoreVisualState();
   if(typeof syncWorldWeaponPickupArt==='function')syncWorldWeaponPickupArt();
-  renderer.render(scene,camera);
+  if(!renderSmokeDepth42())renderer.render(scene,camera);
 }
 window.addEventListener('resize',()=>{
   W=innerWidth;H=innerHeight;
@@ -168,7 +266,7 @@ function mapPenetrationInfo(obj,hitPoint,worldDir){
 }
 
 // ─── FLOOR ──────────────────────────────
-(()=>{
+const arenaFloor=(()=>{
   const floorMat=new THREE.MeshStandardMaterial({color:0x202833,roughness:.96,metalness:0,side:THREE.DoubleSide});
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(220,220),floorMat);
   floor.rotation.x=-Math.PI/2;
@@ -177,7 +275,19 @@ function mapPenetrationInfo(obj,hitPoint,worldDir){
   floor.frustumCulled=false;
   floor.renderOrder=-10;
   scene.add(floor);
+  return floor;
 })();
+
+// Exact floor plane, without the LOS endpoint tolerance or wall penetration.
+function firstGroundHitDistance(from,dir,maxDistance=Infinity){
+  const y=arenaFloor.position.y;
+  if(dir.y>=0)return Infinity;
+  const distance=from.y<=y?0:(y-from.y)/dir.y;
+  if(distance>maxDistance+1e-9)return Infinity;
+  const x=from.x+dir.x*distance,z=from.z+dir.z*distance;
+  const p=arenaFloor.geometry.parameters;
+  return Math.abs(x-arenaFloor.position.x)<=p.width*.5&&Math.abs(z-arenaFloor.position.z)<=p.height*.5?Math.min(distance,maxDistance):Infinity;
+}
 
 // ─── MAP ────────────────────────────────
 const wallMeshes=[],losMeshes=[],reactivePowerNodes=[];
@@ -232,14 +342,43 @@ function decorateHazardWall(mesh,w,h,d){
   return mesh;
 }
 function hazardWall(w,h,d,col,x,y,z,ry=0){
-  const wall=decorateHazardWall(box(w,h,d,col,x,y,z,ry,'metal'),w,h,d);
+  const wall=box(w,h,d,col,x,y,z,ry,'metal');
+  const presentation=typeof decorateMapKit47Wall==='function'?decorateMapKit47Wall(wall,w,h,d):null;
+  if(presentation&&typeof suppressMapKit47CollisionOwnerSurface==='function')suppressMapKit47CollisionOwnerSurface(wall);
+  else decorateHazardWall(wall,w,h,d);
   wall.userData.impactMaterial='metal';
   return wall;
+}
+function createMapKit47DoorwayWall(w,h,d,col,x,y,z,ry=0,doorWidth=3.8,serviceRamp=false){
+  const alongX=w>=d,span=Math.max(w,d),thick=Math.min(w,d);
+  const clearWidth=Math.min(Math.max(3.2,doorWidth),span-4);
+  const sideLength=(span-clearWidth)/2;
+  if(sideLength<=1)return hazardWall(w,h,d,col,x,y,z,ry);
+  const axisX=alongX?Math.cos(ry):Math.sin(ry);
+  const axisZ=alongX?-Math.sin(ry):Math.cos(ry);
+  const offset=clearWidth/2+sideLength/2;
+  const sideDims=alongX?[sideLength,h,d]:[w,h,sideLength];
+  const sides=[];
+  for(const sign of [-1,1]){
+    const side=hazardWall(sideDims[0],sideDims[1],sideDims[2],col,x+axisX*offset*sign,y,z+axisZ*offset*sign,ry);
+    side.userData.mapKit47DoorwaySide=true;
+    side.userData.mapKit47DoorwayCenter={x,z,clearWidth};
+    sides.push(side);
+  }
+  const doorRy=ry+(alongX?0:Math.PI/2);
+  const door=typeof placeMapKit47DoorFrame==='function'?placeMapKit47DoorFrame(x,y,z,doorRy,clearWidth,h,thick):null;
+  const ramp=serviceRamp&&typeof placeMapKit47ServiceRamp==='function'?placeMapKit47ServiceRamp(x,z,doorRy,clearWidth*.88):null;
+  return {sides,door,ramp,clearWidth};
 }
 function createSupplyCrate(x,z,h,variant=0){
   const body=box(2,h,2,variant%2?0x786448:0x6d5b43,x,h/2,z,0,'wood');
   body.userData.impactMaterial='wood';
   if(body.userData.minimap)body.userData.minimap.kind='crate';
+  const presentation=typeof decorateMapKit47CargoCrate==='function'?decorateMapKit47CargoCrate(body,2,h,2):null;
+  if(presentation&&typeof suppressMapKit47CollisionOwnerSurface==='function'){
+    suppressMapKit47CollisionOwnerSurface(body);
+    return body;
+  }
   body.material=new THREE.MeshStandardMaterial({color:variant%2?0x6f5b42:0x61523f,roughness:.62,metalness:.20});
   const frameMat=new THREE.MeshStandardMaterial({color:0x202a31,roughness:.38,metalness:.72});
   const accentMat=new THREE.MeshStandardMaterial({color:0xd59a23,roughness:.35,metalness:.42,emissive:0x6c3b00,emissiveIntensity:.16});
@@ -306,6 +445,13 @@ function createArenaCover(x,z,ry=0,variant=0){
   if(body.userData.minimap){body.userData.minimap.kind='cover';body.userData.minimap.variant=type;}
   body.userData.coverType=type===0?'aegis':type===1?'barrier':'cargo';
   body.userData.coverPalette=paletteIndex;
+  const presentation=typeof decorateMapKit47ArmorCover==='function'
+    ?(type===0?decorateMapKit47ArmorCover(body,...dims):type===1?decorateMapKit47SciFiSandbag(body,...dims):decorateMapKit47CargoCrate(body,...dims))
+    :null;
+  if(presentation&&typeof suppressMapKit47CollisionOwnerSurface==='function'){
+    suppressMapKit47CollisionOwnerSurface(body);
+    return body;
+  }
   body.material=new THREE.MeshStandardMaterial({color:baseColor,roughness:type===2?.68:.34,metalness:type===2?.18:.72,emissive:type===0?0x062c3b:type===1?0x241a04:0x120b04,emissiveIntensity:.10});
   const dark=new THREE.MeshStandardMaterial({color:0x111922,roughness:.40,metalness:.78});
   const metal=new THREE.MeshStandardMaterial({color:paletteIndex===1?0xa38f72:0x8b9aa8,roughness:.30,metalness:.82});
@@ -345,23 +491,49 @@ function createArenaCover(x,z,ry=0,variant=0){
   }
   return body;
 }
+function installMapKit47Presentation(owner,decorator,...args){
+  if(!owner||typeof decorator!=='function')return owner;
+  const presentation=decorator(owner,...args);
+  if(presentation&&typeof suppressMapKit47CollisionOwnerSurface==='function')suppressMapKit47CollisionOwnerSurface(owner);
+  return owner;
+}
 const ARENA_COVER_LAYOUT=[
   [-27,-18,.22,0],[27,18,-2.92,0],[-18,27,-1.22,1],[18,-27,1.92,1],
   [-48,34,.62,2],[48,-34,-2.52,2],[-34,-48,.18,0],[34,48,-2.96,0],
   [-58,44,1.02,1],[58,-44,-2.14,1]
 ];
 ARENA_COVER_LAYOUT.forEach(([x,z,ry,variant])=>createArenaCover(x,z,ry,variant));
-[[-50,4,-50],[50,4,-50],[-50,4,50],[50,4,50]].forEach(([x,y,z])=>{box(14,8,12,0x607088,x,y,z);box(8,5,8,0x708098,x+12,2.5,z+8);});
-hazardWall(.6,3,30,0x778088,-20,1.5,0);hazardWall(.6,3,30,0x778088,20,1.5,0);
-hazardWall(30,3,.6,0x778088,0,1.5,-20);hazardWall(30,3,.6,0x778088,0,1.5,20);
-[[0,2,0],[0,2,-8],[0,2,8],[-8,2,0],[8,2,0]].forEach(([x,y,z])=>box(2.5,4,2.5,0x8a8898,x,y,z));
+[[-50,4,-50],[50,4,-50],[-50,4,50],[50,4,50]].forEach(([x,y,z])=>{
+  const main=box(14,8,12,0x607088,x,y,z);
+  installMapKit47Presentation(main,typeof decorateMapKit47Base==='function'?decorateMapKit47Base:null,14,8,12);
+  const annex=box(8,5,8,0x708098,x+12,2.5,z+8);
+  installMapKit47Presentation(annex,typeof decorateMapKit47Base==='function'?decorateMapKit47Base:null,8,5,8);
+});
+createMapKit47DoorwayWall(.6,3,30,0x778088,-20,1.5,0,0,3.8,true);createMapKit47DoorwayWall(.6,3,30,0x778088,20,1.5,0,0,3.8,true);
+createMapKit47DoorwayWall(30,3,.6,0x778088,0,1.5,-20,0,3.8,true);createMapKit47DoorwayWall(30,3,.6,0x778088,0,1.5,20,0,3.8,true);
+[[0,2,0],[0,2,-8],[0,2,8],[-8,2,0],[8,2,0]].forEach(([x,y,z])=>{
+  const owner=box(2.5,4,2.5,0x8a8898,x,y,z);
+  installMapKit47Presentation(owner,typeof decorateMapKit47Column==='function'?decorateMapKit47Column:null,2.5,4,2.5);
+});
 function crates(cx,cz){[[0,0,1.5],[2.5,0,1.2],[0,2.5,1.8],[2.5,2.5,1.4],[1.2,1.2,1.6]].forEach(([dx,dz,h],i)=>createSupplyCrate(cx+dx,cz+dz,h,i));}
 [[-15,-15],[15,-15],[-15,15],[15,15],[-35,5],[35,-5],[-5,-35],[5,35],[-40,-20],[40,20],[-20,40],[20,-40]].forEach(([x,z])=>crates(x,z));
 [[-35,2,10,Math.PI/2],[35,2,-10,Math.PI/2],[-10,2,-35,0],[10,2,35,0],[-60,2,0,Math.PI/2],[60,2,0,Math.PI/2],[0,2,-60,0],[0,2,60,0]].forEach(([x,y,z,r])=>hazardWall(.8,4,25,0x808898,x,y,z,r));
-[[-45,20],[45,-20],[-20,45],[20,-45],[0,-30],[0,30],[-30,0],[30,0]].forEach(([x,z])=>box(.5,2.5,10,0x6a7860,x,1.25,z));
-[[-30,-45],[30,45],[-45,30],[45,-30],[-55,-20],[55,20],[-20,-55],[20,55]].forEach(([x,z])=>box(3,5,3,0x607078,x,2.5,z));
+[[-45,20],[45,-20],[-20,45],[20,-45],[0,-30],[0,30],[-30,0],[30,0]].forEach(([x,z])=>{
+  const owner=box(.5,2.5,10,0x6a7860,x,1.25,z);
+  installMapKit47Presentation(owner,typeof decorateMapKit47Wall==='function'?decorateMapKit47Wall:null,.5,2.5,10);
+});
+[[-30,-45],[30,45],[-45,30],[45,-30],[-55,-20],[55,20],[-20,-55],[20,55]].forEach(([x,z])=>{
+  const owner=box(3,5,3,0x607078,x,2.5,z);
+  installMapKit47Presentation(owner,typeof decorateMapKit47ReactorHousing==='function'?decorateMapKit47ReactorHousing:null,3,5,3);
+});
 [[-8,-6],[8,6],[-6,8],[6,-8],[-25,12],[25,-12],[12,25],[-12,-25]].forEach(([x,z])=>{
-  const r=Math.random()*Math.PI;for(let i=-1;i<=1;i++){box(1.4,.9,1.4,0x9a9068,x+Math.cos(r+Math.PI/2)*i*1.6,.45,z+Math.sin(r+Math.PI/2)*i*1.6);}
+  const r=Math.random()*Math.PI;
+  for(let i=-1;i<=1;i++){
+    const owner=box(1.4,.9,1.4,0x9a9068,x+Math.cos(r+Math.PI/2)*i*1.6,.45,z+Math.sin(r+Math.PI/2)*i*1.6);
+    owner.userData.mapKit47PresentationYaw=r;
+    if(owner.userData.minimap){owner.userData.minimap.kind='cover';owner.userData.minimap.variant='anti-tank';}
+    installMapKit47Presentation(owner,typeof decorateMapKit47AntiTank==='function'?decorateMapKit47AntiTank:null,1.4,.9,1.4);
+  }
 });
 const TREE_POS=[[-80,0],[80,0],[0,-80],[0,80],[-60,-60],[60,60],[-60,60],[60,-60],[-80,40],[80,-40],[-40,80],[40,-80],[-80,-40],[80,40],[-40,-80],[40,80],[-70,70],[-70,-70],[70,-70],[70,70]];
 const arenaFoliage=[];
@@ -455,6 +627,31 @@ function collideWalls(x,z,r){
     }
   }
   return{x:cx,z:cz};
+}
+
+// Swept sphere against the arena's canonical wall bounds, including their height.
+// Returns the first contact; unlike character collision, this also supports roof/ceiling hits.
+function sweepWallSphere(from,to,r){
+  let nearest=null;
+  for(const bb of wallAABBs){
+    let enter=0,leave=1,axis=null,sign=0,boundary=0,inside=true;
+    let escape=null;
+    for(const key of ['x','y','z']){
+      const min=bb.min[key]-r,max=bb.max[key]+r,p=from[key],delta=to[key]-p;
+      if(p<=min||p>=max)inside=false;
+      const left=p-min,right=max-p;
+      const side=left<right?{axis:key,sign:-1,boundary:min,distance:left}:{axis:key,sign:1,boundary:max,distance:right};
+      if(!escape||side.distance<escape.distance)escape=side;
+      if(Math.abs(delta)<1e-10){if(p<min||p>max){leave=-1;break;}continue;}
+      const a=(min-p)/delta,b=(max-p)/delta,near=Math.min(a,b),far=Math.max(a,b);
+      if(near>=enter){enter=near;axis=key;sign=delta>0?-1:1;boundary=delta>0?min:max;}
+      leave=Math.min(leave,far);
+      if(enter>leave)break;
+    }
+    if(inside){nearest={t:0,axis:escape.axis,sign:escape.sign,boundary:escape.boundary};break;}
+    if(axis&&enter>=0&&enter<=leave&&enter<=1&&(!nearest||enter<nearest.t))nearest={t:enter,axis,sign,boundary};
+  }
+  return nearest;
 }
 
 // ─── WALL RAYCASTER ────
@@ -576,12 +773,18 @@ function tickExplosionFx(dt){
     }
   }
 }
-function explode(pos,col,r=3,screenShockwave=true){
+function explode(pos,col,r=3,screenShockwave=true,presentation=true){
   const n=Math.min(6+Math.floor(r*1.2),MOBILE_LOW?6:11);
-  for(let i=0;i<n;i++)spawnP(pos,col,1.18);
-  for(let i=0;i<(MOBILE_LOW?1:2);i++)spawnSmoke(pos,0x664433);
-  for(let i=0;i<(MOBILE_LOW?2:5);i++)spawnSpark(pos,col);
-  spawnExplosionFx(pos,col,r);
+  if(presentation){
+    for(let i=0;i<n;i++)spawnP(pos,col,1.18);
+    for(let i=0;i<(MOBILE_LOW?1:2);i++)spawnSmoke(pos,0x664433);
+    for(let i=0;i<(MOBILE_LOW?2:5);i++)spawnSpark(pos,col);
+    if(presentation===true)spawnExplosionFx(pos,col,r);
+  }else{
+    // Preserve the decoration RNG stream without publishing duplicate Pack39 particles/ring.
+    const draws=n*4+(MOBILE_LOW?1:2)*3+(MOBILE_LOW?2:5)*4;
+    for(let i=0;i<draws;i++)Math.random();
+  }
   if(screenShockwave&&typeof triggerExplosionShockwave==='function')triggerExplosionShockwave(pos,r);
   if(!VISUAL_LIGHTS)return;
   let fl=_eLights.find(l=>!l._act);
@@ -677,6 +880,8 @@ function tickHeadshotFx(dt){
 
 const combatImpactFx=[];
 function spawnCombatImpact(pos,type='bullet'){
+  // Firearm hits use surface feedback; the oversized radial burst is disabled.
+  if(type!=='rocket'&&type!=='plasma')return;
   const size=type==='rocket'?.96:type==='sniper'?.80:type==='plasma'?.62:type==='critical'?.76:type==='wall'?.36:.42;
   const col=type==='sniper'?0xa7efff:type==='plasma'?0xc76cff:type==='critical'?0xffe34f:type==='rocket'?0xff6930:type==='wall'?0xdce6eb:0xffb650;
   const burst=makeProceduralBurst(col,size,type==='rocket'?10:type==='sniper'?8:6,type==='wall'?0xf5fbff:0xffffff);
@@ -703,7 +908,13 @@ function tickCombatImpactFx(dt){
 }
 
 const bombBlastWaves=[];
-function spawnBombBlastWave(pos,radius,ownerType='player'){
+function spawnBombBlastWave(pos,radius,ownerType='player',presentation=true){
+  if(!presentation){
+    // Same historical RNG draws, without duplicate rings/core/particles.
+    const draws=(MOBILE_LOW?12:28)*5+(MOBILE_LOW?3:8)*3;
+    for(let i=0;i<draws;i++)Math.random();
+    return;
+  }
   const col=ownerType==='player'?0xffc128:0xff3b18;
   const ring=new THREE.Mesh(
     new THREE.TorusGeometry(1,.065,8,64),

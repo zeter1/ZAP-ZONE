@@ -1,4 +1,48 @@
+## Pack45 — попадания пуль
+
+Подробные Pack29 concrete/metal/heavy вблизи и вдали; Pack45 для дерева и decode fallback, без декоративных колец: [canonical contract](../docs/ASSETS.md#попадания-пуль-по-поверхностям--pack45). [Source and mapping](../asset-staging/2026-10-06-surface-impact-45/README.md).
+
+## Pack42 — дымовуха
+
+FPS ready/throw/reload, flight/vent/pickup/icon, cloud timeline, near/far variants, eight curls, dense/edge inside fog и пять WAV: [canonical contract](../docs/ASSETS.md#дымовуха--pack42). [Source manifest](../asset-staging/2026-10-04-smoke-pack-42/manifest.json); проверки и ограничения — batch VERIFICATION.md.
+
+## Pack40 — пистолет
+
+Ready/reload, flame/smoke/bullet/casing, pickup/icon и четыре WAV: [canonical asset contract](../docs/ASSETS.md#пистолет--pack40). [Исходники, prompts и SHA256](../asset-staging/2026-10-04-pistol-pack-40/manifest.json); live checks — batch VERIFICATION.md.
+
+## Pack36 — штурмовая винтовка
+
+Ready/reload, flame/smoke/bullet/casing, pickup/icon и общий hip/ADS прицел: [canonical asset contract](../docs/ASSETS.md#штурмовая-винтовка--pack36). Исходники и hashes: [batch manifest](../asset-staging/2026-10-03-rifle-pack-36/manifest.json). Правила цельности рук и огня от дула находятся в том же canonical документе.
+
+# Pack 34
+
+See `../docs/ASSETS.md` for grenade ready/throw/pickup/flight/blast and 15-second ground-crater owners. Runtime mapping and source hashes: `../asset-staging/2026-10-03-grenade-pack-34/manifest.json`.
+
+# Runtime assets — карта consumers
+
+Общий контракт, включая правила slicing, качества, identity, image fallback, RNG и браузерных проверок: [docs/ASSETS.md](../docs/ASSETS.md#практические-правила-для-weaponactionvfx-ассетов). Для Blender/GLB/3D authoring и переноса в Three.js использовать [docs/BLENDER_ASSET_PIPELINE.md](../docs/BLENDER_ASSET_PIPELINE.md). Исходные кандидаты и provenance находятся вне runtime в [asset-staging](../asset-staging/README.md).
+
+## Pack47 — modular sci-fi Blender map kit
+
+Runtime portable model: `environment/models/zap-map-sci-fi-kit-47.glb`; direct-`file://` generated derivative: `environment/models/zap-map-sci-fi-kit-47.runtime.js`. Editable `.blend`, deterministic builder, preview, manifest and provenance: `../asset-staging/2026-10-07-map-sci-fi-kit-47/`. Runtime owner is `src/environment/map-kit3d.js`.
+
+Pack47 is **presentation-only**. Existing `src/core/engine.js::box()` meshes/AABBs remain authoritative for collision, LOS/raycast and minimap geometry. Do not add Pack47 children to `wallMeshes` / `wallAABBs`, and do not hide authoritative owners with `visible=false`. Full ownership/rebuild contract: [Blender pipeline](../docs/BLENDER_ASSET_PIPELINE.md) and [canonical assets contract](../docs/ASSETS.md#модульный-sci-fi-environment--pack47).
+
+## Pack46 — volumetric Blender bots
+
+Runtime 3D model: `characters/models/zap-bot-modular-46.glb`; direct-`file://` derivative: `characters/models/zap-bot-modular-46.runtime.js`. Editable `.blend`, deterministic builder, preview/runtime proof and hashes live in `../asset-staging/2026-10-06-bot-3d-pack-46/`. Runtime owner is `src/entities/bot-model3d.js`; hit-mesh/arm/leg bridge is `src/entities/bot-presentation.js`. Pack46 is real mesh geometry, not a DOM/raster bot sprite.
+
+## Pack 33 player plasma
+
+Player-held plasma ready and tactical/empty reload use one six-frame generated source. Runtime paths, quality budget, decode fallback and timing live in [the canonical Pack33 contract](../docs/ASSETS.md#player-plasma-presentation-pack-33-2026-10-03). Upper weapon-bar icons are unchanged.
+
+## Pack 32 consumers
+
+SR-9 ready/reload/bolt и отдельные muzzle/smoke/bullet/casing слои используют один approved комплект. Пути, frame sequences, owners, fallback и regression описаны в [canonical Pack32 contract](../docs/ASSETS.md#sr-9-sniper-presentation-pack-32-2026-10-03); source и hashes — в [batch README](../asset-staging/2026-10-03-sniper-pack-32/README.md). Это player first-person presentation; world pickups и bot geometry сохраняют свои consumers.
+
 ## Pack 31 consumers
+Pack33 now owns primary player plasma ready/reload. Pack31 is the matched ready/reload fallback when the primary ready asset cannot decode; see the canonical Pack33 contract above.
+
 The approved plasma-core reload source is integrated as `ui/fx/plasma-core-reload-vfx-atlas-31.webp` (4×3 / 12 frames), and frame 12 of the same source defines the ordinary ready-state player weapon as `ui/weapons/fp/player-plasma-fps-31.webp`. This intentionally makes the weapon seen during normal play the same design seen during reload rather than swapping to a different model only for the action.
 
 `src/weapons/system.js` reuses the bounded first-person action stage and `src/combat/combat.js` stretches tactical/empty sequences to the authoritative existing reload timers. If Pack 31 cannot start, the previous generic magazine drop plus Pack 11 plasma energy-lock completion VFX remain fallback; the procedural first-person plasma rig remains fallback for ready presentation.
@@ -13,9 +57,7 @@ Pack 30 is presentation-only and deterministic. The existing Three.js plasma tra
 ## Pack 29 consumers
 The approved surface-impact source is integrated as `ui/fx/surface-impact-vfx-atlas-29.webp`, a 320×320 alpha-WebP 4×4 atlas. Rows are concrete/dust, metal/ricochet, cyan tech-panel impact and heavy ballistic debris; the runtime player stretches selected source frames into short elapsed-time sequences without self-running image animation.
 
-`src/core/engine.js::wallImpact()` remains the single surface-feedback seam. Close/medium concrete and metal impacts prefer Pack 29, existing Zone Net terminal proximity selects the cyan presentation without inventing a new ballistic material, and SR-9 / real wall penetration / the first player-shotgun pellet may request the heavy row. Wood and distant hits keep Pack 10, and any Pack 29 load/playback failure falls back to the existing Pack 10 surface animation.
-
-Pack 29 is presentation-only. Existing procedural sparks/smoke and pooled impact marks stay active; Pack 12 still owns true ricochet/penetration-exit decoration, Pack 27 still owns terminal electrical arcs, and bullet physics, material resistance, ricochet chance, penetration, damage, AI and gameplay RNG are unchanged.
+`src/core/engine.js::wallImpact()` remains the single surface-feedback seam. Pack29 concrete/metal/heavy now apply at every distance with physical size and wall/smoke occlusion; heavy source cell0 is skipped. Wood and unavailable Pack29 use the first three frames of material-matching Pack45. Missing both leaves procedural particles and marks. Terminal electricity, old distant Pack10 and the separate Pack12 penetration-exit ring are retired; bullet mechanics and historic RNG draws remain. See the canonical surface-impact contract above for current metadata and verification.
 
 ## Pack 28 consumers
 The approved rocket-flight source is integrated as `ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg`, a compact static 4×3 / 12-frame transparent atlas. `src/combat/combat.js` projects it from each live player/bot rocket into the existing projectile presentation layer, aligns the plume opposite the projected velocity and scales it by camera distance.
@@ -23,11 +65,7 @@ The approved rocket-flight source is integrated as `ui/fx/rocket-flight-exhaust-
 Pack 28 is presentation-only and deterministic. Off-screen/occluded overlays are hidden; the existing Three.js rocket body, additive procedural exhaust, smoke/spark particles, physics, collision, damage and explosion remain authoritative/fallback.
 
 ## Pack 27 consumers
-Two newly approved generated VFX sources are integrated as compact scriptless SVG atlases: `ui/fx/player-respawn-gate-vfx-atlas-27.svg` (3×2 / 6 frames) and `ui/fx/terminal-electrical-arc-vfx-atlas-27.svg` (5×2 / 10 frames).
-
-`src/settings/settings.js` reuses the existing bounded elapsed-time DOM VFX player. Player respawn keeps the existing `respawn-materialize-01.webp` overlay as fallback and adds the energy-gate sequence only after the authoritative respawn state has been applied. `src/core/engine.js` marks the four existing Zone Net terminals as presentation-reactive and emits the arc only for nearby wall-impact events with a per-terminal cooldown.
-
-Pack 27 is presentation-only: respawn timing, spawn protection, terminal collision, bullet damage, penetration, ricochet, AI, score and gameplay RNG are unchanged.
+The player respawn gate was retired on 2026-10-06: `ui/fx/player-respawn-gate-vfx-atlas-27.svg` and its catalog/spec/anchor/CSS/runtime wiring were deleted. Gameplay respawn and spawn protection are unchanged. `ui/fx/terminal-electrical-arc-vfx-atlas-27.svg` remains only as a compatibility/provenance asset; its helper returns false and does not allocate VFX.
 
 ## Pack 26 consumers
 Two newly approved generated source sheets are integrated as compact presentation-only alpha-WebP atlases: `ui/fx/weapon-discharge-vfx-atlas-26.webp` (4×2 / 8 frames) and `ui/fx/heavy-explosion-vfx-atlas-26.webp` (4×2 / 8 frames). The first atlas gives pistol/rifle shots a warmer ballistic discharge sequence and plasma a distinct cyan energy discharge. The second provides an ignition-to-smoke heavy blast sequence.
@@ -47,7 +85,7 @@ Pack 24 is presentation-only. Rocket ammo transfer/reload timing and mine ammo/c
 ## Pack 23 consumers
 Five approved SR-9 source sheets are compacted into three runtime WebP atlases: `ui/fx/sniper-shot-vfx-atlas-23.webp`, `ui/fx/sniper-ballistics-vfx-atlas-23.webp` and `ui/fx/sniper-casing-vfx-atlas-23.webp`. `src/settings/settings.js` owns muzzle/smoke/ballistic playback and aligns the projectile overlay from the current first-person muzzle toward the reticle; `src/game/runtime.js` uses the dedicated casing atlas only when Pack 22's full bolt animation is unavailable.
 
-The SR-9 remains hitscan-authoritative. Pack 23 never changes damage, penetration, timing or projectile simulation and consumes no gameplay RNG. Existing procedural muzzle, instant Three.js trace, Pack 8 trail, Pack 10 pressure/casing and Pack 22 bolt-cycle presentation remain compatibility/fallback layers.
+The SR-9 remains hitscan-authoritative. Pack 23 never changes damage, penetration, timing or projectile simulation and consumes no gameplay RNG. Existing procedural muzzle, instant Three.js trace, Pack 8 trail, Pack 10 casing and Pack 22 bolt-cycle presentation remain compatibility/fallback layers; the old Pack 10 sniper-pressure overlay is retired.
 
 ## Pack 22 consumers
 Two approved first-person weapon-action sheets are integrated as `ui/fx/rifle-reload-vfx-atlas-22.webp` and `ui/fx/sniper-bolt-cycle-vfx-atlas-22.webp`. `src/weapons/system.js` owns the temporary action layer inside the existing first-person DOM stage; `src/combat/combat.js` starts actions only from real rifle reload / SR-9 cycle events, and `src/game/runtime.js` advances them from elapsed time.
@@ -55,16 +93,13 @@ Two approved first-person weapon-action sheets are integrated as `ui/fx/rifle-re
 Rifle tactical reload skips the late charging phase while empty reload uses all twelve source frames. SR-9 bolt cycling temporarily hides scope presentation, but the existing cycle timer, world casing ejection, weapon blocking and procedural animation remain authoritative/fallback. Both 720×480 alpha-WebP atlases are presentation-only and never become persistent Three.js textures.
 
 ## Pack 18 consumers
-Three source previews approved in the current ChatGPT dialog are integrated as `ui/fx/player-action-vfx-atlas-18.svg`, a deterministic 4×7 static-frame SVG atlas. Rows 0–1 decorate each successful shotgun shell insert; rows 2–4 decorate the existing distance-driven metal, concrete/gravel and water footsteps; rows 5–6 distinguish real HP recovery from medkit-to-armor conversion.
-
-Pack 18 is presentation-only and adds no gameplay RNG draws. Reload timing/ammo, movement cadence, footstep audio, medkit values and pickup respawn remain authoritative. The heavy source rasters are intentionally not duplicated after same-dialog visual approval; provenance is recorded in `asset-staging/2026-09-30-vfx-pack-18/README.md`.
+`ui/fx/player-action-vfx-atlas-18.svg` remains for rows 0–1 shotgun shell-insert presentation only. Rows 2–6 are retired/unreachable: generated metal/dust/water footsteps and medkit heal/armor pulses have no runtime specs, helpers, anchors, consumers or CSS. Footstep audio, movement and medkit gameplay are unchanged.
 
 ## Pack 17 consumers
-Pack 17 integrates bot reload mag-lock, nonlethal bot hit sparks and successful pickup collection as `ui/fx/interaction-vfx-atlas-17.svg`. The atlas is DOM-projected and elapsed-time driven; gameplay timing, damage/AI and pickup economy remain authoritative.
+Pack 17 was fully retired on 2026-10-06. `ui/fx/interaction-vfx-atlas-17.svg` and the generated bot reload/hit/pickup-collapse wiring were deleted; gameplay timing, damage/AI and pickup economy remain authoritative.
 
-Generated Asset Pack 16 integrates the three approved bot-action candidates from `asset-staging/2026-09-30-vfx-pack-16/` as `ui/fx/bot-action-vfx-atlas-16.svg`, a deterministic 8×3 static-frame SVG atlas. Row 0 decorates bot plasma muzzle events through the existing fire-control shot hook; row 1 decorates a successfully started bot dodge; row 2 decorates replacement-bot spawns while initial match population explicitly suppresses the materialization burst.
-
-Pack 16 is presentation-only. Existing procedural muzzle, movement/jump, bot geometry and spawn logic remain fallback/authority. The VFX layer is DOM-projected, bounded, elapsed-time driven and off-screen hidden; dodge/spawn helpers add no gameplay RNG draws. The animated staging originals remain archive/provenance and are not imported at runtime.
+## Pack 16 consumers
+Pack 16 was fully retired on 2026-10-06. `ui/fx/bot-action-vfx-atlas-16.svg` and all generated bot plasma-muzzle/dodge/spawn presentation wiring were removed. Bot firing, dodge and spawn gameplay remain unchanged.
 
 # Assets — quick map
 
@@ -74,14 +109,10 @@ The two approved staging candidates are integrated as separate deterministic sta
 Both are presentation-only. Procedural explosions, impact art, death radial flash, death text, kill camera, audio and the exact 15-second respawn remain fallback/authority. The original animated sources stay under `asset-staging/2026-09-30-vfx-pack-15/` as provenance.
 
 ## Pack 14 consumers
-Two approved player-feedback VFX are integrated as `ui/fx/player-feedback-vfx-atlas-14.svg`, an 8×2 deterministic static-frame SVG atlas. Row 0 decorates real player critical hits emitted from `src/combat/combat.js::resolvePlayerBulletHit()`; row 1 decorates the centralized player armor-depletion event through `src/progression/progression.js::showArmorBreakFx()`. `src/settings/settings.js` owns elapsed-time playback, world projection, variation, budgeting and cleanup.
-
-The pack is presentation-only. Existing procedural critical impact, armor-hit overlay and armor-break HUD art remain fallback; damage multipliers, armor absorption, HP, hitmarkers and gameplay timing are unchanged. The animated staging originals remain under `asset-staging/2026-09-30-vfx-pack-14/` as provenance.
+Pack 14 was fully retired on 2026-10-06. `ui/fx/player-feedback-vfx-atlas-14.svg` and generated `criticalHit` / `playerArmorBreak` wiring were deleted. Damage multipliers, armor absorption, HP, hitmarkers and ordinary procedural/HUD feedback remain unchanged.
 
 ## Pack 13 consumers
-Two approved bot-combat VFX are integrated as `ui/fx/bot-combat-vfx-atlas-13.svg`, an 8×2 static-frame SVG atlas. Row 0 decorates real bot muzzle events through `src/ai/bot-fire-control.js`; row 1 decorates `Bot.die()` through `src/entities/bots.js`. `src/settings/settings.js` owns elapsed-time playback, per-bot muzzle throttling, world projection/orientation, budgeting and cleanup.
-
-The pack is presentation-only. Existing procedural muzzle flashes, gibs and particles remain fallback; fire cadence, hit logic, projectile spawning, damage, kills and respawn are unchanged. The animated staging originals remain under `asset-staging/2026-09-30-vfx-pack-13/` as provenance.
+Pack 13 was fully retired on 2026-10-06. `ui/fx/bot-combat-vfx-atlas-13.svg` and the generated bot muzzle/death presentation wiring were removed. Existing procedural muzzle feedback, gibs/particles, damage, kills and respawn remain unchanged.
 
 ## Pack 12 consumers
 Five approved staging VFX are integrated as one deterministic 8×5 static-frame SVG mega-atlas: ricochet spark fan, wall-penetration exit debris, smoke deployment bloom, mine shrapnel detonation and bomb pressure-core detonation. `src/assets/catalog.js` owns row/frame/duration metadata, `src/settings/settings.js` reuses the existing bounded elapsed-time DOM VFX player, and `src/combat/combat.js` emits only from existing authoritative projectile/smoke/explosive events.
@@ -94,19 +125,13 @@ Three approved staging VFX are integrated as deterministic static-frame SVG atla
 The original animated SVGs remain under `asset-staging/2026-09-30-vfx-pack-11/` only as review/provenance sources. Runtime does not load staging. Procedural explosion/impact/reload presentation remains fallback, and generated art stays DOM-only rather than persistent Three.js texture geometry.
 
 ## Pack 10 consumers
-Ten generated one-shot combat animations are packed into `ui/fx/combat-vfx-atlas-10.webp` as a uniform 8×10 alpha-WebP atlas. Rows represent rocket backblast, SR-9 pressure blast, shotgun muzzle smoke, brass casing, shotgun shell, magazine drop, concrete/metal/wood impacts and near-miss air streak.
-
-Ownership: `src/assets/catalog.js` stores row/frame/duration metadata; `src/settings/settings.js` owns elapsed-time DOM playback, projection, budgets and cleanup; `src/combat/combat.js` emits local-player shot/reload/casing events; `src/game/runtime.js` emits pump/bolt ejection; `src/core/engine.js` emits material-impact presentation. Procedural feedback remains fallback and the generated atlas never becomes persistent Three.js texture geometry.
+The shared `ui/fx/combat-vfx-atlas-10.webp` remains for active weapon/casing/impact rows. The old SR-9 `sniperPressure` row and `nearMiss` row are retired/unreachable: their runtime specs, helpers/consumers and CSS were removed. Suppression mechanics/audio remain active without generated near-miss streak art.
 
 ## Pack 9 consumers
-The 2026-09-30 pack adds ten SVG runtime derivatives for match deployment, Frontline retarget/capture presentation, Second Wind, dodge feedback, perk-path identity, equipment readiness, ally tactical callouts, pause presentation and mobile controls. Geometric generated art now uses the contact sheet as visual source and commits lightweight SVG derivatives instead of unnecessary raster crops.
-
-Ownership: `src/game/session.js` → deploy/pause; `src/game/frontline.js` → retarget/progress; `src/progression/progression.js` → Second Wind/dodge/perk path; `src/combat/combat.js` → equipment state; `src/game/runtime.js` → ally callouts/mobile controls. Existing text/procedural state remains authoritative.
+The match-deploy, Frontline-retarget, Second-Wind and dodge-phase screen animations were retired on 2026-10-06; their standalone SVGs and DOM/CSS/playback wiring were deleted. Pack 9 still provides perk-path identity, equipment readiness, Frontline progress decoration, ally tactical callouts, pause presentation and mobile controls.
 
 ## Pack 8 consumers
-The 2026-09-29 tactical presentation pack adds ten compact alpha WebP atlases for reticles, minimap markers, spawn protection, respawn countdown, explosive fuse state, projectile trails, weapon switching, bot overhead frames, combo feedback and pickup beacons. Ownership stays close to the existing gameplay source: `src/game/runtime.js` owns reticle/shield/combo timing, `src/ui/minimap.js` owns tactical markers, `src/combat/combat.js` owns projectile/fuse presentation, `src/entities/bots.js` owns overhead bars, `src/entities/pickups.js` owns pickup beacons, and `src/player/state.js` emits the equip transition.
-
-All Pack 8 images are DOM/canvas presentation only and keep procedural/text fallbacks. The generated minimap never exposes enemy locations or enemy deployables that were not already available to the player.
+Spawn-protection generated art and the legacy center-screen projectile-trail atlas were retired on 2026-10-06. The fake trail atlas/helper/CSS/shot wiring remain deleted, but the shared `#projectile-trail-layer` container is retained because current world-projected mine, bomb, rocket, plasma, grenade and rifle/shotgun/pistol art uses it. Gameplay projectile simulation remains unchanged.
 
 ## Pack 7 consumers
 The 2026-09-29 combat-texture pack adds ten generated alpha WebP assets: low-health, directional damage, smoke, ballistic/plasma muzzle sheets, explosion shockwave, suppression, armor-hit, sprint-speed and respawn materialization. Runtime ownership is split deliberately: `src/settings/settings.js` owns screen-space transient overlays, `src/game/runtime.js` owns low-health/sprint strengths, `src/progression/progression.js` owns armor-hit/respawn events, `src/core/engine.js` only emits the explosion presentation hook, and `src/weapons/system.js` consumes the two muzzle spritesheets.
@@ -144,14 +169,15 @@ Do not add a generated file without a consumer and fallback. WebP upload must be
 - `medals`, `status`, `fx`, `perks` — lightweight SVG gameplay/UI fallbacks;
 - `weapons` — weapon identity/model visuals;
 - `audio` — local runtime audio;
+- `characters/models` — volumetric Blender/GLB model artifacts and generated local-runtime derivatives; authoring/provenance stays in `asset-staging`, not here;
 - `environment`, `characters`, `pickups` — existing domain assets.
 
 ## Critical invariants
 
-1. Generated raster/WebP UI art is DOM/CSS presentation-only; do not route it into persistent WebGL texture planes/sprites. Generated player-held weapons and generated world pickups follow the same rule: DOM presentation with procedural Three.js fallback. Bots remain procedural. Current FPS weapon pack is **baked-hands**: when its image is active, hide the entire local procedural first-person rig so blocky fallback hands are never double-rendered.
+1. Generated raster/WebP UI art is DOM/CSS presentation-only; do not route it into persistent WebGL texture planes/sprites. Generated player-held weapons and generated world pickups follow the same rule: DOM presentation with procedural Three.js fallback. **Bots no longer remain procedural by default:** desktop bots use volumetric Blender Pack46 mesh geometry, with procedural body retained only as fallback. Current FPS weapon pack is **baked-hands**: when its image is active, hide the entire local procedural first-person rig so blocky fallback hands are never double-rendered.
 2. Critical information keeps SVG/text/DOM fallback; decorative art may degrade to absence only when meaning remains intact.
 3. Runtime generated filenames are semantic ASCII kebab-case, not generator filenames.
-4. Add every runtime asset to `GAME_ASSETS` and `scripts/validate-structure.mjs`.
+4. Catalog-managed runtime art добавлять в `GAME_ASSETS` и `scripts/validate-structure.mjs`. Direct classic-script/3D artifacts вроде Pack46 могут иметь отдельный load owner в `index.html`/`bot-model3d.js`; для них обязателен явный load-graph/structure guard, а не фиктивная запись в catalog.
 5. After runtime asset change, restamp web build and commit `CHANGELOG.md` in the same logical change.
 6. Upload a pack atomically when possible; do not create one push/CI run per image.
 7. For manual static/uCoz publication upload `version.json` last.
@@ -168,7 +194,7 @@ Do not add a generated file without a consumer and fallback. WebP upload must be
 18. Binary-safe upload invariant: WebP/PNG/JPEG must be uploaded as base64-decoded Git blobs, never as UTF-8 text. Verify the created Git blob SHA against the local file bytes before putting it in a tree.
 19. After a binary asset commit, validate magic/envelope from GitHub (WebP must be RIFF…WEBP) and let `scripts/validate-structure.mjs` fail hard on corrupted or text-wrapped payloads.
 20. Dual-runtime invariant: every visual/runtime asset must work both from uCoz/static HTTP(S) hosting and from a direct local `file://.../index.html` launch. Do not gate generated visual art off merely because the protocol is `file:`.
-21. HTTP(S) may add the current build query for cache busting; local file mode must use plain relative paths. Generated menu backgrounds, logos, HUD/perk/medal/feedback art and weapon/pickup DOM art must remain available in both modes with fallback only on real load/decode failure.
+21. Classic local scripts use the current build query `?v=<application-build>` in both HTTP(S) and direct `file://` modes to prevent stale JS after updates. Asset URL policy remains consumer-specific: do not assume a cache-key rule from one asset class applies to all files. Generated menu backgrounds, logos, HUD/perk/medal/feedback art, Pack46 runtime geometry and weapon/pickup presentation must remain available in both modes with fallback only on real load/decode/missing-pack failure.
 22. Asset work is not complete until both hosted validation and the local-file browser smoke prove the relevant generated presentation path is active.
 23. Pack 5 status/legendary-perk runtime derivatives are 256×256 alpha WebP <=32 KiB. Keep SVG fallback wiring; never make these presentation images a gameplay-state dependency.
 24. Pack 6 perk runtime derivatives use the same 256×256 alpha WebP <=32 KiB envelope. Each new generated perk must resolve through `perkAsset(id,path)`, retain its exact per-id SVG fallback, and remain presentation-only.

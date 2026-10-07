@@ -37,4 +37,5 @@ function selectBotWeapon(bot,distHint=22,force=false){
   if(force||bot.mag<=0||bot.mag>bot.weapon.clip)bot.mag=bot.weapon.clip;
   bot.weaponSwitchT=4.5+Math.random()*4.0;
   refreshBotWeaponVisual(bot);
+  if(typeof syncBotModel46RoleVariant==='function')syncBotModel46RoleVariant(bot);
 }

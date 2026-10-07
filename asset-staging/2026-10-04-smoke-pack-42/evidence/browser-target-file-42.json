@@ -1,0 +1,42 @@
+{
+  "target": "G:/МОЯ Веб-разработка/ZAP_ZONE",
+  "file": true,
+  "build": "834f3af971284de9",
+  "nativePointerLock": true,
+  "input": {
+    "pending": true,
+    "ammo": 1,
+    "action": "smokeThrow42",
+    "lock": true,
+    "particles": 0
+  },
+  "flight": {
+    "ammo": 0,
+    "count": 1,
+    "body": 1,
+    "releaseFrame": 3,
+    "children": false,
+    "dom": 1,
+    "particles": 1
+  },
+  "wall": {
+    "wall": -19.69999998807907,
+    "spawn": -19.57992798807907,
+    "after": -19.46442014807907,
+    "vz": 3.5000000000000004
+  },
+  "reload": {
+    "before": {
+      "ammo": 0,
+      "reserve": 4,
+      "kind": "smokeReload42",
+      "reloading": true
+    },
+    "after": {
+      "ammo": 1,
+      "reserve": 3,
+      "reloading": false
+    }
+  },
+  "errors": []
+}

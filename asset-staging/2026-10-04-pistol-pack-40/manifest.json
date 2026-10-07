@@ -1,0 +1,322 @@
+{
+  "pack": 40,
+  "generator": "built-in image_gen; deterministic local PCM synthesis",
+  "sources": [
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/pose-0-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "57515b6c3144374ecb9aa40bf721aaf06b015d87c5648bd5adff3f3f6e25692a"
+    },
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/pose-1-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "aadf3862ce0070e366ac4a1632b68e134cf048d9ce127b97397da5203dc129c7"
+    },
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/pose-2-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "1ccde3eea2769166946a19c6afd18d9369377b76f40ade37c9dc2b442d69f761"
+    },
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/pose-3-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "2a99472e8c728f49fd88e4064c67fdc9f0161dea2e7862269b6de8b702f2971a"
+    },
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/pose-4-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "a416301285380266bde326ea3e7a7eb832f34955fded73bc0d41402a40eb4b69"
+    },
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/effects-source.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "e3a500fa070eccc8993aa309c477418c3e7ee26046cc0c4f1654018cb6b286e8"
+    },
+    {
+      "path": "asset-staging/2026-10-04-pistol-pack-40/pickup-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "5b30abdbe6c990167f1bbfbd988d22a9424d06ec135053e5bb994e8ac0a3ad56"
+    }
+  ],
+  "readyFrame": 0,
+  "recoveryFrame": 5,
+  "grid": [
+    3,
+    2
+  ],
+  "cellDimensions": [
+    1280,
+    960
+  ],
+  "sourceFrameDimensions": [
+    1448,
+    1086
+  ],
+  "noAnatomyCrop": true,
+  "tacticalSequence": [
+    0,
+    1,
+    2,
+    3,
+    5
+  ],
+  "emptySequence": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "muzzlePixels": [
+    [
+      431,
+      150
+    ],
+    [
+      530,
+      171
+    ],
+    [
+      530,
+      171
+    ],
+    [
+      530,
+      151
+    ],
+    [
+      628,
+      176
+    ],
+    [
+      431,
+      150
+    ]
+  ],
+  "ejectionPixels": [
+    [
+      640,
+      182
+    ],
+    [
+      736,
+      169
+    ],
+    [
+      736,
+      169
+    ],
+    [
+      724,
+      160
+    ],
+    [
+      856,
+      245
+    ],
+    [
+      640,
+      182
+    ]
+  ],
+  "boreAngleDegrees": -158.5,
+  "effectSourceDimensions": [
+    1254,
+    1254
+  ],
+  "effectSlicing": "floor(col*width/4), floor(row*height/4)",
+  "effectRuntimeCell": [
+    192,
+    192
+  ],
+  "emitterMeasurementReference": [
+    1254,
+    1254
+  ],
+  "flameOriginsPixels": [
+    [
+      278,
+      251
+    ],
+    [
+      264,
+      253
+    ],
+    [
+      252,
+      251
+    ],
+    [
+      253,
+      251
+    ]
+  ],
+  "smokeOriginsPixels": [
+    [
+      274,
+      261
+    ],
+    [
+      266,
+      260
+    ],
+    [
+      256,
+      263
+    ],
+    [
+      258,
+      269
+    ]
+  ],
+  "files": [
+    {
+      "path": "assets/ui/weapons/fp/player-pistol-fps-40.webp",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "bytes": 367712,
+      "budgetKiB": 450,
+      "alpha": true,
+      "sha256": "e5ac26875f4902469e1f1c71dc551c406dbb819dfac5e361e1beffbfdaa7af24"
+    },
+    {
+      "path": "assets/ui/fx/pistol-reload-atlas-40.webp",
+      "dimensions": [
+        3840,
+        1920
+      ],
+      "bytes": 1709718,
+      "budgetKiB": 2100,
+      "alpha": true,
+      "sha256": "195658910d454779c76742599b092528ff8f446790394a86497e1bff5912ec40"
+    },
+    {
+      "path": "assets/ui/fx/pistol-effects-atlas-40.webp",
+      "dimensions": [
+        768,
+        768
+      ],
+      "bytes": 180074,
+      "budgetKiB": 350,
+      "alpha": true,
+      "sha256": "cf9ffd893b680c9456066e6ba53e29827368deb5ddcef430438ca8aa3dbadee0"
+    },
+    {
+      "path": "assets/ui/pickups/weapons/world-pistol-pickup-40.webp",
+      "dimensions": [
+        512,
+        384
+      ],
+      "bytes": 55410,
+      "budgetKiB": 120,
+      "alpha": true,
+      "sha256": "b9a640e4433400cc6da1521afb0dbe86e41ea5574b3d3922f52476b8a5562f54"
+    },
+    {
+      "path": "assets/ui/weapons/pistol-icon-40.webp",
+      "dimensions": [
+        256,
+        192
+      ],
+      "bytes": 17232,
+      "budgetKiB": 45,
+      "alpha": true,
+      "sha256": "1d176efe52c6ec7e05be19aaf429da1d291274c2df70876a1ee597fbf420beb1"
+    },
+    {
+      "path": "assets/audio/pistol-shot-40.wav",
+      "bytes": 15038,
+      "sha256": "4aec977ddbaac52557755b5de2fbfe67560bf65f7cf66897de0ff8bc21847943",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.34
+    },
+    {
+      "path": "assets/audio/pistol-mag-40.wav",
+      "bytes": 9746,
+      "sha256": "c4e6c0ac4329b540b73fe824852ac7901c0a2b42a2ea0dc1ba6197ca680d65ef",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.22
+    },
+    {
+      "path": "assets/audio/pistol-slide-40.wav",
+      "bytes": 12392,
+      "sha256": "38ffcbfa1b6e6646fcbf8d83e75ceccdf230d578c91fd4e0ab3ee805ab24af92",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.28
+    },
+    {
+      "path": "assets/audio/pistol-done-40.wav",
+      "bytes": 7982,
+      "sha256": "cb844621150ad0c24392e547241b58c815b56fd099103fedce91e623246bec43",
+      "sampleRate": 22050,
+      "channels": 1,
+      "duration": 0.18
+    }
+  ],
+  "emitterSourceCells": {
+    "flame": [
+      [
+        313,
+        313
+      ],
+      [
+        314,
+        313
+      ],
+      [
+        313,
+        313
+      ],
+      [
+        314,
+        313
+      ]
+    ],
+    "smoke": [
+      [
+        313,
+        314
+      ],
+      [
+        314,
+        314
+      ],
+      [
+        313,
+        314
+      ],
+      [
+        314,
+        314
+      ]
+    ]
+  },
+  "measurementNote": "2026-10-04 recalibration: front-plane estimate +/-6 source px (bore hole occluded); bore +/-4deg; dense FX roots +/-3px; exact floor-crop cell normalization."
+}

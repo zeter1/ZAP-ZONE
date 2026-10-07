@@ -1,6 +1,6 @@
 # AGENTS.md — ZAP ZONE
 
-Короткая карта для ChatGPT/Codex. Не читайте весь репозиторий механически.
+Короткая карта для ChatGPT/Codex. Не читайте весь репозиторий механически. Человеческий/AI индекс всей документации: `docs/README.md`.
 
 Выбирайте маршрут чтения по задаче, а не открывайте один и тот же стек «на всякий случай»:
 
@@ -31,11 +31,15 @@
 - bot high-level state selection / priority ladder / stateCD reschedule → `src/ai/bot-state-policy.js` + `docs/specs/BOT_STATE_POLICY.md`;
 - squad coordination / Map Tactics / Adaptive Commander → `src/ai/tactics.js`;
 - Frontline objective state/capture/rotation/save/HUD/marker → `src/game/frontline.js` + `docs/specs/FRONTLINE.md`;
-- bot model / hit meshes / weapon pivot / two-hand arm rig → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
+- Blender / GLB / 3D asset authoring/export/runtime transfer → `docs/BLENDER_ASSET_PIPELINE.md` → конкретный `asset-staging/<pack>/README.md`; world/bot firearm presentation Pack49 (`pistol/shotgun/rifle/plasma/sniper/rocket`, first-person explicitly excluded) → `src/weapons/world-weapon-model3d.js` + `asset-staging/2026-10-07-world-weapons-pack-49/`; archived modular floor Pack48 experiment (not loaded in production) → `src/environment/floor-kit3d.js` + `asset-staging/2026-10-07-floor-3d-pack-48/`; active production floor → `src/core/engine.js::arenaFloor`; modular map Pack47 / collision-owner overlays → `src/environment/map-kit3d.js` + `asset-staging/2026-10-07-map-sci-fi-kit-47/`; bot volumetric Pack46 / shared component geometry / team materials → `src/entities/bot-model3d.js` + `asset-staging/2026-10-06-bot-3d-pack-46/`; hit meshes / articulated leg rig / weapon pivot / two-hand arm rig bridge → `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md`;
 - individual bot state orchestration / broad fire gate / flank+objective+support+search execution / HP+death lifecycle + stateCD/cadence timer lifecycle + dodge producers/timer consumption → `src/entities/bots.js`; it consumes progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, cover-execution, engagement-movement, weapon-policy, fire-control, fire-cadence, deployables and state-policy owners rather than reimplementing them;
-- pickups → `src/entities/pickups.js`;
+- pickups → `src/entities/pickups.js` + `docs/ASSETS.md` (парящие подробные рендеры без тени, покадровая проекция, random placement/grants и3D-fallback) + `scripts/pickup-presentation-owner.test.mjs`;
 - rendering/arena/collision / nearest opaque-wall hit distance → `docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md` → `src/core/engine.js`; focused geometry oracle → `scripts/engine-wall-geometry-owner.test.mjs`;
+- bomb Pack41 timed planting/individual180s/ground skin/FX suppression → `docs/ASSETS.md` + `scripts/bomb-presentation-owner.test.mjs` + `scripts/bomb-asset-contract.test.mjs`; mechanics owner combat, common body system, bot deployment bot-deployables;
+- mine Pack39 pending release/cancel/contact death/3D world lifetime → `src/combat/combat.js` + `scripts/mine-presentation-owner.test.mjs`; fullscreen FPS/decode/audio/FX contract → `docs/ASSETS.md`;
+- smoke Pack42 pending release/cancel/swept physics/FPS/volume lifecycle → `docs/ASSETS.md` + `scripts/smoke-presentation-owner.test.mjs` + `scripts/smoke-volume-owner.test.mjs`; cloud density/GLSL/floor/DOM visibility owner combat + `scripts/smoke-density-owner.test.mjs`, depth/low-resolution compositor owner engine; system/settings/runtime сохраняют свои boundaries;
 - asset identity/fallback → `src/assets/catalog.js` + `docs/ASSETS.md`;
+- pistol Pack40 FPS/decode/framing/FX/audio/guarded muzzle/reload → `docs/ASSETS.md` + `scripts/pistol-presentation-owner.test.mjs`; semantic owners остаются system/settings/combat/runtime;
 - validation/cache build → `scripts/validate-structure.mjs` + `scripts/stamp-web-build.mjs`;
 - browser/CDP smoke transport/session + bounded command waits/cleanup → `docs/patterns/CDP_SMOKE_SESSION_OWNER.md` → `scripts/browser-cdp-session.mjs`; consumers → `scripts/browser-boot-smoke.mjs` (HTTP) + `scripts/browser-menu-smoke.mjs` (`file://`);
 - browser/CDP runtime-error classification → `docs/patterns/BROWSER_RUNTIME_ERROR_ORACLE.md` → `scripts/browser-diagnostic-policy.mjs`; transport owner consumes this policy instead of reimplementing it.

@@ -2,6 +2,7 @@
 
 // ─── PLAYER STATE ────────────────────────
 let curW=0,lastW=0,ammo=STARTING_AMMO[0],uAmmo=STARTING_RESERVE[0],reloading=false,reloadT=0,reloadTot=0,sCD=0,recoil=0;
+let playerRocketShotCD=0;
 const weaponAmmo=STARTING_AMMO.slice();
 const weaponReserve=STARTING_RESERVE.slice();
 const weaponOwned=STARTING_OWNED.slice();
@@ -22,6 +23,17 @@ let sprintBlend=0,sprintExitT=0,wasWeaponSprinting=false;
 let cycleT=0,cycleTot=0,cycleKind='',cycleEjected=false;
 let reloadMode='mag',reloadShellLoaded=0;
 const K={};
+const PLAYER_STAND_EYE_HEIGHT=1.75;
+const PLAYER_CROUCH_EYE_HEIGHT=1.08;
+const PLAYER_CROUCH_SPEED_M=.58;
+const PLAYER_STANCE_SPEED=5.5;
+function playerCrouchHeld(keyState=K){return !!keyState['KeyX'];}
+function approachPlayerEyeHeight(current,target,dt){
+  const maxDelta=PLAYER_STANCE_SPEED*Math.max(0,dt);
+  const delta=target-current;
+  if(Math.abs(delta)<=maxDelta)return target;
+  return current+Math.sign(delta)*maxDelta;
+}
 const mobileInput={
   moveId:null,lookId:null,fire:false,run:false,jumpQueued:false,reloadQueued:false,mineQueued:false,
   moveX:0,moveY:0,lookDX:0,lookDY:0,joyR:0,lookActive:false
@@ -93,7 +105,7 @@ function increaseClips(mult,includeBomb=false){
   });
   ammo=weaponAmmo[curW];
 }
-function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isMine||w.isBomb||w.isSmoke||w.isGrenade)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
+function accelerateFire(mult){WEAPONS.forEach(w=>{if(w.isRocket||w.isMine||w.isBomb||w.isSmoke||w.isGrenade)return;w.rate=Math.max(.045,w.rate*mult);if(w.cycleTime)w.cycleTime=Math.max(.18,w.cycleTime*mult);});}
 function accelerateReload(mult){WEAPONS.forEach(w=>{w.reload=Math.max(.32,w.reload*mult);});}
 
 const ALL_PERKS=[
@@ -274,8 +286,12 @@ function grantWeapon(idx,reserveGrant=0){
   const w=WEAPONS[idx],first=!weaponOwned[idx];
   weaponOwned[idx]=true;
   if(first)weaponAmmo[idx]=w.clip;
-  const before=weaponReserveValue(idx),after=setWeaponReserve(idx,before+Math.max(0,Math.floor(reserveGrant||0)));
-  if(first&&idx!==curW)switchW(idx);else{if(idx===curW){ammo=weaponAmmo[idx];uAmmo=weaponReserve[idx];}updateWeaponBar();wHUD();}
+  // Pickup grants accumulate persisted ammo, independently of testing virtual reserves.
+  const before=Math.max(0,Math.min(w.reserveCap??9999,Number.isFinite(weaponReserve[idx])?weaponReserve[idx]:0));
+  const after=setWeaponReserve(idx,before+Math.max(0,Math.floor(reserveGrant||0)));
+  if(first&&idx!==curW)switchW(idx);
+  if(idx===curW){ammo=weaponAmmo[idx];uAmmo=weaponReserve[idx];}
+  updateWeaponBar();wHUD();
   return{first,added:after-before,total:after};
 }
 
@@ -301,6 +317,7 @@ let saveTick=8;
 let preloadStarted=false,preloadDone=false,gameSessionActivated=false,preparedSaveLoaded=false;
 
 function hardResetPlayerBuild(){
+  playerRocketShotCD=0;
   Object.assign(plr,{
     maxHp:100,dmgM:1,spdM:1,regen:0,critChance:0,critMult:2,lifeSteal:0,armorRegen:0,
     piercing:false,explode:false,explodeRadiusM:1,explodeDamageM:1,headshotM:1,executeBonus:0,
@@ -414,6 +431,7 @@ async function preloadGameContent(){
   G('loading')?.classList.remove('hidden');
   try{
     setLoadingProgress(8,'Подготовка интерфейса...');
+    if(typeof warmSurfaceImpactVfx==='function')warmSurfaceImpactVfx();
     await nextPreloadFrame();
     setLoadingProgress(25,'Создание предметов и аптечек...');
     spawnPickups();
@@ -505,7 +523,10 @@ function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;
   if(!ownsWeapon(idx)){showMsg('🔒 '+WEAPONS[idx].label+' ещё не найдено — подберите его на карте');return;}
   if(!weaponSelectable(idx)){updateWeaponBar();showMsg('Пусто: '+WEAPONS[idx].label+' — подберите такой же ствол для пополнения');return;}
-  const nextAmmo=weaponAmmoValue(idx),nextReserve=weaponReserveValue(idx);
+  const nextAmmo=weaponAmmoValue(idx),storedReserve=weaponReserve[idx];
+  // Owned weapons retain real pickup reserves through testing-mode switches.
+  const nextReserve=weaponOwned[idx]?(Number.isFinite(storedReserve)?storedReserve:0):weaponReserveValue(idx);
+  if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   hideGeneratedFirstPersonWeaponArt(false);
   syncCurrentAmmo();
   if(typeof zooming!=='undefined')zooming=false;
@@ -556,7 +577,12 @@ function refreshMobileHUD(){
   const show=false;
   G('mobile-controls').classList.toggle('on',show);
 }
-function setMobileFire(v){mobileInput.fire=v; if(!v) autoFireT=0;}
+function setMobileFire(v){
+  const was=mobileInput.fire;mobileInput.fire=v;if(!v)autoFireT=0;
+  if(IS_TOUCH&&getW().isGrenade&&typeof beginFragGrenadeCharge==='function'){
+    if(v&&!was)beginFragGrenadeCharge();else if(!v&&was)releaseFragGrenadeCharge();
+  }
+}
 function resetMoveStick(){
   mobileInput.moveId=null;mobileInput.moveX=0;mobileInput.moveY=0;
   const stick=G('joy-stick'); if(stick){stick.style.left='33%';stick.style.top='33%';}

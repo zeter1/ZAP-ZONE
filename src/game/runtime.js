@@ -9,11 +9,14 @@ let prevPX=0,prevPZ=0;
 let autoFireT=0;
 
 function loop(ts){
+  if(!running||paused||dying||lvlAnnOpen||perkPickOpen){cancelPendingMineThrow(true);cancelPendingSmokeThrow(true);}
+  if(!running||paused||dying||lvlAnnOpen||perkPickOpen||webglLost)cancelPendingBombPlant();
   requestAnimationFrame(loop);
   const rawDt=(ts-lastT)/1000;
   if(webglLost){lastT=ts;return;}
   const menuIdle=!running&&!dying&&!portraitBlocked&&!lvlAnnOpen&&!perkPickOpen&&!paused;
   if(menuIdle){
+    clearMineWorldArt39();
     lastT=ts;
     if(ts-idleRenderAt>=180){idleRenderAt=ts;renderFrame();}
     return;
@@ -25,6 +28,7 @@ function loop(ts){
     showPauseUI();lastT=ts;renderFrame();return;
   }
   if(dying){
+    if(paused){lastT=ts;if(ts-idleRenderAt>=85){idleRenderAt=ts;renderFrame();}return;}
     const deathDt=Math.min(Math.max(rawDt,0),.033);lastT=ts;
     dyingT-=deathDt;
     if(typeof updateRespawnCountdownPresentation==='function')updateRespawnCountdownPresentation();
@@ -40,6 +44,7 @@ function loop(ts){
   if(!running){lastT=ts;if(ts-idleRenderAt>=120){idleRenderAt=ts;renderFrame();}return;}
 
   const dt=Math.min(rawDt,.033);lastT=ts;
+  tickRocketFireCooldowns(dt);
 
   // Camera recoil recovery follows the current weapon mass/handling profile.
   const activeW=getW();
@@ -56,7 +61,15 @@ function loop(ts){
   adsBlend+=Math.max(-adsStep,Math.min(adsStep,adsWanted-adsBlend));
   weaponBloom=Math.max(0,weaponBloom-(activeW.bloomDecay||.045)*dt);
   if(shotResetT>0){shotResetT-=dt;if(shotResetT<=0)shotSequence=0;}
-  if(recoilRecovery>0){
+  if(activeW.key==='rifle'||activeW.key==='shotgun'||activeW.key==='pistol'){
+    // recoilReturn is a decay rate, not radians/frame: retain the actual kick.
+    const delayed=Math.min(dt,Math.max(0,recoilRecovery));
+    recoilRecovery=Math.max(0,recoilRecovery-dt);
+    const decay=Math.exp(-recoilReturn*(delayed*.62+(dt-delayed)));
+    recoilPitch*=decay;recoilYaw*=decay;
+    if(recoilRecovery<=0&&Math.abs(recoilPitch)<.00001)recoilPitch=0;
+    if(recoilRecovery<=0&&Math.abs(recoilYaw)<.00001)recoilYaw=0;
+  } else if(recoilRecovery>0){
     recoilRecovery-=dt;
     const recRate=recoilReturn*.62*dt;
     recoilPitch=recoilPitch>0?Math.max(0,recoilPitch-recRate):Math.min(0,recoilPitch+recRate);
@@ -95,7 +108,8 @@ function loop(ts){
   }
   const crosshair=G('xhair');
   if(crosshair){
-    crosshair.classList.toggle('scope-hidden',scopeActive||scopedWeapon);
+    crosshair.classList.toggle('scope-hidden',activeW.key==='rifle'?false:scopeActive||scopedWeapon);
+    crosshair.classList.toggle('rifle-reticle',activeW.key==='rifle');
     const reticlePellet=activeW.pellets>1?1:0;
     const reticleSpread=effectiveWeaponSpread(activeW,reticlePellet,false,weaponBloom,shotSequence===0);
     const gap=5+Math.min(18,reticleSpread*260);
@@ -118,11 +132,15 @@ function loop(ts){
     setLowHealthCombatOverlay(lowHpStrength);
   }
   const runHeld=(K['ShiftLeft']||K['ShiftRight']||mobileInput.run);
-  const sprintAllowed=!reloading&&!zooming&&weaponEquipT<=0&&cycleT<=0;
+  const crouchHeld=!IS_TOUCH&&playerCrouchHeld(K);
+  const crouching=crouchHeld&&onGnd;
+  let pendingGeneratedCycleCasing=0;
+  const sprintAllowed=!crouchHeld&&!reloading&&!zooming&&weaponEquipT<=0&&cycleT<=0;
   const wantsSprint=!!runHeld&&sprintAllowed;
   damageFlashAlpha=Math.max(0,damageFlashAlpha-damageFlashDecay*dt);
   setDamageOverlay(damageFlashAlpha);
-  const spd=(wantsSprint?8*plr.sprintM:5)*plr.spdM*(lowHpActive?1+plr.lowHpSpeed:1);
+  const stanceSpeedM=crouching?PLAYER_CROUCH_SPEED_M:1;
+  const spd=(wantsSprint?8*plr.sprintM:5)*stanceSpeedM*plr.spdM*(lowHpActive?1+plr.lowHpSpeed:1);
   _fwd.set(-Math.sin(yaw),0,-Math.cos(yaw));_rgt.set(Math.cos(yaw),0,-Math.sin(yaw));_mv.set(0,0,0);
   if(K['KeyW'])_mv.addScaledVector(_fwd,spd);if(K['KeyS'])_mv.addScaledVector(_fwd,-spd);
   if(K['KeyA'])_mv.addScaledVector(_rgt,-spd);if(K['KeyD'])_mv.addScaledVector(_rgt,spd);
@@ -136,17 +154,17 @@ function loop(ts){
   if(wasWeaponSprinting&&!sprintingNow)sprintExitT=Math.max(sprintExitT,activeW.sprintRecover||.15);
   wasWeaponSprinting=sprintingNow;
   if(crosshair)crosshair.classList.toggle('weapon-lowered',sprintingNow||weaponEquipT>0||sprintExitT>0);
-  if((K['Space']||mobileInput.jumpQueued)&&onGnd){jumpV=6*plr.jumpM;onGnd=false;mobileInput.jumpQueued=false;}
-  const wasAirborne=!onGnd;
-  jumpV-=22*dt;camera.position.y+=jumpV*dt;
-  if(camera.position.y<=1.75){
-    const landingSpeed=wasAirborne?Math.max(0,-jumpV):0;
-    camera.position.y=1.75;
-    if(wasAirborne&&landingSpeed>=4.2&&typeof showGeneratedLandingVfx==='function'){
-      const surface=typeof footstepSurfaceAt==='function'?footstepSurfaceAt(null):'concrete';
-      showGeneratedLandingVfx(surface,landingSpeed);
+  if((K['Space']||mobileInput.jumpQueued)&&onGnd&&!crouchHeld){jumpV=6*plr.jumpM;onGnd=false;mobileInput.jumpQueued=false;}
+  if(onGnd){
+    jumpV=0;
+    const targetEyeHeight=crouching?PLAYER_CROUCH_EYE_HEIGHT:PLAYER_STAND_EYE_HEIGHT;
+    camera.position.y=approachPlayerEyeHeight(camera.position.y,targetEyeHeight,dt);
+  }else{
+    jumpV-=22*dt;camera.position.y+=jumpV*dt;
+    if(camera.position.y<=PLAYER_STAND_EYE_HEIGHT){
+      camera.position.y=PLAYER_STAND_EYE_HEIGHT;
+      onGnd=true;jumpV=0;
     }
-    onGnd=true;jumpV=0;
   }
 
   // Apply movement with wall collision
@@ -166,9 +184,13 @@ function loop(ts){
 
   // Only true automatic weapons repeat while fire is held.
   const fireW=getW();
+  if(fireW.key==='rifle'){
+    if(sCD>0)sCD-=dt;
+    if(!(mouseDown||mobileInput.fire)||reloading||weaponActionBlocked())sCD=Math.max(0,sCD);
+  }
   if((mouseDown||mobileInput.fire)&&fireW.automatic&&!reloading&&sCD<=0&&!weaponActionBlocked()){
-    autoFireT-=dt;
-    if(autoFireT<=0){shoot();autoFireT=fireW.rate;}
+    if(fireW.key==='rifle')shoot();
+    else{autoFireT-=dt;if(autoFireT<=0){shoot();autoFireT=fireW.rate;}}
   } else {autoFireT=0;}
 
   // Gun
@@ -208,11 +230,12 @@ function loop(ts){
     if(cycleT>0&&!cycleEjected&&cycleP>.38&&(cycleKind==='pump'||cycleKind==='bolt')){
       const casingPos=camera.position.clone().addScaledVector(new THREE.Vector3(.22,-.08,-.22).applyQuaternion(camera.quaternion),1);
       ejectCasing(casingPos,camera.quaternion,cycleKind==='pump');
+      // Legacy Pack 22 already contains its casing; Pack 32 deliberately uses the separate casing layer here.
       const fullBoltAction=cycleKind==='bolt'&&typeof isGeneratedFirstPersonActionActive==='function'&&isGeneratedFirstPersonActionActive('sniperBoltCycle');
       const fullShotgunPump=cycleKind==='pump'&&typeof isGeneratedFirstPersonActionActive==='function'&&isGeneratedFirstPersonActionActive('shotgunPump25');
+      if(cycleKind==='pump'&&fpGeneratedWeaponActive&&shotgunPresentationAssetReady37('pack37ShotgunEffects')&&casings.length)casings[casings.length-1].m.visible=false;
       if(!fullBoltAction&&!fullShotgunPump){
-        if(cycleKind==='bolt'&&typeof showGeneratedSniperCasingFx==='function')showGeneratedSniperCasingFx();
-        else showGeneratedCasingFx(cycleKind==='pump');
+        pendingGeneratedCycleCasing=cycleKind==='pump'?1:2;
       }
       cycleEjected=true;
     }
@@ -225,15 +248,24 @@ function loop(ts){
   if(beamM){if(beamT>0){beamT-=dt;beamM.material.opacity=(beamT/FP_MUZZLE_FLASH_SECONDS)*.72;if(flashM)flashM.material.opacity=beamT/FP_MUZZLE_FLASH_SECONDS;}else{beamM.material.opacity=0;if(flashM)flashM.material.opacity=0;}}
   if(typeof tickGeneratedFirstPersonAction==='function')tickGeneratedFirstPersonAction(dt);
   syncGeneratedFirstPersonWeaponArt(gunGrp.visible);
+  // Emit and align screen-space shotgun FX only after the current pose/transform.
+  if(pendingGeneratedCycleCasing===2&&typeof showGeneratedSniperCasingFx==='function')showGeneratedSniperCasingFx();
+  else if(pendingGeneratedCycleCasing)showGeneratedCasingFx(pendingGeneratedCycleCasing===1);
+  if(typeof syncGeneratedRifleEffectAnchors36==='function')syncGeneratedRifleEffectAnchors36();
+  if(typeof syncGeneratedShotgunEffectAnchors38==='function')syncGeneratedShotgunEffectAnchors38();
+  if(typeof syncGeneratedPistolEffectAnchors40==='function')syncGeneratedPistolEffectAnchors40();
 
-  if(sCD>0)sCD-=dt;
+  if(sCD>0&&fireW.key!=='rifle')sCD-=dt;
+  tickFragGrenadeCharge(dt);
+  tickPendingFragGrenadeThrow(dt);
+  tickPendingMineThrow(dt);tickPendingSmokeThrow(dt);
+  tickPendingBombPlant(dt);
   if(reloading){reloadT-=dt;if(reloadT<=0)completePlayerReloadStep();}
   updateWeaponStateHUD();
   ensureCurrentWeaponUsable();
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}
-  if(typeof syncSpawnProtectionPresentation==='function')syncSpawnProtectionPresentation();
   if(playerMineCD>0){
     playerMineCD=Math.max(0,playerMineCD-dt);
     const sec=Math.ceil(playerMineCD);
@@ -282,7 +314,7 @@ function loop(ts){
   tickFrontlineObjective(dt,ts);
   tickTacticalMinimap(dt,ts);
   flushHUD();
-  tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);tickPickups(dt);syncWorldWeaponPickupArt();
+  tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);tickPickups(dt);
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickCombatImpactFx(dt);tickEnvironment(dt);
 
   // Update ally panel

@@ -41,7 +41,8 @@
 | Bot high-level state selection / priority ladder | `src/ai/bot-state-policy.js` | state fact production; stateCD decrement/gate; state movement/combat execution; squad doctrine |
 | Squad coordination / Map Tactics / Adaptive Commander | `src/ai/tactics.js` | individual bot FSM/combat execution; perception ownership; Frontline capture/state |
 | Frontline objective / capture / save / HUD / marker | `src/game/frontline.js` | map doctrine; individual bot FSM |
-| Bot model / hit meshes / weapon arm rig | `src/entities/bot-presentation.js` | AI decisions; locomotion policy; weapon data |
+| Bot volumetric Blender geometry/materials/fallback | `src/entities/bot-model3d.js` + `docs/BLENDER_ASSET_PIPELINE.md` | hit-mesh order; AI decisions; weapon data |
+| Bot hit meshes / articulated legs / weapon arm rig | `src/entities/bot-presentation.js` + `docs/specs/BOT_PRESENTATION.md` | Blender mesh authoring; AI decisions; locomotion policy; weapon data |
 | Individual bot state execution / combat policy | `src/entities/bots.js` | progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/cover-execution/engagement-movement/weapon-policy/fire-control/fire-cadence/deployables/state-policy implementation; browser/session lifecycle; map-level doctrine, Frontline and presentation ownership |
 | Pickups | `src/entities/pickups.js` | player save schema ownership |
 | XP/HUD/death/respawn | `src/progression/progression.js` | frame-loop ownership |
@@ -53,7 +54,7 @@
 
 ## Ключевые invariants
 
-- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat/projectile-ricochet.js → combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-engagement-movement.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
+- Classic-script load order — часть runtime API: dependency должен быть загружен раньше consumer. Текущий участок graph: `combat/projectile-ricochet.js → combat.js → ai/bot-progression-scaling.js → ai/bot-perception.js → ai/bot-damage-reaction.js → ai/bot-suppression-response.js → ai/bot-dodge-response.js → ai/bot-navigation.js → ai/bot-positioning.js → ai/bot-cover-execution.js → ai/bot-engagement-movement.js → ai/bot-weapon-policy.js → ai/bot-fire-control.js → ai/bot-fire-cadence.js → ai/bot-deployables.js → ai/bot-state-policy.js → ai/tactics.js → game/frontline.js → zap-bot-modular-46.runtime.js → entities/bot-model3d.js → entities/bot-presentation.js → entities/bots.js`. Progression-scaling, perception, damage-reaction, suppression-response, dodge-response, navigation, positioning, weapon-policy, fire-control, fire-cadence, deployables, state-policy, Frontline, Pack46 geometry/model owner и bot-presentation — отдельные prerequisites для `bots.js`; каждый имеет собственный owner contract.
 - Для одного поведения должен существовать один canonical owner; composition root только оркестрирует.
 - Refactor не меняет gameplay balance, если это не отдельная явно поставленная задача.
 - `file://` и HTTP(S)/uCoz — два обязательных runtime режима.
@@ -63,6 +64,7 @@
 
 ## Маршрутизация документации
 
+- Blender / GLB / 3D asset authoring, export, runtime derivative, Blender↔Three.js parity → `docs/BLENDER_ASSET_PIPELINE.md` → конкретный `asset-staging/<pack>/README.md`; integrated asset identity/fallback остаётся в `docs/ASSETS.md`;
 - assets / generated art / uCoz / fallback → `docs/ASSETS.md`;
 - firearm projectile ricochet / angle chance / retention / bounce cap → `docs/specs/PROJECTILE_RICOCHET.md` → `src/combat/projectile-ricochet.js` → `src/combat/combat.js`;
 - architecture ownership / session / weapon lifecycle / AI invariants → нужный раздел `docs/ARCHITECTURE.md`;
@@ -119,6 +121,7 @@
 | browser/CDP session transport | `node --test scripts/browser-cdp-session.test.mjs` + diagnostic-policy regression + both real HTTP/`file://` smokes; consumers must not recreate WebSocket/request/diagnostic plumbing |
 | browser/CDP diagnostic policy | `node --test scripts/browser-diagnostic-policy.test.mjs` + affected real HTTP/`file://` smoke; severity remains single-owner, fatal diagnostics must be empty before success, warnings stay observable |
 | assets | `docs/ASSETS.md` contract + binary/signature/wiring validation + dual-runtime smoke |
+| Blender / GLB / 3D model | `docs/BLENDER_ASSET_PIPELINE.md` + pack README + generated manifest/artifact identity + deterministic rebuild + focused owner tests + structure validation + Blender preview + HTTP and direct `file://` runtime proof |
 | AI behavior | focused invariants + owner/consumer structure guards + runtime smoke; не маскировать balance change как refactor |
 | Frontline objective | `node --test scripts/frontline-owner.test.mjs` + structure owner guards + build stamp + dual-runtime smoke |
 | Bot presentation / arm rig | `node --test scripts/bot-presentation-owner.test.mjs` + owner/consumer guards + build stamp + dual-runtime smoke |

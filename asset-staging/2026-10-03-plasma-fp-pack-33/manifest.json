@@ -1,0 +1,55 @@
+{
+  "source": "plasma-reload-source.png",
+  "sourceSize": [
+    1774,
+    887
+  ],
+  "source_sha256": "7cffe560eadccafec80abde23f04a287b226265ffa8dd1174be22626cc33de29",
+  "readyFrame": 5,
+  "cols": 3,
+  "rows": 2,
+  "cell": [
+    768,
+    576
+  ],
+  "tactical": [
+    5,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "empty": [
+    5,
+    1,
+    2,
+    2,
+    3,
+    4,
+    4,
+    5
+  ],
+  "assets": [
+    {
+      "path": "assets/ui/weapons/fp/player-plasma-fps-33.webp",
+      "size": [
+        960,
+        720
+      ],
+      "bytes": 101290,
+      "sha256": "4e02201ce829fb076541f37f850781feff7acf71aa71de31f152e168dd6421bb",
+      "alpha": true
+    },
+    {
+      "path": "assets/ui/fx/plasma-core-reload-vfx-atlas-33.webp",
+      "size": [
+        2304,
+        1152
+      ],
+      "bytes": 435014,
+      "sha256": "706b7b2b511625d4c8b17ac28c61b5d260659389fd1484ae734bde6bdbf3fcdb",
+      "alpha": true
+    }
+  ]
+}

@@ -36,13 +36,17 @@ Task 020 исправляет semantic parity без скрытого rebalance.
 Retention никогда не повышает speed/damage.
 
 ## Impact order
-**swept segment → nearer target hit → wall penetration → ricochet → terminal impact**. Penetration всегда раньше ricochet. Plasma не входит в ballistic ricochet path.
+**swept segment → nearer target hit → ground terminal impact / wall penetration → ricochet → terminal impact**. Penetration всегда раньше ricochet. Plasma не входит в ballistic ricochet path.
+
+Пол арены принадлежит `arenaFloor` в `src/core/engine.js`; `firstGroundHitDistance` использует его реальную высоту и размеры. `firstFirearmSurfaceHit` в combat выбирает ближайшую стену или пол для player/bot projectiles и player sniper hitscan. Попадание в пол завершает полёт без пробития/рикошета и запускает surface/weapon FX. Muzzle convergence и separation offset после пробития персонажа также ограничены поверхностью; общий sniper trace producer обрезает след ботов у пола. Пол не добавляется в wall/LOS collections.
 
 ## RNG invariant
 `rollProjectileRicochet(..., random=Math.random)` вызывает random только после angle/cap eligibility. Steep/capped impact не сдвигает RNG sequence.
 
 ## Verification
 `node --test scripts/projectile-ricochet.test.mjs` → structure validation → build stamp → HTTP smoke → real `file://` smoke → exact Actions head review.
+
+Регрессии пола: `node --test scripts/ground-projectile-owner.test.mjs` — ближайшая поверхность/персонаж, точка контакта, дальний frame step, границы пола, hitscan и actor → piercing → floor. Browser acceptance: выстрелы pistol/shotgun/rifle/plasma/sniper/rocket вниз в 16:9 и 5:4; plasma flight DOM должен исчезнуть после удара.
 
 ## Forbidden drift
 Не менять damage/spread/recoil, weapon catalog, hitscan SR-9, rocket/grenade physics или penetration resistance в ricochet-only задаче.

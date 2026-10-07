@@ -10,7 +10,15 @@
 - после одобрения VFX обычно переводится в alpha-WebP/static SVG sprite sheet/atlas и проигрывается по elapsed time;
 - после интеграции обязательно сохранить procedural/SVG fallback, если он уже существует.
 
-Текущий batch: `2026-09-30-vfx-pack-31/` — **INTEGRATED**, plasma-core first-person reload + matching ordinary player plasma weapon identity; the reviewed heavy source raster is omitted under the explicit same-dialog approval exception.
+Для weapon/action packs следовать [практическим правилам](../docs/ASSETS.md#практические-правила-для-weaponactionvfx-ассетов): одинаковый ready/action дизайн, чистые границы кадров, достаточное разрешение, реальная decode-проверка, сохранение исторических RNG draws и сценарии error/switch/ADS. Точные source→derivative mappings, hashes, approval, consumers и fallback хранить в batch manifest/README, а общие правила — только в canonical docs.
+
+Для **Blender/GLB/3D packs** canonical workflow — [`docs/BLENDER_ASSET_PIPELINE.md`](../docs/BLENDER_ASSET_PIPELINE.md). 3D batch должен хранить editable `.blend`, deterministic builder или явно документированный manual-source path, preview/evidence, runtime mapping, artifact hashes и rebuild command. Staging `.blend`/preview не подключаются напрямую как runtime dependency; runtime artifact публикуется в `assets/**` только после review и verification. Generated runtime derivative не редактируется вручную.
+
+Текущий 3D batch: `2026-10-06-bot-3d-pack-46/` — **INTEGRATED**, editable Blender source + deterministic builder + GLB/runtime derivative + Blender/Three.js evidence. Общий 3D workflow вынесен в `docs/BLENDER_ASSET_PIPELINE.md`.
+
+Более ранний weapon/action batch: `2026-10-03-sniper-pack-32/` — **INTEGRATED**, coherent SR-9 ready/reload/bolt + compact shot/bullet/casing effects. Reviewed source PNGs, prompts and derivative hashes are retained.
+
+Предыдущий batch: `2026-09-30-vfx-pack-31/` — **INTEGRATED**, plasma-core first-person reload + matching ordinary player plasma weapon identity; the reviewed heavy source raster is omitted under the explicit same-dialog approval exception.
 
 Предыдущий batch: `2026-09-30-vfx-pack-30/` — **INTEGRATED**, tracked plasma-flight ion-sheath VFX with compact alpha-WebP runtime derivative.
 

@@ -1,0 +1,15 @@
+# Revision verification — near/far impacts without rings
+
+Runtime build: 56a5f0670aa7e505. Local source only; no commit or external publication.
+
+Cause: the first Pack45-only replacement displaced detailed close Pack29 art; later Pack45 frames resembled round dust patches. Separately, the still-active Pack12 penetrationExit row1 created the user-shown gold circle and triangles. Pack29 heavy cell0 contained a baked ring. These presentation paths have separate owners and were corrected without changing ballistic mechanics.
+
+VERIFIED:
+- Complete Node suite320/320; independent presentation checks58/58, syntax, structure and canonical stamp check PASS. Independent actual-function checks additionally cover one-shot preload/probe dimensions, unavailable→Pack45→Pack29, frame sequences and physical projection at30/60/240m.
+- Native isolated Chromium with fresh storage, original CDN and exact build: HTTP1920×1080, HTTP1280×1024 PERF, direct file1920×1080. Canonical HTTP boot and file menu parity smoke PASS; pageerrors0.
+- 23 browser scenario groups: material/variant selection, six concrete timeline stages,10m and≈60m game frames,30→60m physical ratio, wall and actual deployed smoke hide/reveal, expiry cleanup, actual player bullet wall collision, missing-both-art particle/mark fallback, close actual wood crate and native rifle penetration with no penetrationExit DOM.
+- Positive visual control deliberately calls the retired atlas directly in the test: gold circle/triangles appear. The same real wood crate with current wallImpact/exit hook shows debris and no ring. Screenshots include actual rifle/HUD and were visually inspected; elapsed ages and frozen RAF are controlled fixtures, not a fully played match.
+
+First failed browser assertion: penetration was expected through a thick metal cover without checking its material profile. Energy alone cannot override maxThickness. This was a fixture eligibility error; code established metal maxThickness.72m. The corrected fixture selects actual wood, verifies measured thickness/maxThickness/native rifle energy first, then the real zero-gravity individual bullet penetrates without manually raising its energy. All affected browser scenarios were rerun once and passed. Earlier browser control initially had not waited for Pack12 image decode; final positive control waits and visibly reproduces the ring. Independent reviewer initially expected polygon tags for SVG triangles; actual closed paths corrected that oracle without source changes.
+
+NOT_VERIFIED: hosted HTTPS/uCoz, remote CI, long-match/weak-GPU performance, manual pointer-lock shooting and device audio. No external publication requested. Recovery: current task work/impact-revision/backup; install/final hashes and browser report retained in the current task. User check: reload index.html, fire at concrete/metal/wood nearby and at≈60m, then through a thin obstacle. If a ring remains, provide a short capture, material/distance/window size, build ID and Console errors.

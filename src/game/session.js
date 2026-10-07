@@ -5,13 +5,6 @@
 // The frame loop reads lastT, but only this session owner resets it around
 // browser/user lifecycle transitions so background time never leaks into dt.
 let lastT=0;
-let matchDeployFxT=0;
-function showMatchDeployPresentation(){
-  const el=G('match-deploy-splash');if(!el)return;
-  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.matchDeploy));
-  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
-  clearTimeout(matchDeployFxT);matchDeployFxT=setTimeout(()=>el.classList.remove('on'),1650);
-}
 function syncPausePanelPresentation(){
   const el=G('pause');if(!el||el.dataset.generatedPanel==='1')return;
   if(applyPresentationAtlasVariables(el,'pause-panel',presentationAtlasFrame(GAME_ASSETS.presentationHudV3.pausePanel)))el.dataset.generatedPanel='1';
@@ -33,8 +26,11 @@ function clearPointerLockRequest(){
   if(pointerLockRequestTimer){clearTimeout(pointerLockRequestTimer);pointerLockRequestTimer=0;}
 }
 function showPauseUI(){
-  if(dying||perkPickOpen||lvlAnnOpen)return;
+  if(perkPickOpen||lvlAnnOpen)return;
   clearPointerLockRequest();
+  cancelFragGrenadeThrow();
+  cancelPendingMineThrow(true);if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
+  cancelPendingBombPlant();
   paused=true;running=false;mouseDown=false;zooming=false;setMobileFire(false);
   setGameCursorHidden(false);
   syncPausePanelPresentation();
@@ -68,9 +64,10 @@ function requestGamePointerLock(){
   }
 }
 function resumeGameFromPause(){
-  if(dying||perkPickOpen||lvlAnnOpen)return;
+  if(perkPickOpen||lvlAnnOpen)return;
   mouseDown=false;zooming=false;lastT=performance.now();refreshMobileHUD();
   G('pause').classList.remove('on');
+  if(dying){paused=false;running=false;setGameCursorHidden(true);refreshMobileHUD();return;}
   if(IS_TOUCH){paused=false;running=true;return;}
   // Сразу закрываем меню, но запускаем игру только после успешного захвата мыши.
   // При ошибке requestGamePointerLock снова откроет меню паузы.
@@ -91,7 +88,6 @@ function startOrResumeGame(){
       const firstStart=!gameSessionActivated;
       running=true;paused=false;lastT=performance.now();
       activatePreparedGame();
-      if(firstStart)showMatchDeployPresentation();
       wHUD();markHUD();flushHUD();xpHUD();updateStats();respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
     }else if(paused){resumeGameFromPause();}
     mobileStarted=true;refreshMobileHUD();updateOrientationState();
@@ -108,6 +104,14 @@ G('restartBtn').addEventListener('click',restartGameFromScratch);
 G('perk-reroll').addEventListener('click',rerollPerks);
 window.addEventListener('keydown',e=>{
   if(!perkPickOpen)return;
+  if(e.key==='Tab'){
+    const buttons=[...G('perk-box').querySelectorAll('button:not(:disabled)')];
+    const first=buttons[0],last=buttons[buttons.length-1];
+    if(first&&(!G('perk-box').contains(document.activeElement)||(e.shiftKey&&document.activeElement===first)||(!e.shiftKey&&document.activeElement===last))){
+      e.preventDefault();(e.shiftKey?last:first).focus();
+    }
+    return;
+  }
   const n=parseInt(e.key);
   if(n>=1&&n<=currentPerkChoices.length){e.preventDefault();pickPerk(currentPerkChoices[n-1]);}
 });
@@ -123,16 +127,15 @@ document.addEventListener('pointerlockchange',()=>{
     paused=false;running=true;lastT=performance.now();
     if(firstStart){
       activatePreparedGame();
-      showMatchDeployPresentation();
       wHUD();markHUD();flushHUD();xpHUD();updateStats();
       respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
     }
   }else{
     mouseDown=false;zooming=false;
     if(dying){
-      // Киллкамера остаётся без видимого курсора. После неё respawn сам проверит,
-      // сохранился ли pointer lock, и при необходимости откроет меню паузы.
-      setGameCursorHidden(true);
+      // Во время обычной киллкамеры курсор скрыт, но ESC-пауза должна оставлять
+      // его видимым, чтобы меню было реально интерактивным.
+      setGameCursorHidden(!paused);
     }else if(perkPickOpen){
       setGameCursorHidden(false);
     }else if(lvlAnnOpen){
@@ -173,7 +176,7 @@ window.addEventListener('pagehide',()=>saveProgress(true));
 window.addEventListener('beforeunload',()=>saveProgress(true));
 let escapeResumePending=false;
 window.addEventListener('keydown',e=>{
-  if(e.code!=='Escape'||e.repeat||dying||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
+  if(e.code!=='Escape'||e.repeat||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
   e.preventDefault();
   e.stopImmediatePropagation();
   if(paused){
@@ -183,6 +186,11 @@ window.addEventListener('keydown',e=>{
     return;
   }
   escapeResumePending=false;
+  if(dying){
+    showPauseUI();
+    if(document.pointerLockElement===canvas)document.exitPointerLock();
+    return;
+  }
   if(document.pointerLockElement===canvas){
     document.exitPointerLock();
   }else if(running){
@@ -190,7 +198,7 @@ window.addEventListener('keydown',e=>{
   }
 },true);
 window.addEventListener('keyup',e=>{
-  if(e.code!=='Escape'||!escapeResumePending||dying||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
+  if(e.code!=='Escape'||!escapeResumePending||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
   e.preventDefault();
   e.stopImmediatePropagation();
   escapeResumePending=false;

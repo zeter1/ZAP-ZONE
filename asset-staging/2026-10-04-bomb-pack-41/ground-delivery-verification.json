@@ -1,0 +1,128 @@
+{
+  "target": "G:\\МОЯ Веб-разработка\\ZAP_ZONE",
+  "backupVerified": true,
+  "checks": [
+    {
+      "operation": "COPY",
+      "path": "index.html",
+      "verified": true,
+      "sha256": "2e82d661022303cd3220bb2782e6fda99bf9c8d521a0a9c60aaea08e60e66898"
+    },
+    {
+      "operation": "COPY",
+      "path": "version.json",
+      "verified": true,
+      "sha256": "5bd5b35b6765ddc918d2ab3328a372c668d7fcffe0797acd9d79cbd17c3cdd59"
+    },
+    {
+      "operation": "COPY",
+      "path": "src/assets/catalog.js",
+      "verified": true,
+      "sha256": "dd17add0a7b61938223c7dc217b085ab3cb05e11eb375d39108b2f1cb49a5b24"
+    },
+    {
+      "operation": "COPY",
+      "path": "src/combat/combat.js",
+      "verified": true,
+      "sha256": "55d589c7a1e515321bb53e19df61b1172c39dc5b1cc69e3bb47d8b5b15d42d83"
+    },
+    {
+      "operation": "COPY",
+      "path": "src/settings/settings.js",
+      "verified": true,
+      "sha256": "9c970db7d09b0e78017d0ee2ef5463ed2021a9fbc4cf59c455db74b906cc58bc"
+    },
+    {
+      "operation": "COPY",
+      "path": "src/styles/game.css",
+      "verified": true,
+      "sha256": "475e636664b35e40698211babb7da5ccd8ce9b40c5f3eec0356c331aa96ead00"
+    },
+    {
+      "operation": "COPY",
+      "path": "src/weapons/system.js",
+      "verified": true,
+      "sha256": "fc9c97f11ccc9e9d5044aa3501a13f97425e34f14279499cbff07954cc02f92c"
+    },
+    {
+      "operation": "DELETE",
+      "path": "assets/ui/fx/heavy-explosion-vfx-atlas-26.webp",
+      "verified": true,
+      "sha256": null
+    },
+    {
+      "operation": "DELETE",
+      "path": "assets/ui/weapons/fp/player-bomb-fps-01.webp",
+      "verified": true,
+      "sha256": null
+    },
+    {
+      "operation": "DELETE",
+      "path": "assets/weapons/bomb.svg",
+      "verified": true,
+      "sha256": null
+    },
+    {
+      "operation": "COPY",
+      "path": "scripts/bomb-asset-contract.test.mjs",
+      "verified": true,
+      "sha256": "3c80e84280207ced16780ede6a5acaf5d2c9c220e2b62310ce75e27cb67b181e"
+    },
+    {
+      "operation": "COPY",
+      "path": "scripts/validate-structure.mjs",
+      "verified": true,
+      "sha256": "6a68cd6a1ea005888567a3e01c74faf75f6c0c4738e581bb9b902f16d4c29430"
+    },
+    {
+      "operation": "COPY",
+      "path": "docs/ASSETS.md",
+      "verified": true,
+      "sha256": "ac0f8ea8e7cff6e07639d029b1402e1737abe96846b643e1b733fa3f39c2a270"
+    },
+    {
+      "operation": "COPY",
+      "path": "CHANGELOG.md",
+      "verified": true,
+      "sha256": "a64a16f2f0ee587e228d787053e08dbd8b42ff62ff54c65807dc72863b97813a"
+    },
+    {
+      "operation": "COPY",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/README.md",
+      "verified": true,
+      "sha256": "81ff8e99a60d768d134406d1d43bdc8e9a12042ab8ababef5cf57999ee3c5340"
+    },
+    {
+      "operation": "COPY",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/VERIFICATION.md",
+      "verified": true,
+      "sha256": "791c0f1a31541684179530efaa70cb4a8114d541270cf1dea8bb297c5d03449c"
+    },
+    {
+      "operation": "COPY",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/manifest.json",
+      "verified": true,
+      "sha256": "882e6ce2a0e112e2cdaba38e50eff4777631959b4c5d1a9149ba6ae640837c7c"
+    },
+    {
+      "operation": "DELETE",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-a-41.webp",
+      "verified": true,
+      "sha256": null
+    },
+    {
+      "operation": "DELETE",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-b-41.webp",
+      "verified": true,
+      "sha256": null
+    },
+    {
+      "operation": "DELETE",
+      "path": "asset-staging/2026-10-04-bomb-pack-41/candidates/bomb-explosion-c-41.webp",
+      "verified": true,
+      "sha256": null
+    }
+  ],
+  "backup": "C:\\Users\\Zeter\\Documents\\Codex\\2026-10-04\\g-zap-zone-x20\\outputs\\bomb-before-ground-cleanup.zip",
+  "build": "3e7dd011bbfb167a"
+}

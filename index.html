@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="application-version" content="24.0">
-<meta name="application-build" content="60de76db17d49d2d">
-<title>⚡ ZAP ZONE v24.0</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=60de76db17d49d2d">
+<meta name="application-version" content="24.1">
+<meta name="application-build" content="58a45d161e139dde">
+<title>⚡ ZAP ZONE v24.1</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=58a45d161e139dde">
 <link rel="icon" href="assets/ui/logo.svg" type="image/svg+xml">
 
 </head>
@@ -13,10 +13,6 @@
 <div id="world-pickup-art-layer" aria-hidden="true"></div>
 <div id="projectile-trail-layer" aria-hidden="true"></div>
 <div id="explosive-fuse-layer" aria-hidden="true"></div>
-<div id="match-deploy-splash" aria-hidden="true"></div>
-<div id="frontline-retarget-sweep" aria-hidden="true"></div>
-<div id="second-wind-fx" aria-hidden="true"></div>
-<div id="dodge-phase-fx" aria-hidden="true"></div>
 <div id="smoke-overlay"></div>
 <div id="loading">
   <div id="loading-box">
@@ -28,7 +24,6 @@
 </div>
 <div id="ui">
   <div id="weapon-switch-swipe" aria-hidden="true"></div>
-  <div id="spawn-protection-fx" aria-hidden="true"><span id="spawn-protection-glyph"></span></div>
   <div id="xhair"><span class="xh-arm xh-t"></span><span class="xh-arm xh-r"></span><span class="xh-arm xh-b"></span><span class="xh-arm xh-l"></span><div class="xh-dot"></div></div>
   <div id="sniper-scope"><img src="assets/ui/sniper-scope.svg" alt=""></div>
   <div id="frontline-capture-burst" aria-hidden="true"></div>
@@ -36,10 +31,9 @@
     <div id="respawn-countdown" aria-hidden="true"></div>
     <div id="death-msg"><img src="assets/fx/skull.svg" data-generated-src="assets/ui/feedback/death-skull-tech-01.webp" data-fallback-src="assets/fx/skull.svg" alt=""><span>ВЫ ПОГИБЛИ</span></div>
   </div>
-  <div id="fp-weapon-art-wrap" aria-hidden="true"><div id="fp-weapon-art-stage"><img id="fp-weapon-art" alt=""><span id="fp-weapon-action"></span><span id="fp-weapon-flash"></span></div></div>
+  <div id="fp-weapon-art-wrap" aria-hidden="true"><div id="fp-weapon-art-stage"><img id="fp-weapon-art" alt=""><span id="fp-weapon-action"></span><span id="fp-plasma-muzzle-anchor" aria-hidden="true"></span><span id="fp-weapon-flash"></span></div></div>
   <div id="hitmarker"></div>
   <div id="damage-direction"><span>▲</span></div>
-  <div id="threat-direction"><span>⌃</span></div>
   <div id="fps-counter">FPS --</div>
   <div id="dfx"></div>
   <div id="team-bar">
@@ -140,14 +134,14 @@
 </div>
 
 <div id="perk-menu">
-  <div id="perk-box">
-    <div id="perk-title">⬆ ВЫБЕРИ УЛУЧШЕНИЕ</div>
+  <div id="perk-box" role="dialog" aria-modal="true" aria-labelledby="perk-title" aria-describedby="perk-sub">
+    <div id="perk-title">ВЫБЕРИ УЛУЧШЕНИЕ</div>
     <div id="perk-sub">Уровень <span id="perk-lvl-num">2</span> · собери сильную комбинацию улучшений</div>
     <div id="perk-build">Путь развития: начало</div>
     <div id="perk-cards"></div>
     <div id="perk-actions">
       <button id="perk-reroll" type="button">🎲 ОБНОВИТЬ ВЫБОР · 1</button>
-      <div id="perk-hint">На каждом уровне показываются 5 случайных улучшений. Редкие варианты открываются постепенно.</div>
+      <div id="perk-hint">На каждом уровне показываются 5 случайных улучшений. Выбор — клик или клавиши 1–5. Редкие варианты открываются постепенно.</div>
     </div>
   </div>
 </div>
@@ -156,7 +150,7 @@
   <img id="brand-logo" src="assets/ui/logo.svg" data-generated-src="assets/ui/zap-zone-logo-01.png" data-fallback-src="assets/ui/logo.svg" alt="ZAP ZONE" decoding="async" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc">
   <p style="font-size:14px;color:#ffd700;margin-bottom:4px;">Браузерный FPS — командный бой 5×5 с ротационной линией фронта · вы + 4 синих союзника против 5 красных ботов</p>
   <div class="hints">
-    <b>WASD</b> — ходьба &nbsp;|&nbsp; <b>Shift</b> — бег &nbsp;|&nbsp; <b>Space</b> — прыжок<br>
+    <b>WASD</b> — ходьба &nbsp;|&nbsp; <b>Shift</b> — бег &nbsp;|&nbsp; <b>X</b> — присесть &nbsp;|&nbsp; <b>Space</b> — прыжок<br>
     <b>Мышь</b> — обзор &nbsp;|&nbsp; <b>ЛКМ</b> — огонь &nbsp;|&nbsp; <b>ПКМ</b> — оптика у штурмовой и SR-9 &nbsp;|&nbsp; <b>R</b> — перезарядка<br>
     <b>1–9</b> — оружие &nbsp;|&nbsp; <b>Колесо мыши</b> — след./пред. найденное оружие &nbsp;|&nbsp; <b>Q</b> — предыдущее &nbsp;|&nbsp; <b>F</b> — мина &nbsp;|&nbsp; <b>G</b> — бомба &nbsp;|&nbsp; <b>ESC</b> — пауза<br>
     🔫 Оружие нужно находить на карте; повторный подбор того же типа даёт случайно 50–400 его патронов &nbsp;|&nbsp; ❤️ Аптечки &nbsp;|&nbsp; ⭐ выбор из 5 улучшений<br>
@@ -189,6 +183,7 @@
     <label class="setting-toggle"><span>Динамический прицел</span><input id="setting-crosshair" type="checkbox"></label>
     <label class="setting-toggle"><span>Показывать FPS</span><input id="setting-fps" type="checkbox"></label>
     <div class="settings-section-title">ТЕСТИРОВАНИЕ</div>
+    <label class="setting-toggle"><span>Бессмертие</span><input id="setting-invincible" type="checkbox"></label>
     <label class="setting-toggle"><span>Остановить ботов</span><input id="setting-stop-bots" type="checkbox"></label>
     <label class="setting-toggle"><span>Бесконечные патроны у оружия</span><input id="setting-infinite-ammo" type="checkbox"></label>
     <label class="setting-toggle"><span>У игрока сразу все виды оружия</span><input id="setting-all-weapons" type="checkbox"></label>
@@ -204,8 +199,8 @@
   const BUILD_ID_PATTERN=/^[0-9a-f]{16}$/;
   const currentBuild=document.querySelector('meta[name="application-build"]')?.content?.trim()||'';
   const localScripts=[
-    'src/assets/catalog.js','src/core/engine.js','src/weapons/system.js','src/player/state.js',
-    'src/settings/settings.js','src/combat/projectile-ricochet.js','src/combat/combat.js','src/ai/bot-progression-scaling.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-suppression-response.js','src/ai/bot-dodge-response.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-cover-execution.js','src/ai/bot-engagement-movement.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-fire-cadence.js','src/ai/bot-deployables.js','src/ai/bot-state-policy.js','src/ai/tactics.js','src/game/frontline.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
+    'src/assets/catalog.js','assets/environment/models/zap-map-sci-fi-kit-47.runtime.js','src/environment/map-kit3d.js','src/core/engine.js','assets/weapons/models/zap-world-weapons-49.runtime.js','src/weapons/world-weapon-model3d.js','src/weapons/system.js','src/player/state.js',
+    'src/settings/settings.js','src/combat/projectile-ricochet.js','src/combat/combat.js','src/ai/bot-progression-scaling.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-suppression-response.js','src/ai/bot-dodge-response.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-cover-execution.js','src/ai/bot-engagement-movement.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-fire-cadence.js','src/ai/bot-deployables.js','src/ai/bot-state-policy.js','src/ai/tactics.js','src/game/frontline.js','assets/characters/models/zap-bot-modular-46.runtime.js','src/entities/bot-model3d.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
     'src/progression/progression.js','src/game/session.js','src/ui/minimap.js','src/game/runtime.js'
   ];
   const versioned=(path,build,useCacheKey)=>useCacheKey&&BUILD_ID_PATTERN.test(build)?path+(path.includes('?')?'&':'?')+'v='+encodeURIComponent(build):path;
@@ -222,7 +217,7 @@
   };
   const safeLoad=(build,useCacheKey)=>loadGame(build,useCacheKey).catch(err=>console.error('ZAP ZONE bootstrap:',err));
 
-  if(location.protocol==='file:'){safeLoad(currentBuild,false);return;}
+  if(location.protocol==='file:'){safeLoad(currentBuild,true);return;}
 
   const manifestUrl=new URL('./version.json',location.href);
   manifestUrl.searchParams.set('_',String(Date.now()));

@@ -1,0 +1,169 @@
+{
+  "schema": 1,
+  "packVersion": 47,
+  "generator": "asset-staging/2026-10-07-map-sci-fi-kit-47/build_map_kit_47.py",
+  "blenderVersion": "5.2.2 LTS",
+  "coordinateBridge": "Blender (x,y,z) -> runtime (x,z,-y); positions q16-normalized per component by qScale",
+  "components": {
+    "KIT_Wall_4m": {
+      "triangles": 324,
+      "runtimeVertices": 972,
+      "materialGroups": 2,
+      "qScale": 2.0
+    },
+    "KIT_Wall_8m": {
+      "triangles": 432,
+      "runtimeVertices": 1296,
+      "materialGroups": 2,
+      "qScale": 4.0
+    },
+    "KIT_Wall_12m": {
+      "triangles": 540,
+      "runtimeVertices": 1620,
+      "materialGroups": 2,
+      "qScale": 6.0
+    },
+    "KIT_Corner_90": {
+      "triangles": 432,
+      "runtimeVertices": 1296,
+      "materialGroups": 3,
+      "qScale": 2.1
+    },
+    "KIT_Column": {
+      "triangles": 1520,
+      "runtimeVertices": 4560,
+      "materialGroups": 6,
+      "qScale": 2.01
+    },
+    "KIT_Door_Frame": {
+      "triangles": 1296,
+      "runtimeVertices": 3888,
+      "materialGroups": 4,
+      "qScale": 3.34
+    },
+    "KIT_Barrier": {
+      "triangles": 2176,
+      "runtimeVertices": 6528,
+      "materialGroups": 5,
+      "qScale": 2.09
+    },
+    "KIT_Container": {
+      "triangles": 2500,
+      "runtimeVertices": 7500,
+      "materialGroups": 5,
+      "qScale": 1.88
+    },
+    "KIT_Armor_Cover": {
+      "triangles": 2392,
+      "runtimeVertices": 7176,
+      "materialGroups": 6,
+      "qScale": 2.275
+    },
+    "KIT_SciFi_Sandbag": {
+      "triangles": 2412,
+      "runtimeVertices": 7236,
+      "materialGroups": 5,
+      "qScale": 3.698138
+    },
+    "KIT_AntiTank_Block": {
+      "triangles": 756,
+      "runtimeVertices": 2268,
+      "materialGroups": 5,
+      "qScale": 0.776357
+    },
+    "KIT_Cargo_Crate": {
+      "triangles": 2284,
+      "runtimeVertices": 6852,
+      "materialGroups": 6,
+      "qScale": 1.0275
+    },
+    "KIT_Reactor_Housing": {
+      "triangles": 2308,
+      "runtimeVertices": 6924,
+      "materialGroups": 6,
+      "qScale": 2.42
+    },
+    "KIT_Ramp": {
+      "triangles": 1296,
+      "runtimeVertices": 3888,
+      "materialGroups": 4,
+      "qScale": 2.968043
+    },
+    "KIT_Ladder": {
+      "triangles": 972,
+      "runtimeVertices": 2916,
+      "materialGroups": 1,
+      "qScale": 1.5
+    },
+    "KIT_Grate": {
+      "triangles": 1188,
+      "runtimeVertices": 3564,
+      "materialGroups": 2,
+      "qScale": 1.6
+    },
+    "KIT_Tech_Panel": {
+      "triangles": 1744,
+      "runtimeVertices": 5232,
+      "materialGroups": 6,
+      "qScale": 0.9
+    },
+    "KIT_Vent": {
+      "triangles": 1744,
+      "runtimeVertices": 5232,
+      "materialGroups": 4,
+      "qScale": 1.1
+    },
+    "KIT_Pipe_Straight": {
+      "triangles": 764,
+      "runtimeVertices": 2292,
+      "materialGroups": 2,
+      "qScale": 1.6
+    },
+    "KIT_Pipe_Elbow": {
+      "triangles": 568,
+      "runtimeVertices": 1704,
+      "materialGroups": 1,
+      "qScale": 1.27
+    },
+    "KIT_Cable_Tray": {
+      "triangles": 1864,
+      "runtimeVertices": 5592,
+      "materialGroups": 3,
+      "qScale": 1.7
+    },
+    "KIT_Fortification": {
+      "triangles": 2176,
+      "runtimeVertices": 6528,
+      "materialGroups": 5,
+      "qScale": 2.925
+    },
+    "KIT_Base_Module": {
+      "triangles": 108,
+      "runtimeVertices": 324,
+      "materialGroups": 1,
+      "qScale": 3.0
+    }
+  },
+  "artifacts": {
+    "glb": {
+      "bytes": 1711948,
+      "sha256": "425bb750e8a8cd3ecdbbb81bf4498005c49560cf02acab66cc8e94c2576fb62d"
+    },
+    "runtimeJs": {
+      "bytes": 1531953,
+      "sha256": "a558a7b3a4d9c44a2601509380f0ecfcaa83a1b52aa62d272f575facfc383021"
+    },
+    "blend": {
+      "bytes": 478260,
+      "sha256": "466f6ce8831fba0288946741e7adc99bbdec3d754332644bc259bb1ffd96ad56"
+    },
+    "preview": {
+      "bytes": 1573819,
+      "sha256": "2789fba965a83c35c5062e1471a3b1d3456d3a640fce2bb3661371463b5ce8f6"
+    },
+    "builder": {
+      "bytes": 22565,
+      "sha256": "1ccb954ca27215732b13682992ad541e48f2f2d9b6a546ae46062a90ddb3acab"
+    }
+  }
+}

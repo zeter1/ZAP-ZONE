@@ -1,0 +1,24 @@
+{
+  "errors": [],
+  "http": "ec638fc17c148\",\"http://127.0.0.1:8000/src/ai/bot-state-policy.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/ai/tactics.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/game/frontline.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/entities/bot-presentation.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/entities/bots.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/entities/pickups.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/progression/progression.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/game/session.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/ui/minimap.js?v=a9fec638fc17c148\",\"http://127.0.0.1:8000/src/game/runtime.js?v=a9fec638fc17c148\"],\"globals\":{\"perception\":\"function\",\"bots\":\"function\",\"runtime\":\"function\",\"noise\":\"object\",\"preload\":\"function\"},\"wallGeometry\":{\"noHitClear\":true,\"nearest\":2.899999998509884,\"nearestOk\":true,\"endpointClear\":true,\"wallBetweenHit\":true,\"wallBetweenClear\":true,\"wallBetweenEndpointClear\":true,\"ok\":true},\"diagnostics\":[]}\n",
+  "roof": {
+    "x": 1.5249030303030295,
+    "y": 2.1401000000000003,
+    "grounded": false,
+    "groundCalls": [
+      null
+    ],
+    "scorches": 0,
+    "removed": true
+  },
+  "file": "ue,\"naturalWidth\":256},{\"id\":\"brand-logo\",\"src\":\"assets/ui/zap-zone-logo-01.png\",\"generated\":\"assets/ui/zap-zone-logo-01.png\",\"complete\":true,\"naturalWidth\":720}]},\"pickupLayout\":{\"ok\":true,\"titleCenter\":0.44223040044353074,\"detailCenter\":0.6844923271423833,\"titleCenterX\":0.5974924926341472,\"detailCenterX\":0.5599924772523021,\"separated\":true,\"titleInside\":true,\"detailInside\":true,\"titleScrollWidth\":388,\"titleClientWidth\":388,\"detailScrollWidth\":335,\"detailClientWidth\":335,\"detailWhiteSpace\":\"nowrap\"},\"perkCardLayout\":{\"height\":220.90625,\"width\":204,\"inside\":true,\"noOverflow\":true,\"separated\":true,\"bottomInset\":24,\"nodes\":[{\"cls\":\"pcard-ic\",\"left\":74,\"right\":74,\"top\":15,\"bottom\":149.90625},{\"cls\":\"pcard-rarity\",\"left\":17,\"right\":17,\"top\":77.53125,\"bottom\":128.453125},{\"cls\":\"pcard-nm\",\"left\":17,\"right\":17,\"top\":97,\"bottom\":92},{\"cls\":\"pcard-ds\",\"left\":17,\"right\":17,\"top\":131.90625,\"bottom\":62.125},{\"cls\":\"pcard-meta\",\"left\":17,\"right\":17,\"top\":181.71875,\"bottom\":24}]},\"diagnostics\":[]}\n",
+  "preview": {
+    "images": 31,
+    "loaded": true,
+    "action": "200% 400%"
+  },
+  "build": {
+    "version": "24.0",
+    "build": "a9fec638fc17c148"
+  }
+}

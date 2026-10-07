@@ -1,0 +1,206 @@
+{
+  "pack": 35,
+  "generator": "built-in image_gen",
+  "authorization": "user explicitly requests generation and game integration; new ZAP ZONE style replaces rejected military prototype",
+  "derivation": "integer grid slicing; source top12px and left48px isolate proven neighboring-cell spill; identical action transform806x605 at154,115 in960x720; readycell5; remainingalpha preserved",
+  "files": [
+    {
+      "path": "asset-staging/2026-10-03-rocket-pack-35/action-source.png",
+      "kind": "source",
+      "size": [
+        1774,
+        887
+      ],
+      "bytes": 2064470,
+      "sha256": "c6b78d1659fd1af64e29141ffb27527f4e91b7e79125bae62702d9cf0a5a3021",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "generation_file": "exec-a5759ed0-d7e1-482d-aaa2-abb19abfecf8.png"
+    },
+    {
+      "path": "asset-staging/2026-10-03-rocket-pack-35/effects-source.png",
+      "kind": "source",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 1589422,
+      "sha256": "97a64a3daa08e4e809fad21dca307eda9d7c9dc4438b0cdf59e0a18fb5083015",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "generation_file": "exec-2288e3b6-f20b-49f6-b017-bf6c1c1d552b.png"
+    },
+    {
+      "path": "asset-staging/2026-10-03-rocket-pack-35/pickup-source.png",
+      "kind": "source",
+      "size": [
+        1448,
+        1086
+      ],
+      "bytes": 1203542,
+      "sha256": "83818b3d5f7381a77c605de3ac1b243c1eb3b92ab90e9de0aaaa765c5cedbfdb",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "generation_file": "exec-489aaa1d-fb5e-4c51-a6be-76955a994bdd.png"
+    },
+    {
+      "path": "asset-staging/2026-10-03-rocket-pack-35/scorch-source.png",
+      "kind": "source",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 2980860,
+      "sha256": "be25e0514cd286d5c92c9a2402b6e4ac5c54fac08032b96aca3d1c4e1367cacd",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "generation_file": "exec-ccb24067-cf85-46a3-9acd-b4a82a5b7452.png"
+    },
+    {
+      "path": "asset-staging/2026-10-03-rocket-pack-35/wall-source.png",
+      "kind": "source",
+      "size": [
+        1254,
+        1254
+      ],
+      "bytes": 3048606,
+      "sha256": "83478d790d7e2f5fe7eee29fb62e9d364598ba93300cfbef8dfd3f73a0bd3482",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "generation_file": "exec-58af3456-7d04-4da6-a041-b76cadf8b9b8.png"
+    },
+    {
+      "path": "assets/ui/weapons/fp/player-rocket-fps-35.webp",
+      "kind": "runtime",
+      "size": [
+        960,
+        720
+      ],
+      "bytes": 90628,
+      "sha256": "c6240e6cece866f705890c777a4fc1070f9b7c22fa0da625de4624e06feeccd5",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "source": "action-source.png",
+      "source_frame": 5
+    },
+    {
+      "path": "assets/ui/fx/rocket-reload-vfx-atlas-35.webp",
+      "kind": "runtime",
+      "size": [
+        2304,
+        1152
+      ],
+      "bytes": 411232,
+      "sha256": "f65709907bee77db3a750f0f146c113df902111ef034c6a63f46ad530de56913",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "source": "action-source.png",
+      "grid": [
+        3,
+        2
+      ],
+      "cell": [
+        768,
+        576
+      ],
+      "sequence": [
+        5,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "path": "assets/ui/fx/rocket-effects-vfx-atlas-35.webp",
+      "kind": "runtime",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 336460,
+      "sha256": "492224cd9f189941d64c0819a4ecd7b326502ab05f9bc24df1491c8499945ef8",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "source": "effects-source.png",
+      "grid": [
+        4,
+        4
+      ],
+      "cell": [
+        256,
+        256
+      ],
+      "rows": [
+        "muzzle",
+        "flight",
+        "blast",
+        "smoke"
+      ]
+    },
+    {
+      "path": "assets/ui/pickups/weapons/world-rocket-pickup-35.webp",
+      "kind": "runtime",
+      "size": [
+        512,
+        384
+      ],
+      "bytes": 44530,
+      "sha256": "7ee41a1779d61d453bb306bc9af0f828009a296278adc2262abe054a270ccefb",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "source": "pickup-source.png"
+    },
+    {
+      "path": "assets/ui/fx/rocket-scorch-35.webp",
+      "kind": "runtime",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 148092,
+      "sha256": "1dfc70a0fea8861603a822bd759ef12529b3cc7acd3e98626f3938a0c962de6c",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "source": "scorch-source.png",
+      "lifetime_seconds": 15
+    },
+    {
+      "path": "assets/ui/fx/rocket-wall-impact-35.webp",
+      "kind": "runtime",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 148348,
+      "sha256": "b736ce850cc99dbcd26f25d1f13f79ef70837b559e4c17cc9d618fdbf6fe8e49",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "source": "wall-source.png",
+      "lifetime_seconds": 15
+    }
+  ]
+}

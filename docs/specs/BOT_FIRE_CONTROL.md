@@ -36,6 +36,7 @@
 - `OCCLUDED` — wall или smoke fail-close остановили попытку до spread/safety/emission; suppress-memory fire через smoke остаётся разрешённым существующим контрактом;
 - `FRIENDLY_FIRE` — направление после spread пересекает союзника;
 - `ROCKET_SAFETY` — ракета слишком близко или её impact-zone небезопасна для союзника.
+- `ROCKET_COOLDOWN` — после выпущенной ракеты ещё не прошло 10 активных секунд; проверка выполняется до aim/spread и не расходует ammo, burst или RNG. Cadence откладывает следующую попытку до окончания оставшегося интервала.
 
 Инварианты seam:
 - fire-control **не пишет `bot.sT`** и не декрементирует `burstLeft`; caller обязан передать outcome в `applyBotFireCadence(bot,shotOutcome)`;

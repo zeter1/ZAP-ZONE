@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "packVersion": 49,
+  "generator": "asset-staging/2026-10-07-world-weapons-pack-49/build_world_weapons_49.py",
+  "blenderVersion": "5.2.2 LTS",
+  "coordinateBridge": "Blender (x,y,z) -> runtime (x,z,-y); per-component qScale preserves long weapon geometry",
+  "firstPersonTouched": false,
+  "weaponKeys": [
+    "pistol",
+    "shotgun",
+    "rifle",
+    "plasma",
+    "sniper",
+    "rocket"
+  ],
+  "components": {
+    "ZAP_WPN_Pistol": {
+      "triangles": 2024,
+      "runtimeVertices": 6072,
+      "materialGroups": 6,
+      "qScale": 1.0,
+      "maxAbsLocalCoordinate": 0.5
+    },
+    "ZAP_WPN_Shotgun": {
+      "triangles": 2080,
+      "runtimeVertices": 6240,
+      "materialGroups": 7,
+      "qScale": 1.255392,
+      "maxAbsLocalCoordinate": 1.255392
+    },
+    "ZAP_WPN_Rifle": {
+      "triangles": 2916,
+      "runtimeVertices": 8748,
+      "materialGroups": 6,
+      "qScale": 1.63366,
+      "maxAbsLocalCoordinate": 1.63366
+    },
+    "ZAP_WPN_Plasma": {
+      "triangles": 3692,
+      "runtimeVertices": 11076,
+      "materialGroups": 7,
+      "qScale": 1.195588,
+      "maxAbsLocalCoordinate": 1.195588
+    },
+    "ZAP_WPN_Sniper": {
+      "triangles": 2940,
+      "runtimeVertices": 8820,
+      "materialGroups": 7,
+      "qScale": 2.15,
+      "maxAbsLocalCoordinate": 2.15
+    },
+    "ZAP_WPN_Rocket": {
+      "triangles": 2672,
+      "runtimeVertices": 8016,
+      "materialGroups": 7,
+      "qScale": 1.0,
+      "maxAbsLocalCoordinate": 0.98
+    }
+  },
+  "artifacts": {
+    "glb": {
+      "bytes": 848088,
+      "sha256": "cfa67ed4eeb285714556969a92529aee09ccba5d5b702bf1ec10cd4191c0e452"
+    },
+    "runtimeJs": {
+      "bytes": 786524,
+      "sha256": "57719f6ff3551722c7657d141227dcf5edcbf94f000ccb76c3f7d34edd3e8a86"
+    },
+    "blend": {
+      "bytes": 343669,
+      "sha256": "37b5a16ae0b761e2869269b67054dd57d987db397b94dd54dc56b0c94cf69431"
+    },
+    "preview": {
+      "bytes": 1148154,
+      "sha256": "60f6a71bdb04b69acb58e468aa65827414e3a8fc243fa5f11613210cc1d8ed7b"
+    },
+    "builder": {
+      "bytes": 20513,
+      "sha256": "249a09fda0f1f2d62b3ca2d30bb387beb86090153c355ac9bd6b11a83166c2e1"
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "pack": 38,
+  "cell": [
+    1280,
+    960
+  ],
+  "grid": [
+    3,
+    2
+  ],
+  "sources": [
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/pose-0-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "9e203c2d85f2d619f16272ec8544478a778610177a00b62dea0ddd3281ee533e"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/pose-1-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "d88bbcfed53f5c19a24c10b37821d0c393b3f63d2c63bcbe5b7cb6b873151f52"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/pose-2-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "f2c8a84656d2d9227f042ddf57db5ab8b3664c1ce79dd18cd7f20749ab5da6b3"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/pose-3-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "1ac03ea6a8cca35e84fc9b751de318fe8fd7bc5dd365da350ef6b6bcf4c1f3b5"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/pose-4-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "21587e1e270592e3d0dd844f28c237f2b2993acf5dfae29d9404a20c1710d221"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/pose-5-source.png",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "ed82bcb6878f505e21cc66454e95ebedf2e64d05c6e28f46344b9f1507715eae"
+    }
+  ],
+  "files": [
+    {
+      "path": "assets/ui/weapons/fp/player-shotgun-fps-38.webp",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "bytes": 313882,
+      "budgetKiB": 650,
+      "alpha": true,
+      "sha256": "e891c5578a6e2bbd4d536894a70ffed242d6c58e6becb160058d7003f9717686"
+    },
+    {
+      "path": "assets/ui/fx/shotgun-action-atlas-38.webp",
+      "dimensions": [
+        3840,
+        1920
+      ],
+      "bytes": 1580926,
+      "budgetKiB": 3200,
+      "alpha": true,
+      "sha256": "6328befb1d772c88d06f986b30c52ce880322501a0f144a03eb6e9d838b94eec"
+    },
+    {
+      "path": "assets/ui/fx/shotgun-effects-atlas-38.webp",
+      "dimensions": [
+        768,
+        768
+      ],
+      "bytes": 114138,
+      "budgetKiB": 400,
+      "alpha": true,
+      "sha256": "d62d4c3b465d96513f0b72c34dc4d03ae348f20df8e7bb2abc326590000e6e85"
+    }
+  ],
+  "generator": "built-in image_gen; each pose generated individually",
+  "effectSources": [
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/flame-source.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "6aa49308b344eabccf1d19d1286e864dcadc0ade3f56eb5929b903f7d64a378b"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/smoke-source.png",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sha256": "3c65073adf072f25e7c20270242f001ca4737a19a793cf9ed35eb26d99a982ff"
+    },
+    {
+      "path": "asset-staging/2026-10-03-shotgun-pack-38/casing-source.png",
+      "sha256": "d5eb50e315c9d4389dd8a7ac85922511fa8ed77be3b5ddd5341a0a8665a6a204"
+    }
+  ],
+  "emitters": {
+    "flame": [
+      [
+        0.889155,
+        0.523923
+      ],
+      [
+        0.873206,
+        0.536151
+      ],
+      [
+        0.909888,
+        0.491228
+      ],
+      [
+        0.873206,
+        0.49176
+      ]
+    ],
+    "smoke": [
+      [
+        0.838118,
+        0.597488
+      ],
+      [
+        0.838118,
+        0.597744
+      ],
+      [
+        0.838118,
+        0.555821
+      ],
+      [
+        0.838118,
+        0.555423
+      ]
+    ]
+  },
+  "casing": {
+    "frames": 1,
+    "duration": 0.52,
+    "vxPx": 180,
+    "vyPx": -95,
+    "gravityPx": 1800
+  }
+}

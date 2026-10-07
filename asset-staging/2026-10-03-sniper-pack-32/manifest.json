@@ -1,0 +1,31 @@
+{
+  "source": "built-in image_gen",
+  "actionSource": "exec-8d73a843-26be-4b46-aaa4-f69d7303ea3d.png",
+  "effectsSource": "exec-644563a8-ef70-4c5c-80eb-ba2f0537e8e3.png",
+  "actionGrid": [
+    4,
+    4
+  ],
+  "effectGrid": [
+    4,
+    4
+  ],
+  "readyFrame": 11,
+  "derivatives": [
+    {
+      "file": "assets/ui/fx/sniper-action-vfx-atlas-32.webp",
+      "bytes": 470956,
+      "sha256": "e4ab75fd28cfe4023988fe3800c6c63f5e07405d48eb5c27d8ed587314335986"
+    },
+    {
+      "file": "assets/ui/fx/sniper-effects-vfx-atlas-32.webp",
+      "bytes": 56266,
+      "sha256": "cd6744a352336d519c0602c382766cb5c5c5dcbd2fefa9d87c4dee51485b11db"
+    },
+    {
+      "file": "assets/ui/weapons/fp/player-sniper-fps-32.webp",
+      "bytes": 69960,
+      "sha256": "a594729d8bc998e8cfd782d6b82707d06fcbdcd8b397afe96228c38af5ae62c6"
+    }
+  ]
+}

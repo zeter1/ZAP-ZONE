@@ -1,0 +1,68 @@
+{
+  "build": "6e39248d342cf16a",
+  "backupVerified": true,
+  "checks": [
+    {
+      "verified": true,
+      "path": "index.html",
+      "sha256": "fd2bdfbac906db41bfe3cbe0714c87c733eafd15eb35e2de4a3cef4c45ff983a",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "version.json",
+      "sha256": "1908b74561dfd6248815fd7f017c3412dc9e0e9412ad21f92943c7000c2ff251",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "src/assets/catalog.js",
+      "sha256": "dcc84e4cea784a5723efd4003823c375251880d8747727586bba3146276789dd",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "src/combat/combat.js",
+      "sha256": "880a268173342d12e4d5e91c2568725a5ba24ef826d72b279552d4392911dd05",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "src/styles/game.css",
+      "sha256": "f3e8b19d2dbd5bf08d38b4b5e1f86f03f5e7f247fdd0a2ade8612ade4a9a0fb7",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "scripts/bomb-asset-contract.test.mjs",
+      "sha256": "42710b337fbeac4dfd7f41bedcd63f9094b92953289bc1f4e766ead784e7041d",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "docs/ASSETS.md",
+      "sha256": "0e7d6e1aee7c9a6b97576648508b6dacabe411bf0a17627c4a49ee6a769615ef",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "CHANGELOG.md",
+      "sha256": "97f6623cc8ba55e0bc110d29dd372da6b99847f11a44b6b27b6c78e226528e59",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "asset-staging/2026-10-04-bomb-pack-41/manifest.json",
+      "sha256": "1b890086ad7d6c834fbdd6add7671bb48b2e1bf878b12925adf531d9300af142",
+      "operation": "COPY"
+    },
+    {
+      "verified": true,
+      "path": "asset-staging/2026-10-04-bomb-pack-41/VERIFICATION.md",
+      "sha256": "de48d8551ae4f6057b2914dab649e77d8b251135e19a9839ed16d9c871ffd156",
+      "operation": "COPY"
+    }
+  ],
+  "target": "G:\\МОЯ Веб-разработка\\ZAP_ZONE",
+  "backup": "C:\\Users\\Zeter\\Documents\\Codex\\2026-10-04\\g-zap-zone-x20\\outputs\\bomb-before-no-fuse-update.zip"
+}

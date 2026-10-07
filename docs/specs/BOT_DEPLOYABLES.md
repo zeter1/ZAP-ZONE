@@ -25,8 +25,9 @@ Pure refactor must preserve:
 - mine range/limit checks and probability base `.42/.30/.18`;
 - mine role multipliers engineer ×1.55, anchor ×0.65; hold/retake ×1.22; breach ×0.72;
 - bomb range/limit/spacing checks, role base `.19/.12/.075`, level/kills scaling, breach/hold multipliers;
-- placement offsets, collision radius, velocity/arm/fuse/damage/radius fields and cooldown formulas;
-- RNG consumption and order: mine decision → arm delay → check delay; bomb decision → post-success cooldown jitter;
+- velocity/arm/fuse/damage/radius fields; bomb placement now uses shared swept footprint to stay on the near side of thin walls (Pack41 user-authorized change);
+- successful bomb cooldown exactly180s per bot and player; initial bot delay/decrement remain in bots.js. The old24s jitter is removed by explicit user request;
+- RNG consumption and order: mine decision → arm delay → check delay; bomb decision → preserved post-success decoration draw (no longer changes cooldown);
 - failed guard paths consume no later decision/spawn randomness;
 - owner does not mutate FSM, burst, tactical-mode or fire-gate state.
 

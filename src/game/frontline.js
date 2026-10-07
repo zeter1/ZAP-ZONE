@@ -174,13 +174,6 @@ function captureFrontline(team,zone){
   showAnn((team==='ally'?'🔵 СИНИЕ':'🔴 КРАСНЫЕ')+' ЗАХВАТИЛИ · '+zone.label);
   saveProgress(true);
 }
-let frontlineRetargetFxT=0;
-function showFrontlineRetargetSweep(){
-  const el=G('frontline-retarget-sweep');if(!el)return;
-  applyPresentationAtlasFrame(el,presentationAtlasFrame(GAME_ASSETS.presentationHudV3.frontlineRetarget));
-  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
-  clearTimeout(frontlineRetargetFxT);frontlineRetargetFxT=setTimeout(()=>el.classList.remove('on'),900);
-}
 function rotateFrontlineObjective(){
   const zone=chooseNextFrontlineZone();
   frontlineObjective.zoneId=zone.id;
@@ -193,7 +186,6 @@ function rotateFrontlineObjective(){
   BOT_TEAM_TACTICS.ally.orderUntil=-999;BOT_TEAM_TACTICS.enemy.orderUntil=-999;
   updateFrontlineMarker(0);
   updateFrontlineHUD(true);
-  showFrontlineRetargetSweep();
   showAnn('⌖ НОВАЯ ЦЕЛЬ · '+zone.label);
 }
 function tickFrontlineObjective(dt,ts){

@@ -74,6 +74,43 @@ if(!localGeneratedAssetsReady.loadingBackground.includes('loading-bg-arena-01.jp
 const brokenGenerated=localGeneratedAssetsReady.generatedStates.filter(x=>x.generated&&(!x.src.includes(x.generated)||!x.complete||x.naturalWidth<=0));
 if(brokenGenerated.length)throw new Error('file:// generated DOM assets did not load: '+JSON.stringify(brokenGenerated));
 
+const smokeSelectionSwap=await evaluate(`(async()=>{
+  if(typeof buildGun!=='function'||typeof ensureGeneratedFirstPersonWeaponArtLoaded!=='function'||typeof SMOKE_WEAPON_INDEX==='undefined')return {ok:false,reason:'missing-smoke-selection-owner'};
+  const smoke=WEAPONS?.[SMOKE_WEAPON_INDEX],original=typeof getW==='function'?getW():null;
+  if(!smoke)return {ok:false,reason:'missing-smoke-weapon'};
+  buildGun(smoke);
+  const before={
+    nativeVisible:gunGrp.children.filter(child=>child.visible!==false).length,
+    pendingKey:fpGeneratedWeaponPending?.key||'',
+    active:fpGeneratedWeaponActive,
+    wrapOn:document.getElementById('fp-weapon-art-wrap')?.classList.contains('on')||false
+  };
+  const wasRunning=running;
+  running=true;ensureGeneratedFirstPersonWeaponArtLoaded();running=wasRunning;
+  const deadline=performance.now()+2500;
+  while(performance.now()<deadline&&!fpGeneratedWeaponActive&&!fpGeneratedWeaponPending?.failed)await new Promise(resolve=>setTimeout(resolve,25));
+  const img=document.getElementById('fp-weapon-art');
+  const after={
+    active:fpGeneratedWeaponActive,
+    failed:!!fpGeneratedWeaponPending?.failed,
+    smokePack:img?.dataset.smokePack||'',
+    src:img?.getAttribute('src')||'',
+    nativeVisible:gunGrp.children.filter(child=>child.visible!==false).length
+  };
+  if(original)buildGun(original);else hideGeneratedFirstPersonWeaponArt(true);
+  return {ok:true,before,after};
+})()`,true);
+if(!smokeSelectionSwap?.ok||
+  smokeSelectionSwap.before?.nativeVisible!==0||
+  smokeSelectionSwap.before?.pendingKey!=='smoke'||
+  smokeSelectionSwap.after?.failed||
+  !smokeSelectionSwap.after?.active||
+  smokeSelectionSwap.after?.smokePack!=='42'||
+  !smokeSelectionSwap.after?.src.includes('player-smoke-fps-42.webp')||
+  smokeSelectionSwap.after?.nativeVisible!==0){
+  throw new Error('smoke selection briefly exposes native/old asset or Pack42 ready did not take ownership: '+JSON.stringify(smokeSelectionSwap));
+}
+
 const prep=await evaluate(`(()=>{
   const settings=document.getElementById('menuSettingsBtn');
   const start=document.getElementById('startBtn');
@@ -129,12 +166,73 @@ if(!menuReadyInBudget)throw new Error('settings did not become interactive withi
 if(opened.fileAudioEnabled!==false)throw new Error('file:// WAV loading is still enabled: '+JSON.stringify(opened));
 if(opened.pendingLoads!==0)throw new Error('file:// audio loads were started: '+JSON.stringify(opened));
 
+const invincibilitySetting=await evaluate(`(()=>{
+  const checkbox=document.getElementById('setting-invincible');
+  if(!checkbox||typeof applyDamageToPlayer!=='function')return {ok:false,reason:'missing-invincibility-setting'};
+  const raw=localStorage.getItem(GAME_SETTINGS_KEY);
+  const snapshot={checked:checkbox.checked,setting:gameSettings.invincible,hp,armor,dying,respawnShieldT};
+  try{
+    dying=false;respawnShieldT=0;hp=Math.max(1,Math.min(plr.maxHp,73));armor=Math.max(0,Math.min(plr.maxArmor,19));
+    checkbox.checked=true;checkbox.dispatchEvent(new Event('change',{bubbles:true}));
+    const hpBefore=hp,armorBefore=armor,blocked=applyDamageToPlayer(45,'bullet',null,false,false);
+    const persisted=JSON.parse(localStorage.getItem(GAME_SETTINGS_KEY)||'{}').invincible===true;
+    return {ok:true,checked:checkbox.checked,setting:gameSettings.invincible,persisted,blocked,hpBefore,hpAfter:hp,armorBefore,armorAfter:armor};
+  }finally{
+    gameSettings.invincible=snapshot.setting;
+    hp=snapshot.hp;armor=snapshot.armor;dying=snapshot.dying;respawnShieldT=snapshot.respawnShieldT;
+    if(raw===null)localStorage.removeItem(GAME_SETTINGS_KEY);else localStorage.setItem(GAME_SETTINGS_KEY,raw);
+    syncSettingsControls();markHUD();
+  }
+})()`);
+if(!invincibilitySetting?.ok||!invincibilitySetting.checked||!invincibilitySetting.setting||!invincibilitySetting.persisted||invincibilitySetting.blocked!==0||invincibilitySetting.hpAfter!==invincibilitySetting.hpBefore||invincibilitySetting.armorAfter!==invincibilitySetting.armorBefore){
+  throw new Error('invincibility setting/damage guard smoke failed: '+JSON.stringify(invincibilitySetting));
+}
+
 await mouseClick(opened.closeX,opened.closeY);
 await sleep(80);
 const settingsClosed=await evaluate("!document.getElementById('settings-modal')?.classList.contains('on')");
 if(!settingsClosed){
   session.close();
   throw new Error('real CDP click did not close settings');
+}
+
+const deathUi=await evaluate(`(()=>{
+  const pause=document.getElementById('pause'),countdown=document.getElementById('respawn-countdown');
+  if(!pause||!countdown)return {ok:false,reason:'missing-death-ui-node'};
+  const snapshot={
+    dying,dyingT,paused,running,
+    pauseOn:pause.classList.contains('on'),
+    cursorHidden:document.body.classList.contains('cursor-hidden'),
+    countdownClass:countdown.className,
+    countdownStyle:countdown.getAttribute('style'),
+    countdownText:countdown.textContent,
+    countdownSeconds:countdown.dataset.seconds??null
+  };
+  dying=true;dyingT=8;paused=false;running=false;pause.classList.remove('on');setGameCursorHidden(true);
+  updateRespawnCountdownPresentation();
+  const countdownBackground=getComputedStyle(countdown).backgroundImage;
+  window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));
+  const result={
+    ok:true,
+    pauseOpened:pause.classList.contains('on'),
+    paused,
+    running,
+    cursorHidden:document.body.classList.contains('cursor-hidden'),
+    countdownBackground,
+    countdownText:countdown.textContent
+  };
+  escapeResumePending=false;
+  dying=snapshot.dying;dyingT=snapshot.dyingT;paused=snapshot.paused;running=snapshot.running;
+  pause.classList.toggle('on',snapshot.pauseOn);
+  if(snapshot.countdownStyle===null)countdown.removeAttribute('style');else countdown.setAttribute('style',snapshot.countdownStyle);
+  countdown.className=snapshot.countdownClass;
+  countdown.textContent=snapshot.countdownText;
+  if(snapshot.countdownSeconds===null)delete countdown.dataset.seconds;else countdown.dataset.seconds=snapshot.countdownSeconds;
+  setGameCursorHidden(snapshot.cursorHidden);lastT=performance.now();
+  return result;
+})()`);
+if(!deathUi?.ok||!deathUi.pauseOpened||!deathUi.paused||deathUi.running||deathUi.cursorHidden||deathUi.countdownBackground!=='none'||deathUi.countdownText!=='8'){
+  throw new Error('death ESC menu / clean respawn countdown smoke failed: '+JSON.stringify(deathUi));
 }
 
 const pickupLayout=await evaluate(`(()=>{
@@ -145,14 +243,21 @@ const pickupLayout=await evaluate(`(()=>{
   const oldTitle=title.textContent,oldDetail=detail.textContent;
   title.textContent='БОЕПРИПАСЫ';
   detail.textContent='СНАЙПЕРСКАЯ ВИНТОВКА · +200 · запас 320';
-  const tr=toast.getBoundingClientRect(),yr=title.getBoundingClientRect(),dr=detail.getBoundingClientRect();
+  // Measure rendered letters against the artwork slots, not just the toast container.
+  const textRect=node=>{const range=document.createRange();range.selectNodeContents(node);return range.getBoundingClientRect();};
+  const tr=toast.getBoundingClientRect(),yr=textRect(title),dr=textRect(detail);
+  const inside=(r,left,right,top,bottom)=>r.left>=tr.left+tr.width*left&&r.right<=tr.left+tr.width*right&&r.top>=tr.top+tr.height*top&&r.bottom<=tr.top+tr.height*bottom;
   const result={
     ok:true,
     titleCenter:(yr.top+yr.height*.5-tr.top)/tr.height,
     detailCenter:(dr.top+dr.height*.5-tr.top)/tr.height,
+    titleCenterX:(yr.left+yr.width*.5-tr.left)/tr.width,
+    detailCenterX:(dr.left+dr.width*.5-tr.left)/tr.width,
     separated:yr.bottom<=dr.top,
-    titleInside:yr.left>=tr.left&&yr.right<=tr.right&&yr.top>=tr.top&&yr.bottom<=tr.bottom,
-    detailInside:dr.left>=tr.left&&dr.right<=tr.right&&dr.top>=tr.top&&dr.bottom<=tr.bottom,
+    titleInside:inside(yr,.28,.92,.33,.56),
+    detailInside:inside(dr,.285,.85,.625,.75),
+    titleScrollWidth:title.scrollWidth,
+    titleClientWidth:title.clientWidth,
     detailScrollWidth:detail.scrollWidth,
     detailClientWidth:detail.clientWidth,
     detailWhiteSpace:getComputedStyle(detail).whiteSpace
@@ -161,7 +266,7 @@ const pickupLayout=await evaluate(`(()=>{
   return result;
 })()`);
 if(!pickupLayout?.ok)throw new Error('pickup notification layout smoke failed: '+JSON.stringify(pickupLayout));
-if(pickupLayout.titleCenter<.32||pickupLayout.titleCenter>.49||pickupLayout.detailCenter<.64||pickupLayout.detailCenter>.82||!pickupLayout.separated||!pickupLayout.titleInside||!pickupLayout.detailInside||pickupLayout.detailWhiteSpace!=='nowrap'||pickupLayout.detailScrollWidth>pickupLayout.detailClientWidth+1){
+if(Math.abs(pickupLayout.titleCenter-.445)>.016||Math.abs(pickupLayout.detailCenter-.685)>.016||Math.abs(pickupLayout.titleCenterX-.5975)>.012||Math.abs(pickupLayout.detailCenterX-.56)>.012||!pickupLayout.separated||!pickupLayout.titleInside||!pickupLayout.detailInside||pickupLayout.detailWhiteSpace!=='nowrap'||pickupLayout.titleScrollWidth>pickupLayout.titleClientWidth+1||pickupLayout.detailScrollWidth>pickupLayout.detailClientWidth+1){
   throw new Error('pickup notification text is not aligned inside its two frame slots: '+JSON.stringify(pickupLayout));
 }
 
@@ -195,4 +300,4 @@ if(session.hasFatalDiagnostics()){
 }
 const diagnostics=session.diagnosticsTail();
 session.close();
-console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,localGeneratedAssetsReady,pickupLayout,perkCardLayout,diagnostics}));
+console.log('Local file menu + generated asset parity smoke passed:',JSON.stringify({...prep,...opened,settingsClosed,deathUi,smokeSelectionSwap,localGeneratedAssetsReady,pickupLayout,perkCardLayout,diagnostics}));

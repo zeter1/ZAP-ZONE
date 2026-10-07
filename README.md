@@ -1,5 +1,11 @@
 # ZAP ZONE
 
+Пистолет: Pack40 с цельными руками, извлечением/вставкой магазина и затвором, огнём/дымом у переднего края ствола и гильзой из окна выброса, реальным полётом пули, pickup/иконкой и звуками. Оба вида перезарядки и fallback описаны в [docs/ASSETS.md](docs/ASSETS.md#пистолет--pack40).
+
+Мина: одобренный Pack39 с согласованными ready/throw/reload, мировыми состояниями, взрывом/дымом/следом и звуками. Реальный выпуск согласован с кадром броска; отмена до выпуска сохраняет боезапас. На полу мина имеет низкий 3D-корпус; любой наступивший на активированную мину погибает, включая владельца. Контракт и fallback: [docs/ASSETS.md](docs/ASSETS.md).
+
+Дробовик: Pack38 с подробными FPS-позами, огнём/дымом из дула и падающей гильзой из окна выброса. Источники и проверки описаны в docs/ASSETS.md.
+
 [![Validate](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml/badge.svg)](https://github.com/zeter1/ZAP-ZONE/actions/workflows/validate.yml)
 
 **ZAP ZONE** — динамичный браузерный 3D FPS на **Three.js/WebGL** с командным боем **5×5**: игрок и 4 союзных AI-бота против пятёрки противников. Команды давят сектора, заходят во фланг, подавляют огнём, реагируют на ракетные угрозы уклонениями и перестраивают план под стиль игрока. По мере прогрессии боты становятся опаснее, но сохраняют различимые ролевые профили — anchor, assault, flank и engineer не превращаются в одинаковые «мешки HP».
@@ -11,6 +17,8 @@
 Все обновления и изменения по версиям вынесены в отдельный журнал:
 
 [**CHANGELOG — история изменений ZAP ZONE**](https://github.com/zeter1/ZAP-ZONE/blob/main/CHANGELOG.md)
+
+Дымовуха Pack42: подробные руки и последовательность броска, корпус в полёте и объёмный 3D-дым с расширением, движущимися клубами, внутренними тенями и рассеиванием. Дым распространяется по земле в радиусе19,5м, плотная середина закрывает обзор внутри и за облаком. Пол и препятствия отсекают дым по глубине сцены; облегчённый расчёт сохраняет чёткие края объектов перед облаком. Прежние плоские облака и светящееся кольцо отключены. [Контракт ассетов и проверки](docs/ASSETS.md#дымовуха--pack42).
 
 ## Возможности
 
@@ -29,19 +37,21 @@
 - Огневая устойчивость AI зависит от реального движения после collision: стрельба с места точнее, быстрый strafe сильнее раскачивает прицел, а после остановки точность восстанавливается плавно — с отдельной чувствительностью для снайперского, автоматического и тяжёлого оружия.
 - Очереди AI получили weapon-class-aware burst recoil: первый выстрел наиболее settled, rifle/plasma заметно накапливают разброс в длинной серии, pistol — слабее, а паузы дают `dt`-независимое восстановление. Fire-control явно сообщает исход попытки: wall/smoke сохраняет прежнюю cadence, friendly-fire и небезопасная ракета получают bounded retry без списания реального burst, а визуальный след wall-blocked попытки теперь заканчивается на первом укрытии вместо прохода сквозь геометрию.
 - Индикатор LEVEL/XP вынесен в левый верхний угол и больше не пересекается с центральной панелью оружия.
-- 9 типов оружия и снаряжения, включая отдельную bolt-action снайперскую винтовку.
+- 10 типов оружия и снаряжения, включая снайперскую винтовку и отдельную осколочную гранату (слот `0`).
 - Новая игра начинается только с пистолетом: остальные типы оружия нужно находить на арене.
 - У каждого оружия собственный магазин и собственный резерв боеприпасов.
-- Повторный подбор оружия того же типа пополняет только его резерв случайным количеством **50–400** патронов.
+- Подбор оружия пополняет только его резерв случайным количеством **3–100** патронов.
 - Когда у найденного оружия одновременно заканчиваются магазин и резерв, оно временно исчезает из weapon-bar и из колесика/Q; следующий pickup этого же типа возвращает слот.
-- Отдельных ящиков с универсальными патронами больше нет; weapon pickups после подбора появляются заново в другой части карты.
+- Отдельных ящиков с универсальными патронами больше нет; оружие и аптечки после подбора появляются заново в случайных свободных местах карты. Одновременно доступны38 экземпляров оружия и40 аптечек (24 аптечки в mobile/PERF).
 - Единый factory 3D-моделей оружия для игрока, AI и world pickups.
 - Все 9 first-person моделей получили отдельный premium-pass: более сложные силуэты, rails/optic/muzzle/vent детали, улучшенные руки и индивидуальные SVG tech + skin панели в `assets/weapons/fp/`.
-- Для 8 first-person слотов игрока используется approved V3 generated pack: pistol/shotgun/rifle/rocket/plasma/sniper плюс mine и smoke. Все assets используют baked-hands, прозрачный headroom и HUD-safe placement; DOM presentation работает на HTTP/HTTPS и `file://`, лениво загружается после старта матча, имеет ограниченный frame-rate-independent visual recoil и отдельный layered muzzle flash для огнестрела. Bomb пока остаётся procedural; боты и world pickups не затронуты.
-- Плазменное оружие дополнительно использует Pack 31: обычный first-person ready/idle render и полноценная tactical/empty reload-анимация происходят из одного visual source, поэтому модель оружия больше не меняется только на время перезарядки. Это же правило закреплено в `docs/ASSETS.md` для будущих generated reload/action packs.
+- Для 8 first-person слотов игрока используется approved V3 generated pack: pistol/shotgun/rifle/rocket/plasma/sniper плюс mine и smoke. Все assets используют baked-hands, прозрачный headroom и HUD-safe placement; DOM presentation работает на HTTP/HTTPS и `file://`, лениво загружается после старта матча, имеет ограниченный frame-rate-independent visual recoil и отдельный layered muzzle flash для огнестрела. Бомба Pack41 имеет согласованные руки и установку, объёмный корпус на земле, 17 кадров одного большого взрыва и сохранённый дым; подробности в docs/ASSETS.md.
+- Дробовик использует Pack37: согласованные руки/помпа/зарядка патрона, вспышка, дым, летящая дробь, гильза, pickup, иконка и четыре звука. Исправлены старт дроби внутри близкой стены, отсутствующее подтверждение боковых попаданий и слишком быстрое исчезновение камерной отдачи; правила и fallback — в `docs/ASSETS.md`.
+- Ракетница использует Pack35 в сине-оранжевом стиле ZAP ZONE: ствол направлен к прицелу, объёмная ракета плавно разгоняется и взрывается при первом контакте со стеной, крышей, полом или персонажем. Игрок и боты могут выпускать ракету раз в10 активных секунд; смена оружия и перезарядка не обходят интервал, оставшееся время видно в HUD. Базовый радиус урона9,1м, взрыв и дым увеличены на40%. Прямое попадание убивает враждебную цель с одного выстрела; урон взрыва рядом зависит от расстояния, бонусы радиуса игрока сохранены. Следы сохраняются15 активных секунд, затухая в последние две; правила и fallback — в `docs/ASSETS.md`.
+- Плазма в руках игрока использует Pack 33: прозрачный ready-ассет и tactical/empty reload происходят из одного набора кадров. Вылет привязан к точке дула с учётом движения оружия; летящие плазменные сгустки уменьшены на 22%. Pack 31 остаётся согласованным резервным комплектом; правила и fallback описаны в `docs/ASSETS.md`.
 - Реальные SVG assets оружия в `assets/weapons/`.
 - Новый asset catalog: `src/assets/catalog.js`.
-- World weapon pickups получили отдельный generated WebP pack: 8 типов (pistol/shotgun/rifle/rocket/plasma/mine/smoke/sniper) проецируются из реальной 3D-позиции в DOM, масштабируются по дистанции и скрываются стенами через Raycaster; pedestal/beacon и procedural 3D-модель остаются gameplay/fallback, bomb пока procedural. Аптечки остаются отдельными pickups.
+- Подбираемые предметы парят без напольной тени. Подробные alpha-рендеры проецируются в DOM каждый кадр; стены и дым скрывают предметы. Pack44 улучшает чёткость восьми видов оружия и аптечки до1024×768; mine/grenade сохраняют текущий дизайн. Контракт и decode fallback — docs/ASSETS.md.
 - Generated visual assets имеют обязательный dual-runtime contract: одинаково используются после загрузки проекта в uCoz/HTTP(S) и при прямом локальном запуске `index.html` через `file://`; локальный запуск больше не отключает menu/loading background, generated logo, perk/medal/headshot/HUD presentation art.
 - Улучшенная арена:
   - supply crates с декалями;
@@ -61,6 +71,7 @@
 - Время вскидывания, sprint-to-fire, pump/bolt cycle и разные tactical/empty reload делают handling оружия физически различимым.
 - Дробовик заряжается по одному патрону и может прервать перезарядку выстрелом после вставленного патрона.
 - SR-9 гарантированно убивает первую цель одним прямым попаданием; пробитая вторая цель получает ослабленный penetration-урон.
+- SR-9 получила согласованный графический комплект Pack 32: оружие с руками, обычная и пустая перезарядка, работа затвора, компактная вспышка, дым, след пули и выброс гильзы. Отображение использует существующие таймеры и запасные ассеты; характеристики оружия сохранены.
 
 ## Управление
 
@@ -68,12 +79,14 @@
 |---|---|
 | Движение | `W A S D` |
 | Бег | `Shift` |
+| Приседание | `X` (удерживать) |
 | Прыжок | `Space` |
 | Обзор | мышь |
 | Огонь | ЛКМ |
 | Оптический прицел штурмовой винтовки / 8× scope SR-9 | ПКМ |
 | Перезарядка | `R` |
-| Оружие | `1–9` |
+| Оружие | `1–9`, граната — `0` |
+| Сила броска гранаты | удерживать ЛКМ до 1,1 с, затем отпустить |
 | Следующее / предыдущее найденное оружие | колесо мыши вниз / вверх |
 | Предыдущее оружие | `Q` |
 | Мина | `F` |
@@ -104,7 +117,7 @@ index.html
 │   ├── combat/combat.js
 │   ├── ai/{bot-progression-scaling,bot-perception,bot-damage-reaction,bot-suppression-response,bot-dodge-response,bot-navigation,bot-positioning,bot-cover-execution,bot-engagement-movement,bot-weapon-policy,bot-fire-control,bot-fire-cadence,bot-deployables,bot-state-policy,tactics}.js
 │   ├── game/frontline.js
-│   ├── entities/{bot-presentation,bots,pickups}.js
+│   ├── entities/{bot-model3d,bot-presentation,bots,pickups}.js
 │   ├── progression/progression.js
 │   ├── game/session.js
 │   ├── ui/minimap.js
@@ -113,9 +126,11 @@ index.html
 │   ├── weapons/*.svg
 │   ├── pickups/*.svg
 │   ├── environment/*.svg
+│   ├── characters/models/*.{glb,js}
 │   └── ui/*.svg
+├── asset-staging/<dated-pack>/
 ├── scripts/validate-structure.mjs
-├── docs/{AI_WORKFLOW,ARCHITECTURE,ASSETS}.md
+├── docs/{README,AI_WORKFLOW,ARCHITECTURE,ASSETS,BLENDER_ASSET_PIPELINE}.md
 ├── AGENTS.md
 ├── task/README.md
 ├── CHANGELOG.md
@@ -124,16 +139,16 @@ index.html
 
 ## Для ChatGPT / Codex / AI-разработки
 
-Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для bot progression scaling — **[docs/specs/BOT_PROGRESSION_SCALING.md](docs/specs/BOT_PROGRESSION_SCALING.md)**, для damage-event retaliation — **[docs/specs/BOT_DAMAGE_REACTION.md](docs/specs/BOT_DAMAGE_REACTION.md)**, для dodge RNG/execution — **[docs/specs/BOT_DODGE_RESPONSE.md](docs/specs/BOT_DODGE_RESPONSE.md)**, для locomotion — **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для cover/peek execution — **[docs/specs/BOT_COVER_EXECUTION.md](docs/specs/BOT_COVER_EXECUTION.md)**, для engage movement/RNG/range matchups — **[docs/specs/BOT_ENGAGEMENT_MOVEMENT.md](docs/specs/BOT_ENGAGEMENT_MOVEMENT.md)**, для исполнения bot-shot, closed outcome и blocked-shot endpoint — **[docs/specs/BOT_FIRE_CONTROL.md](docs/specs/BOT_FIRE_CONTROL.md)** и **[docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md](docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md)**, для outcome-aware cadence/safety retry/RNG order — **[docs/specs/BOT_FIRE_CADENCE.md](docs/specs/BOT_FIRE_CADENCE.md)** и **[docs/patterns/OUTCOME_DRIVEN_CADENCE.md](docs/patterns/OUTCOME_DRIVEN_CADENCE.md)**, для individual mine/bomb policy — **[docs/specs/BOT_DEPLOYABLES.md](docs/specs/BOT_DEPLOYABLES.md)**, для high-level bot state selection и priority thresholds — **[docs/specs/BOT_STATE_POLICY.md](docs/specs/BOT_STATE_POLICY.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**, а очередь небольших следующих проходок — в `task/`.
+Начинайте с короткой карты **[AGENTS.md](AGENTS.md)** и индекса **[docs/README.md](docs/README.md)**; для рабочего цикла используйте **[docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md)**, затем открывайте только документацию нужного домена. Архитектурные владельцы и инварианты находятся в **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**; для bot progression scaling — **[docs/specs/BOT_PROGRESSION_SCALING.md](docs/specs/BOT_PROGRESSION_SCALING.md)**, для damage-event retaliation — **[docs/specs/BOT_DAMAGE_REACTION.md](docs/specs/BOT_DAMAGE_REACTION.md)**, для dodge RNG/execution — **[docs/specs/BOT_DODGE_RESPONSE.md](docs/specs/BOT_DODGE_RESPONSE.md)**, для locomotion — **[docs/specs/BOT_NAVIGATION.md](docs/specs/BOT_NAVIGATION.md)**, для cover/peek execution — **[docs/specs/BOT_COVER_EXECUTION.md](docs/specs/BOT_COVER_EXECUTION.md)**, для engage movement/RNG/range matchups — **[docs/specs/BOT_ENGAGEMENT_MOVEMENT.md](docs/specs/BOT_ENGAGEMENT_MOVEMENT.md)**, для исполнения bot-shot, closed outcome и blocked-shot endpoint — **[docs/specs/BOT_FIRE_CONTROL.md](docs/specs/BOT_FIRE_CONTROL.md)** и **[docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md](docs/patterns/OCCLUSION_CONSISTENT_PRESENTATION.md)**, для outcome-aware cadence/safety retry/RNG order — **[docs/specs/BOT_FIRE_CADENCE.md](docs/specs/BOT_FIRE_CADENCE.md)** и **[docs/patterns/OUTCOME_DRIVEN_CADENCE.md](docs/patterns/OUTCOME_DRIVEN_CADENCE.md)**, для individual mine/bomb policy — **[docs/specs/BOT_DEPLOYABLES.md](docs/specs/BOT_DEPLOYABLES.md)**, для high-level bot state selection и priority thresholds — **[docs/specs/BOT_STATE_POLICY.md](docs/specs/BOT_STATE_POLICY.md)**, для bot geometry/arm rig — **[docs/specs/BOT_PRESENTATION.md](docs/specs/BOT_PRESENTATION.md)**. Asset/runtime contract — в **[docs/ASSETS.md](docs/ASSETS.md)**. Для Blender/GLB/3D-моделей, deterministic rebuild, shading/normals, переноса в Three.js и dual-runtime verification — **[docs/BLENDER_ASSET_PIPELINE.md](docs/BLENDER_ASSET_PIPELINE.md)**. Очередь небольших следующих проходок — в `task/`.
 
 Правило проекта: refactor переносит **ownership + invariants + verification oracle**, а не просто строки кода. После source/runtime-изменения обязательны build-stamp check, structural validation и browser smoke; полезные проверки не отключаются ради зелёного CI.
 
 
 ## Визуальные assets
 
-Подробный контракт создания, оптимизации, подключения, проверки и публикации ассетов: **[docs/ASSETS.md](docs/ASSETS.md)**. Короткая карта каталогов для AI/разработчика: **[assets/README.md](assets/README.md)**.
+Подробный контракт интегрированных ассетов: **[docs/ASSETS.md](docs/ASSETS.md)**. Отдельный production-процесс для **Blender → GLB → Three.js / `file://`**: **[docs/BLENDER_ASSET_PIPELINE.md](docs/BLENDER_ASSET_PIPELINE.md)**. Короткая карта runtime-каталогов для AI/разработчика: **[assets/README.md](assets/README.md)**; source/provenance batches живут в `asset-staging/`.
 
-Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость. Generated presentation art активируется и на HTTP/HTTPS, и при прямом `file://` запуске; cache-key добавляется только в hosted mode, а SVG/gradient fallback используется при реальной ошибке загрузки/декодирования.
+Сгенерированный presentation-pack подключён только через DOM/CSS, а не через постоянные WebGL texture-quads. Это сохраняет hosting-safe поведение на uCoz: если raster-файл недоступен, UI использует fallback и 3D-сцена не превращает отсутствующую текстуру в чёрную плоскость. Generated presentation art активируется и на HTTP/HTTPS, и при прямом `file://` запуске. Classic scripts получают build-key `?v=<application-build>` в обоих режимах, чтобы локальный Chrome не удерживал stale JS после обновления; SVG/gradient/procedural fallback используется при реальной ошибке загрузки/декодирования или недоступном optional pack.
 
 - `assets/ui/backgrounds/menu-bg-arena-01.jpg` — фон главного меню;
 - `assets/ui/backgrounds/loading-bg-arena-01.jpg` — фон загрузочного экрана;
@@ -206,3 +221,5 @@ GitHub Actions **Validate** имеет только `contents: read` и выпо
 
 - Three.js r128 пока загружается с CDN.
 - Полный интерактивный E2E бой пока не автоматизирован; CI доказывает boot/static contracts, но не полный gameplay runtime.
+
+Осколочная граната использует Pack34: полноценные руки при броске, видимый полёт и лежащий снаряд, взрыв в игровом мире и перспективная воронка на земле на 15 секунд. Радиус урона 8 м, 80% максимального здоровья до 2 м с плавным спадом; броня поглощает максимум 10% этого урона (80 → 72 HP при maxHP100); сплошная стена защищает от гранаты. Правила ассетов и fallback — `docs/ASSETS.md`.

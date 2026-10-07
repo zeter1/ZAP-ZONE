@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-06",
+  "owner": "src/entities/pickups.js",
+  "designReference": "assets/ui/weapons/fp/player-plasma-fps-33.webp",
+  "prompt": "STRICT FPS33 design reference; isolated complete hand-free plasma gun; worn silver/charcoal, exposed blue-violet reactor chambers, amber seams/top sights; horizontal three-quarter isometric product view, muzzle left; true alpha and uncropped padding; no floor/background/HUD. Built-in imagegen, source1536x1024, deterministic contain into512x384 alpha-WebP quality90.",
+  "generator": "built-in imagegen",
+  "source": "plasma-pickup-source.png",
+  "runtime": "assets/ui/pickups/weapons/world-plasma-pickup-43.webp",
+  "sourceSha256": "bd6bfd08144e838db52a7a1d6d0c968a7d04213d4548cb7547139de565c989a7",
+  "runtimeSha256": "6e5d08877efec56339e9edf4734d3604c76c86fbb7bbf8d28a8897c296e66365",
+  "limits": {
+    "width": 512,
+    "height": 384,
+    "alpha": true,
+    "bytes": 37202
+  },
+  "mode": "DOM-only detailed render with animated floating position and procedural decode fallback"
+}

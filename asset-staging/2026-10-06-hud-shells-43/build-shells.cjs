@@ -1,0 +1,23 @@
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const root=path.resolve(__dirname,'../..'),out=path.join(root,'assets/ui/hud');
+fs.mkdirSync(out,{recursive:true});
+const panels={xp:['#49ddff','#077692'],teamBlue:['#55caff','#0b579e'],teamRed:['#ff686b','#8f2939'],map:['#6fdbff','#1a718c'],stats:['#70dbef','#256274'],health:['#65f2be','#126c5a'],ammo:['#ffc86b','#967025'],score:['#f7ca7a','#7f6336'],squad:['#7dccff','#275c85'],order:['#ffda83','#927238']};
+const mapping={};
+for(const [key,[light,dark]] of Object.entries(panels)){
+ const name=key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-shell-tech-43.svg';mapping[key]='assets/ui/hud/'+name;
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 512 256">
+ <defs><linearGradient id="steel" x2="0" y2="1"><stop stop-color="#8b9dac"/><stop offset=".12" stop-color="#263c4b"/><stop offset=".46" stop-color="#101e2a"/><stop offset=".85" stop-color="#425764"/><stop offset="1" stop-color="#172632"/></linearGradient><linearGradient id="rail"><stop stop-color="${dark}"/><stop offset=".5" stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs>
+ <path d="M40 2H472L510 40V216L472 254H40L2 216V40Z" fill="#03090e" stroke="#0c141c" stroke-width="4"/>
+ <path d="M42 7H470L505 42V214L470 249H42L7 214V42Z" fill="none" stroke="url(#steel)" stroke-width="9"/>
+ <path d="M46 18H466L494 46V210L466 238H46L18 210V46Z" fill="none" stroke="#08121c" stroke-width="8"/>
+ <path d="M47 23H465L489 47V209L465 233H47L23 209V47Z" fill="none" stroke="${dark}" stroke-width="3"/>
+ <path d="M50 30H462L482 50V206L462 226H50L30 206V50Z" fill="none" stroke="${light}" stroke-width="2" opacity=".83"/>
+ <path d="M87 17H200L210 23H304L314 17H425M87 239H200L210 233H304L314 239H425" fill="none" stroke="url(#rail)" stroke-width="5"/>
+ <path d="M20 78V109M20 147V178M492 78V109M492 147V178" stroke="${light}" stroke-width="3"/>
+ <path d="M18 37L37 18H70L80 28H46L28 46V72L18 62ZM442 18H475L494 37V62L484 72V46L466 28H432ZM18 194L28 184V210L46 228H80L70 238H37L18 219ZM484 184L494 194V219L475 238H442L432 228H466L484 210Z" fill="url(#steel)" stroke="#a0b1bc" stroke-width="1.2"/>
+ <path d="M26 35L35 26M477 26L486 35M26 221L35 230M477 230L486 221" stroke="#ffb951" stroke-width="5"/>
+ <g fill="#070f17" stroke="#778b9b" stroke-width="1"><circle cx="53" cy="13" r="3"/><circle cx="459" cy="13" r="3"/><circle cx="53" cy="243" r="3"/><circle cx="459" cy="243" r="3"/></g>
+ <path d="M103 8H119M124 8H140M145 8H161M351 248H367M372 248H388M393 248H409" stroke="#9cafbc" stroke-width="1" opacity=".5"/>
+ </svg>`;
+ fs.writeFileSync(path.join(out,name),svg);
+}

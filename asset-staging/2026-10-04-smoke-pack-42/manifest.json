@@ -1,0 +1,1014 @@
+{
+  "status": "integrating after user continue following displayed previews",
+  "generator": "built-in image_gen",
+  "image_derivation": "resize full canvas, exact floor cell crop, preserve RGBA; no creative raster editing",
+  "hand_mode": "baked-hands",
+  "fps_decoded_budget_bytes": 41943040,
+  "sources": [
+    {
+      "path": "sources/smoke-action-42.png",
+      "size": [
+        2048,
+        768
+      ],
+      "mode": "RGBA",
+      "sha256": "b5fd73b9cb646df1df064eb875bb3322df20bc872e0ece8623de2931ea5e60ca",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-action-clean-42.png",
+      "size": [
+        2048,
+        768
+      ],
+      "mode": "RGBA",
+      "sha256": "2cf61ce914f77c84bd2b44bdd44e0539b5e36a59f4501b551056c9d434545db6",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-cloud-42.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "d2d463e71df926a18e111ee0df0eff2b328c8c31f8ec6b6fa3f22dc12cb836af",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-cloud-soft-42.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "f8102cace460f550771312242ad411826e4b5e881a7f572a037dd1d01b3b3d4c",
+      "alpha_extrema": [
+        0,
+        253
+      ]
+    },
+    {
+      "path": "sources/smoke-draw-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "21c908c2b1c502399d2b8cf37d015d296ac80f52646fd63b26b41fad602d4ee7",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-far-42.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "7e2c1f5dbbc0d7c14d47fb9520dd5a286c851b782b3a84f8fd0c21ce08640c80",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-far-single-4-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "6c169e489b516f23827da4b66f262937c5759e417b0e7741191098ed8a5aaf46",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-far-single-5-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "327d8b87e826b7c67ec3989b7adeb11d1ea370f2c2c477d1c0e6aef7267a269c",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-far-soft-42.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "sha256": "b224c3c78cb964dd77ca1f46b13ac0cda17715158279709ab12ce49d4ffa466a",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-inside-edge-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "b7e7aa1f1a99d006777892efd1740efb2add948343e5462aa90c7506a97c7e56",
+      "alpha_extrema": [
+        143,
+        245
+      ]
+    },
+    {
+      "path": "sources/smoke-near-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "d8b01ed80cc027b85de91ce0b05da85612ee3f310d8456fc8b71644254b230d2",
+      "alpha_extrema": [
+        0,
+        253
+      ]
+    },
+    {
+      "path": "sources/smoke-near-padded-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "8bef02f719e4b89b0d3fe8d3eb5b9a6c6e73ae25b59860a494d16e6df0ea635f",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-near-single-0-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "10f12b6be853cd04e291f0d7cb651c33b7b0e7d3d4266acd04485de349bcc982",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-near-single-1-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "da50b6c3478a7d100749356cb54d5b3d4f594ea6474fbe562011e41df63fb245",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-near-single-2-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "5fcde4feaeb5b4e42877c81fb2de1430379df27794938b9e24b0b20525d2c422",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-near-single-3-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "acf0126cbc92aa510c85c7bc2c1c50466c46b20f7c6ab9058fb2a45744223a6d",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-near-soft-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "db2211a0e4ae887d522282f0515c04022f06d1f2f24ca0ab7735fbc560ebc679",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-overlay-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "a5cc6567ab6eee9df58c95931b8b6cbb66e6f3b764912d7e76389ac8bf8aa7a9",
+      "alpha_extrema": [
+        173,
+        249
+      ]
+    },
+    {
+      "path": "sources/smoke-phase-0-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "425d617dfc000e0bbd9b5d0a66917202759c3496d73d778c18675efe73de6fc3",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-phase-1-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "a22e89bd98d2e5dedc63174ef2d7e91c59bf1180e0ce71fcb7caaca3bb43453e",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-phase-4-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "b14310f5cda1124fcda47a989108ed808f8295a55796fa8e2753864b0bb04b33",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-phase-5-42.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "sha256": "15a774792a777712ce67f6680b8b1059e8426f559ec7fb0d499e4c6789e1ab4f",
+      "alpha_extrema": [
+        0,
+        254
+      ]
+    },
+    {
+      "path": "sources/smoke-pin-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "112e1e2f6267d0cef806c1c8be6df2c6900e02fed6f739bd362dba1402ba6a22",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-ready-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "a5a31fc8d4a3e8af4ba0a8bcc2c990f81227806199f5708dde706cda3211ca29",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-release-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "5840697758bb7d62c46f7b7e4154bd02cef5d1e128714b2cf3fcd0f82eaec210",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-reload-42.png",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGBA",
+      "sha256": "f5d4653c7837ccc7ac7346db410e123476c5618870c637bec46ae7405c888872",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-windup-42.png",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "sha256": "ffbcb83de0410493b7f94d781acd1ef9d58f57a03c637383062f7b244285e0f5",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-wisps-42.png",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "sha256": "5d8f5df722425ced28e2570e3c2970a3444c6329547c7b5ab4018bee116d6684",
+      "alpha_extrema": [
+        0,
+        253
+      ]
+    },
+    {
+      "path": "sources/smoke-world-42.png",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "sha256": "bced28aa02feddd2be3cc4c107f7673683423d85270a2cff84f656f41dd90e12",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "path": "sources/smoke-world-padded-42.png",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "sha256": "16026d21d31e27710b62ae2694284b8880550442d6ddd8f803a757be5107c039",
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    }
+  ],
+  "source_windows": [
+    {
+      "source": "smoke-reload-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        758,
+        724
+      ],
+      "use": "recovery/lower"
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        443,
+        443
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 1,
+      "window": [
+        443,
+        0,
+        887,
+        443
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 2,
+      "window": [
+        887,
+        0,
+        1330,
+        443
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 3,
+      "window": [
+        1330,
+        0,
+        1774,
+        443
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 4,
+      "window": [
+        0,
+        443,
+        443,
+        887
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 5,
+      "window": [
+        443,
+        443,
+        887,
+        887
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 6,
+      "window": [
+        887,
+        443,
+        1330,
+        887
+      ]
+    },
+    {
+      "source": "smoke-world-padded-42.png",
+      "cell": 7,
+      "window": [
+        1330,
+        443,
+        1774,
+        887
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        443,
+        443
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 1,
+      "window": [
+        443,
+        0,
+        887,
+        443
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 2,
+      "window": [
+        887,
+        0,
+        1330,
+        443
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 3,
+      "window": [
+        1330,
+        0,
+        1774,
+        443
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 4,
+      "window": [
+        0,
+        443,
+        443,
+        887
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 5,
+      "window": [
+        443,
+        443,
+        887,
+        887
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 6,
+      "window": [
+        887,
+        443,
+        1330,
+        887
+      ]
+    },
+    {
+      "source": "smoke-wisps-42.png",
+      "cell": 7,
+      "window": [
+        1330,
+        443,
+        1774,
+        887
+      ]
+    },
+    {
+      "source": "smoke-near-single-0-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "near independent variant"
+    },
+    {
+      "source": "smoke-near-single-1-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "near independent variant"
+    },
+    {
+      "source": "smoke-near-single-2-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "near independent variant"
+    },
+    {
+      "source": "smoke-near-single-3-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "near independent variant"
+    },
+    {
+      "source": "smoke-phase-0-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent lifecycle frame"
+    },
+    {
+      "source": "smoke-phase-1-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent lifecycle frame"
+    },
+    {
+      "source": "smoke-near-single-0-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent lifecycle frame"
+    },
+    {
+      "source": "smoke-near-single-3-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent lifecycle frame"
+    },
+    {
+      "source": "smoke-phase-4-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent lifecycle frame"
+    },
+    {
+      "source": "smoke-phase-5-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent lifecycle frame"
+    },
+    {
+      "source": "smoke-near-single-0-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent far variant"
+    },
+    {
+      "source": "smoke-near-single-1-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent far variant"
+    },
+    {
+      "source": "smoke-near-single-2-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent far variant"
+    },
+    {
+      "source": "smoke-near-single-3-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent far variant"
+    },
+    {
+      "source": "smoke-far-single-4-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent far variant"
+    },
+    {
+      "source": "smoke-far-single-5-42.png",
+      "cell": 0,
+      "window": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "use": "independent far variant"
+    }
+  ],
+  "runtime": [
+    {
+      "path": "assets/ui/weapons/fp/player-smoke-fps-42.webp",
+      "size": [
+        1600,
+        900
+      ],
+      "bytes": 141296,
+      "budget_bytes": 512000,
+      "decoded_rgba_bytes": 5760000,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "1a78471418ddc5ba8cf782a86b1939dcf1bd42928cb7b368b168321a26b9a137"
+    },
+    {
+      "path": "assets/ui/fx/smoke-throw-atlas-42.webp",
+      "size": [
+        3840,
+        1440
+      ],
+      "bytes": 620836,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 22118400,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "44dda05efe77ac968991d8e1f71d871eeb605b3fc793b922d92aeea873d5b624"
+    },
+    {
+      "path": "assets/ui/fx/smoke-reload-atlas-42.webp",
+      "size": [
+        3840,
+        720
+      ],
+      "bytes": 263718,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 11059200,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "8c86d9807c34a58f343abbdd2e5d9fad1b8a77abfdf58ea31e1aad9eb26a98d4"
+    },
+    {
+      "path": "assets/ui/fx/smoke-world-atlas-42.webp",
+      "size": [
+        1536,
+        768
+      ],
+      "bytes": 275126,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 4718592,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "04131636d7272fa621da38177acc83e8cacdcd203aa6f25e0412e1e29a1bc499"
+    },
+    {
+      "path": "assets/ui/pickups/weapons/world-smoke-pickup-42.webp",
+      "size": [
+        512,
+        384
+      ],
+      "bytes": 39616,
+      "budget_bytes": 122880,
+      "decoded_rgba_bytes": 786432,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "d3eb3da31adb7c0cbf66dcf34161ffe88d0f04f6df658568675e77374a87dac9"
+    },
+    {
+      "path": "assets/ui/weapons/smoke-icon-42.webp",
+      "size": [
+        128,
+        128
+      ],
+      "bytes": 5694,
+      "budget_bytes": 32768,
+      "decoded_rgba_bytes": 65536,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "24f0d846e7ae918a7560e99d9635efadbedef4270aff4d2b27490e3cf9460d28"
+    },
+    {
+      "path": "assets/ui/fx/smoke-wisps-atlas-42.webp",
+      "size": [
+        1536,
+        768
+      ],
+      "bytes": 368634,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 4718592,
+      "alpha_extrema": [
+        0,
+        253
+      ],
+      "sha256": "fbe7f34c198b80aa7e26ecec351b1695978871ac6db2d1656ce82a4afe7c023d"
+    },
+    {
+      "path": "assets/ui/fx/smoke-near-atlas-42.webp",
+      "size": [
+        1536,
+        1536
+      ],
+      "bytes": 568832,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 9437184,
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "sha256": "d5b5fd8beaec61e4ede3d568c2e223f7b060cf368398bb3fb73bcea08c7dad40"
+    },
+    {
+      "path": "assets/ui/fx/smoke-cloud-atlas-42.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "bytes": 348496,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 6291456,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "be46b6114fce1c1c083bda84a4d59220a74b85c2821d79ed5cff9d434d31f07c"
+    },
+    {
+      "path": "assets/ui/fx/smoke-far-atlas-42.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "bytes": 371620,
+      "budget_bytes": 3145728,
+      "decoded_rgba_bytes": 6291456,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "sha256": "544d2ac4752e0a3904fc96322a5c2339e7f1522f3b14b635485048e1203a1105"
+    },
+    {
+      "path": "assets/ui/overlays/smoke-inside-dense-42.webp",
+      "size": [
+        960,
+        540
+      ],
+      "bytes": 136316,
+      "budget_bytes": 256000,
+      "decoded_rgba_bytes": 2073600,
+      "alpha_extrema": [
+        174,
+        249
+      ],
+      "sha256": "db08f7ada6e6146049816a52399e0492c5f3a916f0b70dd2ce5301db1e049d09"
+    },
+    {
+      "path": "assets/ui/overlays/smoke-inside-edge-42.webp",
+      "size": [
+        960,
+        540
+      ],
+      "bytes": 140850,
+      "budget_bytes": 256000,
+      "decoded_rgba_bytes": 2073600,
+      "alpha_extrema": [
+        144,
+        245
+      ],
+      "sha256": "c96052595979afb566cfa49e670ad75920d861f67e474e0d4873ebb92ebac99d"
+    },
+    {
+      "path": "assets/audio/smoke-pin-42.wav",
+      "bytes": 15920,
+      "sha256": "ae57d20501180ce9f14136d87e0f082b996c9b1cecfef9835e6a514296c1db72",
+      "pcm": {
+        "channels": 1,
+        "sample_width_bytes": 2,
+        "sample_rate": 44100,
+        "frames": 7938,
+        "duration_seconds": 0.18,
+        "peak": 0.43828552120147857,
+        "rms": 0.06461093069774113
+      }
+    },
+    {
+      "path": "assets/audio/smoke-throw-42.wav",
+      "bytes": 28268,
+      "sha256": "547195e7af14eb36cfa38d3b947926888ac9680ed837a9415393a00862717fa5",
+      "pcm": {
+        "channels": 1,
+        "sample_width_bytes": 2,
+        "sample_rate": 44100,
+        "frames": 14112,
+        "duration_seconds": 0.32,
+        "peak": 0.4720005158909847,
+        "rms": 0.09612237771749861
+      }
+    },
+    {
+      "path": "assets/audio/smoke-bounce-42.wav",
+      "bytes": 22094,
+      "sha256": "a00f532228c21ba02f715e5c709cebacc18543cee752d14638a281e088e5918f",
+      "pcm": {
+        "channels": 1,
+        "sample_width_bytes": 2,
+        "sample_rate": 44100,
+        "frames": 11025,
+        "duration_seconds": 0.25,
+        "peak": 0.594735337653919,
+        "rms": 0.07464049798754671
+      }
+    },
+    {
+      "path": "assets/audio/smoke-vent-42.wav",
+      "bytes": 123524,
+      "sha256": "579b6214de69c77faff1fc5cfc53aa6dcd1d5ada6c4d7103be60d4e7a2595efd",
+      "pcm": {
+        "channels": 1,
+        "sample_width_bytes": 2,
+        "sample_rate": 44100,
+        "frames": 61740,
+        "duration_seconds": 1.4,
+        "peak": 0.4519420403301482,
+        "rms": 0.13701402908642532
+      }
+    },
+    {
+      "path": "assets/audio/smoke-reload-42.wav",
+      "bytes": 28268,
+      "sha256": "2d404134dcbdb2dab3b00db4be39e2ee6a2307f4db15cbdcfbf9a006c9390361",
+      "pcm": {
+        "channels": 1,
+        "sample_width_bytes": 2,
+        "sample_rate": 44100,
+        "frames": 14112,
+        "duration_seconds": 0.32,
+        "peak": 0.23748010474174536,
+        "rms": 0.04055027136379227
+      }
+    }
+  ],
+  "throw_frames": [
+    "ready",
+    "pin",
+    "windup",
+    "empty_release",
+    "empty_recovery",
+    "ready"
+  ],
+  "reload_frames": [
+    "lower",
+    "draw",
+    "ready"
+  ],
+  "fps_decoded_bytes": 38937600
+}

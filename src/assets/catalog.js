@@ -72,6 +72,60 @@ const GAME_ASSETS=versionAssetTree({
     mobility:'assets/perks/mobility.svg',
     demolition:'assets/perks/demolition.svg'
   }),
+  perkGeneratedIcons:Object.freeze({
+    'damage':'assets/ui/perks/icons-v2/damage.webp',
+    'overclock':'assets/ui/perks/icons-v2/overclock.webp',
+    'magazine':'assets/ui/perks/icons-v2/magazine.webp',
+    'reload':'assets/ui/perks/icons-v2/reload.webp',
+    'doubletap':'assets/ui/perks/icons-v2/doubletap.webp',
+    'bulletstorm':'assets/ui/perks/icons-v2/bulletstorm.webp',
+    'crit':'assets/ui/perks/icons-v2/crit.webp',
+    'critpower':'assets/ui/perks/icons-v2/critpower.webp',
+    'headshot':'assets/ui/perks/icons-v2/headshot.webp',
+    'executioner':'assets/ui/perks/icons-v2/executioner.webp',
+    'piercing':'assets/ui/perks/icons-v2/piercing.webp',
+    'predator':'assets/ui/perks/icons-v2/predator.webp',
+    'vitality':'assets/ui/perks/icons-v2/vitality.webp',
+    'armor':'assets/ui/perks/icons-v2/armor.webp',
+    'nanorepair':'assets/ui/perks/icons-v2/nanorepair.webp',
+    'armorregen':'assets/ui/perks/icons-v2/armorregen.webp',
+    'lifesteal':'assets/ui/perks/icons-v2/lifesteal.webp',
+    'hunter':'assets/ui/perks/icons-v2/hunter.webp',
+    'blastshield':'assets/ui/perks/icons-v2/blastshield.webp',
+    'secondwind':'assets/ui/perks/icons-v2/secondwind.webp',
+    'immortal':'assets/ui/perks/icons-v2/immortal.webp',
+    'mobility':'assets/ui/perks/icons-v2/mobility.webp',
+    'laststand':'assets/ui/perks/icons-v2/laststand.webp',
+    'reflex':'assets/ui/perks/icons-v2/reflex.webp',
+    'thorns':'assets/ui/perks/icons-v2/thorns.webp',
+    'explosive_payload':'assets/ui/perks/icons-v2/explosive_payload.webp',
+    'rockettech':'assets/ui/perks/icons-v2/rockettech.webp',
+    'minetech':'assets/ui/perks/icons-v2/minetech.webp',
+    'bombtech':'assets/ui/perks/icons-v2/bombtech.webp',
+    'explosive_rounds':'assets/ui/perks/icons-v2/explosive_rounds.webp',
+    'warmachine':'assets/ui/perks/icons-v2/warmachine.webp',
+    'ammo_saver':'assets/ui/perks/icons-v2/ammo_saver.webp',
+    'close_quarters':'assets/ui/perks/icons-v2/close_quarters.webp',
+    'full_charge':'assets/ui/perks/icons-v2/full_charge.webp',
+    'steady_grip':'assets/ui/perks/icons-v2/steady_grip.webp',
+    'longshot':'assets/ui/perks/icons-v2/longshot.webp',
+    'crit_repair':'assets/ui/perks/icons-v2/crit_repair.webp',
+    'headshot_armor':'assets/ui/perks/icons-v2/headshot_armor.webp',
+    'ballistic_lining':'assets/ui/perks/icons-v2/ballistic_lining.webp',
+    'field_medic':'assets/ui/perks/icons-v2/field_medic.webp',
+    'surplus_armor':'assets/ui/perks/icons-v2/surplus_armor.webp',
+    'smoke_guard':'assets/ui/perks/icons-v2/smoke_guard.webp',
+    'sprint_drive':'assets/ui/perks/icons-v2/sprint_drive.webp',
+    'jump_servos':'assets/ui/perks/icons-v2/jump_servos.webp',
+    'combat_momentum':'assets/ui/perks/icons-v2/combat_momentum.webp',
+    'evasive_matrix':'assets/ui/perks/icons-v2/evasive_matrix.webp',
+    'smoke_radius':'assets/ui/perks/icons-v2/smoke_radius.webp',
+    'smoke_duration':'assets/ui/perks/icons-v2/smoke_duration.webp',
+    'smoke_reload':'assets/ui/perks/icons-v2/smoke_reload.webp',
+    'short_fuse':'assets/ui/perks/icons-v2/short_fuse.webp',
+    'rocket_radius':'assets/ui/perks/icons-v2/rocket_radius.webp',
+    'mine_radius':'assets/ui/perks/icons-v2/mine_radius.webp',
+  }),
   perkIcons:Object.freeze({
     'damage':'assets/perks/damage.svg',
     'overclock':'assets/perks/overclock.svg',
@@ -188,7 +242,7 @@ const GAME_ASSETS=versionAssetTree({
   presentationCombat:Object.freeze({
     lowHealth:'assets/ui/overlays/low-health-vignette-01.webp',
     damageDirection:'assets/ui/overlays/damage-direction-01.webp',
-    smoke:'assets/ui/overlays/smoke-clouds-01.webp',
+    smoke:'assets/ui/overlays/smoke-inside-dense-42.webp',
     ballisticMuzzle:'assets/ui/fx/ballistic-muzzle-flash-sheet-01.webp',
     plasmaMuzzle:'assets/ui/fx/plasma-discharge-sheet-01.webp',
     explosionShockwave:'assets/ui/overlays/explosion-shockwave-01.webp',
@@ -205,18 +259,34 @@ const GAME_ASSETS=versionAssetTree({
     plasmaImpact:'assets/ui/fx/plasma-impact-ion-bloom-atlas-11.svg',
     plasmaReload:'assets/ui/fx/plasma-reload-energy-lock-atlas-11.svg',
     pack12:'assets/ui/fx/combat-vfx-atlas-12.svg',
-    pack13:'assets/ui/fx/bot-combat-vfx-atlas-13.svg',
-    pack14:'assets/ui/fx/player-feedback-vfx-atlas-14.svg',
     pack15Frag:'assets/ui/fx/frag-grenade-shrapnel-bloom-atlas-15.svg',
     pack15Death:'assets/ui/fx/player-death-signal-collapse-atlas-15.svg',
-    pack16:'assets/ui/fx/bot-action-vfx-atlas-16.svg',
-    pack17:'assets/ui/fx/interaction-vfx-atlas-17.svg',
     pack18:'assets/ui/fx/player-action-vfx-atlas-18.svg',
-    pack19Landing:'assets/ui/fx/landing-impact-vfx-atlas-19.svg',
-    pack19SmokeThrow:'assets/ui/fx/smoke-throw-vfx-atlas-19.svg',
+    pack42SmokeReady:'assets/ui/weapons/fp/player-smoke-fps-42.webp',
+    pack42SmokeThrow:'assets/ui/fx/smoke-throw-atlas-42.webp',
+    pack42SmokeReload:'assets/ui/fx/smoke-reload-atlas-42.webp',
+    pack42SmokeWorld:'assets/ui/fx/smoke-world-atlas-42.webp',
+    pack42SmokeCloud:'assets/ui/fx/smoke-cloud-atlas-42.webp',
+    pack42SmokeNear:'assets/ui/fx/smoke-near-atlas-42.webp',
+    pack42SmokeFar:'assets/ui/fx/smoke-far-atlas-42.webp',
+    pack42SmokeWisps:'assets/ui/fx/smoke-wisps-atlas-42.webp',
+    pack42SmokeInsideDense:'assets/ui/overlays/smoke-inside-dense-42.webp',
+    pack42SmokeInsideEdge:'assets/ui/overlays/smoke-inside-edge-42.webp',
     pack20GrenadeThrow:'assets/ui/fx/frag-grenade-throw-vfx-atlas-20.svg',
-    pack20BombArm:'assets/ui/fx/player-bomb-arm-vfx-atlas-20.svg',
+    pack41BombReady:'assets/ui/weapons/fp/player-bomb-ready-41.webp',
+    pack41BombPlant:'assets/ui/fx/bomb-plant-atlas-41.webp',
+    pack41BombExplosion:'assets/ui/fx/bomb-explosion-sequence-41.webp',
+    pack41BombWorldTop:'assets/ui/weapons/bomb-world-top-41.webp',
+    pack41BombSmoke:'assets/ui/fx/bomb-smoke-41.webp',
+    pack41BombSmokeSequence:'assets/ui/fx/bomb-smoke-sequence-41.webp',
+    pack41BombShockwave:'assets/ui/fx/bomb-shockwave-atlas-41.webp',
     pack21GrenadeMotion:'assets/ui/fx/frag-grenade-flight-fuse-atlas-21.svg',
+    pack34GrenadeWorld:'assets/ui/equipment/grenade-world-states-atlas-34.webp',
+    pack34GrenadeThrow:'assets/ui/fx/player-grenade-throw-atlas-34.webp',
+    pack34GrenadeBlast:'assets/ui/fx/grenade-explosion-atlas-34.webp',
+    pack34GrenadeSmoke:'assets/ui/fx/grenade-smoke-atlas-34.webp',
+    pack34GrenadeDebris:'assets/ui/fx/grenade-debris-atlas-34.webp',
+    pack34GrenadeScorch:'assets/ui/fx/grenade-scorch-atlas-34.webp',
     pack21GrenadeBlast:'assets/ui/fx/frag-grenade-explosion-smoke-atlas-21.svg',
     pack21GrenadeDebris:'assets/ui/fx/frag-grenade-debris-scorch-atlas-21.svg',
     pack22RifleReload:'assets/ui/fx/rifle-reload-vfx-atlas-22.webp',
@@ -225,20 +295,59 @@ const GAME_ASSETS=versionAssetTree({
     pack23SniperBallistics:'assets/ui/fx/sniper-ballistics-vfx-atlas-23.webp',
     pack23SniperCasing:'assets/ui/fx/sniper-casing-vfx-atlas-23.webp',
     pack24RocketReload:'assets/ui/fx/rocket-reload-vfx-atlas-24.webp',
+    pack39MineReady:'assets/ui/weapons/fp/player-mine-ready-39.webp',
+    pack39MineThrow:'assets/ui/fx/player-mine-throw-atlas-39.webp',
+    pack39MineReload:'assets/ui/fx/player-mine-reload-atlas-39.webp',
+    pack39MineWorld:'assets/ui/fx/mine-world-states-atlas-39.webp',
+    pack39MineExplosion:'assets/ui/fx/mine-explosion-atlas-39.webp',
+    pack39MineSmoke:'assets/ui/fx/mine-smoke-atlas-39.webp',
+    pack39MineUtility:'assets/ui/fx/mine-utility-atlas-39.webp',
+    pack39MineIcon:'assets/ui/weapons/mine-weapon-icon-39.webp',
     pack24MineThrow:'assets/ui/fx/mine-throw-vfx-atlas-24.webp',
     pack25PistolReload:'assets/ui/fx/pistol-reload-vfx-atlas-25.webp',
+    pack40PistolReady:'assets/ui/weapons/fp/player-pistol-fps-40.webp',
+    pack40PistolReload:'assets/ui/fx/pistol-reload-atlas-40.webp',
+    pack40PistolEffects:'assets/ui/fx/pistol-effects-atlas-40.webp',
+    pack40PistolIcon:'assets/ui/weapons/pistol-icon-40.webp',
     pack25ShotgunPump:'assets/ui/fx/shotgun-pump-cycle-vfx-atlas-25.webp',
     pack26Discharge:'assets/ui/fx/weapon-discharge-vfx-atlas-26.webp',
-    pack26HeavyExplosion:'assets/ui/fx/heavy-explosion-vfx-atlas-26.webp',
-    pack27RespawnGate:'assets/ui/fx/player-respawn-gate-vfx-atlas-27.svg',
     pack27TerminalArc:'assets/ui/fx/terminal-electrical-arc-vfx-atlas-27.svg',
     pack28RocketFlight:'assets/ui/fx/rocket-flight-exhaust-vfx-atlas-28.svg',
     pack29SurfaceImpact:'assets/ui/fx/surface-impact-vfx-atlas-29.webp',
+    pack45SurfaceImpact:'assets/ui/fx/surface-impact-atlas-45.webp',
     pack30PlasmaFlight:'assets/ui/fx/plasma-flight-ion-sheath-vfx-atlas-30.webp',
+    pack32SniperAction:'assets/ui/fx/sniper-action-vfx-atlas-32.webp',
+    pack32SniperEffects:'assets/ui/fx/sniper-effects-vfx-atlas-32.webp',
+    pack33PlasmaReload:'assets/ui/fx/plasma-core-reload-vfx-atlas-33.webp',
+    pack35RocketReady:'assets/ui/weapons/fp/player-rocket-fps-35.webp',
+    pack37ShotgunReady:'assets/ui/weapons/fp/player-shotgun-fps-38.webp',
+    pack37ShotgunAction:'assets/ui/fx/shotgun-action-atlas-38.webp',
+    pack37ShotgunEffects:'assets/ui/fx/shotgun-effects-atlas-38.webp',
+    pack36RifleReload:'assets/ui/fx/rifle-reload-vfx-atlas-36.webp',
+    pack36RifleReady:'assets/ui/weapons/fp/player-rifle-fps-36.webp',
+    pack36RifleEffects:'assets/ui/fx/rifle-effects-vfx-atlas-36.webp',
+    pack35RocketReload:'assets/ui/fx/rocket-reload-vfx-atlas-35.webp',
+    pack35RocketEffects:'assets/ui/fx/rocket-effects-vfx-atlas-35.webp',
+    pack35RocketScorch:'assets/ui/fx/rocket-scorch-35.webp',
+    pack35RocketWall:'assets/ui/fx/rocket-wall-impact-35.webp',
+    pack33PlasmaReady:'assets/ui/weapons/fp/player-plasma-fps-33.webp',
     pack31PlasmaReload:'assets/ui/fx/plasma-core-reload-vfx-atlas-31.webp'
   }),
   // Generated tactical HUD atlases are DOM/CSS presentation only. Procedural/SVG UI
   // remains the runtime fallback; no persistent Three.js raster planes are created.
+  // Pack43: generated-reference metal shells; DOM decoration with text/shape fallback.
+  presentationHudShells:Object.freeze({
+    "xp": "assets/ui/hud/xp-shell-tech-43.svg",
+    "teamBlue": "assets/ui/hud/team-blue-shell-tech-43.svg",
+    "teamRed": "assets/ui/hud/team-red-shell-tech-43.svg",
+    "map": "assets/ui/hud/map-shell-tech-43.svg",
+    "stats": "assets/ui/hud/stats-shell-tech-43.svg",
+    "health": "assets/ui/hud/health-shell-tech-43.svg",
+    "ammo": "assets/ui/hud/ammo-shell-tech-43.svg",
+    "score": "assets/ui/hud/score-shell-tech-43.svg",
+    "squad": "assets/ui/hud/squad-shell-tech-43.svg",
+    "order": "assets/ui/hud/order-shell-tech-43.svg"
+}),
   presentationHud:Object.freeze({
     hitmarkers:'assets/ui/combat/hitmarker-sheet-01.webp',
     botRoles:'assets/ui/bots/bot-role-badges-01.webp',
@@ -256,10 +365,8 @@ const GAME_ASSETS=versionAssetTree({
   presentationHudV2:Object.freeze({
     reticles:'assets/ui/combat/reticle-identity-atlas-01.webp',
     minimapMarkers:'assets/ui/minimap/minimap-marker-atlas-01.webp',
-    spawnProtection:'assets/ui/feedback/spawn-protection-atlas-01.webp',
     respawnCountdown:'assets/ui/feedback/respawn-countdown-atlas-01.webp',
     explosiveFuse:'assets/ui/explosives/explosive-fuse-atlas-01.webp',
-    projectileTrails:'assets/ui/fx/projectile-trail-atlas-01.webp',
     weaponSwitch:'assets/ui/weapons/weapon-switch-swipe-atlas-01.webp',
     botOverhead:'assets/ui/bots/bot-overhead-frame-atlas-01.webp',
     comboMeter:'assets/ui/feedback/combo-meter-atlas-01.webp',
@@ -271,10 +378,6 @@ const GAME_ASSETS=versionAssetTree({
     grenadeUi:'assets/ui/equipment/frag-grenade-ui-atlas-20.svg'
   }),
   presentationHudV3:Object.freeze({
-    matchDeploy:'assets/ui/feedback/match-deploy-splash-tech-01.svg',
-    frontlineRetarget:'assets/ui/objective/frontline-retarget-sweep-tech-01.svg',
-    secondWindRescue:'assets/ui/feedback/second-wind-rescue-tech-01.svg',
-    dodgePhase:'assets/ui/feedback/dodge-phase-tech-01.svg',
     perkPathCrests:'assets/ui/perks/perk-path-crest-atlas-01.svg',
     equipmentReadiness:'assets/ui/equipment/equipment-readiness-atlas-01.svg',
     frontlineProgress:'assets/ui/objective/frontline-capture-progress-frame-01.svg',
@@ -289,37 +392,59 @@ const GAME_ASSETS=versionAssetTree({
     rocket:'assets/weapons/fp/rocket-tech.svg',
     plasma:'assets/weapons/fp/plasma-tech.svg',
     mine:'assets/weapons/fp/mine-tech.svg',
-    bomb:'assets/weapons/fp/bomb-tech.svg',
-    smoke:'assets/weapons/fp/smoke-tech.svg',
     sniper:'assets/weapons/fp/sniper-tech.svg'
   }),
   // Generated FPS renders are player-only DOM presentation. Bots keep procedural
   // Three.js weapon models; world pickups use a separate DOM-projection layer.
-  generatedFirstPersonWeapons:Object.freeze({
+  legacyFirstPersonWeapons:Object.freeze({
+    plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp'
+  }),
+  generatedFirstPersonWeaponFallbacks:Object.freeze({
     pistol:'assets/ui/weapons/fp/player-pistol-fps-01.webp',
+    mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
     shotgun:'assets/ui/weapons/fp/player-shotgun-fps-01.webp',
     rifle:'assets/ui/weapons/fp/player-rifle-fps-01.webp',
     rocket:'assets/ui/weapons/fp/player-rocket-fps-01.webp',
-    plasma:'assets/ui/weapons/fp/player-plasma-fps-01.webp',
-    mine:'assets/ui/weapons/fp/player-mine-fps-01.webp',
-    bomb:'assets/ui/weapons/fp/player-bomb-fps-01.webp',
-    smoke:'assets/ui/weapons/fp/player-smoke-fps-01.webp',
-    sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp',
-    grenade:'assets/ui/weapons/fp/player-grenade-fps-20.svg'
+    plasma:'assets/ui/weapons/fp/player-plasma-fps-31.webp',
+    sniper:'assets/ui/weapons/fp/player-sniper-fps-01.webp'
+  }),
+  generatedFirstPersonWeapons:Object.freeze({
+    pistol:'assets/ui/weapons/fp/player-pistol-fps-40.webp',
+    shotgun:'assets/ui/weapons/fp/player-shotgun-fps-38.webp',
+    rifle:'assets/ui/weapons/fp/player-rifle-fps-36.webp',
+    rocket:'assets/ui/weapons/fp/player-rocket-fps-35.webp',
+    plasma:'assets/ui/weapons/fp/player-plasma-fps-33.webp',
+    mine:'assets/ui/weapons/fp/player-mine-ready-39.webp',
+    bomb:'assets/ui/weapons/fp/player-bomb-ready-41.webp',
+    smoke:'assets/ui/weapons/fp/player-smoke-fps-42.webp',
+    sniper:'assets/ui/weapons/fp/player-sniper-fps-32.webp',
+    grenade:'assets/ui/weapons/fp/player-grenade-ready-34.webp'
   }),
   // Generated map-pickup art stays DOM-only: pickups.js projects the real 3D
   // pickup position into screen space and keeps the procedural world model as fallback.
+  legacyWorldWeaponPickups:Object.freeze({plasma:'assets/ui/pickups/weapons/world-plasma-pickup-01.webp',pistol:'assets/ui/pickups/weapons/world-pistol-pickup-01.webp',mine:'assets/ui/pickups/weapons/world-mine-pickup-01.webp',shotgun:'assets/ui/pickups/weapons/world-shotgun-pickup-01.webp',rifle:'assets/ui/pickups/weapons/world-rifle-pickup-01.webp',rocket:'assets/ui/pickups/weapons/world-rocket-pickup-01.webp'}),
+  detailedWorldWeaponPickups:Object.freeze({
+    pistol:'assets/ui/pickups/weapons/world-pistol-pickup-44.webp',
+    shotgun:'assets/ui/pickups/weapons/world-shotgun-pickup-44.webp',
+    rifle:'assets/ui/pickups/weapons/world-rifle-pickup-44.webp',
+    rocket:'assets/ui/pickups/weapons/world-rocket-pickup-44.webp',
+    plasma:'assets/ui/pickups/weapons/world-plasma-pickup-44.webp',
+    bomb:'assets/ui/pickups/weapons/world-bomb-pickup-44.webp',
+    smoke:'assets/ui/pickups/weapons/world-smoke-pickup-44.webp',
+    sniper:'assets/ui/pickups/weapons/world-sniper-pickup-44.webp'
+  }),
+  detailedMedkitPickup:'assets/ui/pickups/world-medkit-pickup-44.webp',
   generatedWorldWeaponPickups:Object.freeze({
-    pistol:'assets/ui/pickups/weapons/world-pistol-pickup-01.webp',
-    shotgun:'assets/ui/pickups/weapons/world-shotgun-pickup-01.webp',
-    rifle:'assets/ui/pickups/weapons/world-rifle-pickup-01.webp',
-    rocket:'assets/ui/pickups/weapons/world-rocket-pickup-01.webp',
-    plasma:'assets/ui/pickups/weapons/world-plasma-pickup-01.webp',
-    mine:'assets/ui/pickups/weapons/world-mine-pickup-01.webp',
-    bomb:'assets/ui/pickups/weapons/world-bomb-pickup-01.webp',
-    smoke:'assets/ui/pickups/weapons/world-smoke-pickup-01.webp',
+    pistol:'assets/ui/pickups/weapons/world-pistol-pickup-40.webp',
+    shotgun:'assets/ui/pickups/weapons/world-shotgun-pickup-37.webp',
+    rifle:'assets/ui/pickups/weapons/world-rifle-pickup-36.webp',
+    rocket:'assets/ui/pickups/weapons/world-rocket-pickup-35.webp',
+    plasma:'assets/ui/pickups/weapons/world-plasma-pickup-43.webp',
+    mine:'assets/ui/pickups/weapons/world-mine-pickup-39.webp',
+    bomb:'assets/ui/pickups/weapons/world-bomb-pickup-41.webp',
+    smoke:'assets/ui/pickups/weapons/world-smoke-pickup-42.webp',
     sniper:'assets/ui/pickups/weapons/world-sniper-pickup-01.webp',
-    grenade:'assets/ui/pickups/weapons/world-grenade-pickup-20.svg'
+    grenade:'assets/ui/pickups/weapons/world-grenade-pickup-34.webp'
   }),
   firstPersonSkins:Object.freeze({
     pistol:'assets/weapons/fp/pistol-skin.svg',
@@ -328,8 +453,6 @@ const GAME_ASSETS=versionAssetTree({
     rocket:'assets/weapons/fp/rocket-skin.svg',
     plasma:'assets/weapons/fp/plasma-skin.svg',
     mine:'assets/weapons/fp/mine-skin.svg',
-    bomb:'assets/weapons/fp/bomb-skin.svg',
-    smoke:'assets/weapons/fp/smoke-skin.svg',
     sniper:'assets/weapons/fp/sniper-skin.svg'
   }),
   ui:Object.freeze({
@@ -398,6 +521,7 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.impact),
   ...Object.values(GAME_ASSETS.fx),
   ...Object.values(GAME_ASSETS.presentationVfx),
+  ...Object.values(GAME_ASSETS.presentationHudShells),
   ...Object.values(GAME_ASSETS.presentationHud),
   ...Object.values(GAME_ASSETS.presentationHudV2),
   ...Object.values(GAME_ASSETS.presentationHudV3),
@@ -405,11 +529,20 @@ const GAME_ASSET_PATHS=Object.freeze([
   ...Object.values(GAME_ASSETS.firstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedFirstPersonWeapons),
   ...Object.values(GAME_ASSETS.generatedWorldWeaponPickups),
+  ...Object.values(GAME_ASSETS.detailedWorldWeaponPickups),
+  GAME_ASSETS.detailedMedkitPickup,
+  ...Object.values(GAME_ASSETS.legacyWorldWeaponPickups),
   ...Object.values(GAME_ASSETS.firstPersonSkins),
   ...Object.values(GAME_ASSETS.ui),
   ...Object.values(GAME_ASSETS.presentation)
 ]);
 
+// URLs already resolved against the document, including direct local-file mode.
+if(GAME_PRESENTATION_ASSETS_ENABLED){
+  for(const [key,url] of Object.entries(GAME_ASSETS.presentationHudShells)){
+    document.documentElement.style.setProperty('--hud-'+key+'-shell','url("'+url+'")');
+  }
+}
 const _gameTextureLoader=new THREE.TextureLoader();
 const _gameTextureCache=new Map();
 
@@ -479,6 +612,7 @@ function perkFallbackAsset(id,path){
   return GAME_ASSETS.perkIcons[id]||GAME_ASSETS.perks[path]||GAME_ASSETS.perks.assault;
 }
 function perkAsset(id,path){
+  if(GAME_ASSETS.perkGeneratedIcons[id])return GAME_ASSETS.perkGeneratedIcons[id];
   if(id==='damage')return GAME_ASSETS.presentation.damagePerk;
   if(id==='reload')return GAME_ASSETS.presentation.reloadPerk;
   if(id==='mobility'||id==='sprint_drive')return GAME_ASSETS.presentation.speedPerk;
@@ -586,10 +720,6 @@ function minimapMarkerPresentationFrame(kind){
   const pos={player:[0,0],ally:[1,0],weapon:[2,0],medkit:[0,1],objectiveActive:[1,1],objectiveNeutral:[2,1],mine:[0,2],bomb:[1,2],smoke:[2,2]}[kind];
   return pos?presentationAtlasFrame(GAME_ASSETS.presentationHudV2.minimapMarkers,pos[0],pos[1],3,3):null;
 }
-function spawnProtectionPresentationFrame(index){
-  const i=Math.max(0,Math.min(6,Math.floor(Number(index)||0)));
-  return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.spawnProtection,i%4,Math.floor(i/4),4,2);
-}
 function respawnCountdownPresentationFrame(seconds){
   const sec=Math.max(1,Math.min(15,Math.ceil(Number(seconds)||1))),i=15-sec;
   return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.respawnCountdown,i%4,Math.floor(i/4),4,4);
@@ -598,13 +728,30 @@ function explosiveFusePresentationFrame(state){
   const pos={safe:[0,0],arming:[1,0],armed:[0,1],danger:[1,1]}[state]||[0,0];
   return presentationAtlasFrame(GAME_ASSETS.presentationHudV2.explosiveFuse,pos[0],pos[1],2,2);
 }
-function projectileTrailPresentationFrame(kind){
-  const row={ballistic:0,sniper:1,plasma:2,rocket:3,impact:4}[kind];
-  return Number.isInteger(row)?presentationAtlasFrame(GAME_ASSETS.presentationHudV2.projectileTrails,0,row,1,5):null;
+// Pack35 probes are lazy, terminal and shared by all presentation consumers.
+const rocketPresentationProbes35=new Map();
+const ROCKET_PRESENTATION_DIMENSIONS35=Object.freeze({
+  pack35RocketReady:[960,720],pack35RocketReload:[2304,1152],
+  pack35RocketEffects:[1024,1024],pack35RocketScorch:[512,512],pack35RocketWall:[512,512]
+});
+function rocketPresentationAssetReady35(key){
+  const size=ROCKET_PRESENTATION_DIMENSIONS35[key],asset=GAME_ASSETS.presentationVfx[key];
+  if(!size||!asset)return false;
+  let probe=rocketPresentationProbes35.get(asset);
+  if(!probe){probe=new Image();rocketPresentationProbes35.set(asset,probe);probe.src=gameAssetUrl(asset);}
+  return probe.complete&&probe.naturalWidth===size[0]&&probe.naturalHeight===size[1];
+}
+function rocketFlightPresentationFrame35(index=0){
+  const frame=Math.max(0,Math.min(3,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack35RocketEffects,frame,1,4,4);
 }
 function rocketFlightPresentationFrame(index=0){
   const frame=Math.max(0,Math.min(11,Math.floor(Number(index)||0)));
   return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack28RocketFlight,frame%4,Math.floor(frame/4),4,3);
+}
+function grenadeFlightPresentationFrame(index=3){
+  const frame=Math.max(0,Math.min(7,Math.floor(Number(index)||0)));
+  return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack34GrenadeWorld,frame%4,Math.floor(frame/4),4,2);
 }
 function plasmaFlightPresentationFrame(index=0){
   const frame=Math.max(0,Math.min(15,Math.floor(Number(index)||0)));
@@ -628,6 +775,7 @@ function perkPathPresentationFrame(path){
   return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.perkPathCrests,col,0,5,1):null;
 }
 function equipmentReadinessPresentationFrame(kind,ready=true){
+  if(kind==='mine')return presentationAtlasFrame(GAME_ASSETS.presentationVfx.pack39MineIcon);
   const col={mine:0,bomb:1,smoke:2}[kind];
   return Number.isInteger(col)?presentationAtlasFrame(GAME_ASSETS.presentationHudV3.equipmentReadiness,col,ready?0:1,3,2):null;
 }
@@ -643,7 +791,6 @@ function mobileControlPresentationFrame(kind){
 
 const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   rocketBackblast:Object.freeze({row:0,frames:6,duration:.40,size:168}),
-  sniperPressure:Object.freeze({row:1,frames:6,duration:.30,size:158}),
   shotgunMuzzle:Object.freeze({row:2,frames:8,duration:.46,size:176}),
   brassCasing:Object.freeze({row:3,frames:8,duration:.54,size:76}),
   shotgunShell:Object.freeze({row:4,frames:6,duration:.56,size:86}),
@@ -651,43 +798,43 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   concreteImpact:Object.freeze({row:6,frames:8,duration:.50,size:112}),
   metalImpact:Object.freeze({row:7,frames:8,duration:.38,size:116}),
   woodImpact:Object.freeze({row:8,frames:5,duration:.46,size:118}),
-  nearMiss:Object.freeze({row:9,frames:5,duration:.25,size:170}),
   rocketExplosion:Object.freeze({asset:'rocketExplosion',cols:4,rows:3,frames:12,duration:1.00,size:210}),
   plasmaImpact:Object.freeze({asset:'plasmaImpact',cols:4,rows:3,frames:12,duration:.82,size:150}),
   plasmaReload:Object.freeze({asset:'plasmaReload',cols:4,rows:2,frames:8,duration:1.05,width:286,height:161}),
   ricochet:Object.freeze({asset:'pack12',row:0,cols:8,rows:5,frames:8,duration:.62,size:148}),
   penetrationExit:Object.freeze({asset:'pack12',row:1,cols:8,rows:5,frames:8,duration:.78,size:134}),
-  smokeDeploy:Object.freeze({asset:'pack12',row:2,cols:8,rows:5,frames:8,duration:1.40,size:260}),
+  smokeDeploy:Object.freeze({asset:'pack12',row:2,cols:8,rows:5,frames:8,occlude:true,duration:1.40,size:260}),
   mineDetonation:Object.freeze({asset:'pack12',row:3,cols:8,rows:5,frames:8,duration:.82,size:236}),
-  bombDetonation:Object.freeze({asset:'pack12',row:4,cols:8,rows:5,frames:8,duration:1.08,size:300}),
-  botMuzzle:Object.freeze({asset:'pack13',row:0,cols:8,rows:2,frames:8,duration:.38,size:154}),
-  botDeath:Object.freeze({asset:'pack13',row:1,cols:8,rows:2,frames:8,duration:.95,size:232}),
-  criticalHit:Object.freeze({asset:'pack14',row:0,cols:8,rows:2,frames:8,duration:.70,size:184}),
-  playerArmorBreak:Object.freeze({asset:'pack14',row:1,cols:8,rows:2,frames:8,duration:.90,size:286}),
-  fragGrenade:Object.freeze({asset:'pack15Frag',row:0,cols:8,rows:1,frames:8,duration:.82,size:248}),
-  botPlasmaMuzzle:Object.freeze({asset:'pack16',row:0,cols:8,rows:3,frames:8,duration:.54,size:176}),
-  botDodge:Object.freeze({asset:'pack16',row:1,cols:8,rows:3,frames:8,duration:.82,size:188}),
-  botSpawn:Object.freeze({asset:'pack16',row:2,cols:8,rows:3,frames:8,duration:1.18,size:238}),
-  botReload:Object.freeze({asset:'pack17',row:0,cols:8,rows:3,frames:8,duration:.68,size:178}),
-  botHit:Object.freeze({asset:'pack17',row:1,cols:8,rows:3,frames:8,duration:.40,size:148}),
-  pickupCollect:Object.freeze({asset:'pack17',row:2,cols:8,rows:3,frames:8,duration:.72,size:174}),
+  fragGrenade:Object.freeze({asset:'pack15Frag',row:0,cols:8,rows:1,frames:8,duration:.82,size:248,worldSizeM:5,occlude:true}),
   shotgunShellInsert:Object.freeze({asset:'pack18',row:0,cols:4,rows:7,frames:8,duration:.36,width:118,height:118}),
-  footstepMetal:Object.freeze({asset:'pack18',row:2,cols:4,rows:7,frames:4,duration:.40,size:132}),
-  footstepDust:Object.freeze({asset:'pack18',row:3,cols:4,rows:7,frames:4,duration:.52,size:138}),
-  footstepWater:Object.freeze({asset:'pack18',row:4,cols:4,rows:7,frames:4,duration:.58,size:146}),
-  medkitHeal:Object.freeze({asset:'pack18',row:5,cols:4,rows:7,frames:4,duration:.72,size:228}),
-  medkitArmor:Object.freeze({asset:'pack18',row:6,cols:4,rows:7,frames:4,duration:.78,size:228}),
-  landingDust:Object.freeze({asset:'pack19Landing',row:0,cols:4,rows:4,frames:8,duration:.58,width:260,height:173}),
-  landingMetal:Object.freeze({asset:'pack19Landing',row:2,cols:4,rows:4,frames:8,duration:.54,width:260,height:173}),
-  smokeThrow:Object.freeze({asset:'pack19SmokeThrow',row:0,cols:4,rows:2,frames:8,duration:.52,size:430}),
+  smokeThrow42:Object.freeze({asset:'pack42SmokeThrow',cols:3,rows:2,frames:6,duration:.58,width:1280,height:720,size:1280}),
+  smokeReload42:Object.freeze({asset:'pack42SmokeReload',cols:3,rows:1,frames:3,duration:.8,width:1280,height:720,size:1280}),
   grenadeThrow:Object.freeze({asset:'pack20GrenadeThrow',row:0,cols:4,rows:2,frames:8,duration:.58,size:430}),
-  bombArm:Object.freeze({asset:'pack20BombArm',row:0,cols:4,rows:2,frames:8,duration:.72,size:430}),
+  grenadeThrow34:Object.freeze({asset:'pack34GrenadeThrow',row:0,cols:2,rows:4,frames:8,duration:.58,width:768,height:432}),
+  grenadeExplosion34:Object.freeze({asset:'pack34GrenadeBlast',row:0,cols:4,rows:2,frames:8,duration:.76,size:306,worldSizeM:8.0,maxScreenSize:720,occlude:true}),
+  grenadeSmoke34:Object.freeze({asset:'pack34GrenadeSmoke',row:0,cols:4,rows:1,frames:4,duration:1.35,size:286,worldSizeM:6.4,maxScreenSize:640,occlude:true}),
+  grenadeDebris34:Object.freeze({asset:'pack34GrenadeDebris',row:0,cols:2,rows:1,frames:2,duration:.70,size:260,worldSizeM:8.4,maxScreenSize:720,occlude:true}),
+  grenadeScorch34:Object.freeze({asset:'pack34GrenadeScorch',row:0,cols:2,rows:1,frames:2,duration:15,coolAfter:.65,fadeSeconds:2,groundPlane:true,size:180,worldSizeM:2.8,occlude:true}),
+  bombPlant41:Object.freeze({asset:'pack41BombPlant',cols:2,rows:2,frames:6,sequence:Object.freeze([0,1,2,3,3,0]),duration:.96,width:1600,height:900}),
+  bombReload41:Object.freeze({asset:'pack41BombPlant',cols:2,rows:2,frames:2,sequence:Object.freeze([3,0]),duration:.9,width:1600,height:900}),
+  bombReloadHold41:Object.freeze({asset:'pack41BombReady',cols:1,rows:1,frames:1,duration:.9,width:1600,height:900}),
+  bombExplosion41:Object.freeze({asset:'pack41BombExplosion',cols:5,rows:4,frames:17,duration:2.1,size:768,width:1075,height:768,worldSizeM:18,maxScreenSize:1100,occlude:true,originY:.94}),
+  bombShockwave41:Object.freeze({asset:'pack41BombShockwave',cols:3,rows:2,frames:6,duration:.9,fadeSeconds:.2,size:512,worldSizeM:28,groundPlane:true,occlude:true}),
+  bombScorch41:Object.freeze({asset:'pack35RocketScorch',cols:1,rows:1,frames:1,duration:15,fadeSeconds:2,groundPlane:true,size:180,worldSizeM:2.8,occlude:true}),
+  bombSmoke41:Object.freeze({asset:'pack41BombSmoke',cols:1,rows:1,frames:1,duration:4.5,fadeSeconds:2.5,size:768,worldSizeM:14,maxScreenSize:1000,occlude:true,originY:.925}),
+  bombSmokeSequence41:Object.freeze({asset:'pack41BombSmokeSequence',cols:3,rows:2,frames:6,duration:3,size:512,worldSizeM:14,maxScreenSize:1000,occlude:true,originY:.94}),
   grenadeFlight:Object.freeze({asset:'pack21GrenadeMotion',row:0,cols:8,rows:2,frames:8,duration:1.82,size:116}),
   grenadeFuse:Object.freeze({asset:'pack21GrenadeMotion',row:1,cols:8,rows:2,frames:8,duration:.78,size:134}),
-  grenadeExplosion21:Object.freeze({asset:'pack21GrenadeBlast',row:0,cols:4,rows:4,frames:8,duration:.76,size:306}),
-  grenadeSmoke21:Object.freeze({asset:'pack21GrenadeBlast',row:2,cols:4,rows:4,frames:8,duration:1.35,size:286}),
-  grenadeDebris21:Object.freeze({asset:'pack21GrenadeDebris',row:0,cols:8,rows:3,frames:16,duration:.92,size:260}),
-  grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris',row:2,cols:8,rows:3,frames:5,duration:2.60,size:180}),
+  grenadeExplosion21:Object.freeze({asset:'pack21GrenadeBlast',row:0,cols:4,rows:4,frames:8,duration:.76,size:306,worldSizeM:5,occlude:true}),
+  grenadeSmoke21:Object.freeze({asset:'pack21GrenadeBlast',row:2,cols:4,rows:4,frames:8,duration:1.35,size:286,worldSizeM:4.6,occlude:true}),
+  grenadeDebris21:Object.freeze({asset:'pack21GrenadeDebris',row:0,cols:8,rows:3,frames:17,duration:.92,size:260,worldSizeM:5.2,occlude:true}),
+  grenadeScorch21:Object.freeze({asset:'pack21GrenadeDebris',row:2,cols:8,rows:3,frames:5,duration:15,fadeSeconds:2,groundPlane:true,size:180,worldSizeM:2.8,occlude:true}),
+  rifleReloadTactical36:Object.freeze({asset:'pack36RifleReload',cols:3,rows:2,frames:5,sequence:Object.freeze([5,1,2,3,5]),duration:1.935,width:768,height:576}),
+  rifleReloadEmpty36:Object.freeze({asset:'pack36RifleReload',cols:3,rows:2,frames:6,sequence:Object.freeze([5,1,2,3,4,5]),duration:2.408,width:768,height:576}),
+  rifleReloadHold36:Object.freeze({asset:'pack36RifleReady',cols:1,rows:1,frames:1,duration:2.408,width:960,height:720}),
+  rifleMuzzle36:Object.freeze({asset:'pack36RifleEffects',row:0,cols:4,rows:4,frames:4,duration:.09,size:104}),
+  rifleSmoke36:Object.freeze({asset:'pack36RifleEffects',row:1,cols:4,rows:4,frames:4,duration:.32,size:96}),
+  rifleCasing36:Object.freeze({asset:'pack36RifleEffects',row:3,cols:4,rows:4,frames:4,duration:.32,size:42}),
   rifleReloadTactical:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.45,width:450,height:400}),
   rifleReloadEmpty:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:12,duration:2.05,width:450,height:400}),
   sniperBoltCycle:Object.freeze({asset:'pack22SniperBolt',row:0,cols:4,rows:3,frames:12,duration:.95,width:500,height:444}),
@@ -696,20 +843,61 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   sniperBullet23:Object.freeze({asset:'pack23SniperBallistics',row:0,cols:4,rows:4,frames:8,duration:.11,size:520}),
   sniperSupersonic23:Object.freeze({asset:'pack23SniperBallistics',row:2,cols:4,rows:4,frames:8,duration:.14,size:540}),
   sniperCasing23:Object.freeze({asset:'pack23SniperCasing',row:0,cols:4,rows:3,frames:12,duration:.55,size:180}),
+  rocketMuzzle35:Object.freeze({asset:'pack35RocketEffects',row:0,cols:4,rows:4,frames:4,duration:.16,size:132}),
+  rocketExplosion35:Object.freeze({asset:'pack35RocketEffects',row:2,cols:4,rows:4,frames:4,duration:.72,size:256,worldSizeM:10.64,maxScreenSize:896,occlude:true}),
+  rocketResidual35:Object.freeze({asset:'pack35RocketEffects',row:3,cols:4,rows:4,frames:4,duration:1.35,size:256,worldSizeM:8.68,maxScreenSize:812,occlude:true}),
+  rocketWall35:Object.freeze({asset:'pack35RocketWall',cols:1,rows:1,frames:1,duration:15,fadeSeconds:2,groundPlane:true,surfacePlane:true,size:180,worldSizeM:2.8,occlude:true}),
+  rocketScorch35:Object.freeze({asset:'pack35RocketScorch',cols:1,rows:1,frames:1,duration:15,fadeSeconds:2,groundPlane:true,size:180,worldSizeM:2.8,occlude:true}),
+  rocketReload35:Object.freeze({asset:'pack35RocketReload',cols:3,rows:2,frames:6,sequence:Object.freeze([5,1,2,3,4,5]),duration:2.85,width:768,height:576}),
+  rocketReloadHold35:Object.freeze({asset:'pack35RocketReady',cols:1,rows:1,frames:1,duration:2.85,width:960,height:720}),
   rocketReload24:Object.freeze({asset:'pack24RocketReload',row:0,cols:4,rows:3,frames:12,duration:2.85,width:450,height:338}),
+  mineThrow39:Object.freeze({asset:'pack39MineThrow',cols:3,rows:2,frames:6,duration:.58,width:1280,height:720}),
+  mineReload39:Object.freeze({asset:'pack39MineReload',cols:3,rows:1,frames:3,duration:3.2,width:1280,height:720}),
+  mineExplosion39:Object.freeze({asset:'pack39MineExplosion',cols:4,rows:2,frames:8,duration:.82,size:512,worldSizeM:7,maxScreenSize:680,occlude:true,originY:472/512}),
+  mineSmoke39:Object.freeze({asset:'pack39MineSmoke',cols:3,rows:2,frames:6,duration:1.4,size:512,worldSizeM:6,maxScreenSize:600,occlude:true,originY:472/512}),
+  mineMetal39:Object.freeze({asset:'pack39MineUtility',cols:3,rows:2,frames:1,sequence:Object.freeze([0]),duration:.65,size:512,worldSizeM:5,occlude:true,originY:472/512}),
+  mineElectronics39:Object.freeze({asset:'pack39MineUtility',cols:3,rows:2,frames:1,sequence:Object.freeze([1]),duration:.6,size:512,worldSizeM:4,occlude:true,originY:472/512}),
+  mineLand39:Object.freeze({asset:'pack39MineUtility',cols:3,rows:2,frames:1,sequence:Object.freeze([2]),duration:.3,size:512,worldSizeM:1.5,occlude:true,originY:472/512}),
+  mineScorch39:Object.freeze({asset:'pack39MineUtility',cols:3,rows:2,frames:2,sequence:Object.freeze([3,4]),duration:15,coolAfter:.65,fadeSeconds:2,groundPlane:true,size:180,worldSizeM:2.8,occlude:true}),
+  mineActivation39:Object.freeze({asset:'pack39MineUtility',cols:3,rows:2,frames:1,sequence:Object.freeze([5]),duration:.3,size:512,worldSizeM:1.2,occlude:true,originY:472/512}),
+  mineTriggered39:Object.freeze({asset:'pack39MineWorld',cols:3,rows:3,frames:1,sequence:Object.freeze([4]),duration:.08,size:512,worldSizeM:.85,occlude:true}),
   mineThrow24:Object.freeze({asset:'pack24MineThrow',row:0,cols:6,rows:1,frames:6,duration:.58,width:430,height:323}),
   pistolReloadTactical25:Object.freeze({asset:'pack25PistolReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.10,width:450,height:338}),
+  pistolReloadTactical40:Object.freeze({asset:'pack40PistolReload',cols:3,rows:2,frames:5,sequence:Object.freeze([0,1,2,3,5]),duration:1.10,width:1280,height:960}),
+  pistolReloadEmpty40:Object.freeze({asset:'pack40PistolReload',cols:3,rows:2,frames:6,sequence:Object.freeze([0,1,2,3,4,5]),duration:1.35,width:1280,height:960}),
+  pistolReloadHold40:Object.freeze({asset:'pack40PistolReady',cols:1,rows:1,frames:1,duration:1.35,width:1448,height:1086}),
+  pistolMuzzle40:Object.freeze({asset:'pack40PistolEffects',row:0,cols:4,rows:4,frames:4,duration:.09,size:98}),
+  pistolSmoke40:Object.freeze({asset:'pack40PistolEffects',row:1,cols:4,rows:4,frames:4,duration:.32,size:92}),
+  pistolCasing40:Object.freeze({asset:'pack40PistolEffects',row:3,cols:4,rows:4,frames:1,duration:.48,size:62}),
   pistolReloadEmpty25:Object.freeze({asset:'pack25PistolReload',row:0,cols:4,rows:3,frames:12,duration:1.35,width:450,height:338}),
+  shotgunPump37:Object.freeze({asset:'pack37ShotgunAction',cols:3,rows:2,frames:5,sequence:Object.freeze([0,1,1,2,0]),duration:.62,width:768,height:576}),
+  shotgunLoad37:Object.freeze({asset:'pack37ShotgunAction',cols:3,rows:2,frames:5,sequence:Object.freeze([0,3,4,5,0]),duration:.611,width:768,height:576}),
+  shotgunHold37:Object.freeze({asset:'pack37ShotgunReady',cols:1,rows:1,frames:1,duration:.62,width:960,height:720}),
+  shotgunMuzzle37:Object.freeze({asset:'pack37ShotgunEffects',row:0,cols:4,rows:4,frames:4,duration:.10,size:126}),
+  shotgunSmoke37:Object.freeze({asset:'pack37ShotgunEffects',row:1,cols:4,rows:4,frames:4,duration:.42,size:114}),
+  shotgunCasing37:Object.freeze({asset:'pack37ShotgunEffects',row:3,cols:4,rows:4,frames:1,duration:.52,size:96}),
   shotgunPump25:Object.freeze({asset:'pack25ShotgunPump',row:0,cols:4,rows:2,frames:8,duration:.62,width:450,height:338}),
   ballisticDischarge26:Object.freeze({asset:'pack26Discharge',row:0,cols:4,rows:2,frames:4,duration:.18,width:220,height:165}),
   energyDischarge26:Object.freeze({asset:'pack26Discharge',row:1,cols:4,rows:2,frames:4,duration:.24,width:236,height:177}),
-  heavyExplosion26:Object.freeze({asset:'pack26HeavyExplosion',row:0,cols:4,rows:2,frames:8,duration:1.12,width:280,height:210}),
-  playerRespawnGate27:Object.freeze({asset:'pack27RespawnGate',row:0,cols:3,rows:2,frames:6,duration:1.18,width:460,height:460}),
   terminalArc27:Object.freeze({asset:'pack27TerminalArc',row:0,cols:5,rows:2,frames:10,duration:1.05,width:180,height:240}),
-  concreteImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:0,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,2,2,3,3]),duration:.42,size:72}),
-  metalImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:1,cols:4,rows:4,frames:4,sequence:Object.freeze([0,1,2,3]),duration:.28,size:74}),
+  concreteImpact45:Object.freeze({asset:'pack45SurfaceImpact',row:0,cols:6,rows:4,frames:3,duration:.22,size:128,worldSizeM:.82,minScreenSize:0,maxScreenSize:90,originY:.64,occlude:true}),
+  metalImpact45:Object.freeze({asset:'pack45SurfaceImpact',row:1,cols:6,rows:4,frames:3,duration:.16,size:128,worldSizeM:.72,minScreenSize:0,maxScreenSize:82,originY:.64,occlude:true}),
+  woodImpact45:Object.freeze({asset:'pack45SurfaceImpact',row:2,cols:6,rows:4,frames:3,duration:.22,size:128,worldSizeM:.82,minScreenSize:0,maxScreenSize:90,originY:.64,occlude:true}),
+  heavyImpact45:Object.freeze({asset:'pack45SurfaceImpact',row:3,cols:6,rows:4,frames:3,duration:.26,size:128,worldSizeM:1.16,minScreenSize:0,maxScreenSize:110,originY:.64,occlude:true}),
+  concreteImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:0,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,2,2,3,3]),duration:.32,size:72,worldSizeM:.95,minScreenSize:0,maxScreenSize:128,occlude:true}),
+  metalImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:1,cols:4,rows:4,frames:4,sequence:Object.freeze([0,1,2,3]),duration:.24,size:74,worldSizeM:1.05,minScreenSize:0,maxScreenSize:136,occlude:true}),
   techImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:2,cols:4,rows:4,frames:6,sequence:Object.freeze([0,1,1,2,3,3]),duration:.42,size:80}),
-  heavyImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:3,cols:4,rows:4,frames:8,sequence:Object.freeze([0,1,1,2,2,3,3,3]),duration:.58,size:88}),
+  heavyImpact29:Object.freeze({asset:'pack29SurfaceImpact',row:3,cols:4,rows:4,frames:6,sequence:Object.freeze([1,1,2,2,3,3]),duration:.36,size:88,worldSizeM:1.24,minScreenSize:0,maxScreenSize:150,occlude:true}),
+  sniperReloadTactical32:Object.freeze({asset:'pack32SniperAction',row:0,cols:4,rows:4,frames:12,duration:3.196,width:512,height:384}),
+  sniperReloadEmpty32:Object.freeze({asset:'pack32SniperAction',row:0,cols:4,rows:4,frames:17,sequence:Object.freeze([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,11]),duration:3.74,width:512,height:384}),
+  sniperBoltCycle32:Object.freeze({asset:'pack32SniperAction',row:0,cols:4,rows:4,frames:6,sequence:Object.freeze([11,12,13,14,15,11]),duration:.92,width:512,height:384}),
+  sniperMuzzle32:Object.freeze({asset:'pack32SniperEffects',row:0,cols:4,rows:4,frames:4,duration:.13,size:108}),
+  sniperSmoke32:Object.freeze({asset:'pack32SniperEffects',row:1,cols:4,rows:4,frames:4,duration:.38,size:116}),
+  sniperBullet32:Object.freeze({asset:'pack32SniperEffects',row:2,cols:4,rows:4,frames:4,duration:.11,size:84}),
+  sniperCasing32:Object.freeze({asset:'pack32SniperEffects',row:3,cols:4,rows:4,frames:4,duration:.42,size:68}),
+  plasmaReloadTactical33:Object.freeze({asset:'pack33PlasmaReload',cols:3,rows:2,frames:6,sequence:Object.freeze([5,1,2,3,4,5]),duration:1.49,width:768,height:576}),
+  plasmaReloadEmpty33:Object.freeze({asset:'pack33PlasmaReload',cols:3,rows:2,frames:8,sequence:Object.freeze([5,1,2,2,3,4,4,5]),duration:1.75,width:768,height:576}),
+  plasmaReloadHold33:Object.freeze({asset:'pack33PlasmaReady',cols:1,rows:1,frames:1,duration:1.75,width:960,height:720}),
   plasmaReloadTactical31:Object.freeze({asset:'pack31PlasmaReload',row:0,cols:4,rows:3,frames:10,sequence:Object.freeze([0,1,2,3,4,6,7,8,9,11]),duration:1.49,width:180,height:135}),
   plasmaReloadEmpty31:Object.freeze({asset:'pack31PlasmaReload',row:0,cols:4,rows:3,frames:12,duration:1.75,width:180,height:135})
 });
@@ -724,3 +912,11 @@ function generatedCombatVfxFrame(kind,index=0){
   }
   return presentationAtlasFrame(GAME_ASSETS.presentationVfx.combatAtlas,sourceFrame,spec.row,8,10);
 }
+
+const SHOTGUN_EFFECT_EMITTERS38=Object.freeze({"flame":[[0.889155,0.523923],[0.873206,0.536151],[0.909888,0.491228],[0.873206,0.49176]],"smoke":[[0.838118,0.597488],[0.838118,0.597744],[0.838118,0.555821],[0.838118,0.555423]]});
+// Dense emitter roots measured on the actual 1254x1254 source. Floor crops
+// alternate 313/314 pixels; normalize against each exact source cell, not 320.
+const PISTOL_EFFECT_EMITTERS40=Object.freeze({
+  flame:Object.freeze([[278/313,251/313],[264/314,253/313],[252/313,251/313],[253/314,251/313]]),
+  smoke:Object.freeze([[274/313,261/314],[266/314,260/314],[256/313,263/314],[258/314,269/314]])
+});
