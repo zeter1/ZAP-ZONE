@@ -64,6 +64,7 @@ jobs:
           node --check scripts/browser-cdp-session.test.mjs
           node --check scripts/browser-diagnostic-policy.mjs
           node --check scripts/browser-diagnostic-policy.test.mjs
+          node --check scripts/graphics-performance-owner.test.mjs
           node --check scripts/browser-boot-smoke.mjs
           node --check scripts/browser-menu-smoke.mjs
           node --check scripts/pistol-presentation-owner.test.mjs
@@ -138,6 +139,8 @@ jobs:
         run: node --test scripts/browser-cdp-session.test.mjs
       - name: Browser diagnostic policy regressions
         run: node --test scripts/browser-diagnostic-policy.test.mjs
+      - name: Graphics performance regressions
+        run: node --test scripts/graphics-performance-owner.test.mjs
 
       - name: Browser boot smoke test
         shell: bash
