@@ -31,7 +31,10 @@ test('missing Safari deviceMemory is not misclassified as 4GB',()=>{
   assert.match(engine,/HW_MEMORY=Number\.isFinite\(reportedMemory\).*?null/);
   const tier=ownerFunction(engine,'initialGraphicsTier');
   assert.equal(tier(false,false,false,false),2);
-  assert.equal(tier(false,false,false,true),1,'unknown Mac memory starts in balanced graphics');
+  assert.equal(tier(false,false,false,true),1,'unknown Mac memory or mobile Radeon starts in balanced graphics');
+  assert.match(engine,/const GRAPHICS_RADEON_5300M=/);
+  assert.match(engine,/GRAPHICS_MAC&&HW_MEMORY===null/);
+  assert.match(engine,/\|\|GRAPHICS_RADEON_5300M/);
   assert.equal(tier(false,false,true,true),0,'integrated Intel graphics starts low');
   assert.equal(tier(true,false,false,false),0);
   assert.equal(tier(false,true,false,false),0);
