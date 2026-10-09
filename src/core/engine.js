@@ -4,8 +4,10 @@
 const canvas=document.getElementById('canvas');
 const IS_TOUCH=false;
 const HW_THREADS=navigator.hardwareConcurrency||4;
-const HW_MEMORY=navigator.deviceMemory||4;
-const PERF_MODE=HW_THREADS<=4||HW_MEMORY<=4;
+// Safari does not expose deviceMemory. Missing data must not mean "4 GB".
+const reportedMemory=Number(navigator.deviceMemory);
+const HW_MEMORY=Number.isFinite(reportedMemory)&&reportedMemory>0?reportedMemory:null;
+const PERF_MODE=HW_THREADS<=4||(HW_MEMORY!==null&&HW_MEMORY<=4);
 const MOBILE_LOW=PERF_MODE;
 const VISUAL_LIGHTS=!PERF_MODE;
 const SKY_COLOR=new THREE.Color(0x111925);
@@ -20,8 +22,87 @@ const renderer=new THREE.WebGLRenderer({
   stencil:false
 });
 renderer.setSize(W,H,false);
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,PERF_MODE?1:1.25));
-renderer.shadowMap.enabled=!PERF_MODE;
+
+// ─── GRAPHICS QUALITY POLICY ──────────────────────────
+// Keep PERF_MODE/MOBILE_LOW fixed for asset/shader ownership. Only GPU
+// resolution and shadow quality are changed dynamically during the match.
+const GRAPHICS_TIERS=Object.freeze([.72,1,1.25]);
+const GRAPHICS_LABELS=Object.freeze(['Низкое','Среднее','Высокое']);
+const GRAPHICS_MODES=Object.freeze(['auto','low','medium','high']);
+function readGraphicsMode(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('zap_zone_settings_v1')||'{}');
+    return GRAPHICS_MODES.includes(saved.graphicsQuality)?saved.graphicsQuality:'auto';
+  }catch(e){return 'auto';}
+}
+function initialGraphicsTier(weakCpu,weakMemory,intelIntegrated,macUnknownMemory){
+  return weakCpu||weakMemory||intelIntegrated?0:macUnknownMemory?1:2;
+}
+const graphicsGl=renderer.getContext();
+const graphicsDebug=graphicsGl.getExtension('WEBGL_debug_renderer_info');
+const graphicsGpuName=graphicsDebug?String(graphicsGl.getParameter(graphicsDebug.UNMASKED_RENDERER_WEBGL)||''):'';
+const GRAPHICS_INTEL_GPU=/intel.*(?:iris|uhd|hd graphics)|(?:iris|uhd|hd graphics).*intel/i.test(graphicsGpuName);
+const GRAPHICS_MAC=/macintosh|mac os x/i.test(navigator.userAgent||'');
+const GRAPHICS_BASE_TIER=initialGraphicsTier(HW_THREADS<=4,HW_MEMORY!==null&&HW_MEMORY<=4,GRAPHICS_INTEL_GPU,GRAPHICS_MAC&&HW_MEMORY===null);
+const GRAPHICS_AUTO_MAX_TIER=PERF_MODE||GRAPHICS_INTEL_GPU?1:2;
+let graphicsMode=readGraphicsMode();
+let graphicsTier=graphicsMode==='auto'?GRAPHICS_BASE_TIER:GRAPHICS_MODES.indexOf(graphicsMode)-1;
+let graphicsSampleSeconds=0,graphicsSampleFrames=0,graphicsSlowFrames=0,graphicsGoodWindows=0;
+function graphicsPixelRatio(tier){return Math.min(devicePixelRatio||1,GRAPHICS_TIERS[tier]);}
+renderer.setPixelRatio(graphicsPixelRatio(graphicsTier));
+renderer.shadowMap.enabled=graphicsTier===2;
+function resetGraphicsSamples(){
+  graphicsSampleSeconds=0;graphicsSampleFrames=0;graphicsSlowFrames=0;graphicsGoodWindows=0;
+}
+function applyGraphicsTier(tier){
+  const next=Math.max(0,Math.min(2,tier));
+  if(next===graphicsTier)return;
+  const previousShadows=renderer.shadowMap.enabled;
+  graphicsTier=next;
+  renderer.setPixelRatio(graphicsPixelRatio(next));
+  renderer.shadowMap.enabled=next===2;
+  if(previousShadows!==renderer.shadowMap.enabled){
+    // Three.js r128 caches the shadow-enabled shader variant per material.
+    scene.traverse(node=>{
+      const materials=Array.isArray(node.material)?node.material:[node.material];
+      for(const material of materials)if(material)material.needsUpdate=true;
+    });
+    renderer.shadowMap.needsUpdate=true;
+  }
+}
+function setGraphicsQualityMode(mode){
+  const next=GRAPHICS_MODES.includes(mode)?mode:'auto';
+  if(next===graphicsMode)return;
+  graphicsMode=next;
+  resetGraphicsSamples();
+  applyGraphicsTier(next==='auto'?GRAPHICS_BASE_TIER:GRAPHICS_MODES.indexOf(next)-1);
+}
+function graphicsQualityLabel(){return GRAPHICS_LABELS[graphicsTier]+(graphicsMode==='auto'?' · авто':'');}
+function chooseNextGraphicsTier(average,slowShare,tier,maxTier,goodWindows){
+  if((average>1/42||slowShare>.16)&&tier>0)return{tier:tier-1,goodWindows:0};
+  if(average<1/57&&slowShare<.035&&tier<maxTier){
+    const stable=goodWindows+1;
+    return{tier:stable>=3?tier+1:tier,goodWindows:stable>=3?0:stable};
+  }
+  return{tier,goodWindows:0};
+}
+function sampleAdaptiveGraphics(frameSeconds){
+  if(graphicsMode!=='auto')return;
+  if(!Number.isFinite(frameSeconds)||frameSeconds<=0||frameSeconds>.20){
+    resetGraphicsSamples();return;
+  }
+  graphicsSampleSeconds+=frameSeconds;
+  graphicsSampleFrames++;
+  if(frameSeconds>1/35)graphicsSlowFrames++;
+  if(graphicsSampleSeconds<4)return;
+  const average=graphicsSampleSeconds/graphicsSampleFrames;
+  const slowShare=graphicsSlowFrames/graphicsSampleFrames;
+  graphicsSampleSeconds=0;graphicsSampleFrames=0;graphicsSlowFrames=0;
+  // Degrade after one poor 4-second window; upgrade only after three stable ones.
+  const next=chooseNextGraphicsTier(average,slowShare,graphicsTier,GRAPHICS_AUTO_MAX_TIER,graphicsGoodWindows);
+  graphicsGoodWindows=next.goodWindows;
+  applyGraphicsTier(next.tier);
+}
 renderer.shadowMap.type=PERF_MODE?THREE.BasicShadowMap:THREE.PCFSoftShadowMap;
 renderer.sortObjects=true;
 renderer.autoClear=true;

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="application-version" content="24.1">
-<meta name="application-build" content="4e84b3dadab7fdeb">
-<title>⚡ ZAP ZONE v24.1</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=4e84b3dadab7fdeb">
+<meta name="application-build" content="5a4dc10a2ccd7d8e">
+<title>⚡ ZAP ZONE v24.1</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=5a4dc10a2ccd7d8e">
 <link rel="icon" href="assets/ui/logo.svg" type="image/svg+xml">
 
 </head>
@@ -182,6 +182,16 @@
     <label class="setting-toggle"><span>Тряска экрана</span><input id="setting-shake" type="checkbox"></label>
     <label class="setting-toggle"><span>Динамический прицел</span><input id="setting-crosshair" type="checkbox"></label>
     <label class="setting-toggle"><span>Показывать FPS</span><input id="setting-fps" type="checkbox"></label>
+    <div class="setting-row">
+      <label for="setting-graphics">Качество графики</label>
+      <div class="setting-control"><select id="setting-graphics" aria-label="Качество графики">
+        <option value="auto">Авто (рекомендуется)</option>
+        <option value="low">Низкое</option>
+        <option value="medium">Среднее</option>
+        <option value="high">Высокое</option>
+      </select></div>
+    </div>
+    <div class="settings-graphics-state" id="setting-graphics-state" aria-live="polite">Сейчас: авто</div>
     <div class="settings-section-title">ТЕСТИРОВАНИЕ</div>
     <label class="setting-toggle"><span>Бессмертие</span><input id="setting-invincible" type="checkbox"></label>
     <label class="setting-toggle"><span>Остановить ботов</span><input id="setting-stop-bots" type="checkbox"></label>

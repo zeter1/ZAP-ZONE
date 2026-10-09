@@ -3,7 +3,7 @@
 // Player settings, Web Audio SFX and presentation-only combat feedback.
 const GAME_SETTINGS_KEY='zap_zone_settings_v1';
 const GAME_SETTINGS_DEFAULTS=Object.freeze({
-  sensitivity:1,sfx:.65,screenShake:true,dynamicCrosshair:true,showFps:false,
+  sensitivity:1,sfx:.65,screenShake:true,dynamicCrosshair:true,showFps:false,graphicsQuality:'auto',
   stopBots:false,infiniteAmmo:false,allWeapons:false,invincible:false
 });
 function clampSetting(v,min,max,fallback){
@@ -18,6 +18,7 @@ function loadGameSettings(){
       screenShake:saved.screenShake!==false,
       dynamicCrosshair:saved.dynamicCrosshair!==false,
       showFps:saved.showFps===true,
+      graphicsQuality:['auto','low','medium','high'].includes(saved.graphicsQuality)?saved.graphicsQuality:'auto',
       stopBots:saved.stopBots===true,
       infiniteAmmo:saved.infiniteAmmo===true,
       allWeapons:saved.allWeapons===true,
@@ -485,7 +486,8 @@ function triggerScreenShake(power=.3,duration=.12){
   shakePower=Math.max(shakePower,p);shakeDuration=Math.max(shakeDuration,Math.max(.06,Number(duration)||.12));shakeTime=Math.max(shakeTime,shakeDuration);
 }
 function tickGamePresentation(dt,ts){
-  const safeDt=Math.max(0,Math.min(.05,Number(dt)||0)),fps=byId('fps-counter');
+  const frameDt=Math.max(0,Math.min(.25,Number(dt)||0));
+  const safeDt=Math.min(.05,frameDt),fps=byId('fps-counter');
   tickGeneratedCombatVfx(safeDt);
   playerSuppression=Math.max(0,playerSuppression-safeDt*(playerSuppression>.85?.34:.52));
   playerSuppressionPulse=Math.max(0,playerSuppressionPulse-safeDt*1.35);
@@ -496,9 +498,16 @@ function tickGamePresentation(dt,ts){
   }
   const suppressionOverlay=ensureCombatOverlay('suppression-overlay','suppression');
   if(suppressionOverlay)suppressionOverlay.style.opacity=String(Math.min(.66,playerSuppression*.40+playerSuppressionPulse*.72));
+  if(settingsOpen){
+    const graphicsState=byId('setting-graphics-state');
+    const label='Сейчас: '+graphicsQualityLabel();
+    if(graphicsState&&graphicsState.textContent!==label)graphicsState.textContent=label;
+  }
   if(gameSettings.showFps&&fps){
-    fps.style.display='block';fpsAccum+=safeDt;fpsFrames++;
-    if(fpsAccum>=.45){fps.textContent='FPS '+Math.round(fpsFrames/Math.max(.001,fpsAccum));fpsAccum=0;fpsFrames=0;}
+    fps.style.display='block';
+    // Count actual wall-clock frame time; clamped animation dt inflated low-FPS readings.
+    if(frameDt>0){fpsAccum+=frameDt;fpsFrames++;}
+    if(fpsAccum>=.60){fps.textContent='FPS '+Math.round(fpsFrames/Math.max(.001,fpsAccum));fpsAccum=0;fpsFrames=0;}
   }else if(fps){fps.style.display='none';fpsAccum=0;fpsFrames=0;}
   if(shakeTime>0&&gameSettings.screenShake){
     shakeTime=Math.max(0,shakeTime-safeDt);const remain=shakeDuration>0?shakeTime/shakeDuration:0,amp=shakePower*remain;
@@ -509,10 +518,12 @@ function tickGamePresentation(dt,ts){
 }
 
 function syncSettingsControls(){
-  const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
+  const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps'),graphics=byId('setting-graphics');
   const stopBots=byId('setting-stop-bots'),infiniteAmmo=byId('setting-infinite-ammo'),allWeapons=byId('setting-all-weapons'),invincible=byId('setting-invincible');
   if(sens)sens.value=String(gameSettings.sensitivity);if(sfx)sfx.value=String(gameSettings.sfx);
   if(shake)shake.checked=gameSettings.screenShake;if(crosshair)crosshair.checked=gameSettings.dynamicCrosshair;if(fps)fps.checked=gameSettings.showFps;
+  if(graphics)graphics.value=gameSettings.graphicsQuality;
+  if(byId('setting-graphics-state'))byId('setting-graphics-state').textContent='Сейчас: '+graphicsQualityLabel();
   if(stopBots)stopBots.checked=gameSettings.stopBots;if(infiniteAmmo)infiniteAmmo.checked=gameSettings.infiniteAmmo;if(allWeapons)allWeapons.checked=gameSettings.allWeapons;if(invincible)invincible.checked=gameSettings.invincible;
   if(byId('setting-sensitivity-value'))byId('setting-sensitivity-value').textContent=gameSettings.sensitivity.toFixed(2)+'×';
   if(byId('setting-sfx-value'))byId('setting-sfx-value').textContent=Math.round(gameSettings.sfx*100)+'%';
@@ -520,6 +531,7 @@ function syncSettingsControls(){
 function applyGameSettings(){
   if(gameAudioMaster&&gameAudioCtx)gameAudioMaster.gain.setTargetAtTime(gameSettings.sfx,gameAudioCtx.currentTime,.02);
   const fps=byId('fps-counter');if(fps)fps.style.display=gameSettings.showFps?'block':'none';
+  setGraphicsQualityMode(gameSettings.graphicsQuality);
   if(!gameSettings.screenShake){shakeTime=0;shakePower=0;if(typeof canvas!=='undefined')canvas.style.transform='';}
   if(typeof applyPlayerTestingSettings==='function')applyPlayerTestingSettings();
   syncSettingsControls();
@@ -527,7 +539,7 @@ function applyGameSettings(){
 function openGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=true;syncSettingsControls();modal.classList.add('on');modal.setAttribute('aria-hidden','false');playSfx('ui');}
 function closeGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=false;modal.classList.remove('on');modal.setAttribute('aria-hidden','true');saveGameSettings();playSfx('ui');}
 function bindGameSettings(){
-  const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps');
+  const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps'),graphics=byId('setting-graphics');
   const stopBots=byId('setting-stop-bots'),infiniteAmmo=byId('setting-infinite-ammo'),allWeapons=byId('setting-all-weapons'),invincible=byId('setting-invincible');
   const primeAudio=()=>{ensureGameAudio();scheduleGameAudioWarmup();};
   window.addEventListener('pointerdown',primeAudio,{once:true,capture:true});
@@ -538,6 +550,7 @@ function bindGameSettings(){
   shake?.addEventListener('change',()=>{gameSettings.screenShake=shake.checked;saveGameSettings();});
   crosshair?.addEventListener('change',()=>{gameSettings.dynamicCrosshair=crosshair.checked;saveGameSettings();});
   fps?.addEventListener('change',()=>{gameSettings.showFps=fps.checked;saveGameSettings();});
+  graphics?.addEventListener('change',()=>{gameSettings.graphicsQuality=graphics.value;saveGameSettings();});
   stopBots?.addEventListener('change',()=>{gameSettings.stopBots=stopBots.checked;saveGameSettings();});
   infiniteAmmo?.addEventListener('change',()=>{gameSettings.infiniteAmmo=infiniteAmmo.checked;saveGameSettings();});
   allWeapons?.addEventListener('change',()=>{gameSettings.allWeapons=allWeapons.checked;saveGameSettings();});
