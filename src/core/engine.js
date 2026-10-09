@@ -78,6 +78,14 @@ function setGraphicsQualityMode(mode){
   applyGraphicsTier(next==='auto'?GRAPHICS_BASE_TIER:GRAPHICS_MODES.indexOf(next)-1);
 }
 function graphicsQualityLabel(){return GRAPHICS_LABELS[graphicsTier]+(graphicsMode==='auto'?' · авто':'');}
+function chooseNextGraphicsTier(average,slowShare,tier,maxTier,goodWindows){
+  if((average>1/42||slowShare>.16)&&tier>0)return{tier:tier-1,goodWindows:0};
+  if(average<1/57&&slowShare<.035&&tier<maxTier){
+    const stable=goodWindows+1;
+    return{tier:stable>=3?tier+1:tier,goodWindows:stable>=3?0:stable};
+  }
+  return{tier,goodWindows:0};
+}
 function sampleAdaptiveGraphics(frameSeconds){
   if(graphicsMode!=='auto')return;
   if(!Number.isFinite(frameSeconds)||frameSeconds<=0||frameSeconds>.20){
@@ -90,13 +98,10 @@ function sampleAdaptiveGraphics(frameSeconds){
   const average=graphicsSampleSeconds/graphicsSampleFrames;
   const slowShare=graphicsSlowFrames/graphicsSampleFrames;
   graphicsSampleSeconds=0;graphicsSampleFrames=0;graphicsSlowFrames=0;
-  if((average>1/42||slowShare>.16)&&graphicsTier>0){
-    graphicsGoodWindows=0;
-    applyGraphicsTier(graphicsTier-1);
-  }else if(average<1/57&&slowShare<.035&&graphicsTier<GRAPHICS_AUTO_MAX_TIER){
-    // Require three consecutive stable windows to recover visual quality.
-    if(++graphicsGoodWindows>=3){graphicsGoodWindows=0;applyGraphicsTier(graphicsTier+1);}
-  }else graphicsGoodWindows=0;
+  // Degrade after one poor 4-second window; upgrade only after three stable ones.
+  const next=chooseNextGraphicsTier(average,slowShare,graphicsTier,GRAPHICS_AUTO_MAX_TIER,graphicsGoodWindows);
+  graphicsGoodWindows=next.goodWindows;
+  applyGraphicsTier(next.tier);
 }
 renderer.shadowMap.type=PERF_MODE?THREE.BasicShadowMap:THREE.PCFSoftShadowMap;
 renderer.sortObjects=true;
