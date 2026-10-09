@@ -35,15 +35,22 @@ function readGraphicsMode(){
     return GRAPHICS_MODES.includes(saved.graphicsQuality)?saved.graphicsQuality:'auto';
   }catch(e){return 'auto';}
 }
-function initialGraphicsTier(weakCpu,weakMemory,intelIntegrated,macUnknownMemory){
-  return weakCpu||weakMemory||intelIntegrated?0:macUnknownMemory?1:2;
+function initialGraphicsTier(weakCpu,weakMemory,intelIntegrated,balancedStartup){
+  return weakCpu||weakMemory||intelIntegrated?0:balancedStartup?1:2;
 }
 const graphicsGl=renderer.getContext();
 const graphicsDebug=graphicsGl.getExtension('WEBGL_debug_renderer_info');
 const graphicsGpuName=graphicsDebug?String(graphicsGl.getParameter(graphicsDebug.UNMASKED_RENDERER_WEBGL)||''):'';
 const GRAPHICS_INTEL_GPU=/intel.*(?:iris|uhd|hd graphics)|(?:iris|uhd|hd graphics).*intel/i.test(graphicsGpuName);
 const GRAPHICS_MAC=/macintosh|mac os x/i.test(navigator.userAgent||'');
-const GRAPHICS_BASE_TIER=initialGraphicsTier(HW_THREADS<=4,HW_MEMORY!==null&&HW_MEMORY<=4,GRAPHICS_INTEL_GPU,GRAPHICS_MAC&&HW_MEMORY===null);
+// Radeon Pro/RX 5300M is a discrete GPU (often paired with Intel UHD 630 on Mac).
+// Bootstrap at medium quality rather than enabling shadows immediately. Auto
+// mode can still upgrade to high after sustained smooth measured frame times.
+const GRAPHICS_RADEON_5300M=/\b5300m\b/i.test(graphicsGpuName)&&/radeon|amd/i.test(graphicsGpuName);
+const GRAPHICS_BASE_TIER=initialGraphicsTier(
+  HW_THREADS<=4,HW_MEMORY!==null&&HW_MEMORY<=4,GRAPHICS_INTEL_GPU,
+  (GRAPHICS_MAC&&HW_MEMORY===null)||GRAPHICS_RADEON_5300M
+);
 const GRAPHICS_AUTO_MAX_TIER=PERF_MODE||GRAPHICS_INTEL_GPU?1:2;
 let graphicsMode=readGraphicsMode();
 let graphicsTier=graphicsMode==='auto'?GRAPHICS_BASE_TIER:GRAPHICS_MODES.indexOf(graphicsMode)-1;
