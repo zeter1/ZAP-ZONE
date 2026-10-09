@@ -8,6 +8,13 @@ let prevPX=0,prevPZ=0;
 // Auto-fire timer
 let autoFireT=0;
 
+// Up to 75 ms of real elapsed time is simulated per frame (13.3 FPS).
+// The old 33 ms cap made the entire game run in slow motion below 30 FPS.
+const MAX_ACTIVE_STEP_SECONDS=.075;
+function activeSimulationDelta(frameSeconds){
+  return Number.isFinite(frameSeconds)?Math.max(0,Math.min(frameSeconds,MAX_ACTIVE_STEP_SECONDS)):0;
+}
+
 function loop(ts){
   if(!running||paused||dying||lvlAnnOpen||perkPickOpen){cancelPendingMineThrow(true);cancelPendingSmokeThrow(true);}
   if(!running||paused||dying||lvlAnnOpen||perkPickOpen||webglLost)cancelPendingBombPlant();
@@ -29,7 +36,7 @@ function loop(ts){
   }
   if(dying){
     if(paused){lastT=ts;if(ts-idleRenderAt>=85){idleRenderAt=ts;renderFrame();}return;}
-    const deathDt=Math.min(Math.max(rawDt,0),.033);lastT=ts;
+    const deathDt=activeSimulationDelta(rawDt);lastT=ts;
     dyingT-=deathDt;
     if(typeof updateRespawnCountdownPresentation==='function')updateRespawnCountdownPresentation();
     if(typeof tickGeneratedPlayerDeathVfx==='function')tickGeneratedPlayerDeathVfx(deathDt);
@@ -43,7 +50,8 @@ function loop(ts){
   if(perkPickOpen||paused){lastT=ts;if(ts-idleRenderAt>=85){idleRenderAt=ts;renderFrame();}return;}
   if(!running){lastT=ts;if(ts-idleRenderAt>=120){idleRenderAt=ts;renderFrame();}return;}
 
-  const dt=Math.min(rawDt,.033);lastT=ts;
+  const dt=activeSimulationDelta(rawDt);lastT=ts;
+  sampleAdaptiveGraphics(rawDt);
   tickRocketFireCooldowns(dt);
 
   // Camera recoil recovery follows the current weapon mass/handling profile.
