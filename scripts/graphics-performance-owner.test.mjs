@@ -15,7 +15,7 @@ function ownerFunction(source,name,globals={}){
 }
 
 test('low FPS keeps real elapsed simulation time without losing a third of every frame',()=>{
-  const max=Number(runtime.match(/const MAX_ACTIVE_STEP_SECONDS=(\\.\\d+);/)?.[1]);
+  const max=Number(runtime.match(/const MAX_ACTIVE_STEP_SECONDS=(\.\d+);/)?.[1]);
   assert.equal(max,.075);
   const simulationDt=ownerFunction(runtime,'activeSimulationDelta',{MAX_ACTIVE_STEP_SECONDS:max});
   assert.ok(Math.abs(simulationDt(1/20)-1/20)<1e-12,'20 FPS must not run at 66% speed');
@@ -23,12 +23,12 @@ test('low FPS keeps real elapsed simulation time without losing a third of every
   assert.equal(simulationDt(.2),.075,'avoid huge simulation jumps');
   assert.equal(simulationDt(-1),0);
   assert.equal(simulationDt(NaN),0);
-  assert.match(runtime,/sampleAdaptiveGraphics\\(rawDt\\)/);
-  assert.match(runtime,/const deathDt=activeSimulationDelta\\(rawDt\\)/);
+  assert.match(runtime,/sampleAdaptiveGraphics\(rawDt\)/);
+  assert.match(runtime,/const deathDt=activeSimulationDelta\(rawDt\)/);
 });
 
 test('missing Safari deviceMemory is not misclassified as 4GB',()=>{
-  assert.match(engine,/HW_MEMORY=Number\\.isFinite\\(reportedMemory\\).*?null/);
+  assert.match(engine,/HW_MEMORY=Number\.isFinite\(reportedMemory\).*?null/);
   const tier=ownerFunction(engine,'initialGraphicsTier');
   assert.equal(tier(false,false,false,false),2);
   assert.equal(tier(false,false,false,true),1,'unknown Mac memory starts in balanced graphics');
@@ -51,15 +51,15 @@ test('adaptive resolution downgrades quickly and upgrades only after sustained g
   assert.equal(good3.tier,1);
   assert.equal(good3.goodWindows,0);
   assert.equal(decide(1/60,0,1,1,2).tier,1,'integrated GPU auto quality is capped');
-  assert.match(engine,/renderer\\.setPixelRatio\\(graphicsPixelRatio\\(next\\)\\)/);
-  assert.match(engine,/renderer\\.shadowMap\\.enabled=next===2/);
+  assert.match(engine,/renderer\.setPixelRatio\(graphicsPixelRatio\(next\)\)/);
+  assert.match(engine,/renderer\.shadowMap\.enabled=next===2/);
 });
 
 test('graphics manual override and accurate FPS are wired through settings',()=>{
   assert.match(html,/id="setting-graphics"/);
   assert.match(html,/<option value="auto">/);
   assert.match(settings,/graphicsQuality:\['auto','low','medium','high'\]/);
-  assert.match(settings,/setGraphicsQualityMode\\(gameSettings\\.graphicsQuality\\)/);
-  assert.match(settings,/fpsAccum\\+=frameDt/);
-  assert.doesNotMatch(settings,/fpsAccum\\+=safeDt/);
+  assert.match(settings,/setGraphicsQualityMode\(gameSettings\.graphicsQuality\)/);
+  assert.match(settings,/fpsAccum\+=frameDt/);
+  assert.doesNotMatch(settings,/fpsAccum\+=safeDt/);
 });
