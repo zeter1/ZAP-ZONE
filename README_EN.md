@@ -1,6 +1,6 @@
-# ZAP ZONE
-
 **Язык / Language:** [Русский](README.md) · **English**
+
+# ZAP ZONE
 
 ZAP ZONE is a browser-based 3D team FPS built with Three.js/WebGL. You and four allied AI bots fight five enemy bots. Matches are single-player and do not require other players to connect.
 
@@ -38,8 +38,6 @@ Automated structure and browser boot checks do not prove the full interactive co
 Report a bug at https://github.com/zeter1/ZAP-ZONE/issues/new?template=bug_report.yml. Include the browser/version, GPU/WebGL environment, graphics settings, weapon or AI scenario, exact steps and a short console excerpt without secrets. Use [SECURITY.md](SECURITY.md) for vulnerability disclosure.
 
 ## Developer contacts
-
-**Язык / Language:** [Русский](README.md#контакты-для-связи-с-разработчиком) · **English**
 
 - [zeter11@gmail.com](mailto:zeter11@gmail.com)
 - [https://t.me/zeter1](https://t.me/zeter1)
