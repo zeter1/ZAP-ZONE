@@ -14,7 +14,7 @@ class Geometry{
   computeBoundingSphere(){}
 }
 class Material{
-  constructor(opts={}){Object.assign(this,opts);this.visible=true;}
+  constructor(opts={}){Object.assign(this,opts);this.visible=true;this.userData={};}
 }
 class Node{
   constructor(){

@@ -95,7 +95,7 @@ function chooseNextGraphicsTier(average,slowShare,tier,maxTier,goodWindows){
 }
 function sampleAdaptiveGraphics(frameSeconds){
   if(graphicsMode!=='auto')return;
-  if(!Number.isFinite(frameSeconds)||frameSeconds<=0||frameSeconds>.20){
+  if(!Number.isFinite(frameSeconds)||frameSeconds<=0){
     resetGraphicsSamples();return;
   }
   graphicsSampleSeconds+=frameSeconds;
@@ -139,7 +139,7 @@ function disposeMaterial(material){
   if(!material)return;
   const mats=Array.isArray(material)?material:[material];
   for(const m of mats){
-    if(!m)continue;
+    if(!m||m.userData?.sharedSceneResource)continue;
     for(const key of ['map','alphaMap','aoMap','bumpMap','emissiveMap','envMap','lightMap','metalnessMap','normalMap','roughnessMap']){
       if(m[key]&&m[key].dispose)m[key].dispose();
     }
@@ -149,7 +149,7 @@ function disposeMaterial(material){
 function disposeObject3D(obj){
   if(!obj)return;
   obj.traverse?.(node=>{
-    if(node.geometry&&node.geometry.dispose)node.geometry.dispose();
+    if(node.geometry&&!node.geometry.userData?.sharedSceneResource&&node.geometry.dispose)node.geometry.dispose();
     disposeMaterial(node.material);
   });
 }
@@ -801,7 +801,22 @@ function tickParticles(dt){
   while(_pCount>0&&_pp[_pHead].life<=0){_pHead=(_pHead+1)%P_MAX;_pCount--;}
 }
 
-const _eLights=[];
+// r128 includes the number of visible PointLights in the shader program key.
+// Create a small scene-lifetime topology before preload compile; inactive lights
+// stay visible with intensity 0. Saturation drops only decorative illumination.
+const _eLights=createTransientLightPool(1,0xff4400,10);
+const _headshotLights=createTransientLightPool(1,0xff7b28,10);
+function createTransientLightPool(capacity,color,distance){
+  const pool=[];
+  if(VISUAL_LIGHTS)for(let i=0;i<capacity;i++){
+    const light=new THREE.PointLight(color,0,distance);
+    light._act=false;scene.add(light);pool.push(light);
+  }
+  return pool;
+}
+function releaseTransientLight(light){
+  light._act=false;light.intensity=0;
+}
 function makeProceduralBurst(color,size=1,spokes=8,coreColor=0xffffff){
   const g=new THREE.Group();
   const rayMat=new THREE.MeshBasicMaterial({
@@ -875,9 +890,8 @@ function explode(pos,col,r=3,screenShockwave=true,presentation=true){
   }
   if(screenShockwave&&typeof triggerExplosionShockwave==='function')triggerExplosionShockwave(pos,r);
   if(!VISUAL_LIGHTS)return;
-  let fl=_eLights.find(l=>!l._act);
-  if(!fl){fl=new THREE.PointLight(0xff4400,0,10);fl._act=false;scene.add(fl);_eLights.push(fl);}
-  fl.color.setHex(col);fl.intensity=5.5;fl.distance=r*2.4;fl.position.copy(pos);fl._act=true;fl.visible=true;fl._t=0.12;
+  const fl=_eLights.find(l=>!l._act);
+  if(fl){fl.color.setHex(col);fl.intensity=5.5;fl.distance=r*2.4;fl.position.copy(pos);fl._act=true;fl._t=0.12;}
 }
 
 const headshotFx=[];
@@ -923,8 +937,8 @@ function spawnHeadshotFx(pos,lethal=false){
     for(let i=0;i<(MOBILE_LOW?5:12);i++)spawnSpark(center,i%3===0?0xffffff:0xffb128);
 
     if(VISUAL_LIGHTS){
-      light=new THREE.PointLight(0xff7b28,7.2,10);
-      light.position.copy(center);scene.add(light);
+      light=_headshotLights.find(l=>!l._act)||null;
+      if(light){light.intensity=7.2;light.position.copy(center);light._act=true;}
     }
   }else{
     for(let i=0;i<(MOBILE_LOW?3:7);i++)spawnSpark(center,i%2?0xffb52e:0xff5331);
@@ -959,10 +973,21 @@ function tickHeadshotFx(dt){
       destroySceneObject(fx.ring);destroySceneObject(fx.marker);
       if(fx.shell)destroySceneObject(fx.shell);
       if(fx.beam)destroySceneObject(fx.beam);
-      if(fx.light){scene.remove(fx.light);fx.light.dispose?.();}
+      // This effect retains its light until retirement, so an older effect
+      // cannot disable a slot that a newer headshot has acquired.
+      if(fx.light)releaseTransientLight(fx.light);
       headshotFx.splice(i,1);
     }
   }
+}
+function resetTransientCombatLights(){
+  // Retire effect records before freeing their light leases. Otherwise a
+  // pre-restart headshot could later dim a slot acquired by the new match.
+  for(const fx of headshotFx){
+    for(const mesh of [fx.ring,fx.marker,fx.shell,fx.beam])if(mesh)destroySceneObject(mesh);
+  }
+  headshotFx.length=0;
+  for(const pool of [_eLights,_mzLights,_headshotLights])for(const light of pool)releaseTransientLight(light);
 }
 
 
@@ -1101,7 +1126,7 @@ function tickImpactMarks(dt){
     if(d.life<=0){releaseImpactMark(d.m);impactMarks.splice(i,1);}
   }
 }
-function tickExpLights(dt){for(const l of _eLights){if(!l._act)continue;l._t-=dt;l.intensity=Math.max(0,l.intensity-dt*50);if(l._t<=0){l._act=false;l.visible=false;}}}
+function tickExpLights(dt){for(const l of _eLights){if(!l._act)continue;l._t-=dt;l.intensity=Math.max(0,l.intensity-dt*50);if(l._t<=0)releaseTransientLight(l);}}
 
 const _gibs=[];
 function tickGibs(dt){
@@ -1115,12 +1140,12 @@ function tickGibs(dt){
   }
 }
 
-const _mzLights=[];
+const _mzLights=createTransientLightPool(2,0xffb347,7);
 const casings=[];
 const _casingGeo=new THREE.CylinderGeometry(.022,.022,.10,7);
 const _casingBrassMat=new THREE.MeshStandardMaterial({color:0xc99a42,roughness:.34,metalness:.72});
 const _casingShellMat=new THREE.MeshStandardMaterial({color:0xb12a21,roughness:.38,metalness:.42});
-function getMzLight(){let l=_mzLights.find(x=>!x._act);if(!l){l=new THREE.PointLight(0xffb347,0,7);l._act=false;scene.add(l);_mzLights.push(l);}return l;}
+function getMzLight(){return _mzLights.find(x=>!x._act)||null;}
 function trigMuzzle(pos,col,power=1,visual=true){
   if(!visual){
     const count=Math.max(2,Math.round(3*power));
@@ -1131,11 +1156,13 @@ function trigMuzzle(pos,col,power=1,visual=true){
   }
   if(VISUAL_LIGHTS){
     const l=getMzLight();
-    l.position.copy(pos);
-    l.color.setHex(0xffb25a);
-    l.intensity=4.2*power;
-    l.distance=5.5+power*1.5;
-    l._act=true;l.visible=true;l._t=.055;
+    if(l){
+      l.position.copy(pos);
+      l.color.setHex(0xffb25a);
+      l.intensity=4.2*power;
+      l.distance=5.5+power*1.5;
+      l._act=true;l._t=.055;
+    }
   }
   for(let i=0;i<Math.max(2,Math.round(3*power));i++){
     const off=pos.clone().addScaledVector(new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5),.12);
@@ -1171,4 +1198,4 @@ function tickCasings(dt){
     if(c.life<=0){scene.remove(c.m);casings.splice(i,1);}
   }
 }
-function tickMzLights(dt){for(const l of _mzLights){if(!l._act)continue;l._t-=dt;l.intensity=Math.max(0,l.intensity-dt*90);if(l._t<=0){l._act=false;l.visible=false;}}}
+function tickMzLights(dt){for(const l of _mzLights){if(!l._act)continue;l._t-=dt;l.intensity=Math.max(0,l.intensity-dt*90);if(l._t<=0)releaseTransientLight(l);}}

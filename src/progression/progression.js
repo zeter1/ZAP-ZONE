@@ -557,8 +557,7 @@ function clearWorldForFreshGame(){
   impactMarks.forEach(d=>{scene.remove(d.m);d.m.geometry.dispose();d.m.material.dispose();});impactMarks.length=0;
   bombBlastWaves.forEach(w=>{destroySceneObject(w.ring);destroySceneObject(w.shell);destroySceneObject(w.core);});bombBlastWaves.length=0;
   for(let i=0;i<P_MAX;i++){_pm[i].visible=false;_pp[i].life=0;}_pHead=0;_pCount=0;
-  for(const l of _eLights){l._act=false;l.visible=false;}
-  for(const l of _mzLights){l._act=false;l.visible=false;}
+  resetTransientCombatLights();
 }
 function restartGameFromScratch(){
   if(typeof clearBombPresentation41==='function')clearBombPresentation41();

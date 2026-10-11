@@ -486,7 +486,7 @@ function triggerScreenShake(power=.3,duration=.12){
   shakePower=Math.max(shakePower,p);shakeDuration=Math.max(shakeDuration,Math.max(.06,Number(duration)||.12));shakeTime=Math.max(shakeTime,shakeDuration);
 }
 function tickGamePresentation(dt,ts){
-  const frameDt=Math.max(0,Math.min(.25,Number(dt)||0));
+  const frameDt=Number.isFinite(dt)?Math.max(0,dt):0;
   const safeDt=Math.min(.05,frameDt),fps=byId('fps-counter');
   tickGeneratedCombatVfx(safeDt);
   playerSuppression=Math.max(0,playerSuppression-safeDt*(playerSuppression>.85?.34:.52));

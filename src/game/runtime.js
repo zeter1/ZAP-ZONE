@@ -16,6 +16,7 @@ function activeSimulationDelta(frameSeconds){
 }
 
 function loop(ts){
+  if(!running||paused||dying||portraitBlocked||lvlAnnOpen||perkPickOpen||webglLost)resetGraphicsSamples();
   if(!running||paused||dying||lvlAnnOpen||perkPickOpen){cancelPendingMineThrow(true);cancelPendingSmokeThrow(true);}
   if(!running||paused||dying||lvlAnnOpen||perkPickOpen||webglLost)cancelPendingBombPlant();
   requestAnimationFrame(loop);
@@ -28,7 +29,7 @@ function loop(ts){
     if(ts-idleRenderAt>=180){idleRenderAt=ts;renderFrame();}
     return;
   }
-  tickGamePresentation(Math.min(Math.max(rawDt||0,0),.05),ts);
+  tickGamePresentation(rawDt,ts);
   // Страховка от редкого сброса pointer lock: если курсор появился во время
   // активной игры, симуляция сразу ставится на паузу и открывает нормальное меню.
   if(!IS_TOUCH&&running&&!paused&&!dying&&!perkPickOpen&&!lvlAnnOpen&&document.pointerLockElement!==canvas){

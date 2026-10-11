@@ -52,6 +52,7 @@ function botModel46Materials(team){
     MAT_VISOR:new VisorMaterial({color:ally?0x074957:0x4a1018,roughness:.12,metalness:.10,clearcoat:1,clearcoatRoughness:.08,emissive:glow,emissiveIntensity:visorGlowIntensity}),
     MAT_RUBBER:new THREE.MeshStandardMaterial({color:0x040609,roughness:.84,metalness:.03})
   });
+  for(const material of Object.values(set))material.userData.sharedSceneResource=true;
   _BOT_MODEL_46_MATERIALS.set(key,set);
   return set;
 }
@@ -84,6 +85,7 @@ function botModel46Geometry(componentName){
   }
   geo.computeBoundingBox();geo.computeBoundingSphere();
   geo.userData.botMaterialNames=materialNames;
+  geo.userData.sharedSceneResource=true;
   _BOT_MODEL_46_GEOMETRIES.set(componentName,geo);
   return geo;
 }

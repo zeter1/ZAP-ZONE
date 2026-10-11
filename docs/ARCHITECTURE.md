@@ -399,4 +399,12 @@ Pure rig extraction сохраняет gameplay hit-mesh order, default weapon p
 
 ## Reusable cross-system patterns
 
+### Render timing and scene-lifetime resources
+
+`src/game/runtime.js` passes raw frame seconds to the FPS presentation owner in `src/settings/settings.js` and to adaptive graphics in `src/core/engine.js`. Only simulation (`.075` seconds) and presentation animation (`.05` seconds) are capped. Active frames above 200 ms remain poor-frame evidence; inactive/paused frames reset adaptive observations so menu time cannot trigger an upgrade.
+
+Pack46 and Pack47 cached geometry/materials mark `userData.sharedSceneResource=true`. Generic object retirement in engine preserves these scene-lifetime resources while still disposing private geometry, materials and their textures, including detached bot gibs. These cached packs contain no textures; the flag does not globally exempt other assets from cleanup.
+
+Engine creates fixed transient PointLight pools before preload compilation: two muzzle lights, one explosion light and one headshot light. Inactive slots stay visible at zero intensity; saturated slots omit only decorative illumination without changing gameplay or RNG. Headshots retain their slot until the effect retires, preventing stale effects from disabling a reused slot. Fresh-game cleanup in progression delegates to `resetTransientCombatLights()`: it retires headshot meshes/records and releases every slot without hiding/removing the pooled lights. Four always-present transient lights add a bounded PBR light-loop cost in exchange for stable Three r128 shader light topology. `PERF_MODE` continues to own whether these pools exist; adaptive resolution never changes it. Behavioral regression: `scripts/render-lifecycle-regression.test.mjs`; real shader/GPU behavior requires browser verification.
+
 - measured runtime fact → deterministic derived policy → one semantic owner: `docs/patterns/MEASURED_RUNTIME_STATE.md`. Use this instead of duplicating post-collision velocity/state from an intent or FSM label.

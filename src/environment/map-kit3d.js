@@ -42,6 +42,7 @@ function mapKit47Materials(){
     MAT_WARNING:new THREE.MeshStandardMaterial({color:0xf05a18,roughness:.48,metalness:.12,emissive:0x631500,emissiveIntensity:.22}),
     MAT_RUBBER:new THREE.MeshStandardMaterial({color:0x090d11,roughness:.90,metalness:.02})
   });
+  for(const material of Object.values(_MAP47_MATS))material.userData.sharedSceneResource=true;
   return _MAP47_MATS;
 }
 function mapKit47Geometry(name){
@@ -61,6 +62,7 @@ function mapKit47Geometry(name){
   }
   g.computeBoundingBox();g.computeBoundingSphere();
   g.userData.mapKit47MaterialNames=names;
+  g.userData.sharedSceneResource=true;
   _MAP47_GEOS.set(name,g);return g;
 }
 function createMapKit47Piece(name){
