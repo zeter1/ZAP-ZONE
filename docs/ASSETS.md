@@ -224,14 +224,19 @@ synthesis fallback. Реальный звук на пользовательск�
 legacy01 получает matching reload22, иначе сохраняется procedural fallback.
 
 `src/settings/settings.js` привязывает вспышку и дым к нулевому маркеру
-дула внутри трансформируемого stage. Координаты ready36:20.3%/22.5%,
+дула внутри трансформируемого stage. Исходный ready36 не имеет отчётливого отверстия: торец выглядит закрытым.
+DOM-элемент `#fp-rifle-muzzle-mouth` обозначает тёмный канал9×20px с кромкой
+в точке(188,160) исходного960×720 (19.583333%/22.222222%). Он использует
+тот же stage/координаты, что и эффекты, и скрыт при action, legacy fallback и смене оружия;
 измеренный угол оси ствола:-157°. Вспышка закреплена именно точкой выхода
 пламени каждого tile, а не центром изображения: origins (.900,.755),
 (.865,.755),(.785,.755),(.780,.755). Отдача/resize перемещают и дуло,
 и огонь совместно. Runtime повторно привязывает активные rifle-эффекты
 после текущего sway/recoil transform, не продвигая age или задержку дыма.
 Дым закреплён нижним узким хвостом каждого кадра
-(origins .60/.96, .47/.98, .68/.98, .35/.98) и поднимается от дула.
+(origins 115/192,146/192; 116/192,163/192; 91/192,164/192; 93/192,171/192)
+и выходит по оси ствола, затем плавно загибается вверх за .32с. Полоса дыма — y=240..432 исходного768×768:
+дробный row1.25 исключает остатки вспышки и сохраняет нижние хвосты клубов.
 В оптике rifle вспышка и дым игрока не создаются; уже активные эффекты
 скрываются при входе в прицел. Procedural fallback также не создаёт
 огонь/дым в оптике при отказе ready/effects. Попадания и полёт пуль сохранены.
@@ -395,6 +400,10 @@ failure of both ready images returns the procedural rig and marks the load termi
 until weapon reselection (no per-frame request retry). Switching cancels action
 through the existing loadId/lifecycle owner. Source/prompt/dimensions/hash mapping:
 `asset-staging/2026-10-03-plasma-fp-pack-33/`.
+
+Ready plasma bore (-152° in the source image) is aligned to the live centre reticle
+around its muzzle, including resize and recoil. The stage uses the same lower-right
+framing owner as rifle/shotgun; reload retains its existing action sequence and timing.
 
 Player plasma launch uses a zero-size `#fp-plasma-muzzle-anchor` inside the
 transformed weapon stage, rather than the animated flash rectangle (whose scale

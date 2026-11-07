@@ -704,11 +704,13 @@ function positionGeneratedCombatVfx(item){
         else if(marker){const r=marker.getBoundingClientRect();x=r.left;y=r.top;}
         if(item.kind==='rifleMuzzle36'||item.kind==='rifleSmoke36'){
           const angle=Math.atan2(innerHeight*.5-y,innerWidth*.5-x);
-          item.rotation=item.kind==='rifleSmoke36'?0:angle*180/Math.PI-180;
+          // The first smoke leaves along the bore, then bends upward as it cools.
+          const smokeProgress=Math.max(0,Math.min(1,((item.age||0)-(item.delay||0))/item.spec.duration));
+          item.rotation=item.kind==='rifleSmoke36'?(angle*180/Math.PI+90)*(1-smokeProgress):angle*180/Math.PI-180;
           // Each generated tile has its nozzle at a different pixel, away from
           // its center. Pin that pixel to the live zero-size barrel marker.
           // Smoke rises from the narrow lower tail in each tile.
-          const origins=item.kind==='rifleSmoke36'?[[.60,.96],[.47,.98],[.68,.98],[.35,.98]]:[[.900,.755],[.865,.755],[.785,.755],[.780,.755]];
+          const origins=item.kind==='rifleSmoke36'?[[115/192,146/192],[116/192,163/192],[91/192,164/192],[93/192,171/192]]:[[.900,.755],[.865,.755],[.785,.755],[.780,.755]];
           const origin=origins[Math.max(0,Math.min(3,item.frame))];
           el.style.transformOrigin=(origin[0]*100)+'% '+(origin[1]*100)+'%';
           el.style.transform='translate('+(-origin[0]*100)+'%,'+(-origin[1]*100)+'%) rotate(var(--vfx-rot)) scale(var(--vfx-scale))';

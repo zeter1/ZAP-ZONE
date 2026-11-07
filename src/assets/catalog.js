@@ -833,7 +833,8 @@ const GENERATED_COMBAT_VFX_SPECS=Object.freeze({
   rifleReloadEmpty36:Object.freeze({asset:'pack36RifleReload',cols:3,rows:2,frames:6,sequence:Object.freeze([5,1,2,3,4,5]),duration:2.408,width:768,height:576}),
   rifleReloadHold36:Object.freeze({asset:'pack36RifleReady',cols:1,rows:1,frames:1,duration:2.408,width:960,height:720}),
   rifleMuzzle36:Object.freeze({asset:'pack36RifleEffects',row:0,cols:4,rows:4,frames:4,duration:.09,size:104}),
-  rifleSmoke36:Object.freeze({asset:'pack36RifleEffects',row:1,cols:4,rows:4,frames:4,duration:.32,size:96}),
+  // Smoke occupies y=240..432, not the uniform y=192..384 grid row.
+  rifleSmoke36:Object.freeze({asset:'pack36RifleEffects',row:1.25,cols:4,rows:4,frames:4,duration:.32,size:96}),
   rifleCasing36:Object.freeze({asset:'pack36RifleEffects',row:3,cols:4,rows:4,frames:4,duration:.32,size:42}),
   rifleReloadTactical:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:9,sequence:Object.freeze([0,1,2,3,4,5,6,7,11]),duration:1.45,width:450,height:400}),
   rifleReloadEmpty:Object.freeze({asset:'pack22RifleReload',row:0,cols:4,rows:3,frames:12,duration:2.05,width:450,height:400}),

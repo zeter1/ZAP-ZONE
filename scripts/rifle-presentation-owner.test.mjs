@@ -108,18 +108,20 @@ test('exactly one muzzle owner survives every ready/effects fallback combination
 });
 
 test('rifle smoke tail follows muzzle in all four frames through movement and scale',()=>{
-  const origins=[[.60,.96],[.47,.98],[.68,.98],[.35,.98]];
+  const origins=[[115/192,146/192],[116/192,163/192],[91/192,164/192],[93/192,171/192]];
   for(const [x,y] of [[1012,558],[768,620]])for(const scale of [.7,1,1.1])for(let frame=0;frame<4;frame++){
     const style={setProperty(k,v){this[k]=v;}};
     const c=vm.createContext({innerWidth:1920,innerHeight:900,G:()=>null,byId:id=>id==='fp-rifle-muzzle-anchor'?{getBoundingClientRect:()=>({left:x,top:y})}:null});
-    const item={kind:'rifleSmoke36',anchor:'rifleMuzzle',frame,spec:{size:96},el:{style},scale,rotation:35};
+    const age=.32*(frame+.25)/4;
+    const item={kind:'rifleSmoke36',anchor:'rifleMuzzle',frame,age,delay:0,spec:{size:96,duration:.32},el:{style},scale,rotation:35};
     c.item=item;vm.runInContext(fn(settings,'positionGeneratedCombatVfx')+'\npositionGeneratedCombatVfx(item)',c);
     assert.equal(Number.parseFloat(style.left),x);assert.equal(Number.parseFloat(style.top),y);
     const origin=style.transformOrigin.split(' ').map(Number.parseFloat);
     const shift=style.transform.match(/translate\(([-.\d]+)%,([-.\d]+)%\)/).slice(1).map(Number);
     assert.ok(Math.abs(origin[0]-origins[frame][0]*100)<1e-9);assert.ok(Math.abs(origin[1]-origins[frame][1]*100)<1e-9);
     assert.ok(Math.abs(origin[0]+shift[0])<1e-9&&Math.abs(origin[1]+shift[1])<1e-9);
-    assert.equal(style['--vfx-rot'],'0.00deg');
+    const bore=Math.atan2(450-y,960-x)*180/Math.PI;
+    assert.ok(Math.abs(Number.parseFloat(style['--vfx-rot'])-(bore+90)*(1-age/.32))<.006,'smoke starts along the bore and bends upward');
   }
 });
 test('entering optics hides already emitted rifle flame and smoke immediately',()=>{
@@ -154,4 +156,40 @@ test('rifle effects align after current weapon transform without advancing delay
   vm.runInContext(fn(settings,'syncGeneratedRifleEffectAnchors36')+'\nsyncGeneratedRifleEffectAnchors36()',c);
   assert.deepEqual(calls,[flame]);assert.equal(smoke.age,.016);assert.equal(smoke.el.style.visibility,'hidden');
   calls.length=0;smoke.age=.04;vm.runInContext('syncGeneratedRifleEffectAnchors36()',c);assert.deepEqual(calls,[smoke,flame]);assert.equal(smoke.age,.04);
+});
+
+test('smoke atlas crop contains full measured tails without the preceding flame row',()=>{
+  const catalog=read('src/assets/catalog.js');
+  const source=fn(catalog,'generatedCombatVfxSpec')+'\n'+fn(catalog,'generatedCombatVfxFrame')+'\n'+fn(catalog,'presentationAtlasFrame');
+  const spec=catalog.match(/rifleSmoke36:Object.freeze\((\{[^\n]+\})\),/)[1];
+  const c=vm.createContext({GAME_ASSETS:{presentationVfx:{pack36RifleEffects:'effects.webp'}}});
+  vm.runInContext('const GENERATED_COMBAT_VFX_SPECS={rifleSmoke36:'+spec+'};\n'+source,c);
+  for(let frame=0;frame<4;frame++){
+    const f=vm.runInContext('generatedCombatVfxFrame("rifleSmoke36",'+frame+')',c);
+    const top=f.row*768/f.rows,bottom=top+768/f.rows;
+    assert.equal(f.col,frame);assert.equal(top,240);assert.equal(bottom,432);
+    assert.ok(top>224,'exclude the painted flame tails');
+    assert.ok(bottom>412&&bottom<470,'include full smoke and exclude bullet row');
+  }
+});
+
+test('rifle visible bore and effect anchor share the approved ready outlet',()=>{
+  const begin=weapons.indexOf('const FP_GENERATED_ART_TUNING=');
+  const end=weapons.indexOf('\n});',begin)+4;
+  assert.ok(begin>=0&&end>begin);
+  const c=vm.createContext({});
+  vm.runInContext(weapons.slice(begin,end)+'\nthis.tune=FP_GENERATED_ART_TUNING.rifle;',c);
+  // Runtime defines the outlet because the source cap has no distinct painted hole.
+  assert.ok(Math.abs(parseFloat(c.tune.muzzleX)*960/100-188)<.01);
+  assert.ok(Math.abs(parseFloat(c.tune.muzzleY)*720/100-160)<.01);
+});
+
+test('rifle bore hides immediately during full first-person actions',()=>{
+  const mouth={hidden:false},action={style:{},classList:{add(){}}},img={style:{}};
+  const c=vm.createContext({fpGeneratedWeaponActive:true,fpGeneratedWeaponAction:null,
+    G:id=>id==='fp-rifle-muzzle-mouth'?mouth:id==='fp-weapon-art'?img:id==='fp-weapon-action'?action:null,
+    generatedCombatVfxSpec:()=>({duration:1,frames:1}),generatedCombatVfxFrame:()=>({asset:'ready'}),
+    stopGeneratedFirstPersonAction(){},applyPresentationAtlasFrame(){}});
+  vm.runInContext(fn(weapons,'playGeneratedFirstPersonAction')+'\nplayGeneratedFirstPersonAction("rifleReloadHold36",1)',c);
+  assert.equal(mouth.hidden,true);assert.equal(img.style.opacity,'0');
 });

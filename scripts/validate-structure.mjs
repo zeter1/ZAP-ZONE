@@ -568,7 +568,7 @@ for(const token of ['perkAsset(p.id,p.path)','perkAsset(perk.id,perk.path)','per
 
 const weapons=readFileSync('src/weapons/system.js','utf8');
 for(const token of ["GAME_ASSETS.presentationCombat?.plasmaMuzzle","GAME_ASSETS.presentationCombat?.ballisticMuzzle","--fp-flash-x","--fp-flash-y"])if(!weapons.includes(token))fail('generated muzzle-flash sheet wiring missing: '+token);
-if(!weapons.includes("pistol:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'30%',muzzleY:'23%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0")||!weapons.includes("rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'20.3%',muzzleY:'22.5%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0"))fail('pistol/rifle generated muzzle fire must stay disabled');
+if(!weapons.includes("pistol:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'30%',muzzleY:'23%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0")||!weapons.includes("rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'19.583333%',muzzleY:'22.222222%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0"))fail('pistol/rifle generated muzzle fire must stay disabled');
 if(!weapons.includes("['pistol','rifle','shotgun','rocket'].includes(w.key)?null:GAME_ASSETS.presentationCombat?.ballisticMuzzle"))fail('pistol/rifle ballistic muzzle sheet must stay detached');
 const weaponDefs=[...weapons.matchAll(/weaponDef\('([^']+)'/g)].map(m=>m[1]);
 if(weaponDefs.length!==10)fail('expected 10 weapon definitions, found '+weaponDefs.length);

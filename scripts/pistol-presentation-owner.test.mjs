@@ -146,7 +146,7 @@ test('32 pistol flights cannot erase a real rifle shot; admission hides then dec
   rifleReady=false;vm.runInContext('syncRifleFlightArt36()',c);assert.equal(nodes.size,0);assert.equal(rifle._rifleArt,null);assert.equal(rifle.m,tracer);assert.equal(tracer.visible,true);assert.equal(draws,1);assert.equal(bullets.length,1);
 });
 function pistolLayoutFixture(width,height,pose,{drawX=0,drawY=0,drawRot=0,scale=1}={}){
-  const start=system.indexOf("  if(key==='pistol'){",system.indexOf('function syncGeneratedFirstPersonWeaponArt')),end=system.indexOf("  }else if(key==='rifle'||key==='shotgun'){",start);
+  const start=system.indexOf("  if(key==='pistol'){",system.indexOf('function syncGeneratedFirstPersonWeaponArt')),end=system.indexOf("  }else if(key==='rifle'||key==='shotgun'||key==='plasma'){",start);
   const constants=system.slice(system.indexOf('const PISTOL_ARM_EXITS40='),system.indexOf('function pistolPresentationPose40'));
   const style={setProperty(k,v){this[k]=v;}},stage={style:{}},c=vm.createContext({key:'pistol',G:()=>({dataset:{pistolPack:'40'}}),wrap:{style},stage,innerWidth:width,innerHeight:height,drawX,drawY,drawRot,baseScale:scale,tune:{kickScale:0},kick:0,boreRotation:0,pistolPresentationPose40:()=>pose});
   vm.runInContext(constants+fn(system,'pistolPresentationLayout40')+system.slice(start,end)+'  }',c);

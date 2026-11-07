@@ -558,7 +558,8 @@ const FP_GENERATED_ART_TUNING=Object.freeze({
   // V3 is the approved framing baseline: baked hands, transparent headroom and HUD-safe lower-right placement.
   pistol:{width:'50vw',right:'-1vw',bottom:'-1vh',muzzleX:'30%',muzzleY:'23%',kickX:10,kickY:8,kickRot:1.35,kickScale:.018,flashScale:0,flashCore:'#fff9df',flashMid:'#ffd15a',flashEdge:'#ff6d1f'},
   shotgun:{width:'46vw',right:'4vw',bottom:'-1vh',muzzleX:'34.3%',muzzleY:'20.1%',kickX:16,kickY:14,kickRot:2.00,kickScale:.028,flashScale:.72,flashCore:'#fff8d8',flashMid:'#ffc857',flashEdge:'#ff6320'},
-  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'20.3%',muzzleY:'22.5%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
+  // Pack36 has a closed-looking cap. The DOM bore defines a visible outlet at (188,160).
+  rifle:{width:'48vw',right:'-1.5vw',bottom:'-2vh',muzzleX:'19.583333%',muzzleY:'22.222222%',kickX:8,kickY:6,kickRot:1.00,kickScale:.013,flashScale:0,flashCore:'#fffbe6',flashMid:'#ffd66a',flashEdge:'#ff7a24'},
   rocket:{width:'55vw',right:'-1vw',bottom:'-1vh',muzzleX:'31.5%',muzzleY:'36%',kickX:18,kickY:16,kickRot:2.30,kickScale:.032,flashScale:.78,flashCore:'#fff3d0',flashMid:'#ffb43e',flashEdge:'#ff4f18'},
   plasma:{width:'46vw',right:'-1vw',bottom:'-1vh',muzzleX:'22%',muzzleY:'34%',kickX:5,kickY:4,kickRot:.70,kickScale:.010,flashScale:.88,flashCore:'#efffff',flashMid:'#69eaff',flashEdge:'#8c62ff'},
   mine:{width:'38vw',right:'-1vw',bottom:'-1vh',muzzleX:'50%',muzzleY:'50%',kickX:0,kickY:0,kickRot:0,kickScale:0,flashScale:0},
@@ -603,6 +604,7 @@ function playGeneratedFirstPersonAction(kind,duration=0){
   }
   if(kind==='grenadeThrow34'){G('fp-weapon-art-wrap')?.appendChild(action);action.classList.add('grenade-throw-viewport');}
   fpGeneratedWeaponAction={kind,spec,age:0,duration:Math.max(.12,Number(duration)||spec.duration),frame:-1};
+  const mouth=G('fp-rifle-muzzle-mouth');if(mouth)mouth.hidden=true;
   img.style.opacity='0';action.style.opacity='1';action.classList.add('on');
   applyPresentationAtlasFrame(action,first);
   return true;
@@ -755,6 +757,7 @@ function setGeneratedFirstPersonWeaponArt(w,model){
   if(w.key==='rifle'){
     const stage=G('fp-weapon-art-stage');
     if(stage&&!G('fp-rifle-muzzle-anchor')){const marker=document.createElement('span');marker.id='fp-rifle-muzzle-anchor';marker.setAttribute('aria-hidden','true');stage.appendChild(marker);}
+    if(stage&&!G('fp-rifle-muzzle-mouth')){const mouth=document.createElement('span');mouth.id='fp-rifle-muzzle-mouth';mouth.hidden=true;mouth.setAttribute('aria-hidden','true');stage.appendChild(mouth);}
     riflePresentationAssetReady36('pack36RifleReload');riflePresentationAssetReady36('pack36RifleEffects');
   }
   if(w.key==='mine')for(const key of Object.keys(MINE_PRESENTATION_DIMENSIONS39))minePresentationAssetReady39(key);
@@ -807,8 +810,8 @@ function ensureGeneratedFirstPersonWeaponArtLoaded(){
     if(pending.key==='rifle'&&!pending.fallbackTried&&(img.naturalWidth!==960||img.naturalHeight!==720)){img.onerror();return;}
     if(pending.key==='rifle'){
       img.dataset.riflePack=pending.fallbackTried?'01':'36';
-      wrap.style.setProperty('--fp-muzzle-x',pending.fallbackTried?'26%':'20.3%');
-      wrap.style.setProperty('--fp-muzzle-y',pending.fallbackTried?'37%':'22.5%');
+      wrap.style.setProperty('--fp-muzzle-x',pending.fallbackTried?'26%':'19.583333%');
+      wrap.style.setProperty('--fp-muzzle-y',pending.fallbackTried?'37%':'22.222222%');
     }
     if(pending.key==='rocket'&&!pending.fallbackTried&&(img.naturalWidth!==960||img.naturalHeight!==720)){img.onerror();return;}
     if(pending.key==='rocket'){
@@ -921,6 +924,7 @@ function rocketPresentationLayout(viewWidth,viewHeight,scale=1,drawX=0,drawY=0,l
 function syncGeneratedFirstPersonWeaponArt(visible=true){
   const wrap=G('fp-weapon-art-wrap'),stage=G('fp-weapon-art-stage'),flash=G('fp-weapon-flash');
   if(!wrap||!stage)return;
+  const rifleMouth=G('fp-rifle-muzzle-mouth');if(rifleMouth)rifleMouth.hidden=true;
   if(!running){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
   ensureGeneratedFirstPersonWeaponArtLoaded();
   if(!fpGeneratedWeaponActive&&!fpGeneratedWeaponAction){wrap.classList.remove('shown');if(flash)flash.style.opacity='0';return;}
@@ -931,6 +935,7 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
   // Preserve the baked first-person angle: gameplay sway/recoil may move the art,
   // but must not drag it across the center-bottom HUD or rotate it into a poster-like pose.
   const key=fpGeneratedWeaponPending?.key||'rifle';
+  if(rifleMouth)rifleMouth.hidden=!(key==='rifle'&&G('fp-weapon-art')?.dataset.riflePack==='36'&&!actionVisible);
   const tune=FP_GENERATED_ART_TUNING[key]||FP_GENERATED_ART_TUNING.rifle;
   if(key==='shotgun')updateGeneratedShotgunAnchors38();
   if(key==='pistol')updateGeneratedPistolAnchors40();
@@ -1006,7 +1011,7 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
     wrap.style.setProperty('--fp-bottom',(innerHeight-layout.top-layout.height).toFixed(1)+'px');
     stage.style.transformOrigin=legacy?'34% 35%':'31.5% 36%';
     boreRotation=layout.rotation-drawRot;
-  }else if(key==='rifle'||key==='shotgun'){
+  }else if(key==='rifle'||key==='shotgun'||key==='plasma'){
     // Ready36 bore is measured at -157 degrees; rotate around its
     // actual muzzle, so extending that line reaches the live center reticle.
     const mx=parseFloat(wrap.style.getPropertyValue('--fp-muzzle-x'))/100;
@@ -1018,9 +1023,11 @@ function syncGeneratedFirstPersonWeaponArt(visible=true){
     const bottom=tall?innerHeight*.38-stage.offsetHeight*(1-my):Math.min(-innerHeight*.10,innerHeight*.38-stage.offsetHeight*(1-my));
     wrap.style.setProperty('--fp-bottom',bottom.toFixed(1)+'px');
     stage.style.transformOrigin=(mx*100)+'% '+(my*100)+'%';
-    const x=stage.offsetLeft+stage.offsetWidth*mx+drawX,y=stage.offsetTop+stage.offsetHeight*my+drawY;
+    // Computed CSS dimensions retain subpixel placement; offset* rounds it on narrow windows.
+    const box=getComputedStyle(stage),boxWidth=parseFloat(box.width),boxHeight=parseFloat(box.height);
+    const x=innerWidth-parseFloat(box.right)-boxWidth*(1-mx)+drawX,y=innerHeight-parseFloat(box.bottom)-boxHeight*(1-my)+drawY;
     const angle=Math.atan2(innerHeight*.5-y,innerWidth*.5-x)*180/Math.PI;
-    const spriteBore=key==='shotgun'?-145:G('fp-weapon-art')?.dataset.riflePack==='36'?-157:-144;
+    const spriteBore=key==='plasma'?-152:key==='shotgun'?-145:G('fp-weapon-art')?.dataset.riflePack==='36'?-157:-144;
     boreRotation=Math.max(-35,Math.min(35,((angle-spriteBore+540)%360)-180));
   }else stage.style.transformOrigin='';
   stage.style.setProperty('--fp-dx',drawX.toFixed(1)+'px');
