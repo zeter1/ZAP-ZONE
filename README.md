@@ -232,7 +232,7 @@ GitHub Actions **Validate** имеет только `contents: read` и выпо
 
 Осколочная граната использует Pack34: полноценные руки при броске, видимый полёт и лежащий снаряд, взрыв в игровом мире и перспективная воронка на земле на 15 секунд. Радиус урона 8 м, 80% максимального здоровья до 2 м с плавным спадом; броня поглощает максимум 10% этого урона (80 → 72 HP при maxHP100); сплошная стена защищает от гранаты. Правила ассетов и fallback — `docs/ASSETS.md`.
 
-## Контакты для связи с разработчиком
+## Контакты для связи:
 
 - [zeter11@gmail.com](mailto:zeter11@gmail.com)
 - [https://t.me/zeter1](https://t.me/zeter1)
@@ -244,4 +244,5 @@ GitHub Actions **Validate** имеет только `contents: read` и выпо
 - [https://x.com/zeter1](https://x.com/zeter1)
 - [https://www.threads.com/@zeter1992](https://www.threads.com/@zeter1992)
 - [https://ok.ru/zeter1](https://ok.ru/zeter1)
-- [https://t.me/zeterchat](https://t.me/zeterchat) — Telegram-группа: обо мне, проекты и чат
+- [https://t.me/zeterchat](https://t.me/zeterchat) - Telegram-группа для общения
+- [https://dkoles.com/](https://dkoles.com/) - сайт.
