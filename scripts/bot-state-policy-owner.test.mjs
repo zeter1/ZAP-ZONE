@@ -173,3 +173,11 @@ test('every policy execution consumes exactly one RNG draw for the legacy stateC
     near(result.bot.stateCD,.22+random*.30,'state cooldown');
   }
 });
+
+test('Rally takes priority over flanking while cover stays available',()=>{
+  const facts={rallying:true,mapObjective:{x:10,z:10},dist:14};
+  const bot={tacticalMode:'flank',flankPoint:{},flankCommitT:1};
+  assert.equal(runSelection({bot,facts}).bot.aiState,'objective');
+  assert.equal(runSelection({bot:{...bot,coverPoint:{}},facts}).bot.aiState,'cover');
+});
+

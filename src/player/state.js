@@ -87,12 +87,12 @@ const plr={
   secondWind:false,secondWindReady:true,lowHpDamage:0,lowHpSpeed:0,extraShotChance:0,thorns:false,
   ammoSaveChance:0,closeDamage:0,longRangeDamage:0,spreadM:1,recoilM:1,critHeal:0,headshotArmor:0,
   medkitM:1,overhealArmor:0,sprintM:1,jumpM:1,movingDamage:0,dodgeChance:0,fullHpDamage:0,
-  smokeRadiusM:1,smokeDurationM:1,smokeCooldownM:1,smokeResist:0,bombFuseM:1,rocketRadiusM:1,mineRadiusM:1,
+  smokeRadiusM:1,smokeDurationM:1,smokeResist:0,bombFuseM:1,rocketRadiusM:1,mineRadiusM:1,
   pathMilestones:new Set()
 };
 const perksGot=[];
 let currentPerkChoices=[];
-let perkRerollsLeft=0;
+let perkRerollsLeft=1;
 
 function increaseClips(mult,includeBomb=false){
   syncCurrentAmmo();
@@ -166,7 +166,7 @@ const ALL_PERKS=[
 
   {id:'smoke_radius',ic:'🌫️',nm:'Плотная дымовая смесь',path:'demolition',rarity:'common',maxRank:3,minLevel:2,ds:'+18% к радиусу дымового облака.',fn:()=>plr.smokeRadiusM+=.18},
   {id:'smoke_duration',ic:'⌛',nm:'Долгий дым',path:'demolition',rarity:'rare',maxRank:3,minLevel:4,ds:'+20% к длительности дымового облака.',fn:()=>plr.smokeDurationM+=.20},
-  {id:'smoke_reload',ic:'🌪️',nm:'Быстрый дымовой цикл',path:'demolition',rarity:'rare',maxRank:3,minLevel:4,ds:'Дымовуха готовится на 18% быстрее.',fn:()=>plr.smokeCooldownM*=.82},
+  {id:'smoke_reload',ic:'🌪️',nm:'Быстрый дымовой цикл',path:'demolition',rarity:'rare',maxRank:3,minLevel:4,retired:true,ds:'Сохранённый ранг ветки. Перезарядка дыма составляет 4 минуты.',fn:()=>{}},
   {id:'short_fuse',ic:'⏱️',nm:'Укороченный фитиль',path:'demolition',rarity:'rare',maxRank:2,minLevel:5,ds:'Фитиль бомбы сгорает на 18% быстрее.',fn:()=>plr.bombFuseM*=.82},
   {id:'rocket_radius',ic:'🛰️',nm:'Широкий ракетный заряд',path:'demolition',rarity:'rare',maxRank:3,minLevel:5,ds:'+12% к радиусу взрыва ракет.',fn:()=>plr.rocketRadiusM+=.12},
   {id:'mine_radius',ic:'🕳️',nm:'Объёмный датчик мины',path:'demolition',rarity:'rare',maxRank:3,minLevel:5,ds:'+15% к радиусу поражения мин.',fn:()=>plr.mineRadiusM+=.15}
@@ -177,6 +177,7 @@ function canTakePerk(p,ignoreRequirements=false){
   if(!p)return false;
   if(perkTimesTaken(p.id)>=(p.maxRank||1))return false;
   if(ignoreRequirements)return true;
+  if(p.retired)return false;
   if(level<(p.minLevel||2))return false;
   if(p.requires&&perkTimesTaken(p.requires)===0)return false;
   return true;
@@ -303,18 +304,20 @@ const ANCIENT_SAVE_KEY='zap_zone_autosave_v22';
 const PREHISTORIC_SAVE_KEY='zap_zone_autosave_v21';
 const PRIMITIVE_SAVE_KEY='zap_zone_autosave_v20';
 const GAMEPLAY_SAVE_KEYS=Object.freeze([
-  SAVE_KEY,LEGACY_SAVE_KEY,OLDER_SAVE_KEY,OLDEST_SAVE_KEY,ANCIENT_SAVE_KEY,PREHISTORIC_SAVE_KEY,PRIMITIVE_SAVE_KEY,'zap_zone_autosave_v19'
+  SAVE_KEY,LEGACY_SAVE_KEY,OLDER_SAVE_KEY,OLDEST_SAVE_KEY,ANCIENT_SAVE_KEY,PREHISTORIC_SAVE_KEY,PRIMITIVE_SAVE_KEY
 ]);
 const CURRENT_GAME_VERSION=document.querySelector('meta[name="application-version"]')?.content?.trim()||'';
-
-function clearStoredProgress(){
-  for(const key of GAMEPLAY_SAVE_KEYS){
-    try{localStorage.removeItem(key);sessionStorage.removeItem(key);}catch(e){}
-  }
-}
-let pendingResumeSave=null;
+let saveSession={base:null,blocked:false,pending:null};
 let saveTick=8;
 let preloadStarted=false,preloadDone=false,gameSessionActivated=false,preparedSaveLoaded=false;
+
+function readProgressRaw(storage,key=SAVE_KEY){
+  try{return window[storage].getItem(key);}
+  catch(e){return undefined;}
+}
+function beginProgressSession(){
+  saveSession={base:readProgressRaw('localStorage'),blocked:false,pending:null};
+}
 
 function hardResetPlayerBuild(){
   playerRocketShotCD=0;
@@ -326,7 +329,7 @@ function hardResetPlayerBuild(){
     secondWind:false,secondWindReady:true,lowHpDamage:0,lowHpSpeed:0,extraShotChance:0,thorns:false,
     ammoSaveChance:0,closeDamage:0,longRangeDamage:0,spreadM:1,recoilM:1,critHeal:0,headshotArmor:0,
     medkitM:1,overhealArmor:0,sprintM:1,jumpM:1,movingDamage:0,dodgeChance:0,fullHpDamage:0,
-    smokeRadiusM:1,smokeDurationM:1,smokeCooldownM:1,smokeResist:0,bombFuseM:1,rocketRadiusM:1,mineRadiusM:1
+    smokeRadiusM:1,smokeDurationM:1,smokeResist:0,bombFuseM:1,rocketRadiusM:1,mineRadiusM:1
   });
   plr.pathMilestones=new Set();
   perksGot.length=0;
@@ -360,44 +363,89 @@ function captureSave(){
   return {
     v:27,gameVersion:CURRENT_GAME_VERSION,t:Date.now(),
     level,xp,score,kills,allyKills,enemyKills,
+    matchRemaining,
     frontline:typeof serializeFrontlineObjective==='function'?serializeFrontlineObjective():null,
     hp,armor,uAmmo:savedReserve,curW:savedCurW,ammo:savedAmmo,weaponAmmo:mags,weaponReserve:reserves,weaponOwned:weaponOwned.slice(),
-    playerMineCD,playerBombCD,playerSmokeCD,
+    playerMineCD,playerBombCD,playerSmokeCD,playerRocketShotCD,pendingLevels,
+    secondWindReady:plr.secondWindReady,
+    perkOffer:pendingLevels>0&&currentPerkChoices.length?{
+      choices:currentPerkChoices.map(p=>p.id),rerollsLeft:perkRerollsLeft
+    }:null,
     perks:perksGot.map(p=>p.id),
     player:{x:camera.position.x,z:camera.position.z,yaw,pitch}
   };
 }
 function saveProgress(force=false){
-  if((!inited||webglLost)&&!force)return;
-  try{
-    const raw=JSON.stringify(captureSave());
-    localStorage.setItem(SAVE_KEY,raw);
-    sessionStorage.setItem(SAVE_KEY,raw);
-  }catch(e){}
+  if(!inited||(!force&&webglLost))return;
+  const session=saveSession;
+  const canWrite=(allowUnavailable=false)=>{
+    if(session!==saveSession||session.blocked)return false;
+    const current=readProgressRaw('localStorage');
+    if(current===undefined)return allowUnavailable;
+    if(current===session.base)return true;
+    session.blocked=true;
+    showMsg('Автосохранение обновилось в другой вкладке. Откройте игру заново, чтобы продолжить с него.');
+    return false;
+  };
+  if(!canWrite(true))return;
+  const data=captureSave();
+  session.pending=data;
+  // Keep a synchronous backup for pagehide, where Web Locks may outlive the page.
+  try{window.sessionStorage.setItem(SAVE_KEY,JSON.stringify({...data,sharedBase:session.base??null}));}catch(e){}
+  const commit=()=>{
+    if(!canWrite()||!session.pending)return;
+    const raw=JSON.stringify(session.pending);
+    session.pending=null;
+    try{window.localStorage.setItem(SAVE_KEY,raw);}
+    catch(e){return;}
+    session.base=raw;
+  };
+  const locks=globalThis.navigator?.locks;
+  if(locks&&session.base!==undefined){
+    return locks.request(SAVE_KEY,commit).catch(()=>console.warn('ZAP ZONE: общий автосейв недоступен, сохранена копия вкладки'));
+  }
+  return commit();
 }
-function loadProgress(){
-  try{
-    const raw=localStorage.getItem(SAVE_KEY)||sessionStorage.getItem(SAVE_KEY)||
-      localStorage.getItem(LEGACY_SAVE_KEY)||sessionStorage.getItem(LEGACY_SAVE_KEY)||
-      localStorage.getItem(OLDER_SAVE_KEY)||sessionStorage.getItem(OLDER_SAVE_KEY)||
-      localStorage.getItem(OLDEST_SAVE_KEY)||sessionStorage.getItem(OLDEST_SAVE_KEY)||
-      localStorage.getItem(ANCIENT_SAVE_KEY)||sessionStorage.getItem(ANCIENT_SAVE_KEY)||
-      localStorage.getItem(PREHISTORIC_SAVE_KEY)||sessionStorage.getItem(PREHISTORIC_SAVE_KEY)||
-      localStorage.getItem(PRIMITIVE_SAVE_KEY)||sessionStorage.getItem(PRIMITIVE_SAVE_KEY);
-    if(!raw)return null;
-    const data=JSON.parse(raw);
-    if(!data||(data.v<20||data.v>27))return null;
-    if(!CURRENT_GAME_VERSION||data.gameVersion!==CURRENT_GAME_VERSION){
-      console.info('ZAP ZONE: автосейв сброшен после обновления версии',{savedVersion:data.gameVersion||null,currentVersion:CURRENT_GAME_VERSION});
-      clearStoredProgress();
-      return null;
-    }
-    return data;
-  }catch(e){return null;}
+function parseProgress(raw){
+  let data;
+  try{data=JSON.parse(raw);}catch(e){return null;}
+  if(!data||!Number.isInteger(data.v)||data.v<20||data.v>27)return null;
+  if(data.gameVersion!==CURRENT_GAME_VERSION)return null;
+  if(data.perks!=null&&(!Array.isArray(data.perks)||!data.perks.every(id=>typeof id==='string')))return null;
+  return data;
+}
+function loadProgress(sharedRaw=readProgressRaw('localStorage')){
+  if(!CURRENT_GAME_VERSION)return null;
+  for(const key of GAMEPLAY_SAVE_KEYS){
+    const raw=key===SAVE_KEY?sharedRaw:readProgressRaw('localStorage',key);
+    const primary=parseProgress(raw),backup=parseProgress(readProgressRaw('sessionStorage',key));
+    // A newer tab backup can finish its own checkpoint, never replace another tab's revision.
+    if(backup&&(!primary||(Object.hasOwn(backup,'sharedBase')
+      ?backup.sharedBase===raw:(Number(backup.t)||0)>(Number(primary.t)||0))))return backup;
+    if(primary)return primary;
+  }
+  return null;
+}
+function prepareResumeProgress(){
+  beginProgressSession();
+  const save=loadProgress(saveSession.base);
+  preparedSaveLoaded=!!save;
+  if(save)applyRuntimeSave(save);
 }
 function refreshStartButton(){
-  const has=!!loadProgress();
-  G('startBtn').textContent=has?'▶ ПРОДОЛЖИТЬ':'▶ ИГРАТЬ';
+  const save=gameSessionActivated?null:loadProgress();
+  const summary=G('menu-save-summary');
+  const finished=preloadDone&&(gameSessionActivated?matchRemaining===0:save?.matchRemaining===0);
+  G('startBtnLabel').textContent=finished?'Итоги матча':save?'Продолжить матч':'Играть';
+  G('newMatchBtn').hidden=!(save||finished)||!preloadDone;
+  summary.hidden=!(save||finished);
+  if(finished){summary.textContent='Матч завершён';return;}
+  if(!save){summary.textContent='';return;}
+  const timestamp=typeof save.t==='number'?new Date(save.t):null;
+  const when=timestamp&&Number.isFinite(timestamp.getTime())
+    ? ' · '+timestamp.toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+    : '';
+  summary.textContent='Автосохранение'+when+' · Уровень '+Math.max(1,Math.min(30,Number(save.level)||1));
 }
 function setLoadingProgress(pct,label){
   const fill=G('loading-fill'),txt=G('loading-pct'),sub=G('loading-sub');
@@ -411,8 +459,6 @@ function prepareGameContentSync(){
   if(pickups.length===0)spawnPickups();
   if(enemies.length===0)spawnInitial();
   inited=true;
-  pendingResumeSave=loadProgress();
-  if(pendingResumeSave){applyRuntimeSave(pendingResumeSave);preparedSaveLoaded=true;}
 }
 function activatePreparedGame(){
   if(gameSessionActivated)return;
@@ -422,6 +468,7 @@ function activatePreparedGame(){
   deathReason='';
   applyPlayerTestingSettings();
   showAnn(preparedSaveLoaded?'АВТОСЕЙВ ВОССТАНОВЛЕН':'КОМАНДНЫЙ БОЙ 5×5 — GO!');
+  if(pendingLevels>0)openLvlAnn(level-pendingLevels+1);
 }
 async function preloadGameContent(){
   if(preloadStarted)return;
@@ -429,37 +476,32 @@ async function preloadGameContent(){
   const btn=G('startBtn');
   if(btn)btn.disabled=true;
   G('loading')?.classList.remove('hidden');
-  try{
-    setLoadingProgress(8,'Подготовка интерфейса...');
-    if(typeof warmSurfaceImpactVfx==='function')warmSurfaceImpactVfx();
+  setLoadingProgress(8,'Подготовка интерфейса...');
+  if(typeof warmSurfaceImpactVfx==='function')warmSurfaceImpactVfx();
+  await nextPreloadFrame();
+  setLoadingProgress(25,'Создание предметов и аптечек...');
+  spawnPickups();
+  await nextPreloadFrame();
+  setLoadingProgress(52,'Подготовка команд и искусственного интеллекта...');
+  spawnInitial();
+  inited=true;
+  await nextPreloadFrame();
+  setLoadingProgress(70,'Подготовка матча...');
+  await nextPreloadFrame();
+  setLoadingProgress(84,'Компиляция графики...');
+  try{renderer.compile(scene,camera);}catch(e){}
+  renderFrame();
+  if(graphicsTier>0){
+    setLoadingProgress(93,'Подготовка дыма...');
     await nextPreloadFrame();
-    setLoadingProgress(25,'Создание предметов и аптечек...');
-    spawnPickups();
-    await nextPreloadFrame();
-    setLoadingProgress(52,'Подготовка команд и искусственного интеллекта...');
-    spawnInitial();
-    inited=true;
-    await nextPreloadFrame();
-    setLoadingProgress(70,'Восстановление сохранения...');
-    pendingResumeSave=loadProgress();
-    if(pendingResumeSave){applyRuntimeSave(pendingResumeSave);preparedSaveLoaded=true;}
-    await nextPreloadFrame();
-    setLoadingProgress(84,'Компиляция графики...');
-    try{renderer.compile(scene,camera);}catch(e){}
-    renderFrame();
-    await nextPreloadFrame();
-    setLoadingProgress(100,PERF_MODE?'Готово · включён облегчённый режим':'Готово · ресурсы загружены');
-    preloadDone=true;
-    refreshStartButton();
-    if(btn)btn.disabled=false;
-    setTimeout(()=>G('loading')?.classList.add('hidden'),180);
-  }catch(err){
-    console.error('Ошибка предварительной загрузки:',err);
-    preloadDone=true;
-    if(btn)btn.disabled=false;
-    setLoadingProgress(100,'Загрузка завершена с упрощённой подготовкой');
-    setTimeout(()=>G('loading')?.classList.add('hidden'),300);
+    warmSmokeRender42();
   }
+  await nextPreloadFrame();
+  setLoadingProgress(100,PERF_MODE?'Готово · включён облегчённый режим':'Готово · ресурсы загружены');
+  preloadDone=true;
+  refreshStartButton();
+  if(btn)btn.disabled=false;
+  setTimeout(()=>G('loading')?.classList.add('hidden'),180);
 }
 function applyRuntimeSave(data){
   if(!data)return;
@@ -474,8 +516,17 @@ function applyRuntimeSave(data){
   allyKills=data.v>=25?Math.max(0,data.allyKills||0):0;
   enemyKills=data.v>=25?Math.max(0,data.enemyKills||0):0;
   if(typeof restoreFrontlineObjective==='function')restoreFrontlineObjective(data.v>=27?data.frontline:null);
-  armor=Math.max(0,Math.min(plr.maxArmor,data.armor||0));
-  hp=Math.max(1,Math.min(data.hp==null?plr.maxHp:data.hp,plr.maxHp));
+  restoreMatchClock(data.matchRemaining);
+  const respawnNeeded=Number.isFinite(data.hp)&&data.hp<=0&&matchRemaining>0;
+  armor=respawnNeeded?0:Math.max(0,Math.min(plr.maxArmor,Number(data.armor)||0));
+  hp=respawnNeeded||!Number.isFinite(data.hp)?plr.maxHp:Math.max(1,Math.min(data.hp,plr.maxHp));
+  pendingLevels=Math.max(0,Math.min(level-1,Number.isInteger(data.pendingLevels)?data.pendingLevels:0));
+  plr.secondWindReady=respawnNeeded||data.secondWindReady!==false;
+  const offer=pendingLevels>0?data.perkOffer:null;
+  currentPerkChoices=Array.isArray(offer?.choices)?[...new Set(offer.choices.slice(0,5))]
+    .map(id=>ALL_PERKS.find(p=>p.id===id)).filter(p=>p&&canTakePerk(p)):[];
+  perkRerollsLeft=offer?.rerollsLeft===0?0:1;
+  playerRocketShotCD=Math.max(0,Math.min(ROCKET_FIRE_INTERVAL,Number.isFinite(data.playerRocketShotCD)?data.playerRocketShotCD:0));
   playerMineCD=Math.max(0,Math.min(MINE_COOLDOWN_SECONDS,Number(data.playerMineCD)||0));
   playerBombCD=Math.max(0,Math.min(BOMB_COOLDOWN_SECONDS,Number(data.playerBombCD)||0));
   playerSmokeCD=Math.max(0,Math.min(SMOKE_COOLDOWN_SECONDS,Number(data.playerSmokeCD)||0));
@@ -507,7 +558,9 @@ function applyRuntimeSave(data){
   weaponAmmo[curW]=ammo;
   uAmmo=weaponReserve[curW];
   buildGun(getW());
-  if(data.player){
+  if(respawnNeeded){
+    placeRespawnedPlayer();
+  }else if(data.player){
     const px=Math.max(-89,Math.min(89,Number(data.player.x)||0));
     const pz=Math.max(-89,Math.min(89,Number(data.player.z)||0));
     const coll=collideWalls(px,pz,PLR_R);
@@ -517,7 +570,6 @@ function applyRuntimeSave(data){
     prevPX=camera.position.x;prevPZ=camera.position.z;
   }
   updatePerkPanel();updateStats();buildWeaponBar();updateWeaponBar();wHUD();markHUD();flushHUD();xpHUD();updateTeamScore();
-  saveProgress(true);
 }
 function switchW(idx){
   if(!Number.isInteger(idx)||idx<0||idx>=WEAPONS.length||idx===curW)return;

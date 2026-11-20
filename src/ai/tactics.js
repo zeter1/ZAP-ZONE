@@ -152,7 +152,11 @@ function refreshBotMapOrder(team,plan,now){
   }
   plan.aliveDelta=aliveDelta;
 }
-function botObjectivePoint(bot,plan){
+function botObjectivePoint(bot,plan,rallyZone=null){
+  if(rallyZone){
+    const point=collideWalls(rallyZone.x,rallyZone.z,BOT_R);
+    return new THREE.Vector3(point.x,0,point.z);
+  }
   if(!plan?.zone)return null;
   const dir=bot.team==='ally'?1:-1;
   const roleOffset={

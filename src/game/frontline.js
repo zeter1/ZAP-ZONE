@@ -15,6 +15,26 @@ const frontlineZoneOwners=Object.fromEntries(BOT_MAP_ZONES.map(zone=>[zone.id,nu
 function frontlineZone(){
   return BOT_MAP_ZONES.find(zone=>zone.id===frontlineObjective.zoneId)||BOT_MAP_ZONES[0];
 }
+// The remaining zone time is already measured in active match seconds.
+let frontlineRally=null;
+function issueFrontlineRally(){
+  if(frontlineRally)return;
+  const zone=frontlineZone();
+  const distance=bot=>Math.hypot(bot.group.position.x-zone.x,bot.group.position.z-zone.z);
+  const bots=enemies.filter(bot=>bot.alive&&bot.team==='ally')
+    .sort((a,b)=>distance(a)-distance(b)).slice(0,2);
+  if(!bots.length)return;
+  frontlineRally={bots,endAt:frontlineObjective.rotateT-10};
+  for(const bot of bots)bot.stateCD=0;
+}
+function frontlineRallyFor(bot){
+  return frontlineRally?.bots.includes(bot)===true;
+}
+function clearFrontlineRally(){
+  if(!frontlineRally)return;
+  for(const bot of frontlineRally.bots)bot.stateCD=0;
+  frontlineRally=null;
+}
 function frontlinePlayerInside(zone=frontlineZone()){
   if(dying)return false;
   return Math.hypot(camera.position.x-zone.x,camera.position.z-zone.z)<=zone.r;
@@ -30,6 +50,7 @@ function serializeFrontlineObjective(){
   };
 }
 function resetFrontlineObjective(zoneId='mid',resetScores=false){
+  clearFrontlineRally();
   const zone=BOT_MAP_ZONES.find(z=>z.id===zoneId)||BOT_MAP_ZONES[0];
   frontlineObjective.zoneId=zone.id;
   frontlineObjective.progress=0;
@@ -46,6 +67,7 @@ function resetFrontlineObjective(zoneId='mid',resetScores=false){
   updateFrontlineHUD(true);
 }
 function restoreFrontlineObjective(data){
+  clearFrontlineRally();
   if(!data||typeof data!=='object'){resetFrontlineObjective('mid',true);return;}
   const zone=BOT_MAP_ZONES.find(z=>z.id===data.zoneId)||BOT_MAP_ZONES[0];
   frontlineObjective.zoneId=zone.id;
@@ -175,6 +197,7 @@ function captureFrontline(team,zone){
   saveProgress(true);
 }
 function rotateFrontlineObjective(){
+  clearFrontlineRally();
   const zone=chooseNextFrontlineZone();
   frontlineObjective.zoneId=zone.id;
   frontlineObjective.progress=0;
@@ -192,6 +215,8 @@ function tickFrontlineObjective(dt,ts){
   frontlineObjective.hudT=Math.max(0,frontlineObjective.hudT-dt);
   frontlineObjective.rotateT-=dt;
   if(frontlineObjective.rotateT<=0)rotateFrontlineObjective();
+  else if(frontlineRally&&(frontlineObjective.rotateT<=frontlineRally.endAt||
+    !frontlineRally.bots.some(bot=>bot.alive)))clearFrontlineRally();
   const zone=frontlineZone();
   const ally=botZonePresence(zone,'ally'),enemy=botZonePresence(zone,'enemy');
   frontlineObjective.allyPresence=ally;frontlineObjective.enemyPresence=enemy;

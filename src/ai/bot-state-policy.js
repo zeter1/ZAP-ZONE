@@ -13,6 +13,7 @@ function applyBotStateSelectionPolicy(bot,{
   strategicRetreat,
   localThreats,
   supportReady,
+  rallying,
   mapOrderWanted,
   mapObjective,
   dist
@@ -21,6 +22,7 @@ function applyBotStateSelectionPolicy(bot,{
   else if(targetPos&&strategicRetreat&&((hpPct<0.25&&dist<20)||(localThreats>=3&&hpPct<.58)))bot.aiState='retreat';
   else if(targetPos&&supportReady&&bot.tacticalMode==='support')bot.aiState='support';
   else if(targetPos&&bot.coverPoint&&(!bot.canSeeTarget||bot.role==='anchor'||bot.reloadT>0||(localThreats>=3&&hpPct<.72)||bot.suppressedT>0))bot.aiState='cover';
+  else if(rallying&&mapObjective)bot.aiState='objective';
   else if(targetPos&&bot.flankPoint&&bot.flankCommitT>0&&bot.tacticalMode==='flank')bot.aiState='flank';
   else if(mapOrderWanted)bot.aiState='objective';
   else if(targetPos&&bot.canSeeTarget&&dist<=bot.weapon.range*(bot.team==='ally'?1.14:1.08))bot.aiState='engage';

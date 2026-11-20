@@ -145,9 +145,10 @@ while(Date.now()<menuReadyDeadline){
   opened=await evaluate(`(()=>{
     const modal=document.getElementById('settings-modal');
     const close=document.getElementById('settingsCloseBtn');
+    if(modal?.open)close?.scrollIntoView({block:'nearest'});
     const r=close?.getBoundingClientRect();
     return {
-      settingsOpen:!!modal?.classList.contains('on'),
+      settingsOpen:modal?.open===true,
       fileAudioEnabled:typeof GAME_AUDIO_FILE_ASSETS_ENABLED!=='undefined'?GAME_AUDIO_FILE_ASSETS_ENABLED:null,
       pendingLoads:typeof gameAudioLoads!=='undefined'?gameAudioLoads.size:null,
       delay:performance.now()-(window.__zapMenuSmokeStarted||performance.now()),
@@ -190,7 +191,7 @@ if(!invincibilitySetting?.ok||!invincibilitySetting.checked||!invincibilitySetti
 
 await mouseClick(opened.closeX,opened.closeY);
 await sleep(80);
-const settingsClosed=await evaluate("!document.getElementById('settings-modal')?.classList.contains('on')");
+const settingsClosed=await evaluate("!document.getElementById('settings-modal')?.open");
 if(!settingsClosed){
   session.close();
   throw new Error('real CDP click did not close settings');

@@ -102,7 +102,7 @@ function playerFixture(){
   const c={hp:10000,armor:10000,dying:false,respawnShieldT:0,gameSettings:{invincible:false},plr:{maxHp:10000,blastResist:.95,secondWind:false},
     PLAYER_ROCKET_DAMAGE_SCALE:.24,FRAG_GRENADE_BLAST:{armorReduction:.1},camera:{position:new Vec()},THREE:{Vector3:Vec},
     showArmorHitFx(){},showArmorBreakFx(){},showDamageDirection(){},playSfx(){},triggerScreenShake(){},damageLabel:()=> 'ракета',
-    markHUD(){},trigFlash(){},checkDeath(){if(this.hp<=0)this.dying=true;},showSecondWindFx(){},showAnn(){},showMsg(){},updateStats(){}};
+    markHUD(){},trigFlash(){},checkDeath(){if(this.hp<=0)this.dying=true;},showSecondWindFx(){},showAnn(){},showMsg(){},updateStats(){},saveProgress(){}};
   // checkDeath is invoked as a global function, so bind its fixture state explicitly.
   c.checkDeath=()=>{if(c.hp<=0)c.dying=true;};vm.createContext(c);vm.runInContext(fn(progression,'applyDamageToPlayer'),c);return c;
 }

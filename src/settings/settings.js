@@ -27,7 +27,7 @@ function loadGameSettings(){
   }catch(e){return {...GAME_SETTINGS_DEFAULTS};}
 }
 const gameSettings=loadGameSettings();
-let settingsOpen=false;
+const settingsDialog=document.getElementById('settings-modal');
 function byId(id){return document.getElementById(id);}
 function saveGameSettings(){try{localStorage.setItem(GAME_SETTINGS_KEY,JSON.stringify(gameSettings));}catch(e){}applyGameSettings();}
 function lookSensitivityMultiplier(zoomed=false){
@@ -498,7 +498,7 @@ function tickGamePresentation(dt,ts){
   }
   const suppressionOverlay=ensureCombatOverlay('suppression-overlay','suppression');
   if(suppressionOverlay)suppressionOverlay.style.opacity=String(Math.min(.66,playerSuppression*.40+playerSuppressionPulse*.72));
-  if(settingsOpen){
+  if(settingsDialog.open){
     const graphicsState=byId('setting-graphics-state');
     const label='Сейчас: '+graphicsQualityLabel();
     if(graphicsState&&graphicsState.textContent!==label)graphicsState.textContent=label;
@@ -536,15 +536,22 @@ function applyGameSettings(){
   if(typeof applyPlayerTestingSettings==='function')applyPlayerTestingSettings();
   syncSettingsControls();
 }
-function openGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=true;syncSettingsControls();modal.classList.add('on');modal.setAttribute('aria-hidden','false');playSfx('ui');}
-function closeGameSettings(){const modal=byId('settings-modal');if(!modal)return;settingsOpen=false;modal.classList.remove('on');modal.setAttribute('aria-hidden','true');saveGameSettings();playSfx('ui');}
+function openGameSettings(){
+  if(settingsDialog.open)return;
+  syncSettingsControls();
+  settingsDialog.scrollTop=0;
+  settingsDialog.showModal();
+  playSfx('ui');
+}
 function bindGameSettings(){
   const sens=byId('setting-sensitivity'),sfx=byId('setting-sfx'),shake=byId('setting-shake'),crosshair=byId('setting-crosshair'),fps=byId('setting-fps'),graphics=byId('setting-graphics');
   const stopBots=byId('setting-stop-bots'),infiniteAmmo=byId('setting-infinite-ammo'),allWeapons=byId('setting-all-weapons'),invincible=byId('setting-invincible');
   const primeAudio=()=>{ensureGameAudio();scheduleGameAudioWarmup();};
   window.addEventListener('pointerdown',primeAudio,{once:true,capture:true});
   window.addEventListener('keydown',primeAudio,{once:true,capture:true});
-  byId('menuSettingsBtn')?.addEventListener('click',openGameSettings);byId('pauseSettingsBtn')?.addEventListener('click',openGameSettings);byId('settingsCloseBtn')?.addEventListener('click',closeGameSettings);
+  byId('menuSettingsBtn')?.addEventListener('click',openGameSettings);
+  byId('pauseSettingsBtn')?.addEventListener('click',openGameSettings);
+  settingsDialog.addEventListener('close',()=>{saveGameSettings();playSfx('ui');});
   sens?.addEventListener('input',()=>{gameSettings.sensitivity=clampSetting(sens.value,.5,2,1);saveGameSettings();});
   sfx?.addEventListener('input',()=>{gameSettings.sfx=clampSetting(sfx.value,0,1,.65);ensureGameAudio();scheduleGameAudioWarmup();saveGameSettings();});
   shake?.addEventListener('change',()=>{gameSettings.screenShake=shake.checked;saveGameSettings();});
@@ -555,7 +562,6 @@ function bindGameSettings(){
   infiniteAmmo?.addEventListener('change',()=>{gameSettings.infiniteAmmo=infiniteAmmo.checked;saveGameSettings();});
   allWeapons?.addEventListener('change',()=>{gameSettings.allWeapons=allWeapons.checked;saveGameSettings();});
   invincible?.addEventListener('change',()=>{gameSettings.invincible=invincible.checked;saveGameSettings();});
-  window.addEventListener('keydown',e=>{if(e.code==='Escape'&&settingsOpen){e.preventDefault();e.stopImmediatePropagation();closeGameSettings();}},true);
   applyGameSettings();
 }
 ensureGeneratedCombatPresentation();

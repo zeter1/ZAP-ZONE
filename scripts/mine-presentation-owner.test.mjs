@@ -222,11 +222,11 @@ function contactFixture(owner='player'){
  const events=[],awards=[],splash=[];
  const c={THREE:{Vector3:Vec},BOT_R:.4,PLR_R:.35,onGnd:true,dying:false,running:true,enemies:[],mines:[],
   camera:{position:new Vec(5,1.75,0)},wallMeshes:[],blocked:false,wallBetween:()=>c.blocked,
-  hp:10000,armor:10000,respawnShieldT:2,gameSettings:{invincible:false},lastPlayerAttacker:{alive:true,team:'enemy'},
+  hp:10000,armor:10000,respawnShieldT:2,gameSettings:{invincible:false},
   plr:{maxHp:10000,blastResist:.99,secondWind:true,secondWindReady:true,thorns:false},PLAYER_MINE_DAMAGE_SCALE:.1,
   PLAYER_BULLET_DAMAGE_SCALE:.1,PLAYER_ROCKET_DAMAGE_SCALE:.1,PLAYER_BOMB_DAMAGE_SCALE:.1,PLAYER_MELEE_DAMAGE_SCALE:.1,
   showArmorHitFx(){},showArmorBreakFx(){},showDamageDirection(){},playSfx(){},triggerScreenShake(){},markHUD(){},trigFlash(){},showMsg(){},
-  checkDeath(){if(c.hp<=0&&!c.dying){c.dying=true;events.push('playerDeath');}},
+  checkDeath(enemyHit,attacker){if(c.hp<=0&&!c.dying){c.dying=true;c.deathCredit={enemyHit,attacker};events.push('playerDeath');}},
   playMineSound39:x=>events.push(x),showGeneratedMineEvent39(){},mineDetonationPresentationReady39:()=>false,
   explode(){},showGeneratedMineDetonationVfx(){},applyBlastDamage:(...a)=>splash.push(a),
   destroySceneObject(){events.push('remove');},updateMineHUD(){},syncMineWorldArt39(){},
@@ -245,7 +245,8 @@ test('every owner player/ally/enemy lethally triggers direct player/ally/enemy c
   f.c.tickMines(.016);assert.equal(f.c.mines.length,0,`${owner}->${targetTeam}`);
   if(target==='player'){
    assert.equal(f.c.hp,0);assert.equal(f.c.dying,true);assert.equal(f.c.plr.secondWindReady,true);
-   assert.equal(f.c.lastPlayerAttacker,owner==='enemy'?f.placer:null);assert.equal(f.events.filter(x=>x==='playerDeath').length,1);
+   assert.equal(f.c.deathCredit.enemyHit,owner==='enemy');
+   assert.equal(f.c.deathCredit.attacker,owner==='enemy'?f.placer:null);assert.equal(f.events.filter(x=>x==='playerDeath').length,1);
   }else{
    assert.equal(target.alive,false);assert.equal(target.hp,0);
    assert.equal(f.events.filter(x=>Array.isArray(x)&&x[0]==='botDeath').length,1);
@@ -276,7 +277,7 @@ test('physical contact replaces hostile proximity, checks every frame, excludes 
 test('direct mine bypass is explicit; nearby mine shield/armor/second-wind policies remain intact',()=>{
  const f=contactFixture();f.c.applyDamageToPlayer(10000,'mine',null,false,false);assert.equal(f.c.hp,10000,'nearby shield preserved');
  f.c.respawnShieldT=0;f.c.armor=10000;f.c.applyDamageToPlayer(10000,'mine',null,false,false);assert.ok(f.c.hp>0);assert.equal(f.c.plr.secondWindReady,true);
- f.c.hp=1;f.c.armor=0;Object.assign(f.c,{showSecondWindFx(){},showAnn(){},updateStats(){}});f.c.applyDamageToPlayer(10000,'mine',null,false,false);assert.equal(f.c.hp,3500);assert.equal(f.c.plr.secondWindReady,false);
+ f.c.hp=1;f.c.armor=0;Object.assign(f.c,{showSecondWindFx(){},showAnn(){},updateStats(){},saveProgress(){}});f.c.applyDamageToPlayer(10000,'mine',null,false,false);assert.equal(f.c.hp,3500);assert.equal(f.c.plr.secondWindReady,false);
  f.c.plr.secondWindReady=true;f.c.applyDamageToPlayer(f.c.hp,'mine',null,false,true);assert.equal(f.c.hp,0);assert.equal(f.c.plr.secondWindReady,true);
 });
 

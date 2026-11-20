@@ -15,13 +15,19 @@ function activeSimulationDelta(frameSeconds){
   return Number.isFinite(frameSeconds)?Math.max(0,Math.min(frameSeconds,MAX_ACTIVE_STEP_SECONDS)):0;
 }
 
+function finishMatchStep(dt){
+  advanceMatchClock(dt);
+  saveTick-=dt;
+  if(matchRemaining>0&&saveTick<=0){saveTick=8;saveProgress();}
+}
+
 function loop(ts){
   if(!running||paused||dying||portraitBlocked||lvlAnnOpen||perkPickOpen||webglLost)resetGraphicsSamples();
   if(!running||paused||dying||lvlAnnOpen||perkPickOpen){cancelPendingMineThrow(true);cancelPendingSmokeThrow(true);}
   if(!running||paused||dying||lvlAnnOpen||perkPickOpen||webglLost)cancelPendingBombPlant();
   requestAnimationFrame(loop);
   const rawDt=(ts-lastT)/1000;
-  if(webglLost){lastT=ts;return;}
+  if(webglLost||document.hidden||matchRemaining===0){lastT=ts;return;}
   const menuIdle=!running&&!dying&&!portraitBlocked&&!lvlAnnOpen&&!perkPickOpen&&!paused;
   if(menuIdle){
     clearMineWorldArt39();
@@ -35,23 +41,27 @@ function loop(ts){
   if(!IS_TOUCH&&running&&!paused&&!dying&&!perkPickOpen&&!lvlAnnOpen&&document.pointerLockElement!==canvas){
     showPauseUI();lastT=ts;renderFrame();return;
   }
+  if(portraitBlocked){lastT=ts;renderFrame();return;}
   if(dying){
     if(paused){lastT=ts;if(ts-idleRenderAt>=85){idleRenderAt=ts;renderFrame();}return;}
-    const deathDt=activeSimulationDelta(rawDt);lastT=ts;
+    const deathDt=Math.min(activeSimulationDelta(rawDt),matchRemaining);lastT=ts;
     dyingT-=deathDt;
     if(typeof updateRespawnCountdownPresentation==='function')updateRespawnCountdownPresentation();
     if(typeof tickGeneratedPlayerDeathVfx==='function')tickGeneratedPlayerDeathVfx(deathDt);
     tickDeathWorld(deathDt);
+    tickFrontlineObjective(deathDt,ts);
+    tickTacticalMinimap(deathDt,ts);
     tickDeathCamera(deathDt);
+    finishMatchStep(deathDt);
+    if(matchRemaining===0)return;
     if(dyingT<=0){doRespawn();return;}
     renderFrame();return;
   }
-  if(portraitBlocked){lastT=ts;renderFrame();return;}
   if(lvlAnnOpen){lastT=ts;tickLvlAnn(Math.min(rawDt,.05));if(ts-idleRenderAt>=60){idleRenderAt=ts;renderFrame();}return;}
   if(perkPickOpen||paused){lastT=ts;if(ts-idleRenderAt>=85){idleRenderAt=ts;renderFrame();}return;}
   if(!running){lastT=ts;if(ts-idleRenderAt>=120){idleRenderAt=ts;renderFrame();}return;}
 
-  const dt=activeSimulationDelta(rawDt);lastT=ts;
+  const dt=Math.min(activeSimulationDelta(rawDt),matchRemaining);lastT=ts;
   sampleAdaptiveGraphics(rawDt);
   tickRocketFireCooldowns(dt);
 
@@ -275,39 +285,12 @@ function loop(ts){
 
   if(noAmmoT>0){noAmmoT-=dt;if(noAmmoT<=0)G('no-ammo').style.opacity='0';}
   if(respawnShieldT>0){respawnShieldT=Math.max(0,respawnShieldT-dt);}
-  if(playerMineCD>0){
-    playerMineCD=Math.max(0,playerMineCD-dt);
-    const sec=Math.ceil(playerMineCD);
-    if(sec!==mineHudSecond){mineHudSecond=sec;updateMineHUD();}
-  }
-  if(playerBombCD>0){
-    playerBombCD=Math.max(0,playerBombCD-dt);
-    const sec=Math.ceil(playerBombCD);
-    if(sec!==bombHudSecond){bombHudSecond=sec;updateMineHUD();}
-  }
-  if(playerSmokeCD>0){
-    playerSmokeCD=Math.max(0,playerSmokeCD-dt);
-    const sec=Math.ceil(playerSmokeCD);
-    if(sec!==smokeHudSecond){smokeHudSecond=sec;if(getW().isSmoke)wHUD();}
-    if(playerSmokeCD<=0&&getW().isSmoke)showMsg('🌫️ Кулдаун дымовухи завершён');
-  }
+  tickPlayerEquipmentCooldowns(dt);
   if(plr.regen>0){hp=Math.min(hp+plr.regen*dt,plr.maxHp);markHUD();}
   if(plr.armorRegen>0&&armor<plr.maxArmor){armor=Math.min(plr.maxArmor,armor+plr.armorRegen*dt);markHUD();}
   if(combo>0){comboT-=dt;if(comboT<=0)combo=0;}
   if(typeof syncComboMeterPresentation==='function')syncComboMeterPresentation();
-  saveTick-=dt;
-  if(saveTick<=0){saveTick=8;saveProgress();}
-
-  // Respawn dead bots to maintain 5v5: player + 4 allies versus 5 enemies
-  spawnT-=dt;
-  if(spawnT<=0){
-    spawnT=1.7+Math.random()*1.0;
-    // Clean dead
-    for(let i=enemies.length-1;i>=0;i--){if(!enemies[i].alive)enemies.splice(i,1);}
-    const ac=countTeam('ally'), ec=countTeam('enemy');
-    while(ac+0<ALLY_BOT_TARGET&&countTeam('ally')<ALLY_BOT_TARGET)spawnBot('ally');
-    while(ec+0<TEAM_SIZE&&countTeam('enemy')<TEAM_SIZE)spawnBot('enemy');
-  }
+  maintainBotTeams(dt);
 
   // Update bots unless the explicit testing freeze is enabled.
   let touched=false;
@@ -326,10 +309,37 @@ function loop(ts){
   tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);tickPickups(dt);
   tickParticles(dt);tickGibs(dt);tickCasings(dt);tickImpactMarks(dt);tickExpLights(dt);tickMzLights(dt);tickBombBlastWaves(dt);tickHeadshotFx(dt);tickExplosionFx(dt);tickCombatImpactFx(dt);tickEnvironment(dt);
 
-  // Update ally panel
   updateAllyPanel(dt);
-
+  finishMatchStep(dt);
   if(!webglLost)renderFrame();
+}
+
+function tickPlayerEquipmentCooldowns(dt){
+  if(playerMineCD>0){
+    playerMineCD=Math.max(0,playerMineCD-dt);
+    const sec=Math.ceil(playerMineCD);
+    if(sec!==mineHudSecond){mineHudSecond=sec;updateMineHUD();}
+  }
+  if(playerBombCD>0){
+    playerBombCD=Math.max(0,playerBombCD-dt);
+    const sec=Math.ceil(playerBombCD);
+    if(sec!==bombHudSecond){bombHudSecond=sec;updateMineHUD();}
+  }
+  if(playerSmokeCD>0){
+    playerSmokeCD=Math.max(0,playerSmokeCD-dt);
+    const sec=Math.ceil(playerSmokeCD);
+    if(sec!==smokeHudSecond){smokeHudSecond=sec;if(getW().isSmoke)wHUD();}
+    if(playerSmokeCD<=0&&getW().isSmoke)showMsg('🌫️ Кулдаун дымовухи завершён');
+  }
+}
+
+function maintainBotTeams(dt){
+  spawnT-=dt;
+  if(spawnT>0)return;
+  spawnT=1.7+Math.random();
+  for(let i=enemies.length-1;i>=0;i--){if(!enemies[i].alive)enemies.splice(i,1);}
+  while(countTeam('ally')<ALLY_BOT_TARGET)spawnBot('ally');
+  while(countTeam('enemy')<TEAM_SIZE)spawnBot('enemy');
 }
 
 let allyPanelCd=0;
@@ -347,7 +357,10 @@ function updateAllyPanel(dt){
   const plan=refreshBotTeamTactics('ally');
   const zoneName=plan.zone?.label||'ЦЕНТР';
   const advantage=plan.aliveDelta>0?'+'+plan.aliveDelta:String(plan.aliveDelta||0);
-  const order=`<div class="ally-icon ally-order" style="border-color:rgba(255,215,80,.58);background:rgba(38,30,4,.78);color:#ffe880;box-shadow:0 0 9px rgba(255,190,45,.18);"><span class="ally-doctrine-art" aria-hidden="true"></span><span>ПРИКАЗ: ${botDoctrineLabel(plan.doctrine)} · ${zoneName} · Δ ${advantage}</span></div>`;
+  const orderLabel=frontlineRally
+    ?'СБОР НА ТОЧКЕ · '+frontlineZone().label
+    :`ПРИКАЗ: ${botDoctrineLabel(plan.doctrine)} · ${zoneName} · Δ ${advantage}`;
+  const order=`<div class="ally-icon ally-order" style="border-color:rgba(255,215,80,.58);background:rgba(38,30,4,.78);color:#ffe880;box-shadow:0 0 9px rgba(255,190,45,.18);"><span class="ally-doctrine-art" aria-hidden="true"></span><span>${orderLabel}</span></div>`;
   panel.innerHTML=order+squad.map((e,i)=>{
     const pct=Math.round(e.hp/e.maxHp*100);
     return `<div class="ally-icon" style="border-color:rgba(64,210,255,.72);background:rgba(0,48,96,.76);color:#b8f2ff;box-shadow:0 0 7px rgba(50,190,255,.25);"><span class="ally-role-art" data-role="${e.role}" aria-hidden="true"></span><span class="ally-callout-art" data-callout="${allyCalloutKind(e)}" aria-hidden="true"></span><span>СВОЙ ${i+1} · ${botRoleLabel(e.role)}: ${e.kills||0} ☠ · ${pct}%</span></div>`;
@@ -370,8 +383,7 @@ setGameCursorHidden(false);
 buildGun(getW());buildWeaponBar();bindMobileControls();syncGeneratedMobileControlArt();updateMineHUD();updateStats();updateTeamScore();ensureFrontlineMarker();updateFrontlineHUD(true);updateOrientationState();refreshMobileHUD();xpHUD();refreshStartButton();
 requestAnimationFrame(loop);
 preloadGameContent().then(()=>{
-  document.documentElement.dataset.zapBoot='ready';
+  if(document.documentElement.dataset.zapBoot!=='failed')document.documentElement.dataset.zapBoot='ready';
 }).catch(err=>{
-  console.error('ZAP ZONE boot failed',err);
-  document.documentElement.dataset.zapBoot='failed';
+  window.dispatchEvent(new CustomEvent('zap-boot-failed',{detail:err}));
 });

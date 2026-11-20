@@ -109,3 +109,35 @@ test('Frontline capture awards the assisting player once and persists the object
   assert.deepEqual(h.context.captureSounds,['ally']);
   assert.match(h.context.messages[0],/\+150 .*\+35 XP/);
 });
+
+test('Rally selects the two nearest living allies and expires after ten active seconds',()=>{
+  const h=makeHarness();
+  h.run(`
+    const unit=(x,team='ally',alive=true)=>({team,alive,group:{position:{x,z:0}},stateCD:.4});
+    const enemies=[unit(12),unit(1,'enemy'),unit(3),unit(0,'ally',false),unit(6)];
+    issueFrontlineRally();
+  `);
+  assert.equal(h.run('enemies.map(frontlineRallyFor).join()'),'false,false,true,false,true');
+  assert.equal(h.run('enemies[2].stateCD'),0);
+  h.run('tickFrontlineObjective(7,0); issueFrontlineRally(); tickFrontlineObjective(2.9,0)');
+  assert.equal(h.run('frontlineRallyFor(enemies[2])'),true);
+  h.run('enemies[2].stateCD=.4; tickFrontlineObjective(.2,0)');
+  assert.equal(h.run('frontlineRally'),null);
+  assert.equal(h.run('enemies[2].stateCD'),0);
+});
+
+test('Rally does not carry over to another zone, restore or a new match',()=>{
+  const h=makeHarness();
+  h.run(`
+    const enemies=[{team:'ally',alive:true,group:{position:{x:3,z:0}}}];
+    frontlineObjective.rotateT=1;
+    issueFrontlineRally();
+    tickFrontlineObjective(1,0);
+  `);
+  assert.equal(h.run('frontlineZone().id'),'right');
+  assert.equal(h.run('frontlineRally'),null);
+  h.run('issueFrontlineRally(); restoreFrontlineObjective(serializeFrontlineObjective())');
+  assert.equal(h.run('frontlineRally'),null);
+  h.run('issueFrontlineRally(); resetFrontlineObjective()');
+  assert.equal(h.run('frontlineRally'),null);
+});

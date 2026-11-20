@@ -11,7 +11,7 @@
 
 Главные owner-ы:
 - firearm projectile ricochet policy / reflection → `docs/specs/PROJECTILE_RICOCHET.md` → `src/combat/projectile-ricochet.js`; swept collision/penetration остаются в `src/combat/combat.js`;
-- browser session / pause / Pointer Lock → `src/game/session.js`;
+- browser session / pause / Pointer Lock / таймер и итоги матча → `src/game/session.js`;
 - frame loop / boot → `src/game/runtime.js`;
 - player/save/weapon ownership → `src/player/state.js`;
 - combat/input/projectiles → `src/combat/combat.js`;

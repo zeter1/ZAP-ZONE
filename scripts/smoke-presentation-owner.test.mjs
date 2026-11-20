@@ -69,8 +69,8 @@ class Vec{
 function fixture(){
   const c={THREE:{Vector3:Vec},curW:7,SMOKE_WEAPON_INDEX:7,WEAPONS:Array.from({length:10},()=>({rate:.55,recoilY:.025})),
     running:true,paused:false,dying:false,lvlAnnOpen:false,perkPickOpen:false,reloading:false,sCD:0,stock:1,owned:true,
-    playerSmokeCD:0,SMOKE_COOLDOWN_SECONDS:30,recoilPitch:0,zooming:false,wallAABBs:[],pendingMineThrow:null,pendingBombPlant:null,
-    smokeGrenades:[],smokeClouds:[],plr:{recoilM:1,smokeCooldownM:1},camera:{position:new Vec(0,1.75,-19.35),quaternion:{}},
+    playerSmokeCD:0,SMOKE_COOLDOWN_SECONDS:Number(system.match(/const SMOKE_COOLDOWN_SECONDS=(\d+);/)[1]),recoilPitch:0,zooming:false,wallAABBs:[],pendingMineThrow:null,pendingBombPlant:null,
+    smokeGrenades:[],smokeClouds:[],plr:{recoilM:1},camera:{position:new Vec(0,1.75,-19.35),quaternion:{}},
     ownsWeapon:()=>c.owned,weaponAmmoValue:()=>c.stock,weaponReserveValue:()=>0,setWeaponAmmo:(i,v)=>{c.stock=v;},
     testingInfiniteAmmoEnabled:()=>false,showMsg(){},wHUD(){},updateWeaponBar(){},trigMuzzle(){},playSmokeSound42(){},smokePresentationAssetReady42:()=>false,
     mkSmokeGrenade:()=>({position:new Vec(),children:[],rotation:{x:0,z:0}}),scene:{add(){}},animated:false,
@@ -85,9 +85,22 @@ test('release frame3 emits once, ammo/CD unchanged before .29; missing art has i
   for(const animated of [false,true]){
     const f=fixture();f.c.animated=animated;f.c.throwSmokeGrenade();f.c.throwSmokeGrenade();f.tick(5);
     assert.equal(f.c.smokeGrenades.length,0);assert.equal(f.c.stock,1);assert.equal(f.c.playerSmokeCD,0);
-    f.c.tickPendingSmokeThrow(.04);assert.equal(f.c.smokeGrenades.length,1);assert.equal(f.c.stock,0);assert.equal(f.c.playerSmokeCD,30);
+    f.c.tickPendingSmokeThrow(.04);assert.equal(f.c.smokeGrenades.length,1);assert.equal(f.c.stock,0);assert.equal(f.c.playerSmokeCD,240);
     f.tick(20);assert.equal(f.c.smokeGrenades.length,1);assert.equal(f.c.sCD,.55);
   }
+});
+test('a player with spare ammo cannot start another throw until four-minute cooldown reaches zero',()=>{
+  const f=fixture();
+  f.c.throwSmokeGrenade();f.tick(6);
+  assert.equal(f.c.playerSmokeCD,240);
+  f.c.stock=1;f.c.sCD=0;f.c.smokeGrenades.length=0;
+  for(const remaining of [240,1,.001]){
+    f.c.playerSmokeCD=remaining;
+    assert.equal(f.c.throwSmokeGrenade(),undefined);
+  }
+  assert.equal(f.c.stock,1);
+  f.c.playerSmokeCD=0;assert.equal(f.c.throwSmokeGrenade(),true);f.tick(6);
+  assert.equal(f.c.playerSmokeCD,240);assert.equal(f.c.stock,0);
 });
 test('cancel then retry; switch/pause/death/hidden/reload reject pending, already emitted grenade survives cancellation',()=>{
   for(const mutation of ['curW=0','paused=true','dying=true','running=false','reloading=true','lvlAnnOpen=true','perkPickOpen=true','cancelPendingSmokeThrow(true)']){
@@ -158,7 +171,7 @@ function smokeReleasePublicationOracle(sourceReady=true){
     assert.equal(fallback.particles.length,roll<.78?4:3,'missing art retains original two gold puffs, optional smoke and spark');
     assert.ok(fallback.particles.some(p=>p[3]===0xffd27a||p[3]===0xff8a32),'the actual engine yellow publication is reached');
     assert.equal(fallback.lights.length,1);
-    assert.equal(decoded.c.smokeGrenades.length,1);assert.equal(decoded.c.stock,0);assert.equal(decoded.c.playerSmokeCD,30);
+    assert.equal(decoded.c.smokeGrenades.length,1);assert.equal(decoded.c.stock,0);assert.equal(decoded.c.playerSmokeCD,240);
   }
 }
 test('actual release suppresses legacy yellow muzzle only with exact-ready world art; real engine RNG stays equivalent',()=>{
@@ -200,8 +213,8 @@ function artFixture(){
   const doc={body:root,createElement(){const el=element();elements.set(Symbol(),el);return el;}};
   Object.assign(f.c,{document:doc,G:id=>[...elements.values()].find(el=>el.id===id)||null,innerWidth:1600,innerHeight:900,
     wallMeshes:[],wallBetween:()=>f.c.occluded,occluded:false,gameAssetUrl:x=>x,GAME_ASSETS:{presentationVfx:{pack42SmokeWorld:'world.webp',pack42SmokeCloud:'cloud.webp',pack42SmokeNear:'near.webp',pack42SmokeFar:'far.webp',pack42SmokeWisps:'wisps.webp'}},
-    smokeVolumeSupported42:()=>false,smokePresentationAssetReady42:()=>f.c.ready,ready:true,destroySceneObject(m){m.destroyed=true;},camera:{position:new Vec(0,1.75,0),fov:75,updateWorldMatrix(){}}});
-  vm.runInContext(['smokeArtLayer42','removeSmokeArt42','clearSmokePresentation42','makeSmokeArt42','positionSmokeArt42','syncSmokeBodyArt42','syncSmokeCloudArt42','removeSmokeCloud'].map(n=>fn(combat,n)).join('\n'),f.c);
+    useSmokeVolume42:()=>false,smokePresentationAssetReady42:()=>f.c.ready,ready:true,destroySceneObject(m){m.destroyed=true;},camera:{position:new Vec(0,1.75,0),fov:75,updateWorldMatrix(){}}});
+  vm.runInContext(['smokeArtLayer42','removeSmokeArt42','clearSmokePresentation42','makeSmokeArt42','positionSmokeArt42','syncSmokeBodyArt42','syncSmokeCloudArt42','releaseSmokeVolume42','removeSmokeCloud'].map(n=>fn(combat,n)).join('\n'),f.c);
   const cloud=()=>({m:{position:new Vec(0,.12,-30),visible:true},center:new Vec(0,1.6,-30),radius:15.5,life:60,maxLife:60,age:0,density:1,
     puffs:Array.from({length:22},(_,i)=>({position:new Vec(i%3,.8,-i%4),userData:{phase:.4}}))});
   return {...f,cloud,elements};

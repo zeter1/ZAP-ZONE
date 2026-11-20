@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="application-version" content="24.1">
-<meta name="application-build" content="ce87a61fc4d21e3d">
-<title>⚡ ZAP ZONE v24.1</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=ce87a61fc4d21e3d">
+<meta name="application-build" content="c87023a5dc7a9334">
+<title>⚡ ZAP ZONE v24.1</title><link id="game-styles" rel="stylesheet" href="src/styles/game.css?v=c87023a5dc7a9334">
 <link rel="icon" href="assets/ui/logo.svg" type="image/svg+xml">
 
 </head>
@@ -20,6 +20,8 @@
     <div id="loading-sub">Создание карты и оптимизация ресурсов...</div>
     <div id="loading-track"><div id="loading-fill"></div></div>
     <div id="loading-pct">0%</div>
+    <p id="loading-error" role="alert"></p>
+    <button class="btn" id="loading-retry" type="button" hidden>Повторить</button>
   </div>
 </div>
 <div id="ui">
@@ -38,7 +40,7 @@
   <div id="dfx"></div>
   <div id="team-bar">
     <div class="tb-side" id="tb-ally">СИНИЕ 0</div>
-    <div class="tb-vs">5 × 5</div>
+    <div class="tb-vs" id="match-clock" role="timer" aria-label="До конца матча">8:00</div>
     <div class="tb-side" id="tb-enemy">КРАСНЫЕ 0</div>
   </div>
   <div id="kill-feed" aria-live="polite"></div>
@@ -146,34 +148,91 @@
   </div>
 </div>
 
-<div id="menu" class="fs">
-  <img id="brand-logo" src="assets/ui/logo.svg" data-generated-src="assets/ui/zap-zone-logo-01.png" data-fallback-src="assets/ui/logo.svg" alt="ZAP ZONE" decoding="async" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc">
-  <p style="font-size:14px;color:#ffd700;margin-bottom:4px;">Браузерный FPS — командный бой 5×5 с ротационной линией фронта · вы + 4 синих союзника против 5 красных ботов</p>
-  <div class="hints">
-    <b>WASD</b> — ходьба &nbsp;|&nbsp; <b>Shift</b> — бег &nbsp;|&nbsp; <b>X</b> — присесть &nbsp;|&nbsp; <b>Space</b> — прыжок<br>
-    <b>Мышь</b> — обзор &nbsp;|&nbsp; <b>ЛКМ</b> — огонь &nbsp;|&nbsp; <b>ПКМ</b> — оптика у штурмовой и SR-9 &nbsp;|&nbsp; <b>R</b> — перезарядка<br>
-    <b>1–9</b> — оружие &nbsp;|&nbsp; <b>Колесо мыши</b> — след./пред. найденное оружие &nbsp;|&nbsp; <b>Q</b> — предыдущее &nbsp;|&nbsp; <b>F</b> — мина &nbsp;|&nbsp; <b>G</b> — бомба &nbsp;|&nbsp; <b>ESC</b> — пауза<br>
-    🔫 Оружие нужно находить на карте; повторный подбор того же типа даёт случайно 50–400 его патронов &nbsp;|&nbsp; ❤️ Аптечки &nbsp;|&nbsp; ⭐ выбор из 5 улучшений<br>
+<div id="menu" class="fs game-menu" aria-labelledby="menu-title">
+  <div class="game-menu-layout">
+    <div class="game-menu-column">
+      <div class="game-menu-brand"><img id="brand-logo" src="assets/ui/logo.svg" data-generated-src="assets/ui/zap-zone-logo-01.png" data-fallback-src="assets/ui/logo.svg" alt="ZAP ZONE" decoding="async" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc"></div>
+      <header class="game-menu-heading">
+        <p class="game-menu-kicker">Командный бой с ботами <span>5 × 5</span></p>
+        <h1 id="menu-title">Линия фронта</h1>
+        <p>Захватывайте зоны вместе с командой.</p>
+      </header>
+      <div class="game-menu-start">
+        <button class="btn match-action match-primary" id="startBtn" type="button"><span id="startBtnLabel">Играть</span><span class="match-tail" aria-hidden="true">→</span></button>
+        <p id="menu-save-summary" hidden></p>
+        <button class="btn match-action match-primary" id="newMatchBtn" type="button" hidden><span>Новый матч</span><span class="match-tail" aria-hidden="true">→</span></button>
+      </div>
+      <div class="match-tools">
+        <button class="btn match-action match-secondary" id="menuHelpBtn" type="button">Как играть</button>
+        <button class="btn match-action match-secondary" id="menuSettingsBtn" type="button">Настройки</button>
+      </div>
+    </div>
   </div>
-  <button class="btn byellow" id="startBtn" type="button">▶ ИГРАТЬ</button>
-  <button class="btn bsecondary" id="menuSettingsBtn" type="button">⚙ НАСТРОЙКИ</button>
 </div>
-<div id="pause" class="fs">
-  <div class="bigtitle" style="font-size:48px">⏸ ПАУЗА</div>
-  <div class="pause-actions">
-    <button class="btn byellow" id="resumeBtn" type="button">▶ ПРОДОЛЖИТЬ</button>
-    <button class="btn byellow" id="fullscreenBtn" type="button">⛶ НА ВЕСЬ ЭКРАН</button>
-    <button class="btn bsecondary" id="pauseSettingsBtn" type="button">⚙ НАСТРОЙКИ</button>
-    <button class="btn brestart" id="restartBtn" type="button">↻ НАЧАТЬ ИГРУ ЗАНОВО</button>
+<div id="pause" class="fs game-menu" aria-labelledby="pause-title">
+  <div class="game-menu-layout">
+    <div class="game-menu-column">
+      <header class="game-menu-heading">
+        <p class="game-menu-kicker">Линия фронта <span>5 × 5</span></p>
+        <h2 id="pause-title">Пауза</h2>
+      </header>
+      <button class="btn match-action match-primary" id="resumeBtn" type="button"><span>Продолжить матч</span><kbd class="match-tail" aria-hidden="true">Esc</kbd></button>
+      <div class="pause-actions">
+        <button class="btn match-action match-row" id="pauseSettingsBtn" type="button">Настройки<span class="match-tail" aria-hidden="true">›</span></button>
+        <button class="btn match-action match-row" id="pauseHelpBtn" type="button">Управление<span class="match-tail" aria-hidden="true">›</span></button>
+        <button class="btn match-action match-row" id="fullscreenBtn" type="button" aria-pressed="false">Полный экран<span class="match-tail match-switch" aria-hidden="true"></span></button>
+      </div>
+      <button class="btn match-action match-danger-link" id="restartBtn" type="button">Начать заново</button>
+    </div>
+    <aside class="match-brief" aria-labelledby="match-score-title">
+      <h3 id="match-score-title">Счёт за захват зон</h3>
+      <dl class="match-score">
+        <div><dt>Синие</dt><dd id="pause-ally-score">0</dd></div>
+        <div><dt>Красные</dt><dd id="pause-enemy-score">0</dd></div>
+      </dl>
+      <p class="match-zone"><span>Активная зона</span><strong id="pause-zone"></strong></p>
+      <p class="match-zone"><span>До конца матча</span><strong id="pause-match-clock">8:00</strong></p>
+    </aside>
   </div>
-  <div class="pause-note">Новая игра удалит автосохранение, уровень, улучшения, счёт и текущее снаряжение.</div>
 </div>
-<div id="settings-modal" aria-hidden="true">
-  <div id="settings-box" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-    <div id="settings-title">⚙ НАСТРОЙКИ</div>
+<dialog id="match-help" class="match-dialog" aria-labelledby="match-help-title">
+  <h2 id="match-help-title">Как играть</h2>
+  <dl class="hints">
+    <dt>Цель</dt><dd>Наберите больше очков за 8 минут. Устранение даёт 1 очко, захват зоны — 3. Следите за новой целью на мини-карте. <kbd>T</kbd> зовёт двух ближайших к точке союзников на 10 секунд или до смены зоны.</dd>
+    <dt>Движение</dt><dd>Для игры нужны клавиатура и мышь. <kbd>WASD</kbd> ходьба · <kbd>Shift</kbd> бег · <kbd>Space</kbd> прыжок · <kbd>X</kbd> присесть.</dd>
+    <dt>Оружие</dt><dd>Мышь — обзор, ЛКМ — огонь, ПКМ — оптика у штурмовой и SR-9, <kbd>R</kbd> — перезарядка. <kbd>1–9</kbd> или колесо — выбор оружия, <kbd>Q</kbd> — предыдущее, <kbd>F</kbd> — мина, <kbd>G</kbd> — бомба. <kbd>0</kbd> — осколочная граната. Зажмите ЛКМ, чтобы усилить бросок, и отпустите. <kbd>Esc</kbd> — пауза.</dd>
+    <dt>Припасы и улучшения</dt><dd>Подбирайте оружие и аптечки на карте. Повторный подбор оружия пополняет патроны. При повышении уровня выберите одно из пяти улучшений.</dd>
+  </dl>
+  <div class="match-dialog-actions"><button class="btn match-action match-secondary" id="matchHelpClose" type="button" autofocus>Назад</button></div>
+</dialog>
+<dialog id="match-restart" class="match-dialog" aria-labelledby="match-restart-title" aria-describedby="match-restart-note">
+  <h2 id="match-restart-title">Начать матч заново?</h2>
+  <p id="match-restart-note">Текущий прогресс будет сброшен. Автосохранение, счёт, уровень, улучшения и снаряжение будут заменены данными нового матча.</p>
+  <div class="match-dialog-actions">
+    <button class="btn match-action match-secondary" id="matchRestartCancel" type="button" autofocus>Отмена</button>
+    <button class="btn match-action match-danger" id="matchRestartConfirm" type="button">Начать заново</button>
+  </div>
+</dialog>
+<dialog id="match-result" class="match-dialog" aria-labelledby="match-result-title">
+  <h2 id="match-result-title">Итоги матча</h2>
+  <table class="match-results-table">
+    <thead><tr><th scope="col">Команда</th><th scope="col">Очки</th><th scope="col">Захваты</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Синие</th><td id="result-ally-score"></td><td id="result-ally-captures"></td></tr>
+      <tr><th scope="row">Красные</th><td id="result-enemy-score"></td><td id="result-enemy-captures"></td></tr>
+    </tbody>
+  </table>
+  <div class="match-dialog-actions">
+    <form method="dialog"><button class="btn match-action match-secondary" type="submit">В меню</button></form>
+    <button class="btn match-action match-primary" id="matchResultNew" type="button" autofocus>Новый матч</button>
+  </div>
+</dialog>
+<dialog id="settings-modal" aria-labelledby="settings-title">
+  <div id="settings-box">
+    <h2 id="settings-title">⚙ НАСТРОЙКИ</h2>
     <div class="setting-row">
       <label for="setting-sensitivity">Чувствительность мыши</label>
-      <div class="setting-control"><input id="setting-sensitivity" type="range" min="0.50" max="2.00" step="0.05"><span id="setting-sensitivity-value">1.00×</span></div>
+      <div class="setting-control"><input id="setting-sensitivity" type="range" min="0.50" max="2.00" step="0.05" autofocus><span id="setting-sensitivity-value">1.00×</span></div>
     </div>
     <div class="setting-row">
       <label for="setting-sfx">Громкость эффектов</label>
@@ -198,16 +257,34 @@
     <label class="setting-toggle"><span>Бесконечные патроны у оружия</span><input id="setting-infinite-ammo" type="checkbox"></label>
     <label class="setting-toggle"><span>У игрока сразу все виды оружия</span><input id="setting-all-weapons" type="checkbox"></label>
     <div class="settings-note">Настройки сохраняются отдельно от прогресса игры и применяются сразу. Тестовые переключатели можно менять во время матча.</div>
-    <button class="btn byellow" id="settingsCloseBtn" type="button">ГОТОВО</button>
+    <form method="dialog"><button class="btn byellow" id="settingsCloseBtn" type="submit">ГОТОВО</button></form>
   </div>
-</div>
+</dialog>
 <div id="death-flash"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script id="cache-bootstrap">
 (()=>{
   const BUILD_ID_PATTERN=/^[0-9a-f]{16}$/;
   const currentBuild=document.querySelector('meta[name="application-build"]')?.content?.trim()||'';
+  const boot=document.documentElement.dataset;
+  const retry=document.getElementById('loading-retry');
+  retry.addEventListener('click',()=>location.reload());
+  const failBoot=err=>{
+    if(boot.zapBoot==='failed'||boot.zapBoot==='ready')return;
+    boot.zapBoot='failed';
+    console.error('ZAP ZONE bootstrap:',err);
+    document.getElementById('loading-title').textContent='ИГРА НЕ ЗАГРУЗИЛАСЬ';
+    document.getElementById('loading-sub').hidden=true;
+    document.getElementById('loading-track').hidden=true;
+    document.getElementById('loading-pct').hidden=true;
+    document.getElementById('loading-error').textContent='Проверьте подключение к интернету и поддержку WebGL в браузере. Затем попробуйте ещё раз.';
+    retry.hidden=false;
+    retry.focus();
+  };
+  window.addEventListener('error',event=>{
+    if(event.message)failBoot(event.error||event.message);
+  });
+  window.addEventListener('zap-boot-failed',event=>failBoot(event.detail),{once:true});
   const localScripts=[
     'src/assets/catalog.js','assets/environment/models/zap-map-sci-fi-kit-47.runtime.js','src/environment/map-kit3d.js','src/core/engine.js','assets/weapons/models/zap-world-weapons-49.runtime.js','src/weapons/world-weapon-model3d.js','src/weapons/system.js','src/player/state.js',
     'src/settings/settings.js','src/combat/projectile-ricochet.js','src/combat/combat.js','src/ai/bot-progression-scaling.js','src/ai/bot-perception.js','src/ai/bot-damage-reaction.js','src/ai/bot-suppression-response.js','src/ai/bot-dodge-response.js','src/ai/bot-navigation.js','src/ai/bot-positioning.js','src/ai/bot-cover-execution.js','src/ai/bot-engagement-movement.js','src/ai/bot-weapon-policy.js','src/ai/bot-fire-control.js','src/ai/bot-fire-cadence.js','src/ai/bot-deployables.js','src/ai/bot-state-policy.js','src/ai/tactics.js','src/game/frontline.js','assets/characters/models/zap-bot-modular-46.runtime.js','src/entities/bot-model3d.js','src/entities/bot-presentation.js','src/entities/bots.js','src/entities/pickups.js',
@@ -217,15 +294,42 @@
   const loadScript=src=>new Promise((resolve,reject)=>{
     const script=document.createElement('script');
     script.src=src;
-    script.onload=resolve;
-    script.onerror=()=>reject(new Error('Не удалось загрузить '+src));
+    const fail=message=>{
+      clearTimeout(timer);
+      script.remove();
+      reject(new Error(message+' '+src));
+    };
+    const timer=setTimeout(()=>fail('Истекло время ожидания'),15000);
+    script.onload=()=>{clearTimeout(timer);resolve();};
+    script.onerror=()=>fail('Не удалось загрузить');
     document.body.append(script);
   });
   const loadGame=async(build,useCacheKey)=>{
     window.ZAP_BUILD_ID=BUILD_ID_PATTERN.test(build)?build:'';
-    for(const path of localScripts)await loadScript(versioned(path,build,useCacheKey));
+    if(typeof THREE==='undefined')await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+    if(typeof THREE==='undefined'||typeof THREE.WebGLRenderer!=='function')throw new Error('Three.js не готов к запуску');
+    const urls=localScripts.map(path=>versioned(path,build,useCacheKey));
+    // Keep classic-script execution ordered and stop on the first failed script.
+    // Web preloads overlap requests without changing their execution order.
+    const preloads=new Map();
+    try{
+      for(const [index,url] of urls.entries()){
+        if(boot.zapBoot==='failed')return;
+        const ahead=urls[index+6];
+        const batch=index===0?urls.slice(0,7):ahead?[ahead]:[];
+        if(location.protocol!=='file:')for(const src of batch){
+          const link=document.createElement('link');
+          link.rel='preload';link.as='script';link.href=src;
+          preloads.set(src,link);document.head.append(link);
+        }
+        await loadScript(url);
+        preloads.get(url)?.remove();preloads.delete(url);
+      }
+    }finally{
+      for(const link of preloads.values())link.remove();
+    }
   };
-  const safeLoad=(build,useCacheKey)=>loadGame(build,useCacheKey).catch(err=>console.error('ZAP ZONE bootstrap:',err));
+  const safeLoad=(build,useCacheKey)=>loadGame(build,useCacheKey).catch(failBoot);
 
   if(location.protocol==='file:'){safeLoad(currentBuild,true);return;}
 

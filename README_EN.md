@@ -2,7 +2,7 @@
 
 # ZAP ZONE
 
-ZAP ZONE is a browser-based 3D team FPS built with Three.js/WebGL. You and four allied AI bots fight five enemy bots. Matches are single-player and do not require other players to connect.
+ZAP ZONE is a browser-based 3D team FPS built with Three.js/WebGL. You and four allied AI bots fight five enemy bots. Each single-player match lasts eight minutes of gameplay. Teams earn one point per elimination and three per zone capture. The team with more points wins, and equal scores are a draw. The timer stops while paused and is stored in the autosave.
 
 ## Get started
 
@@ -13,6 +13,8 @@ python -m http.server 8000
 ```
 
 Open http://localhost:8000. The game needs JavaScript, WebGL, a keyboard and mouse, and internet access to load Three.js from a CDN. Python is only needed for the optional server. Lower graphics quality if performance is poor.
+
+Choose Play or resume a saved match from the main menu. The pause screen shows the zone-capture score and the active objective.
 
 ## Controls
 
@@ -25,6 +27,7 @@ Open http://localhost:8000. The game needs JavaScript, WebGL, a keyboard and mou
 | Weapon / grenade | `1–9` / `0` |
 | Previous weapon | `Q` |
 | Mine / bomb | `F` / `G` |
+| Rally up to two nearby allies to the active zone | `T` |
 | Pause | `Esc` |
 
 ## Features and development

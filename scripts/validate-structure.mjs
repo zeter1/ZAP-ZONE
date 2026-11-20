@@ -330,7 +330,7 @@ for(const file of presentationCssRasterAssets){
 }
 for(const fallback of ['../../assets/ui/health.svg','../../assets/ui/armor.svg','../../assets/ui/xp.svg'])if(!gameCss.includes(fallback))fail('file-mode UI fallback missing: '+fallback);
 if(!gameCss.includes('.generated-art-enabled #menu')||!gameCss.includes('.generated-art-enabled #loading'))fail('presentation-art CSS gate missing');
-for(const token of ['#tb-ally::before','#tb-enemy::before','#wammo::before','#reload-lbl::before','#frontline-art','#menu .hints::after']){
+for(const token of ['#tb-ally::before','#tb-enemy::before','#wammo::before','#reload-lbl::before','#frontline-art','#match-help .hints::after']){
   if(!gameCss.includes(token))fail('generated gameplay UI CSS wiring missing: '+token);
 }
 for(const file of audioAssets){
@@ -1129,6 +1129,7 @@ for(const token of [
   "else if(targetPos&&supportReady&&bot.tacticalMode==='support')bot.aiState='support';",
   "else if(targetPos&&bot.coverPoint&&(!bot.canSeeTarget||bot.role==='anchor'||bot.reloadT>0||(localThreats>=3&&hpPct<.72)||bot.suppressedT>0))bot.aiState='cover';",
   "else if(targetPos&&bot.flankPoint&&bot.flankCommitT>0&&bot.tacticalMode==='flank')bot.aiState='flank';",
+  "else if(rallying&&mapObjective)bot.aiState='objective';",
   "else if(mapOrderWanted)bot.aiState='objective';",
   "else if(targetPos&&bot.canSeeTarget&&dist<=bot.weapon.range*(bot.team==='ally'?1.14:1.08))bot.aiState='engage';",
   "else if(targetPos&&bot.lastSeenT<8.5)bot.aiState='hunt';",
@@ -1141,7 +1142,7 @@ for(const token of [
 if((statePolicy.match(/Math\.random\(\)/g)||[]).length!==1)fail('bot state-policy must consume exactly one RNG draw per selection');
 for(const token of [
   'if(this.stateCD<=0){','applyBotStateSelectionPolicy(this,{',
-  'targetPos,hpPct,strategicRetreat,localThreats,supportReady,mapOrderWanted,mapObjective,dist'
+  'targetPos,hpPct,strategicRetreat,localThreats,supportReady,rallying,mapOrderWanted,mapObjective,dist'
 ]){
   if(!bots.includes(token))fail('bot state-policy consumer seam missing: '+token);
 }
@@ -1368,9 +1369,17 @@ for(const token of ['width:254px','width:236px','width:218px;height:218px','widt
   if(!css.includes(token))fail('compact tactical HUD sizing missing: '+token);
 }
 if(!css.includes('#xhair.generated-reticle::before{content:none;}')||!css.includes('#xhair.generated-reticle .xh-arm{opacity:1;}'))fail('clean CSS reticle must suppress the dark-tile generated overlay');
-if(!readFileSync('assets/ui/panels/pause-panel-tech-01.svg','utf8').includes('preserveAspectRatio="none"')||!css.includes('#pause .pause-actions>.btn{max-width:100%;margin:0;flex-shrink:0;}'))fail('pause frame must stretch to button group without SVG letterboxing or button overflow');
-if(!css.includes('#pause .pause-actions::before{')||css.includes('#pause::before{'))fail('pause panel asset must be bound to the action group, not the whole screen');
-if(!css.includes('#pause .pause-actions{position:relative;isolation:isolate;box-sizing:border-box;width:min(560px,94vw);padding:32px 40px 40px;gap:8px;flex-shrink:0;}'))fail('pause panel safe area must contain all four action buttons');
+if(!readFileSync('assets/ui/panels/pause-panel-tech-01.svg','utf8').includes('preserveAspectRatio="none"')||
+   !css.includes('#pause .match-brief::before{')||css.includes('#pause::before{'))fail('pause frame must be bound to the match summary');
+const matchMenuHtml=readFileSync('index.html','utf8');
+for(const id of ['startBtn','newMatchBtn','resumeBtn']){
+  if(!matchMenuHtml.includes('class="btn match-action match-primary" id="'+id+'"'))fail('match actions must share the primary button style: '+id);
+}
+for(const token of ['id="match-restart"','id="matchRestartCancel" type="button" autofocus','id="pause-zone"']){
+  if(!matchMenuHtml.includes(token))fail('match menu is missing '+token);
+}
+if(!session.includes('matchRestartDialog.close();')||!session.includes('matchRestartDialog.open')||
+   !session.includes("G('matchRestartConfirm').addEventListener('click'"))fail('match reset confirmation must be handled by the session');
 if(!css.includes('box-sizing:border-box;width:min(620px,90vw);height:auto;aspect-ratio:1000/320')||!css.includes('.pickup-toast-copy{position:absolute;inset:0;min-width:0;text-align:center;')||!css.includes('#pickup-toast-title{position:absolute;left:28.5%;right:9%;top:44.5%;transform:translateY(-50%);')||!css.includes('#pickup-toast-detail{position:absolute;left:29%;right:17%;top:68.5%;transform:translateY(-50%);')||!css.includes('white-space:nowrap;overflow:hidden;text-overflow:ellipsis'))fail('pickup notification title/detail must stay aligned to the upper and lower frame slots');
 if(!css.includes('min-height:350px')||!css.includes('grid-template-rows:88px 22px minmax(48px,auto) minmax(64px,1fr) minmax(48px,auto)')||!css.includes('.pcard-meta{box-sizing:border-box;width:100%;min-width:0;margin:0;padding:12px 0 0;')||!css.includes('.pcard-ds{width:100%;min-width:0;margin:0;')||!css.includes('grid-template-columns:repeat(2,minmax(0,1fr))')||!css.includes('.pcard:focus-visible'))fail('perk choice text must stay in dedicated responsive content rows');
 if(!css.includes('#weapon-bar{pointer-events:auto;flex-wrap:nowrap;justify-content:center;max-width:min(98vw,1180px);'))fail('desktop weapon bar must keep all ten weapon slots on one row');
@@ -1388,10 +1397,10 @@ for(const token of ['let curW=0,lastW=0','function quickSwitchWeapon()',"playWea
 for(const token of ['const weaponReserve=STARTING_RESERVE.slice()','const weaponOwned=STARTING_OWNED.slice()','function grantWeapon','function ownsWeapon','function weaponTotalAmmo','function weaponSelectable','function cycleOwnedWeapon(direction)','function ensureCurrentWeaponUsable','weaponReserve:reserves','weaponOwned:weaponOwned.slice()','v:27','serializeFrontlineObjective','restoreFrontlineObjective']){
   if(!state.includes(token))fail('per-weapon ownership/reserve save model missing: '+token);
 }
-for(const token of ['CURRENT_GAME_VERSION','GAMEPLAY_SAVE_KEYS','gameVersion:CURRENT_GAME_VERSION','data.gameVersion!==CURRENT_GAME_VERSION','clearStoredProgress();']){
+for(const token of ['CURRENT_GAME_VERSION','GAMEPLAY_SAVE_KEYS','gameVersion:CURRENT_GAME_VERSION','data.gameVersion!==CURRENT_GAME_VERSION','function beginProgressSession()']){
   if(!state.includes(token))fail('version-gated fresh-game save contract missing: '+token);
 }
-if(progression.includes('function clearStoredProgress()'))fail('save-storage clearing must remain owned by player state');
+if(!progression.includes('beginProgressSession();'))fail('fresh match must establish its own autosave baseline');
 if(!state.includes('if(!weaponSelectable(idx))'))fail('empty owned weapon must not be selectable');
 if(!html.includes('id="wstate"'))fail('weapon readiness HUD missing');
 if(!html.includes('KeyQ') && !combat.includes("e.code==='KeyQ'"))fail('Q quick switch binding missing');
@@ -1495,7 +1504,7 @@ for(const [file,tokens] of new Map([
 }
 
 for(const token of ['presentationHudV3:Object.freeze',"perkPathCrests:'assets/ui/perks/perk-path-crest-atlas-01.svg'","equipmentReadiness:'assets/ui/equipment/equipment-readiness-atlas-01.svg'","frontlineProgress:'assets/ui/objective/frontline-capture-progress-frame-01.svg'","allyCallouts:'assets/ui/bots/ally-tactical-callout-atlas-01.svg'","pausePanel:'assets/ui/panels/pause-panel-tech-01.svg'","mobileControls:'assets/ui/mobile/mobile-control-icons-atlas-01.svg'",'function perkPathPresentationFrame','function equipmentReadinessPresentationFrame','function allyCalloutPresentationFrame','function mobileControlPresentationFrame'])if(!catalog.includes(token))fail('generated tactical HUD v3 catalog contract missing: '+token);
-for(const token of ['#perk-build.generated-path::before','.equipment-ready-art','#frontline-track::after','.ally-callout-art','#pause .pause-actions::before','.generated-mobile-icon'])if(!gameCss.includes(token))fail('generated tactical HUD v3 CSS missing: '+token);
+for(const token of ['#perk-build.generated-path::before','.equipment-ready-art','#frontline-track::after','.ally-callout-art','#pause .match-brief::before','.generated-mobile-icon'])if(!gameCss.includes(token))fail('generated tactical HUD v3 CSS missing: '+token);
 for(const [file,tokens] of new Map([
  ['src/game/session.js',['syncPausePanelPresentation']],
  ['src/game/frontline.js',['frontline-progress']],
@@ -1620,7 +1629,7 @@ const pack15FragRoot=combat.indexOf('function tickBotGrenades(dt)');
 const pack15FragFallback=combat.indexOf("spawnCombatImpact(pos,'rocket');",pack15FragRoot);
 const pack15FragGenerated=combat.indexOf('showGeneratedFragGrenadeVfx(pos,g.grounded?(g.m.position.y<=.141?-.04:g.m.position.y-.14):null);',pack15FragRoot);
 if(pack15FragRoot<0||pack15FragFallback<pack15FragRoot||pack15FragGenerated<pack15FragFallback)fail('pack 15 frag VFX must decorate the authoritative bot grenade detonation after fallback impact');
-const pack15DeathRoot=progression.indexOf('function checkDeath()');
+const pack15DeathRoot=progression.indexOf('function checkDeath(');
 const pack15DeathCamera=progression.indexOf('startDeathCamera(killer);',pack15DeathRoot);
 const pack15DeathGenerated=progression.indexOf("if(typeof showGeneratedPlayerDeathVfx==='function')showGeneratedPlayerDeathVfx();",pack15DeathRoot);
 if(pack15DeathRoot<0||pack15DeathCamera<pack15DeathRoot||pack15DeathGenerated<pack15DeathCamera)fail('pack 15 death VFX must start only after the kill camera owns the death view');

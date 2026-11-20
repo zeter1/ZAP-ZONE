@@ -141,6 +141,8 @@ jobs:
         run: node --test scripts/browser-diagnostic-policy.test.mjs
       - name: Graphics performance regressions
         run: node --test scripts/graphics-performance-owner.test.mjs
+      - name: Match lifecycle regressions
+        run: node --test scripts/match-lifecycle.test.cjs
 
       - name: Browser boot smoke test
         shell: bash

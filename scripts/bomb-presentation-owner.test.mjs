@@ -39,7 +39,8 @@ function fixture(slot=6,decoded=true){
   vm.runInContext(combat.slice(combat.indexOf('let pendingBombPlant=null;'),combat.indexOf('function spawnBotSmokeGrenade('))+'\n'+
     ['mkBomb','weaponActionBlocked','shoot','throwMine','throwFragGrenade','throwSmokeGrenade','doReload'].map(n=>fn(combat,n)).join('\n'),c);
   vm.runInContext(combat.slice(combat.indexOf("window.addEventListener('keydown'"),combat.indexOf("window.addEventListener('keyup'")),c);
-  vm.runInContext(combat.slice(combat.indexOf("window.addEventListener('blur'"),combat.indexOf("document.addEventListener('contextmenu'")),c);
+  vm.runInContext(['clearHeldGameKeys','releaseCombatInput'].map(n=>fn(combat,n)).join('\n')+'\n'+
+    combat.slice(combat.indexOf("window.addEventListener('blur'"),combat.indexOf("document.addEventListener('contextmenu'")),c);
   return {c,events,listeners,run:s=>vm.runInContext(s,c),tick:(steps=10)=>{for(let i=0;i<steps;i++)c.tickPendingBombPlant(.05);}};
 }
 test('native and quick placement reserve, release once at .48 and recover at .96 independent of decode',()=>{
@@ -108,6 +109,7 @@ test('fuse perk message and published fuse agree; lifecycle callers explicitly c
   const f=fixture();f.c.plr.bombFuseM=.82;f.c.placeBomb();f.tick();assert.ok(Math.abs(f.c.mines[0].fuseT-36.9)<1e-9);
   assert.ok(f.events.some(s=>typeof s==='string'&&s.includes('36.9 сек.')));
   const runtime=read('src/game/runtime.js'),session=read('src/game/session.js'),progression=read('src/progression/progression.js');
-  assert.match(runtime,/tickPendingBombPlant\(dt\)/);assert.match(fn(session,'showPauseUI'),/cancelPendingBombPlant\(\)/);
+  assert.match(runtime,/tickPendingBombPlant\(dt\)/);assert.match(fn(session,'showPauseUI'),/releaseCombatInput\(\)/);
+  assert.match(fn(combat,'releaseCombatInput'),/cancelPendingBombPlant\(\)/);
   for(const name of ['checkDeath','doRespawn','clearWorldForFreshGame','openLvlAnn','openPerkPick'])assert.match(fn(progression,name),/cancelPendingBombPlant\(\)/,name);
 });

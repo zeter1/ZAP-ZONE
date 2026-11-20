@@ -24,7 +24,8 @@ test('low FPS keeps real elapsed simulation time without losing a third of every
   assert.equal(simulationDt(-1),0);
   assert.equal(simulationDt(NaN),0);
   assert.match(runtime,/sampleAdaptiveGraphics\(rawDt\)/);
-  assert.match(runtime,/const deathDt=activeSimulationDelta\(rawDt\)/);
+  assert.match(runtime,/const deathDt=Math\.min\(activeSimulationDelta\(rawDt\),matchRemaining\)/);
+  assert.match(runtime,/const dt=Math\.min\(activeSimulationDelta\(rawDt\),matchRemaining\)/);
 });
 
 test('missing Safari deviceMemory is not misclassified as 4GB',()=>{
@@ -54,7 +55,7 @@ test('adaptive resolution downgrades quickly and upgrades only after sustained g
   assert.equal(good3.tier,1);
   assert.equal(good3.goodWindows,0);
   assert.equal(decide(1/60,0,1,1,2).tier,1,'integrated GPU auto quality is capped');
-  assert.match(engine,/renderer\.setPixelRatio\(graphicsPixelRatio\(next\)\)/);
+  assert.match(engine,/renderer\.setDrawingBufferSize\([^\n]+graphicsPixelRatio\(graphicsTier\)\)/);
   assert.match(engine,/renderer\.shadowMap\.enabled=next===2/);
 });
 

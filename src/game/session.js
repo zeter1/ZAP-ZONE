@@ -5,6 +5,26 @@
 // The frame loop reads lastT, but only this session owner resets it around
 // browser/user lifecycle transitions so background time never leaks into dt.
 let lastT=0;
+const MATCH_DURATION_SECONDS=8*60;
+let matchRemaining=MATCH_DURATION_SECONDS;
+
+function matchClockText(){
+  const seconds=Math.ceil(matchRemaining);
+  return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');
+}
+function updateMatchClock(){
+  const clock=G('match-clock'),text=matchClockText();
+  if(clock.textContent!==text)clock.textContent=text;
+}
+function restoreMatchClock(seconds){
+  matchRemaining=Number.isFinite(seconds)?Math.max(0,Math.min(MATCH_DURATION_SECONDS,seconds)):MATCH_DURATION_SECONDS;
+  updateMatchClock();
+}
+function advanceMatchClock(dt){
+  matchRemaining=Math.max(0,matchRemaining-dt);
+  updateMatchClock();
+  if(matchRemaining===0)finishMatch();
+}
 function syncPausePanelPresentation(){
   const el=G('pause');if(!el||el.dataset.generatedPanel==='1')return;
   if(applyPresentationAtlasVariables(el,'pause-panel',presentationAtlasFrame(GAME_ASSETS.presentationHudV3.pausePanel)))el.dataset.generatedPanel='1';
@@ -26,18 +46,23 @@ function clearPointerLockRequest(){
   if(pointerLockRequestTimer){clearTimeout(pointerLockRequestTimer);pointerLockRequestTimer=0;}
 }
 function showPauseUI(){
-  if(perkPickOpen||lvlAnnOpen)return;
+  if(matchRemaining===0||perkPickOpen||lvlAnnOpen)return;
   clearPointerLockRequest();
-  cancelFragGrenadeThrow();
-  cancelPendingMineThrow(true);if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
-  cancelPendingBombPlant();
-  paused=true;running=false;mouseDown=false;zooming=false;setMobileFire(false);
+  releaseCombatInput();
+  paused=true;running=false;setMobileFire(false);
   setGameCursorHidden(false);
   syncPausePanelPresentation();
-  G('pause').classList.add('on');refreshMobileHUD();
+  G('pause-ally-score').textContent=allyControlScore;
+  G('pause-enemy-score').textContent=enemyControlScore;
+  G('pause-zone').textContent=frontlineZone().label;
+  G('pause-match-clock').textContent=matchClockText();
+  const pause=G('pause');
+  const wasOpen=pause.classList.contains('on');
+  pause.classList.add('on');refreshMobileHUD();
+  if(!wasOpen)G('resumeBtn').focus({preventScroll:true});
 }
 function requestGamePointerLock(){
-  if(IS_TOUCH||dying||perkPickOpen||lvlAnnOpen)return;
+  if(matchRemaining===0||IS_TOUCH||dying||perkPickOpen||lvlAnnOpen)return;
   if(document.pointerLockElement===canvas){
     clearPointerLockRequest();setGameCursorHidden(true);return;
   }
@@ -64,6 +89,8 @@ function requestGamePointerLock(){
   }
 }
 function resumeGameFromPause(){
+  if(!gameSessionActivated)prepareResumeProgress();
+  if(matchRemaining===0){G('pause').classList.remove('on');showMatchResult();return;}
   if(perkPickOpen||lvlAnnOpen)return;
   mouseDown=false;zooming=false;lastT=performance.now();refreshMobileHUD();
   G('pause').classList.remove('on');
@@ -81,6 +108,8 @@ function startOrResumeGame(){
     G('loading')?.classList.remove('hidden');
     return;
   }
+  if(!gameSessionActivated)prepareResumeProgress();
+  if(matchRemaining===0){showMatchResult();return;}
   if(IS_TOUCH){
     tryFullscreen();tryLockLandscape();
     G('menu').style.display='none';G('pause').classList.remove('on');
@@ -90,17 +119,92 @@ function startOrResumeGame(){
       activatePreparedGame();
       wHUD();markHUD();flushHUD();xpHUD();updateStats();respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
     }else if(paused){resumeGameFromPause();}
-    mobileStarted=true;refreshMobileHUD();updateOrientationState();
+    activateMobileControls();
   }else{
     requestGamePointerLock();
   }
 }
 
+function activateMobileControls(){
+  mobileStarted=true;refreshMobileHUD();updateOrientationState();
+}
+
+function toggleMatchFullscreen(){
+  if(document.fullscreenElement){
+    document.exitFullscreen().catch(()=>{});
+  }else{
+    tryFullscreen();
+  }
+}
+
+const matchHelpDialog=G('match-help');
+const matchRestartDialog=G('match-restart');
+const matchFullscreenButton=G('fullscreenBtn');
+const matchResultDialog=G('match-result');
+
+function showMatchResult(){
+  const {ally,enemy}=teamMatchScores();
+  G('match-result-title').textContent=ally===enemy?'Ничья':ally>enemy?'Победа синих':'Победа красных';
+  G('result-ally-score').textContent=ally;
+  G('result-enemy-score').textContent=enemy;
+  G('result-ally-captures').textContent=allyControlScore;
+  G('result-enemy-captures').textContent=enemyControlScore;
+  if(!matchResultDialog.open)matchResultDialog.showModal();
+}
+
+function finishMatch(){
+  running=false;paused=false;mouseDown=false;zooming=false;
+  lvlAnnOpen=false;perkPickOpen=false;escapeResumePending=false;
+  clearPointerLockRequest();
+  releaseCombatInput();
+  clearFrontlineRally();
+  setMobileFire(false);refreshMobileHUD();
+  setGameCursorHidden(false);
+  if(document.pointerLockElement===canvas)document.exitPointerLock();
+  G('pause').classList.remove('on');
+  G('perk-menu').classList.remove('on');
+  G('lvl-ann').classList.remove('on');
+  G('menu').style.display='';
+  saveProgress(true);refreshStartButton();
+  showMatchResult();
+}
+
+function openMatchRestart(fromMenu){
+  escapeResumePending=false;
+  G('match-restart-title').textContent=fromMenu?'Начать новый матч?':'Начать матч заново?';
+  G('matchRestartConfirm').textContent=fromMenu?'Новый матч':'Начать заново';
+  matchRestartDialog.showModal();
+}
+
 // ─── POINTER LOCK / TOUCH START ─────────
 G('startBtn').addEventListener('click',startOrResumeGame);
 G('resumeBtn').addEventListener('click',resumeGameFromPause);
-G('fullscreenBtn').addEventListener('click',tryFullscreen);
-G('restartBtn').addEventListener('click',restartGameFromScratch);
+matchFullscreenButton.hidden=!document.fullscreenEnabled;
+matchFullscreenButton.addEventListener('click',toggleMatchFullscreen);
+document.addEventListener('fullscreenchange',()=>{
+  matchFullscreenButton.setAttribute('aria-pressed',String(!!document.fullscreenElement));
+});
+for(const id of ['menuHelpBtn','pauseHelpBtn']){
+  G(id).addEventListener('click',()=>{
+    escapeResumePending=false;
+    matchHelpDialog.showModal();
+  });
+}
+G('matchHelpClose').addEventListener('click',()=>matchHelpDialog.close());
+G('newMatchBtn').addEventListener('click',()=>openMatchRestart(true));
+G('restartBtn').addEventListener('click',()=>openMatchRestart(false));
+G('matchRestartCancel').addEventListener('click',()=>matchRestartDialog.close());
+G('matchRestartConfirm').addEventListener('click',()=>{
+  const startingOnTouch=IS_TOUCH&&!gameSessionActivated;
+  matchRestartDialog.close();
+  if(startingOnTouch){tryFullscreen();tryLockLandscape();}
+  restartGameFromScratch();
+  if(startingOnTouch)activateMobileControls();
+});
+G('matchResultNew').addEventListener('click',()=>{
+  matchResultDialog.close();
+  restartGameFromScratch();
+});
 G('perk-reroll').addEventListener('click',rerollPerks);
 window.addEventListener('keydown',e=>{
   if(!perkPickOpen)return;
@@ -120,7 +224,7 @@ document.addEventListener('pointerlockchange',()=>{
   if(IS_TOUCH)return;
   clearPointerLockRequest();
   if(document.pointerLockElement===canvas){
-    if(!preloadDone){document.exitPointerLock();return;}
+    if(!preloadDone||matchRemaining===0){document.exitPointerLock();return;}
     const firstStart=!gameSessionActivated;
     setGameCursorHidden(true);
     G('menu').style.display='none';G('pause').classList.remove('on');
@@ -132,7 +236,9 @@ document.addEventListener('pointerlockchange',()=>{
     }
   }else{
     mouseDown=false;zooming=false;
-    if(dying){
+    if(matchRemaining===0){
+      setGameCursorHidden(false);
+    }else if(dying){
       // Во время обычной киллкамеры курсор скрыт, но ESC-пауза должна оставлять
       // его видимым, чтобы меню было реально интерактивным.
       setGameCursorHidden(!paused);
@@ -165,18 +271,28 @@ window.addEventListener('focus',()=>{lastT=performance.now();});
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden)lastT=performance.now();
   if(document.hidden){
-    saveProgress(true);
+    if(gameSessionActivated)saveProgress(true);
     if(running&&!dying&&!lvlAnnOpen&&!perkPickOpen){
       if(IS_TOUCH)showPauseUI();
       else document.exitPointerLock();
     }
   }
 });
-window.addEventListener('pagehide',()=>saveProgress(true));
-window.addEventListener('beforeunload',()=>saveProgress(true));
+function saveActiveSession(){
+  if(gameSessionActivated)saveProgress(true);
+}
+window.addEventListener('pagehide',saveActiveSession);
+window.addEventListener('beforeunload',saveActiveSession);
+window.addEventListener('storage',e=>{
+  if(!gameSessionActivated&&(e.key===null||GAMEPLAY_SAVE_KEYS.includes(e.key)))refreshStartButton();
+});
 let escapeResumePending=false;
 window.addEventListener('keydown',e=>{
   if(e.code!=='Escape'||e.repeat||perkPickOpen||lvlAnnOpen||IS_TOUCH)return;
+  if(settingsDialog.open||matchHelpDialog.open||matchRestartDialog.open||matchRemaining===0){
+    escapeResumePending=false;
+    return;
+  }
   e.preventDefault();
   e.stopImmediatePropagation();
   if(paused){

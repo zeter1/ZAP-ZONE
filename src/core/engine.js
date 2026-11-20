@@ -21,12 +21,10 @@ const renderer=new THREE.WebGLRenderer({
   precision:PERF_MODE?'mediump':'highp',
   stencil:false
 });
-renderer.setSize(W,H,false);
-
 // ─── GRAPHICS QUALITY POLICY ──────────────────────────
-// Keep PERF_MODE/MOBILE_LOW fixed for asset/shader ownership. Only GPU
-// resolution and shadow quality are changed dynamically during the match.
+// Keep PERF_MODE/MOBILE_LOW fixed for scene asset ownership.
 const GRAPHICS_TIERS=Object.freeze([.72,1,1.25]);
+const GRAPHICS_PIXEL_BUDGETS=Object.freeze([1100000,2100000,3700000]);
 const GRAPHICS_LABELS=Object.freeze(['Низкое','Среднее','Высокое']);
 const GRAPHICS_MODES=Object.freeze(['auto','low','medium','high']);
 function readGraphicsMode(){
@@ -55,8 +53,14 @@ const GRAPHICS_AUTO_MAX_TIER=PERF_MODE||GRAPHICS_INTEL_GPU?1:2;
 let graphicsMode=readGraphicsMode();
 let graphicsTier=graphicsMode==='auto'?GRAPHICS_BASE_TIER:GRAPHICS_MODES.indexOf(graphicsMode)-1;
 let graphicsSampleSeconds=0,graphicsSampleFrames=0,graphicsSlowFrames=0,graphicsGoodWindows=0;
-function graphicsPixelRatio(tier){return Math.min(devicePixelRatio||1,GRAPHICS_TIERS[tier]);}
-renderer.setPixelRatio(graphicsPixelRatio(graphicsTier));
+let graphicsShadowUpgradePending=false;
+function graphicsPixelRatio(tier){
+  return Math.min(devicePixelRatio||1,GRAPHICS_TIERS[tier],Math.sqrt(GRAPHICS_PIXEL_BUDGETS[tier]/Math.max(1,W*H)));
+}
+function resizeGraphicsBuffer(){
+  renderer.setDrawingBufferSize(Math.max(1,W),Math.max(1,H),graphicsPixelRatio(graphicsTier));
+}
+resizeGraphicsBuffer();
 renderer.shadowMap.enabled=graphicsTier===2;
 function resetGraphicsSamples(){
   graphicsSampleSeconds=0;graphicsSampleFrames=0;graphicsSlowFrames=0;graphicsGoodWindows=0;
@@ -66,7 +70,7 @@ function applyGraphicsTier(tier){
   if(next===graphicsTier)return;
   const previousShadows=renderer.shadowMap.enabled;
   graphicsTier=next;
-  renderer.setPixelRatio(graphicsPixelRatio(next));
+  resizeGraphicsBuffer();
   renderer.shadowMap.enabled=next===2;
   if(previousShadows!==renderer.shadowMap.enabled){
     // Three.js r128 caches the shadow-enabled shader variant per material.
@@ -81,6 +85,7 @@ function setGraphicsQualityMode(mode){
   const next=GRAPHICS_MODES.includes(mode)?mode:'auto';
   if(next===graphicsMode)return;
   graphicsMode=next;
+  graphicsShadowUpgradePending=false;
   resetGraphicsSamples();
   applyGraphicsTier(next==='auto'?GRAPHICS_BASE_TIER:GRAPHICS_MODES.indexOf(next)-1);
 }
@@ -92,6 +97,16 @@ function chooseNextGraphicsTier(average,slowShare,tier,maxTier,goodWindows){
     return{tier:stable>=3?tier+1:tier,goodWindows:stable>=3?0:stable};
   }
   return{tier,goodWindows:0};
+}
+function applyAdaptiveGraphicsDecision(tier,healthy){
+  if(!healthy)graphicsShadowUpgradePending=false;
+  if(tier===2&&graphicsTier<2){graphicsShadowUpgradePending=true;return;}
+  applyGraphicsTier(tier);
+}
+function applyPendingGraphicsUpgrade(){
+  if(!graphicsShadowUpgradePending||running||dying||webglLost)return;
+  graphicsShadowUpgradePending=false;
+  if(graphicsMode==='auto'&&graphicsTier===1)applyGraphicsTier(2);
 }
 function sampleAdaptiveGraphics(frameSeconds){
   if(graphicsMode!=='auto')return;
@@ -108,7 +123,7 @@ function sampleAdaptiveGraphics(frameSeconds){
   // Degrade after one poor 4-second window; upgrade only after three stable ones.
   const next=chooseNextGraphicsTier(average,slowShare,graphicsTier,GRAPHICS_AUTO_MAX_TIER,graphicsGoodWindows);
   graphicsGoodWindows=next.goodWindows;
-  applyGraphicsTier(next.tier);
+  applyAdaptiveGraphicsDecision(next.tier,average<1/57&&slowShare<.035);
 }
 renderer.shadowMap.type=PERF_MODE?THREE.BasicShadowMap:THREE.PCFSoftShadowMap;
 renderer.sortObjects=true;
@@ -122,16 +137,18 @@ let wasRunningBeforeContextLoss=false;
 canvas.addEventListener('webglcontextlost',e=>{
   e.preventDefault();
   wasRunningBeforeContextLoss=running&&!paused;
-  saveProgress(true);
+  if(typeof gameSessionActivated!=='undefined'&&gameSessionActivated)saveProgress(true);
   webglLost=true;
   running=false;
   showMsg('⚠️ Графика временно сброшена');
 });
 canvas.addEventListener('webglcontextrestored',()=>{
   webglLost=false;
+  smokeWarmShadowModes42=0;smokeVolumeUnavailable42=false;
+  releaseSmokeTargets42();
   if(wasRunningBeforeContextLoss&&!dying&&!lvlAnnOpen&&!perkPickOpen){paused=false;running=true;}
   lastT=performance.now();
-  saveProgress(true);
+  if(typeof gameSessionActivated!=='undefined'&&gameSessionActivated)saveProgress(true);
   showAnn('ГРАФИКА ВОССТАНОВЛЕНА');
 });
 const scene=new THREE.Scene();
@@ -180,21 +197,59 @@ function restoreVisualState(){
 }
 let smokeDepthTarget42=null,smokeVolumeTarget42=null,smokeComposeScene42=null,smokeComposeCamera42=null;
 const smokeBufferSize42=new THREE.Vector2();
-function disposeSmokeRender42(){
+const smokeFrustum42=new THREE.Frustum(),smokeViewProjection42=new THREE.Matrix4(),smokeBounds42=new THREE.Box3();
+let smokeWarmShadowModes42=0,smokeVolumeUnavailable42=false;
+function releaseSmokeTargets42(){
   if(smokeDepthTarget42)smokeDepthTarget42.dispose();
   if(smokeVolumeTarget42)smokeVolumeTarget42.dispose();
-  if(smokeComposeScene42)disposeObject3D(smokeComposeScene42);
-  smokeDepthTarget42=null;smokeVolumeTarget42=null;smokeComposeScene42=null;smokeComposeCamera42=null;
+  smokeDepthTarget42=null;smokeVolumeTarget42=null;
+  if(smokeComposeScene42){
+    const u=smokeComposeScene42.children[0].material.uniforms;
+    u.uWorld.value=null;u.uSmoke.value=null;u.uDepth.value=null;
+  }
 }
-function renderSmokeDepth42(){
-  const volumes=typeof smokeClouds==='undefined'?[]:smokeClouds.map(c=>c.volume42).filter(Boolean);
-  if(!volumes.length){if(smokeDepthTarget42)disposeSmokeRender42();return false;}
+function visibleSmokeVolumes42(){
+  const volumes=smokeClouds.map(c=>c.volume42).filter(Boolean);
+  if(!volumes.length){if(smokeDepthTarget42)releaseSmokeTargets42();return volumes;}
+  camera.updateWorldMatrix(true,false);
+  smokeViewProjection42.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
+  smokeFrustum42.setFromProjectionMatrix(smokeViewProjection42);
+  return volumes.filter(mesh=>{
+    const u=mesh.material.uniforms;
+    smokeBounds42.set(u.uMin.value,u.uMax.value);
+    mesh.visible=smokeBounds42.containsPoint(camera.position)||smokeFrustum42.intersectsBox(smokeBounds42);
+    return mesh.visible;
+  });
+}
+function smokeShadowMode42(){return renderer.shadowMap.enabled?2:1;}
+function useSmokeVolume42(){return graphicsTier>0&&(smokeWarmShadowModes42&smokeShadowMode42())!==0;}
+function warmSmokeRender42(){
+  if(graphicsTier===0||webglLost||smokeVolumeUnavailable42||useSmokeVolume42())return;
+  if(!smokeVolumeSupported42()){smokeVolumeUnavailable42=true;return;}
+  const m=new THREE.Group();
+  m.position.copy(camera.getWorldDirection(new THREE.Vector3())).multiplyScalar(3).add(camera.position);
+  const cloud={m,radius:1,age:4,density:.5,puffs:[]};
+  scene.add(m);
+  try{
+    createSmokeVolume42(cloud);
+    updateSmokeVolume42(cloud);
+    renderSmokeDepth42([cloud.volume42]);
+    smokeWarmShadowModes42|=smokeShadowMode42();
+  }finally{
+    removeSmokeCloud(cloud);
+    if(!smokeClouds.some(c=>c.volume42))releaseSmokeTargets42();
+  }
+}
+function renderSmokeDepth42(volumes=visibleSmokeVolumes42()){
+  if(!volumes.length)return false;
   const size=renderer.getDrawingBufferSize(smokeBufferSize42);
   const ratio=Math.min(.5,(PERF_MODE?640:960)/size.x),lw=Math.max(1,Math.ceil(size.x*ratio)),lh=Math.max(1,Math.ceil(size.y*ratio));
   if(!smokeDepthTarget42){
     smokeDepthTarget42=new THREE.WebGLRenderTarget(size.x,size.y,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,stencilBuffer:false});
     smokeDepthTarget42.depthTexture=new THREE.DepthTexture(size.x,size.y,THREE.UnsignedShortType);
     smokeVolumeTarget42=new THREE.WebGLRenderTarget(lw,lh,{minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthBuffer:false,stencilBuffer:false});
+  }
+  if(!smokeComposeScene42){
     smokeComposeScene42=new THREE.Scene();smokeComposeCamera42=new THREE.Camera();
     const material=new THREE.ShaderMaterial({precision:'highp',depthTest:false,depthWrite:false,
       defines:{SMOKE_STEPS:PERF_MODE?24:40},
@@ -276,12 +331,14 @@ function renderSmokeDepth42(){
 }
 function renderFrame(){
   restoreVisualState();
+  applyPendingGraphicsUpgrade();
+  if(!running&&!dying&&typeof preloadDone!=='undefined'&&preloadDone)warmSmokeRender42();
   if(typeof syncWorldWeaponPickupArt==='function')syncWorldWeaponPickupArt();
   if(!renderSmokeDepth42())renderer.render(scene,camera);
 }
 window.addEventListener('resize',()=>{
   W=innerWidth;H=innerHeight;
-  renderer.setSize(W,H,false);
+  resizeGraphicsBuffer();
   camera.aspect=W/H;
   camera.updateProjectionMatrix();
   updateOrientationState();
@@ -679,6 +736,7 @@ const poolGlow=new THREE.Mesh(
 );
 poolGlow.scale.x=1.55;poolGlow.rotation.x=-Math.PI/2;poolGlow.position.set(-60,.07,15);scene.add(poolGlow);
 let environmentTime=0;
+if(typeof batchStaticMapKit47==='function'&&(renderer.capabilities.isWebGL2||renderer.extensions.has('ANGLE_instanced_arrays')))batchStaticMapKit47(scene);
 function tickEnvironment(dt){
   environmentTime+=dt;
   poolMat.opacity=(MOBILE_LOW?.86:.70)+Math.sin(environmentTime*1.15)*.025;

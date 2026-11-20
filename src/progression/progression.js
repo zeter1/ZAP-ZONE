@@ -5,9 +5,9 @@ function addXP(amt){
   xp+=amt;
   while(level<30&&xp>=xpFor(level+1)){
     level++;
-    if(!lvlAnnOpen&&!perkPickOpen)openLvlAnn(level);
-    else pendingLevels++;
+    pendingLevels++;
   }
+  if(pendingLevels>0&&!lvlAnnOpen&&!perkPickOpen&&!dying)openLvlAnn(level-pendingLevels+1);
   xpHUD();
   saveTick=Math.min(saveTick,1.5);
 }
@@ -27,7 +27,7 @@ function tickLvlAnn(dt){
   if(lvlAnnT<=0){
     G('lvl-ann').classList.remove('on');
     lvlAnnOpen=false;
-    openPerkPick(level);
+    openPerkPick(level-pendingLevels+1);
   }
 }
 
@@ -62,6 +62,7 @@ function rerollPerks(){
   perkRerollsLeft--;
   currentPerkChoices=rollPerkChoices(5);
   renderPerkChoices(level);
+  saveProgress(true);
 }
 function openPerkPick(lvl){
   cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
@@ -69,11 +70,11 @@ function openPerkPick(lvl){
   setGameCursorHidden(false);
   if(document.pointerLockElement===canvas)document.exitPointerLock();
   G('perk-sub').innerHTML='Уровень <span id="perk-lvl-num">'+lvl+'</span> · выбери 1 из 5 улучшений';
-  perkRerollsLeft=1;
-  currentPerkChoices=rollPerkChoices(5);
+  if(!currentPerkChoices.length)currentPerkChoices=rollPerkChoices(5);
   renderPerkChoices(lvl);
   G('perk-menu').classList.add('on');
   G('perk-cards').querySelector('button')?.focus({preventScroll:true});
+  saveProgress(true);
 }
 function pickPerk(p){
   if(!canTakePerk(p)){showMsg('Это улучшение уже достигло максимального ранга');return;}
@@ -86,8 +87,10 @@ function pickPerk(p){
   updatePerkPanel();updateStats();markHUD();flushHUD();xpHUD();wHUD();
   G('perk-menu').classList.remove('on');
   setDamageOverlay(.24,'gold');setTimeout(()=>setDamageOverlay(0),350);
-  perkPickOpen=false;saveProgress(true);
-  if(pendingLevels>0){pendingLevels--;openLvlAnn(level);}
+  perkPickOpen=false;pendingLevels=Math.max(0,pendingLevels-1);
+  currentPerkChoices=[];perkRerollsLeft=1;
+  saveProgress(true);
+  if(pendingLevels>0)openLvlAnn(level-pendingLevels+1);
   else if(IS_TOUCH){paused=false;running=true;}
   else{paused=true;running=false;setGameCursorHidden(true);requestGamePointerLock();}
   refreshMobileHUD();
@@ -128,7 +131,7 @@ function updateStats(){
   if(plr.closeDamage>0)s.push('🥊 Ближний урон +'+Math.round(plr.closeDamage*100)+'%');
   if(plr.longRangeDamage>0)s.push('🔭 Дальний урон +'+Math.round(plr.longRangeDamage*100)+'%');
   if(plr.dodgeChance>0)s.push('🫥 Уклонение '+Math.round(plr.dodgeChance*100)+'%');
-  if(plr.smokeRadiusM>1||plr.smokeDurationM>1||plr.smokeCooldownM<1)s.push('🌫️ Дым: '+Math.round(SMOKE_RADIUS*plr.smokeRadiusM)+'м · '+Math.round(SMOKE_DURATION_SECONDS*plr.smokeDurationM)+'с');
+  if(plr.smokeRadiusM>1||plr.smokeDurationM>1)s.push('🌫️ Дым: '+Math.round(SMOKE_RADIUS*plr.smokeRadiusM)+'м · '+Math.round(SMOKE_DURATION_SECONDS*plr.smokeDurationM)+'с');
   G('st-perks').innerHTML=s.join('<br>');
   updateStatusIcons();
 }
@@ -137,16 +140,12 @@ function updateStats(){
 function damageLabel(kind){
   return kind==='rocket'?'ракета':kind==='mine'?'мина':kind==='bomb'?'бомба':kind==='grenade'?'осколочная граната':kind==='melee'?'контактный удар':'попадание';
 }
-function applyDamageToPlayer(amount,kind='bullet',attacker=null,directRocketHit=false,directMineContact=false){
+function applyDamageToPlayer(amount,kind='bullet',attacker=null,directRocketHit=false,directMineContact=false,sourceTeam=attacker?.team){
   const forcedMineDeath=kind==='mine'&&directMineContact;
   if(dying||amount<=0)return 0;
   if(gameSettings.invincible)return 0;
   if(respawnShieldT>0&&!forcedMineDeath)return 0;
-  if(forcedMineDeath){
-    // Own/friendly traps must not credit an earlier attacker or a friendly placer.
-    attacker=attacker?.alive&&attacker.team==='enemy'?attacker:null;
-    lastPlayerAttacker=attacker;
-  }
+  if(forcedMineDeath&&sourceTeam!=='enemy')attacker=null;
   if(kind==='bullet'&&plr.dodgeChance>0&&Math.random()<plr.dodgeChance){
     showMsg('🫥 Уклонение от пули!');return 0;
   }
@@ -177,7 +176,6 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null,directRocketHit=
   showDamageDirection(attacker,kind,dmg);playSfx('hurt',Math.min(1,.35+dmg/48));
   triggerScreenShake(Math.min(1.15,.24+dmg/55),kind==='rocket'||kind==='bomb'?.24:.13);
   deathReason=damageLabel(kind);
-  if(attacker&&attacker.alive)lastPlayerAttacker=attacker;
   hitSlowDur=0;
   hitSlowT=0;
   hitSlowMul=0;
@@ -190,8 +188,9 @@ function applyDamageToPlayer(amount,kind='bullet',attacker=null,directRocketHit=
   if(hp<=0&&!forcedMineDeath&&plr.secondWind&&plr.secondWindReady){
     plr.secondWindReady=false;hp=Math.max(1,Math.ceil(plr.maxHp*.35));respawnShieldT=2;deathReason='';
     showAnn('💓 ВТОРОЕ ДЫХАНИЕ');showMsg('Смертельный урон отменён · щит 2 секунды');markHUD();updateStats();
+    saveProgress(true);
   }
-  checkDeath();
+  checkDeath(sourceTeam==='enemy',attacker);
   return dmg;
 }
 
@@ -445,6 +444,8 @@ function tickDeathCamera(dt){
 }
 function tickDeathWorld(dt){
   tickRocketFireCooldowns(dt);
+  tickPlayerEquipmentCooldowns(dt);
+  maintainBotTeams(dt);
   // The battlefield keeps simulating during the killcam, except when bot freeze is explicitly enabled for testing.
   if(!gameSettings.stopBots)for(const en of enemies)if(en.alive)en.update(dt);
   tickProjectiles(dt);tickMines(dt);if(typeof syncExplosiveFuseArt==='function')syncExplosiveFuseArt();tickSmoke(dt);
@@ -454,12 +455,13 @@ function tickDeathWorld(dt){
 }
 
 // ─── DEATH & RESPAWN ────────────────────
-function checkDeath(){
+function checkDeath(enemyHit=false,attacker=null){
   if(dying||hp>0)return;
   cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
-  const killer=lastPlayerAttacker&&lastPlayerAttacker.alive?lastPlayerAttacker:null;
-  if(killer){
-    killer.kills=(killer.kills||0)+1;enemyKills++;updateTeamScore();
+  const killer=enemyHit&&attacker?.alive?attacker:null;
+  if(enemyHit){
+    if(attacker)attacker.kills=(attacker.kills||0)+1;
+    enemyKills++;updateTeamScore();
     pushKillFeed('enemy','ВРАЖЕСКИЙ БОТ','ally','ВЫ',deathReason||'bullet');
   }
   zooming=false;
@@ -481,6 +483,19 @@ function checkDeath(){
   dyingT=PLAYER_RESPAWN_DELAY;
   updateRespawnCountdownPresentation();
 }
+function placeRespawnedPlayer(){
+  const respawn=pickPlayerRespawnPoint();
+  applyPlayerSpawn(respawn);
+  const nearestEnemy=enemies.filter(e=>e.alive&&e.team==='enemy').sort((a,b)=>
+    Math.hypot(a.group.position.x-respawn[0],a.group.position.z-respawn[1])-
+    Math.hypot(b.group.position.x-respawn[0],b.group.position.z-respawn[1])
+  )[0];
+  if(nearestEnemy){
+    const dx=nearestEnemy.group.position.x-respawn[0],dz=nearestEnemy.group.position.z-respawn[1];
+    yaw=Math.atan2(-dx,-dz);
+  }else yaw=Math.atan2(respawn[0],respawn[1]);
+  pitch=0;onGnd=true;jumpV=0;
+}
 function doRespawn(){
   cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
   cleanupDeathCamera();
@@ -501,26 +516,16 @@ function doRespawn(){
   ammo=Math.max(0,Math.min(getW().clip,weaponAmmo[curW]??0));
   uAmmo=Math.max(0,Math.min(getW().reserveCap??9999,weaponReserve[curW]??0));
   recoilPitch=0;recoilYaw=0;recoilRecovery=0;adsBlend=0;weaponBloom=0;shotSequence=0;shotResetT=0;weaponReadyT=0;weaponEquipT=0;weaponEquipTot=0;sprintBlend=0;sprintExitT=0;wasWeaponSprinting=false;cycleT=0;cycleTot=0;cycleKind='';cycleEjected=false;reloadMode='mag';reloadShellLoaded=0;
-  dying=false;paused=false;perkPickOpen=false;pendingLevels=0;lvlAnnOpen=false;lvlAnnT=0;
+  dying=false;paused=false;perkPickOpen=false;lvlAnnOpen=false;lvlAnnT=0;
   combo=0;comboT=0;spawnT=0;plrVx=0;plrVz=0;zooming=false;
   hitSlowT=0;hitSlowDur=0;hitSlowMul=0;
   mineHudSecond=-1;bombHudSecond=-1;smokeHudSecond=-1;
   damageFlashAlpha=0;damageFlashDecay=0;
   respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;
-  deathReason='';lastPlayerAttacker=null;plr.secondWindReady=true;
+  deathReason='';plr.secondWindReady=true;
   camera.fov=BASE_FOV;camera.updateProjectionMatrix();
 
-  const respawn=pickPlayerRespawnPoint();
-  applyPlayerSpawn(respawn);
-  const nearestEnemy=enemies.filter(e=>e.alive&&e.team==='enemy').sort((a,b)=>
-    Math.hypot(a.group.position.x-respawn[0],a.group.position.z-respawn[1])-
-    Math.hypot(b.group.position.x-respawn[0],b.group.position.z-respawn[1])
-  )[0];
-  if(nearestEnemy){
-    const dx=nearestEnemy.group.position.x-respawn[0],dz=nearestEnemy.group.position.z-respawn[1];
-    yaw=Math.atan2(-dx,-dz);
-  }else yaw=Math.atan2(respawn[0],respawn[1]);
-  pitch=0;onGnd=true;jumpV=0;
+  placeRespawnedPlayer();
   buildGun(getW());wHUD();markHUD();flushHUD();xpHUD();updateStats();updateWeaponBar();updateTeamScore();
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';
   setDamageOverlay(0);G('rwarn').style.opacity='0';G('mines-panel').style.display=(getW().isMine||getW().isBomb)?'block':'none';
@@ -529,7 +534,8 @@ function doRespawn(){
   showAnn('ТАКТИЧЕСКОЕ ВОЗРОЖДЕНИЕ · БОЙ ПРОДОЛЖАЕТСЯ');
   saveProgress(true);
   lastT=performance.now();
-  if(IS_TOUCH){paused=false;running=true;}
+  if(pendingLevels>0){openLvlAnn(level-pendingLevels+1);}
+  else if(IS_TOUCH){paused=false;running=true;}
   else if(document.pointerLockElement===canvas){
     paused=false;running=true;setGameCursorHidden(true);
   }else{
@@ -541,6 +547,7 @@ function doRespawn(){
 
 function clearWorldForFreshGame(){
   cancelPendingBombPlant();if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
+  clearCombatBullets();
   enemies.forEach(e=>e.destroy());enemies.length=0;
   pickups.forEach(p=>destroySceneObject(p.m));pickups.length=0;
   if(typeof clearWorldPickupPresentation==='function')clearWorldPickupPresentation();
@@ -560,29 +567,31 @@ function clearWorldForFreshGame(){
   resetTransientCombatLights();
 }
 function restartGameFromScratch(){
+  clearHeldGameKeys();
   if(typeof clearBombPresentation41==='function')clearBombPresentation41();
-  if(!confirm('Начать игру заново? Текущий уровень, улучшения, счёт и автосохранение будут удалены.'))return;
   cleanupDeathCamera();
   clearKillFeed();
-  clearStoredProgress();
+  beginProgressSession();
   clearWorldForFreshGame();
   curW=0;hardResetPlayerBuild();
   level=1;xp=0;score=0;kills=0;allyKills=0;enemyKills=0;
   resetFrontlineObjective('mid',true);
+  restoreMatchClock();
   hp=plr.maxHp;armor=0;uAmmo=STARTING_RESERVE[0];ammo=weaponAmmo[0];
   playerMineCD=0;playerBombCD=0;playerSmokeCD=0;mineHudSecond=-1;bombHudSecond=-1;smokeHudSecond=-1;
   reloading=false;reloadT=0;reloadTot=0;sCD=0;recoil=0;recoilPitch=0;recoilYaw=0;recoilRecovery=0;
   dying=false;dyingT=0;paused=false;running=true;lvlAnnOpen=false;perkPickOpen=false;pendingLevels=0;
   combo=0;comboT=0;spawnT=0;plrVx=0;plrVz=0;zooming=false;mouseDown=false;autoFireT=0;
   hitSlowT=0;hitSlowDur=0;hitSlowMul=0;damageFlashAlpha=0;damageFlashDecay=0;
-  respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';lastPlayerAttacker=null;
-  currentPerkChoices=[];perkRerollsLeft=0;saveTick=8;
-  pendingResumeSave=null;preparedSaveLoaded=false;gameSessionActivated=true;inited=true;
+  respawnShieldT=PLAYER_SPAWN_SHIELD_TIME;deathReason='';
+  currentPerkChoices=[];perkRerollsLeft=1;saveTick=8;
+  preparedSaveLoaded=false;gameSessionActivated=true;inited=true;
   camera.position.set(0,PLAYER_STAND_EYE_HEIGHT,0);camera.fov=BASE_FOV;camera.updateProjectionMatrix();
   yaw=0;pitch=0;onGnd=true;jumpV=0;prevPX=0;prevPZ=0;
   G('pause').classList.remove('on');G('menu').style.display='none';
   G('perk-menu').classList.remove('on');G('lvl-ann').classList.remove('on');
   G('death-flash').style.background='rgba(255,0,0,0)';G('death-flash').style.opacity='1';G('death-msg').style.opacity='0';G('battle-result-frame')?.classList.remove('on');
+  G('respawn-countdown')?.classList.remove('on');
   G('rmsg').style.opacity='0';G('reload-wrap').style.display='none';G('rwarn').style.opacity='0';
   setDamageOverlay(0);
   if(typeof showRespawnMaterializeFx==='function')showRespawnMaterializeFx();

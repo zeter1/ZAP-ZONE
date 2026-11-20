@@ -235,10 +235,11 @@ class Enemy{
     const opponentWeapon=this.currentTargetWeapon();
     const squadPlan=refreshBotTeamTactics(this.team);
     this.commandDoctrine=squadPlan.doctrine;
-    const mapObjective=botObjectivePoint(this,squadPlan);
-    const assaultWaveState=botAssaultWaveState(squadPlan);
-    const objectiveDist=mapObjective?this.group.position.distanceTo(mapObjective):999;
     const activeFrontline=frontlineZone();
+    const rallying=frontlineRallyFor(this);
+    const mapObjective=botObjectivePoint(this,squadPlan,rallying?activeFrontline:null);
+    const assaultWaveState=rallying?null:botAssaultWaveState(squadPlan);
+    const objectiveDist=mapObjective?this.group.position.distanceTo(mapObjective):999;
     const frontlineDist=Math.hypot(this.group.position.x-activeFrontline.x,this.group.position.z-activeFrontline.z);
     const frontlineContested=frontlineObjective.allyPresence>.20&&frontlineObjective.enemyPresence>.20;
     const frontlineBehind=frontlineObjective.owner&&frontlineObjective.owner!==this.team;
@@ -283,7 +284,7 @@ class Enemy{
     this.aiT+=dt;this.stateCD-=dt;
     if(this.stateCD<=0){
       applyBotStateSelectionPolicy(this,{
-        targetPos,hpPct,strategicRetreat,localThreats,supportReady,mapOrderWanted,mapObjective,dist
+        targetPos,hpPct,strategicRetreat,localThreats,supportReady,rallying,mapOrderWanted,mapObjective,dist
       });
     }
 
@@ -818,9 +819,14 @@ function generateSpawnPlan(){
   }
   return {player,allies,enemies};
 }
+function teamMatchScores(){
+  return {
+    ally:allyKills+allyControlScore*FRONTLINE_CFG.capturePoints,
+    enemy:enemyKills+enemyControlScore*FRONTLINE_CFG.capturePoints
+  };
+}
 function updateTeamScore(){
-  const allyTotal=allyKills+allyControlScore*FRONTLINE_CFG.capturePoints;
-  const enemyTotal=enemyKills+enemyControlScore*FRONTLINE_CFG.capturePoints;
+  const {ally:allyTotal,enemy:enemyTotal}=teamMatchScores();
   G('tb-ally').textContent='СИНИЕ '+allyTotal;
   G('tb-enemy').textContent='КРАСНЫЕ '+enemyTotal;
   G('tb-ally').title='Убийства: '+allyKills+' · Захваты: '+allyControlScore;

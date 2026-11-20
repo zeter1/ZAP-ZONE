@@ -82,6 +82,38 @@ function createMapKit47Piece(name){
   m.userData.mapKit47AntiShimmer=true;
   return m;
 }
+function batchStaticMapKit47(arena){
+  const sectors=new Map(),bounds=new THREE.Box3(),pieceBounds=new THREE.Box3(),center=new THREE.Vector3();
+  arena.updateMatrixWorld(true);
+  arena.traverseVisible(mesh=>{
+    if(!mesh.userData.mapKit47AntiShimmer)return;
+    center.setFromMatrixPosition(mesh.matrixWorld);
+    const key=[Math.floor(center.x/32),Math.floor(center.z/32),mesh.geometry.id,mesh.castShadow].join(':');
+    if(!sectors.has(key))sectors.set(key,[]);
+    sectors.get(key).push(mesh);
+  });
+  for(const pieces of sectors.values()){
+    if(pieces.length<2)continue;
+    const first=pieces[0],source=first.geometry;
+    // r128 culls using the geometry bounds. Keep per-batch bounds with shared vertex buffers.
+    const geometry=new THREE.BufferGeometry();
+    for(const [name,attribute] of Object.entries(source.attributes))geometry.setAttribute(name,attribute);
+    if(source.index)geometry.setIndex(source.index);
+    for(const group of source.groups)geometry.addGroup(group.start,group.count,group.materialIndex);
+    bounds.makeEmpty();
+    const batch=new THREE.InstancedMesh(geometry,first.material,pieces.length);
+    batch.name=first.name+'-batch';
+    batch.castShadow=first.castShadow;batch.receiveShadow=first.receiveShadow;
+    for(const [index,mesh] of pieces.entries()){
+      batch.setMatrixAt(index,mesh.matrixWorld);
+      bounds.union(pieceBounds.copy(source.boundingBox).applyMatrix4(mesh.matrixWorld));
+      mesh.visible=false;
+    }
+    geometry.boundingSphere=bounds.getBoundingSphere(new THREE.Sphere());
+    batch.frustumCulled=true;
+    arena.add(batch);
+  }
+}
 function attachMapKit47(owner,name,{position=[0,0,0],rotation=[0,0,0],scale=[1,1,1]}={}){
   if(!owner)return null;
   const m=createMapKit47Piece(name);if(!m)return null;

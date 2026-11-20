@@ -17,22 +17,34 @@ function fn(source,name){
 }
 function execute(source,context){vm.runInContext(source,context);}
 function graphicsContext(){
-  const c=vm.createContext({graphicsMode:'auto',graphicsTier:2,GRAPHICS_AUTO_MAX_TIER:2,graphicsSampleSeconds:0,graphicsSampleFrames:0,graphicsSlowFrames:0,graphicsGoodWindows:0,applied:[],applyGraphicsTier(t){this.graphicsTier=t;this.applied.push(t);}});
-  execute(['resetGraphicsSamples','chooseNextGraphicsTier','sampleAdaptiveGraphics'].map(n=>fn(engine,n)).join('\n'),c);
+  const c=vm.createContext({graphicsMode:'auto',graphicsTier:2,GRAPHICS_AUTO_MAX_TIER:2,graphicsSampleSeconds:0,graphicsSampleFrames:0,graphicsSlowFrames:0,graphicsGoodWindows:0,graphicsShadowUpgradePending:false,running:true,dying:false,webglLost:false,applied:[],applyGraphicsTier(t){this.graphicsTier=t;this.applied.push(t);}});
+  execute(['resetGraphicsSamples','chooseNextGraphicsTier','applyAdaptiveGraphicsDecision','applyPendingGraphicsUpgrade','sampleAdaptiveGraphics'].map(n=>fn(engine,n)).join('\n'),c);
   execute('applyGraphicsTier=t=>{graphicsTier=t;applied.push(t)}',c);
   return c;
 }
 test('real runtime presentation caller reports 15/10/4/2 FPS without clamping elapsed time',()=>{
   for(const rate of [15,10,4,2]){
     const fps={style:{},textContent:''};
-    const c=vm.createContext({fps,gameSettings:{showFps:true,screenShake:false},byId:id=>id==='fps-counter'?fps:null,tickGeneratedCombatVfx(){},ensureCombatOverlay(){return null;},playerSuppression:0,playerSuppressionPulse:0,settingsOpen:false,shakeTime:0,shakeDuration:.1,shakePower:0,fpsAccum:0,fpsFrames:0,canvas:{style:{}},running:true,paused:true,dying:false,lvlAnnOpen:false,perkPickOpen:false,webglLost:false,portraitBlocked:false,lastT:0,idleRenderAt:0,cancelPendingMineThrow(){},cancelPendingSmokeThrow(){},cancelPendingBombPlant(){},requestAnimationFrame(){},renderFrame(){},IS_TOUCH:false});
-    Object.assign(c,{graphicsSampleSeconds:3,graphicsSampleFrames:180,graphicsSlowFrames:1,graphicsGoodWindows:2});
+    const c=vm.createContext({fps,gameSettings:{showFps:true,screenShake:false},byId:id=>id==='fps-counter'?fps:null,tickGeneratedCombatVfx(){},ensureCombatOverlay(){return null;},playerSuppression:0,playerSuppressionPulse:0,settingsDialog:{open:false},shakeTime:0,shakeDuration:.1,shakePower:0,fpsAccum:0,fpsFrames:0,canvas:{style:{}},running:true,paused:true,dying:false,lvlAnnOpen:false,perkPickOpen:false,webglLost:false,portraitBlocked:false,lastT:0,idleRenderAt:0,cancelPendingMineThrow(){},cancelPendingSmokeThrow(){},cancelPendingBombPlant(){},requestAnimationFrame(){},renderFrame(){},IS_TOUCH:false});
+    Object.assign(c,{document:{hidden:false},matchRemaining:480,graphicsSampleSeconds:3,graphicsSampleFrames:180,graphicsSlowFrames:1,graphicsGoodWindows:2});
     execute(fn(engine,'resetGraphicsSamples')+'\n'+fn(settings,'tickGamePresentation')+'\n'+fn(runtime,'loop'),c);
     for(let i=1;i<=rate*2;i++)c.loop(i*1000/rate);
     assert.equal(fps.textContent,'FPS '+rate,'real '+rate+' FPS');
     assert.equal(c.graphicsSampleSeconds,0,'pause clears adaptation, without discarding FPS time');
     assert.equal(c.graphicsGoodWindows,0);
   }
+});
+test('Auto defers shadows until play stops and cancels stale upgrades on slowdown',()=>{
+  const c=graphicsContext();c.graphicsTier=1;
+  for(let i=0;i<750;i++)c.sampleAdaptiveGraphics(1/60);
+  assert.equal(c.graphicsShadowUpgradePending,true);
+  c.applyPendingGraphicsUpgrade();assert.equal(c.graphicsTier,1);
+  for(let i=0;i<15;i++)c.sampleAdaptiveGraphics(.30);
+  assert.equal(c.graphicsShadowUpgradePending,false);
+  c.graphicsTier=1;c.resetGraphicsSamples();
+  for(let i=0;i<750;i++)c.sampleAdaptiveGraphics(1/60);
+  c.running=false;c.applyPendingGraphicsUpgrade();
+  assert.equal(c.graphicsTier,2);
 });
 test('normal frames mixed with >200ms active stalls degrade instead of resetting samples',()=>{
   const c=graphicsContext();
@@ -116,6 +128,8 @@ test('saturated headshot has no ownership of another effect light on retirement 
 });
 function freshGameContext(){
   const c=lightsContext();
+  c.pBullets=[];c.eBullets=[];
+  execute(fn(read('src/combat/combat.js'),'clearCombatBullets'),c);
   Object.assign(c,{enemies:[],pickups:[],botGrenades:[],eRkts:[],pRkts:[],pTrs:[],smokeGrenades:[],smokeClouds:[],impactMarks:[],bombBlastWaves:[],P_MAX:0,_pHead:0,_pCount:0,cancelPendingBombPlant(){},clearMineWorldArt39(){},clearGrenadeFlightArt(){},cancelFragGrenadeThrow(){},clearSmokePresentation42(){},removeSmokeCloud(){},G(){return null;}});
   execute(fn(read('src/progression/progression.js'),'clearWorldForFreshGame'),c);
   return c;

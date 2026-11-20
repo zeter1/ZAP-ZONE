@@ -2,16 +2,21 @@
 
 // ─── INPUT ──────────────────────────────
 window.addEventListener('keydown',e=>{
-  K[e.code]=true;
   if(!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
+  K[e.code]=true;
   if(e.code==='KeyR')doReload();
   if(e.code==='KeyQ')quickSwitchWeapon();
   if(e.code==='KeyF')throwMine();
   if(e.code==='KeyG'&&!e.repeat)placeBomb();
+  if(e.code==='KeyT'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&
+    document.pointerLockElement===canvas)issueFrontlineRally();
   if(e.code==='Digit0'||e.code==='Numpad0')switchW(GRENADE_WEAPON_INDEX);
   const n=parseInt(e.key);if(n>=1&&n<=9)switchW(n-1);
 });
 window.addEventListener('keyup',e=>{K[e.code]=false;});
+function clearHeldGameKeys(){
+  for(const code of Object.keys(K))delete K[code];
+}
 let lastWheelWeaponSwitchAt=0;
 document.addEventListener('wheel',e=>{
   if(IS_TOUCH||!running||paused||lvlAnnOpen||perkPickOpen||dying)return;
@@ -44,8 +49,14 @@ document.addEventListener('mouseup',e=>{
   if(e.button===0){mouseDown=false;releaseFragGrenadeCharge();}
   if(e.button===2)zooming=false;
 });
-window.addEventListener('blur',()=>{mouseDown=false;zooming=false;cancelFragGrenadeThrow();cancelPendingMineThrow(true);if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);cancelPendingBombPlant();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){mouseDown=false;zooming=false;cancelFragGrenadeThrow();cancelPendingMineThrow(true);if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);cancelPendingBombPlant();}});
+function releaseCombatInput(){
+  clearHeldGameKeys();
+  mouseDown=false;zooming=false;cancelFragGrenadeThrow();cancelPendingMineThrow(true);
+  if(typeof cancelPendingSmokeThrow==='function')cancelPendingSmokeThrow(true);
+  cancelPendingBombPlant();
+}
+window.addEventListener('blur',releaseCombatInput);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseCombatInput();});
 document.addEventListener('contextmenu',e=>{if(!IS_TOUCH)e.preventDefault();});
 
 function bindMobileControls(){ if(!IS_TOUCH) return; }
@@ -144,6 +155,7 @@ function mkFragGrenade(team='enemy'){
 function removeSmokeCloud(cloud){
   if(!cloud)return;
   removeSmokeArt42(cloud);
+  releaseSmokeVolume42(cloud);
   destroySceneObject(cloud.m);
 }
 // Bounded DOM art belongs to the real cloud/projectile, never to the short combat-VFX pool.
@@ -258,7 +270,20 @@ function smokeVolumeGlsl42(){
 
       }`;
 }
+const smokeVolumePool42=[];
 function createSmokeVolume42(c){
+  const mesh=smokeVolumePool42.pop()||makeSmokeVolumeMesh42();
+  mesh.visible=true;c.m.add(mesh);c.volume42=mesh;
+}
+function releaseSmokeVolume42(c){
+  if(!c.volume42)return;
+  const mesh=c.volume42;
+  c.m.remove(mesh);
+  mesh.material.uniforms.uDepth.value=null;
+  smokeVolumePool42.push(mesh);
+  c.volume42=null;
+}
+function makeSmokeVolumeMesh42(){
   const material=new THREE.ShaderMaterial({
     precision:'highp',transparent:true,depthWrite:false,depthTest:false,side:THREE.BackSide,
     uniforms:{uMin:{value:new THREE.Vector3()},uMax:{value:new THREE.Vector3()},uAge:{value:0},uDensity:{value:0},uSeed:{value:0},
@@ -283,8 +308,9 @@ function createSmokeVolume42(c){
       }`,defines:{SMOKE_STEPS:PERF_MODE?24:40}
   });
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),material);
-  mesh.renderOrder=12;mesh.frustumCulled=false;c.m.add(mesh);c.volume42=mesh;
+  mesh.renderOrder=12;mesh.frustumCulled=false;
   mesh.layers.set(1);
+  return mesh;
 }
 function updateSmokeVolume42(c){
   const floor=Math.max(0,c.m.position.y-.12),height=c.radius*.48;
@@ -296,8 +322,11 @@ function updateSmokeVolume42(c){
 function syncSmokeCloudArt42(c){
   // Cloud density is world-space, independent of image loading and camera facing.
   removeSmokeArt42(c);c.m.visible=true;
-  if(!c.volume42&&smokeVolumeSupported42())createSmokeVolume42(c);
-  if(c.volume42){for(const puff of c.puffs)puff.visible=false;updateSmokeVolume42(c);}
+  const useVolume=useSmokeVolume42();
+  if(useVolume&&!c.volume42)createSmokeVolume42(c);
+  else if(!useVolume&&c.volume42)releaseSmokeVolume42(c);
+  for(const puff of c.puffs)puff.visible=!c.volume42;
+  if(c.volume42)updateSmokeVolume42(c);
 }
 
 function smokeEnvelope42(c,x,y,z){
@@ -415,8 +444,9 @@ function tickSmoke(dt){
     const fadeIn=Math.min(1,c.age/1.35);
     const fadeOut=Math.min(1,Math.max(0,c.life)/4);
     c.density=fadeIn*fadeOut;
+    syncSmokeCloudArt42(c);
     // World-space bounds stay aligned with the arena support plane.
-    for(const puff of c.puffs){
+    if(!c.volume42)for(const puff of c.puffs){
       const pulse=1+Math.sin(c.age*.45+puff.userData.phase)*.025;
       const b=puff.userData.baseScale;
       puff.scale.set(b.x*pulse,b.y*(1+Math.cos(c.age*.36+puff.userData.phase)*.025),b.z*pulse);
@@ -424,7 +454,6 @@ function tickSmoke(dt){
       const growth=.12+.88*Math.min(1,c.age/4);puff.scale.multiplyScalar(growth);
       puff.position.y=Math.max(puff.userData.baseY??puff.position.y,puff.scale.y-Math.min(.12,c.m.position.y));
     }
-    syncSmokeCloudArt42(c);
     if(c.life<=0){removeSmokeCloud(c);smokeClouds.splice(i,1);}
   }
   const overlay=G('smoke-overlay');
@@ -1162,6 +1191,10 @@ function destroyEnemyBullet(index){
   if(b.m)releaseEnemyTracer(b.m,b.wKey,b.color);
   eBullets.splice(index,1);
 }
+function clearCombatBullets(){
+  while(pBullets.length)destroyPlayerBullet(pBullets.length-1);
+  while(eBullets.length)destroyEnemyBullet(eBullets.length-1);
+}
 function spawnEnemyBullet(from,dir,w,src,meta={}){
   while(eBullets.length>=MAX_ENEMY_BULLETS)destroyEnemyBullet(0);
   const speed=Math.max(18,w.muzzleVelocity||TRACER_SPEED[w.key]||TRACER_SPEED.default);
@@ -1655,7 +1688,7 @@ function throwSmokeGrenade(release=false){
   sCD=smokeW.rate;recoil=.45;
   recoilPitch+=(smokeW.recoilY||.02)*plr.recoilM;
   trigMuzzle(camera.position.clone().addScaledVector(dir,.62),0xcbd4d8,.72,!smokePresentationAssetReady42('pack42SmokeWorld'));
-  playerSmokeCD=SMOKE_COOLDOWN_SECONDS*plr.smokeCooldownM;
+  playerSmokeCD=SMOKE_COOLDOWN_SECONDS;
   smokeHudSecond=-1;wHUD();
   showMsg('🌫️ Дымовуха запущена · следующая через '+Math.ceil(playerSmokeCD)+' сек.');
   return true;
@@ -1749,7 +1782,7 @@ function applyBlastDamage(pos,radius,maxDamage,ownerType='world',ownerBot=null,k
     if(ownerType==='player'&&kind!=='grenade')falloff*=playerSelfScale;
     let playerBlast=(kind==='grenade'?plr.maxHp*FRAG_GRENADE_BLAST.healthFraction:maxDamage)*falloff;
     if(kind==='bomb')playerBlast=Math.min(playerBlast,850);
-    applyDamageToPlayer(playerBlast,kind,ownerBot,kind==='rocket'&&directRocketTarget==='player');
+    applyDamageToPlayer(playerBlast,kind,ownerBot,kind==='rocket'&&directRocketTarget==='player',false,ownerTeam);
   }
 }
 // Contact uses each actual box in its local space: rotated cover must not acquire
@@ -2083,7 +2116,7 @@ function tickProjectiles(dt){
     if(playerDist<wallDist&&playerDist<=stepDist&&playerDist<=botDist){
       _hitPos.copy(_prev).addScaledVector(_stepDir,playerDist);
       const travel=b.travel+playerDist,falloff=weaponDamageScaleAtDistance(w,travel);
-      applyDamageToPlayer(b.playerDamage*falloff,'bullet',b.src);
+      applyDamageToPlayer(b.playerDamage*falloff,'bullet',b.src,false,false,b.team);
       destroyEnemyBullet(i);continue;
     }
     if(botHit.en&&botDist<=stepDist&&botDist<wallDist){
@@ -2381,7 +2414,7 @@ function mineContactActors(mn){
 function applyMineContactKills(contacts,pos,ownerType,ownerBot,ownerTeam){
   for(const target of contacts){
     if(target==='player'){
-      if(!dying)applyDamageToPlayer(Math.max(1,hp),'mine',ownerBot,false,true);
+      if(!dying)applyDamageToPlayer(Math.max(1,hp),'mine',ownerBot,false,true,ownerTeam);
       continue;
     }
     if(!target.alive)continue;

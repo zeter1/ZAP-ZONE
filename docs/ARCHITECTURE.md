@@ -27,9 +27,21 @@
 23. `src/entities/bots.js` — per-bot state execution, event-driven state overrides, broad fire gate и tactical execution; state/cadence timer lifecycle остаётся здесь, а progression-scaling/perception/damage-reaction/suppression-response/dodge-response/navigation/positioning/weapon-policy/fire-control/fire-cadence/deployables/state-policy owners используются как consumer dependencies.
 24. `src/entities/pickups.js` — подбираемые предметы: подробные парящие DOM-рендеры, 3D-fallback без напольной тени, покадровая проекция и случайные позиции/боеприпасы. Контракт — [ASSETS.md](ASSETS.md#подбираемые-предметы-парящие-подробные-3d-рендеры).
 25. `src/progression/progression.js` — HUD, XP, damage, death/respawn.
-26. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle и reset frame clock.
+26. `src/game/session.js` — Pointer Lock, пауза/возврат, браузерный lifecycle, таймер и итоги матча.
 27. `src/ui/minimap.js` — тактическая миникарта.
 28. `src/game/runtime.js` — frame simulation/render loop и boot.
+
+## Таймер и итоги матча
+
+Восьмиминутный таймер хранится в `src/game/session.js`. Цикл `src/game/runtime.js` списывает время только за шаги симуляции, включая камеру гибели, где бой продолжается. Последний шаг ограничен остатком времени. На нуле цикл останавливает симуляцию, а экран итогов использует тот же командный счёт, что и HUD.
+
+В автосохранении `matchRemaining` хранит остаток в секундах. Если поля нет в совместимом сохранении, отсчёт начинается с 8 минут. Ноль означает завершённый матч. Меню открывает его итоги, а новый матч сбрасывает часы вместе со счётом.
+
+Камера гибели использует тот же ход времени для захвата и ротации зон, восстановления команд и задержек снаряжения. Пауза замораживает эти шаги и таймер матча.
+
+Автосейв хранит ожидающие улучшения, текущие карточки, оставшиеся попытки обновления выбора и состояние «Второго дыхания». При продолжении незавершённого матча с нулевым здоровьем игра использует обычную точку возрождения, полное здоровье и нулевую броню. Старые записи совместимой версии без новых полей по-прежнему читаются.
+
+Меню только читает автосейв. При продолжении игра заново читает текущую запись. Вкладка сверяет исходную запись с общей перед сохранением, а в браузерах с Web Locks записи сериализуются. Резерв текущей вкладки помогает восстановить повреждённый основной автосейв или завершить сохранение, прерванное уходом со страницы.
 
 ## Бомба Pack41
 
@@ -185,6 +197,8 @@ Dodge timer decay, movement-vector consumption, speed cap/collision остают
 - lifecycle listeners не дублируются между `state.js`, `session.js` и `runtime.js`.
 
 **Verification oracle:** `scripts/validate-structure.mjs` проверяет ownership/load-order; CI дополнительно выполняет HTTP boot smoke и настоящий `file://` Chrome/CDP menu smoke.
+
+Диалоги справки и подтверждения перезапуска открывает владелец сессии. Пока диалог открыт, Escape обрабатывает диалог. Сброс прогресса запускается из явного подтверждения в том же пользовательском событии, чтобы браузер мог захватить мышь. До активации матча lifecycle-обработчики не записывают игровой прогресс.
 
 При рефакторинге сохраняйте порядок browser events, а не только итоговые boolean-флаги. Для browser semantics сверяйтесь с MDN Pointer Lock API и Page Visibility API.
 
@@ -402,6 +416,8 @@ Pure rig extraction сохраняет gameplay hit-mesh order, default weapon p
 ### Render timing and scene-lifetime resources
 
 `src/game/runtime.js` passes raw frame seconds to the FPS presentation owner in `src/settings/settings.js` and to adaptive graphics in `src/core/engine.js`. Only simulation (`.075` seconds) and presentation animation (`.05` seconds) are capped. Active frames above 200 ms remain poor-frame evidence; inactive/paused frames reset adaptive observations so menu time cannot trigger an upgrade.
+
+The engine limits drawing-buffer area to 1.1, 2.1 or 3.7 megapixels by quality tier. Auto raises the shadow tier during a menu or pause after qualifying in a match. Repeated static Pack47 meshes share instanced draws within 32 m sectors. Each draw has its own culling bounds, and wall collision queries still use the arena wall owners. See [smoke presentation](ASSETS.md) for shader preparation and the fallback.
 
 Pack46 and Pack47 cached geometry/materials mark `userData.sharedSceneResource=true`. Generic object retirement in engine preserves these scene-lifetime resources while still disposing private geometry, materials and their textures, including detached bot gibs. These cached packs contain no textures; the flag does not globally exempt other assets from cleanup.
 

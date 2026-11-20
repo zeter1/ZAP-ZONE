@@ -56,11 +56,17 @@ test('runtime counts rocket interval before any new player or bot firing, after 
  assert.ok(clock>runtime.indexOf('if(perkPickOpen||paused)'));assert.ok(clock<runtime.indexOf('const activeW=getW()'));
  assert.ok(clock<runtime.indexOf('const mel=en.update(dt)'));assert.ok(!combat.includes('function tickProjectiles(dt){\n  tickRocketFireCooldowns(dt);'));
 });
-test('killcam active world counts rocket cooldown before bot firing as well',()=>{
+test('killcam active world counts player cooldowns before bot firing as well',()=>{
  const progression=read('src/progression/progression.js'),start=progression.indexOf('function tickDeathWorld(dt){'),end=progression.indexOf('\nfunction ',start+1),source=progression.slice(start,end);
  assert.ok(source.indexOf('tickRocketFireCooldowns(dt);')>=0);assert.ok(source.indexOf('tickRocketFireCooldowns(dt);')<source.indexOf('en.update('));
- const bot={rocketShotCD:10,alive:true,update(){assert.equal(this.rocketShotCD,9.5);}},c={playerRocketShotCD:10,enemies:[bot],gameSettings:{stopBots:false}};
- for(const name of ['tickProjectiles','tickMines','syncExplosiveFuseArt','tickSmoke','tickParticles','tickGibs','tickCasings','tickImpactMarks','tickExpLights','tickMzLights','tickBombBlastWaves','updateAllyPanel'])c[name]=()=>{};
+ const bot={rocketShotCD:10,alive:true,update(){assert.equal(this.rocketShotCD,9.5);}};
+ const c={playerRocketShotCD:10,playerMineCD:3,playerBombCD:3,playerSmokeCD:3,mineHudSecond:3,bombHudSecond:3,smokeHudSecond:3,
+   enemies:[bot],gameSettings:{stopBots:false},getW:()=>({isSmoke:false})};
+ for(const name of ['maintainBotTeams','tickProjectiles','tickMines','syncExplosiveFuseArt','tickSmoke','tickParticles','tickGibs','tickCasings','tickImpactMarks','tickExpLights','tickMzLights','tickBombBlastWaves','updateAllyPanel','updateMineHUD'])c[name]=()=>{};
  const clockStart=combat.indexOf('function tickRocketFireCooldowns('),clockEnd=combat.indexOf('\nfunction ',clockStart+1);
- vm.createContext(c);vm.runInContext(combat.slice(clockStart,clockEnd)+source,c);c.tickDeathWorld(.5);assert.equal(c.playerRocketShotCD,9.5);
+ const runtime=read('src/game/runtime.js'),equipmentStart=runtime.indexOf('function tickPlayerEquipmentCooldowns(');
+ const equipment=runtime.slice(equipmentStart,runtime.indexOf('\nfunction ',equipmentStart+1));
+ vm.createContext(c);vm.runInContext(combat.slice(clockStart,clockEnd)+equipment+source,c);
+ c.tickDeathWorld(.5);
+ assert.deepEqual([c.playerRocketShotCD,c.playerMineCD,c.playerBombCD,c.playerSmokeCD],[9.5,2.5,2.5,2.5]);
 });
