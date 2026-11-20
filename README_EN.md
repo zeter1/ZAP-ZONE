@@ -6,6 +6,8 @@ ZAP ZONE is a browser-based 3D team FPS built with Three.js/WebGL. You and four 
 
 ## Get started
 
+**[Play in your browser](https://dkoles.com/Games/ZAP_ZONE/index.html)**
+
 Download https://github.com/zeter1/ZAP-ZONE/archive/refs/heads/main.zip and extract the whole folder. Open `index.html` in a desktop browser, or start a local server from the project folder:
 
 ```sh
@@ -15,6 +17,18 @@ python -m http.server 8000
 Open http://localhost:8000. The game needs JavaScript, WebGL, a keyboard and mouse, and internet access to load Three.js from a CDN. Python is only needed for the optional server. Lower graphics quality if performance is poor.
 
 Choose Play or resume a saved match from the main menu. The pause screen shows the zone-capture score and the active objective.
+
+## Combat screenshots
+
+![Firefight at the central objective](docs/screenshots/01-rifle-firefight.jpg)
+
+![Plasma fire from cover](docs/screenshots/02-plasma-fire.jpg)
+
+![Rocket in flight](docs/screenshots/03-rocket-launch.jpg)
+
+![Planted bomb detonates](docs/screenshots/04-bomb-explosion.jpg)
+
+![Shotgun fire at the edge of the smoke](docs/screenshots/05-smoke-firefight.jpg)
 
 ## Controls
 
